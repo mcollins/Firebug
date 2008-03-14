@@ -1,0 +1,12 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title>Example of Frame Error in Firebug</title>
+</head>
+<frameset rows="20%,*">
+  <frame name="frame1" src="frame1.html">
+  <frameset cols="20%,*">
+     <frame name="frame2" src="frame2.html">
+     <frame name="frame3" src="http://www.yahoo.com">
+  </frameset>
+</frameset>
+</html>
