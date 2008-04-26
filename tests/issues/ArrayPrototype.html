@@ -1,0 +1,15 @@
+<html>
+<head>
+<title>Array prototype test</title>
+<script>
+var str = "Array.prototype= ";
+var a = new Array();
+a[0] = 5;
+for (var p in Array.prototype)
+    str += p + ", ";
+    var time = new Date().getTime();
+document.write(str+ time);
+</script>
+<h2>Test Array.prototype</h2>
+</head>
+</html>
