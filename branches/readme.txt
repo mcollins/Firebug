@@ -9,6 +9,7 @@ Building:
 
  Each branch has a build.xml for ant.
  Each branch has branch.properties giving the branch version number
+   for firebug1.2, branch.properties is in content/firebug directory
 
 ant build.xml files use local.properties file that you must create.
 
