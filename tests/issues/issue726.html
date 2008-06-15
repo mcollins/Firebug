@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html><head>
+<title> Issue 726:    	 commandline window doesn't obey prototype invariants.</title>
+</head><body>
+<div id="result"></div>
+<script>
+function Foo(){};
+var comparison = Foo.__proto__ === Function.prototype
+var str = "(Foo.__proto__ === Function.prototype) = "+comparison;
+document.getElementById("result").innerHTML = str;
+</script>
+</body>
+</html>
