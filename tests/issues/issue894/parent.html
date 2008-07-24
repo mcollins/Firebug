@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<script type='text/javascript'>
+			function callback()
+			{
+				var x = 1;
+				for( var i = 0; i < 100; i++)
+				{
+					x += i;
+				}
+			}
+			
+			function init()
+			{
+				window.open("child.html", "child");
+			}
+		</script>
+	</head>
+	<body>
+		<input type="button" onClick="init()" value="click me" >
+	</body>
+</html>
