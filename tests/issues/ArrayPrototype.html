@@ -1,15 +1,22 @@
-<html>
-<head>
-<title>Array prototype test</title>
+<!DOCTYPE HTML>
+<html><head>
+<title> Function Prototype</title>
+</head><body>
+ <p><code>function Foo(){};</code></p><div id="result"></div>
+
 <script>
-var str = "Array.prototype= ";
-var a = new Array();
-a[0] = 5;
-for (var p in Array.prototype)
-    str += p + ", ";
-    var time = new Date().getTime();
-document.write(str+ time);
+
+
+
+function Foo(){};
+var fp = Foo.prototype;
+var str = "Foo.prototype="+fp;
+for (var p in fp)
+    str += "," + fp[p];
+
+document.getElementById("result").innerHTML = str;
+
+
 </script>
-<h2>Test Array.prototype</h2>
-</head>
+</body>
 </html>
