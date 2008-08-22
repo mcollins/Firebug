@@ -1,0 +1,29 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<title> Issue 1096:  	 Adding breakpoint causes code to malfunction </title>
+</head>
+<body>
+<script language="JavaScript" type="text/javascript">
+function init() {
+    try
+    {
+        //var ex = {fileName: "foo", lineNumber: 6};  // If we throw this object, no bug.
+        throw new Error('Test Exception');
+    }
+    catch(ex)
+    {
+        var condition  = (ex.fileName != null) && (ex.lineNumber != null); // Set a breakpoint here.
+
+        if(condition)
+            document.getElementById("result").innerHTML = "Success";
+        else
+            document.getElementById("result").innerHTML = "FAILED";
+    }
+}
+
+
+</script>
+
+<p>Set a breakpoint in the code. <button onclick="init();">Click to Test</button>&nbsp;<span id="result"></span></p>
+
+</body></html>
