@@ -2,6 +2,7 @@
 	<head>
 		<script>
 			function test() {
+				console.info("Success in frame a");
 				document.getElementById('result').innerHTML='This is test A.';
 			}
 		</script>
@@ -10,8 +11,8 @@
 		<h3>Frame A</h3>
 		<div id="result">No output in Frame A</div>
 		
-		<p>Put the follwoing into the command line and run it. Result should be new content in both frames and no error message in the console</p>
-		<pre>cd(a); test(); cd(b); test();</pre>
+		<p>Put the following lines in one at a time into the command line. Result should be new content in both frames and no error message in the console</p>
+		<pre>1) cd(a); 2) test(); 3) cd(top) 4) cd(b); 5) test();</pre>
 		
 	</body>
 </html>
