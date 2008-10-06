@@ -1,0 +1,52 @@
+Release Notes for Firebug 1.2.1
+Firebug 1.2.1 is Firebug 1.2.0 with bug fixes 
+Firebug 1.2 is Firebug 1.1 with additions by John J. Barton and Jan Odvarko.
+Firebug 1.1 is Firebug 1.05 by Joe Hewitt with additions by John J. Barton and Max Stepanov
+
+ 
+== Bug Fixes ==
+ Issue 502:  	 Component is not available (SessionStore exception)
+	(Port of R967) verified that the browser element has disableHistory. No error message in ErrorConsole
+
+ Issue 1110: Firebug doesn't respond (abclinuxu.cz) -- very long URL
+   (Port of R968)  verified that issue testcase loads, long URL show up in Script filelist	
+ 
+ Issue 1097:  	 inspect image tooltip confuses images from different tabs
+   (Port of R969) verified that the issue test case gives the right image for the second page
+   
+   Verified test case http://www.janodvarko.cz/firebug/tests/ Issue1092 .htm
+ 
+ Issue 1109: Missing POST information (empty POST tab)
+   (Port of R972) verified http://xemc.net/missing_post_bug.php
+ 
+ Issue 874: User object incorrectly identified as arrays (contribution by nielsen.chris)
+   (Port R973 and R979) verified http://chris.photobooks.com/tests/firebug/NotAnArray/NotAnArray.html
+ 
+ Issue 1063: Spanish translation for 'script' shouldn't be 'guión' (contribution by eternoendless)
+   (Port R974) DID NOT RETEST
+ 
+  Script panel Filelist initialized correctly now
+ 	(Port R980) DID NOT RETEST
+ 
+  If Script disabled, stop sooner
+ 	(Port R981) DID NOT RETEST
+ 
+  Issue 1121: "Open in Tab" does a POST request for a GET request 
+    (Port R988) DID NOT RETEST
+ 
+  Issue 1125: Net panel not working as expected (1.2.0)
+    (Port R989)DID NOT RETEST  
+ 
+  Remove unused parameter from Firebug.ActivableModule.getMenuLabel (used to return labels for panel activation menu).
+     (Port R992)
+  Avoid message Failed to get string
+     (Port R993) Verified message is not on OS console
+ 
+  Issue 1137 : Forgets which JS file being viewed after switching away and back to Script tab
+     (Port R994) Verifed both test cases
+ 
+  Convert all spaces in localized strings to underscore to create key for .properties file
+    (Port R1006) DID NOT RETEST
+  
+  Implement CSS option showUserAgentCSS, default false, partial fix for Issue 1107:  	 Toggleing Table css properties breaks page permanently firebug 1.2.0b1
+    (Port R1007) Verified that the option exists and functions both directions. 
