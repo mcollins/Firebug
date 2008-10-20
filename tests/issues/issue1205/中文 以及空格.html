@@ -1,0 +1,14 @@
+<html><head><title>fbug Issue 1205</title></head><body onload="load()">
+<div style="bottom:10px;color:red;font-family:Monaco,Courier New,monospace;font-size:200%;left:10px;position:absolute;"> &darr; Open Firebug and choose Console tab, please</div>
+</body><script type="text/javascript">
+function load(){
+if(console){
+console.info("          document.location : "+document.location);
+console.info("decodeURI(document.location): "+decodeURI(document.location));
+console.warn("Please look at the tooltip of the status bar icon, it uses the first one and is difficult to recognize.");
+console.info("And not only this url can be decoded, e.g. just see the urls to the right ---- >>");
+}else{
+alert("Enable console tab for this page, please!")
+}
+}
+</script></html>
