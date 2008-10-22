@@ -1,0 +1,78 @@
+/* See license.txt for terms of usage */
+
+@import "chrome://chromebug/skin/chromebug.css";
+@import "chrome://browser/skin/browser.css";
+
+#cbGlobalScopeList {
+    /* This triggers initialize() calls , see bindings.xml */
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+#cbWindowList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+#cbInterfaceList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+#cbExtensionList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+#cbOverlayList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+#cbComponentList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+#cbJSContextList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+/*
+#cbCategoryList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+*/
+#cbDocumentLabel {
+    font-weight: bold;
+}
+/*
+.toolbarbutton-1, .toolbarbutton-menubutton-button {
+    padding:5px;
+}
+.toolbarbutton-1 {
+    -moz-box-orient:vertical;
+    list-style-image:url(chrome://browser/skin/Toolbar-small.png);
+    min-width:0pt;
+}
+toolbarbutton {
+    -moz-appearance:toolbarbutton;
+    -moz-box-align:center;
+    -moz-box-pack:center;
+    background-color:transparent;
+    border:1px solid transparent;
+    color:-moz-dialogtext;
+    margin:0pt;
+    padding:3px;
+}
+*/
+#profile-directory-name {
+    cursor: pointer;
+    font-weight: bold;
+}
+#fbStatusText {
+    visibility: collapse;
+}

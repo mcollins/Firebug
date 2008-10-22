@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE window [
+<!ENTITY % firebugDTD SYSTEM "chrome://firebug/locale/firebug.dtd">
+%firebugDTD;
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
+%browserDTD;
+]>
+
+<!-- overlays browser.xul to add menu items -->
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <commandset id="mainCommandSet">
+        <command id="cmd_openChromeBugNow" oncommand="ChromeBugOpener.openNow()"/>
+        <command id="cmd_openChromeBugAlways" oncommand="ChromeBugOpener.openAlways()"/>
+    </commandset>
+    <script type="application/x-javascript" src="chrome://chromebug/content/ChromeBugOpener.js"/>
+    <keyset id="mainKeyset">
+        <key id="key_openChromeBugNowCommand" key="b" modifiers="control,shift"
+                command="cmd_openChromeBugNow"/>
+    </keyset>
+   <menupopup id="menu_ToolsPopup">
+            <menuitem id="menu_OpenChromeBugNow" insertbefore="menu_firebug"
+                tooltiptext="ChromeBug: Firebug for Chrome"
+                label="Open ChromeBug Now" accesskey="b" command="cmd_openChromeBugNow"/>
+            <menuitem id="menu_OpenChromeBugAlways" insertbefore="menu_firebug"
+                tooltiptext="When Checked, Start ChromeBug Before Firefox" autocheck="false"
+                label="Open ChromeBug Always" command="cmd_openChromeBugAlways" type="checkbox"/>
+            <menuseparator insertbefore="menu_firebug"/>
+    </menupopup>
+</overlay>

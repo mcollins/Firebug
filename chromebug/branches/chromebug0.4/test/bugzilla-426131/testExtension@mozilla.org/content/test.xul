@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script type="application/x-javascript" src="chrome://test/content/testUtil.js"></script>
+    <script type="application/x-javascript" >
+    <![CDATA[
+
+var appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].
+                    getService(Components.interfaces.nsIAppShellService);
+
+var hiddenWindow = appShellService.hiddenDOMWindow;
+
+function doLoad()
+{
+        var win = Util.openChromeResourceAsContent("chrome://test/content/testWebPage.html", testAfterLoad);
+}
+
+function testAfterLoad()
+{
+// Uncomment the next line to verify that the extension loaded
+//hiddenWindow.alert("Test");
+
+    hiddenWindow.dump("========== Test Starts =========\n");
+    try {
+
+// ******************************************
+// TEST CODE HERE
+        var win = getBrowser().contentWindow;
+        hiddenWindow.dump("win is "+win.location+"\n");
+        var unwrapped = win.window.wrappedJSObject;
+
+        hiddenWindow.dump("From test.xul we have window.wrappedJSObject.history.previous:"+unwrapped.history.previous+"\n");
+
+        hiddenWindow.dump("========== Test Ends   ==========\n");
+
+// ******************************************
+
+    }
+    catch (e)
+    {
+        hiddenWindow.dump("Test threw: "+e+"\n");
+    }
+}
+window.addEventListener('load', doLoad, false);
+    ]]>
+    </script>
+    <commandset id="mainCommandSet">
+        <command id="cmd_testNow" oncommand="doLoad()"/>
+    </commandset>
+   <menupopup id="menu_ToolsPopup">
+            <menuitem id="menu_TestNow"
+                tooltiptext="Test Now"
+                label="Test Now" accesskey="t" command="cmd_testNow"/>
+    </menupopup>
+</overlay>

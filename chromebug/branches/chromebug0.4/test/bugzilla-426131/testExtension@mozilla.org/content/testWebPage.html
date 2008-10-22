@@ -1,0 +1,33 @@
+<html>
+<head>
+<title>Test Web Page for testExtension@mozilla.org</title>
+<script type="application/x-javascript">
+window.onload = function(event) {
+
+try
+{
+    dump("From Web Page we have history.previous:"+window.history.previous+"\n");
+}
+catch (e)
+{
+    dump("From Web Page history.previous FAILED:"+e+"\n");
+}
+
+
+}
+</script>
+</head>
+<body>
+<h1>Test Web Page for testExtension@mozilla.org</h1>
+
+<p>The output on OS Console is </p>
+<pre>
+
+From Web Page history.previous FAILED:Error: Permission denied to get property History.previous
+========== Test Starts =========
+win is data:text/html;fileName=chrome%3A%2F%2Ftest%2Fcontent%2FtestWebPage.html,%3Chtml%3E%0D%0A%3Chead%3E%0D%0A%3Ctitle%3ETest%20Web%20Page%20for%20testExtension%40mozilla.org%3C%2Ftitle%3E%0D%0A%3Cscript%20type%3D%22application%2Fx-javascript%22%3E%0D%0Awindow.onload%20%3D%20function(event)%20%7B%0D%0A%0D%0Atry%0D%0A%7B%0D%0A%20%20%20%20dump(%22From%20Web%20Page%20we%20have%20history.previous%3A%22%2Bwindow.history.previous%2B%22%5Cn%22)%3B%0D%0A%7D%0D%0Acatch%20(e)%0D%0A%7B%0D%0A%20%20%20%20dump(%22From%20Web%20Page%20history.previous%20FAILED%3A%22%2Be%2B%22%5Cn%22)%3B%0D%0A%7D%0D%0A%0D%0A%0D%0A%7D%0D%0A%3C%2Fscript%3E%0D%0A%3C%2Fhead%3E%0D%0A%3Cbody%3E%0D%0A%3Ch1%3ETest%20Web%20Page%20for%20testExtension%40mozilla.org%3C%2Fh1%3E%0D%0A%0D%0A%3Cp%3EThe%20output%20on%20OS%20Console%20is%20%3C%2Fp%3E%0D%0A%3Cpre%3E%0D%0A%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%20Test%20Starts%20%3D%3D%3D%3D%3D%3D%3D%3D%3D%0D%0A%0D%0A%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%20Test%20Ends%20%20%20%3D%3D%3D%3D%3D%3D%3D%3D%3D%3D%0D%0A%3C%2Fpre%3E%0D%0A%3C%2Fbody%3E%0D%0A%3C%2Fhtml%3E
+Test threw: Error: Permission denied to get property History.previous
+
+</pre>
+</body>
+</html>

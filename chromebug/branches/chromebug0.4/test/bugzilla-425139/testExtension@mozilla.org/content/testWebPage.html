@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>Test Web Page for testExtension@mozilla.org</title>
+<script type="application/x-javascript">
+window.onload = function(event) {
+    window.anObject = { aProperty: "value" };
+    window.anArray = ["firstElement", "secondElement"];
+    window.aFunction = function aFunctionName () {
+        var goAway = "there is nothing to see";
+        return goAway;
+    }
+
+dump("From Web Page onload we have typeof anObject:"+typeof(anObject)+"\n");
+dump("From Web Page onload we have typeof anArray:"+typeof(anArray)+"\n");
+dump("From Web Page onload we have typeof aFuncion:"+typeof(aFunction)+"\n");
+
+}
+</script>
+</head>
+<body>
+<h1>Test Web Page for testExtension@mozilla.org</h1>
+
+<p>The output on OS Console is </p>
+<pre>
+========== Test Starts =========
+win is data:text/html;fileName=chrome%3A%2F%2Ftest%2Fcontent%2FtestWebPage.html,%3Chtml%3E%0D%0A%3Chead%3E%0D%0A%3Ctitle%3ETest%20Web%20Page%20for%20testExtension%40mozilla.org%3C%2Ftitle%3E%0D%0A%3Cscript%20type%3D%22application%2Fx-javascript%22%3E%0D%0Awindow.onload%20%3D%20function(event)%20%7B%0D%0A%20%20%20%20window.anObject%20%3D%20%7B%20aProperty%3A%20%22value%22%20%7D%3B%0D%0A%20%20%20%20window.anArray%20%3D%20%5B%22firstElement%22%2C%20%22secondElement%22%5D%3B%0D%0A%20%20%20%20window.aFunction%20%3D%20function%20aFunctionName%20()%20%7B%0D%0A%20%20%20%20%20%20%20%20var%20goAway%20%3D%20%22there%20is%20nothing%20to%20see%22%3B%0D%0A%20%20%20%20%20%20%20%20return%20goAway%3B%0D%0A%20%20%20%20%7D%0D%0A%0D%0Adump(%22From%20Web%20Page%20onload%20we%20have%20typeof%20anObject%3A%22%2Btypeof(anObject)%2B%22%5Cn%22)%3B%0D%0Adump(%22From%20Web%20Page%20onload%20we%20have%20typeof%20anArray%3A%22%2Btypeof(anArray)%2B%22%5Cn%22)%3B%0D%0Adump(%22From%20Web%20Page%20onload%20we%20have%20typeof%20aFuncion%3A%22%2Btypeof(aFunction)%2B%22%5Cn%22)%3B%0D%0A%0D%0A%7D%0D%0A%3C%2Fscript%3E%0D%0A%3C%2Fhead%3E%0D%0A%3Cbody%3E%0D%0A%3Ch1%3ETest%20Web%20Page%20for%20testExtension%40mozilla.org%3C%2Fh1%3E%0D%0A%3C%2Fbody%3E%0D%0A%3C%2Fhtml%3E
+From test.xul we have typeof(anObject):undefined
+From test.xul we have typeof(anArray):undefined
+From test.xul we have typeof(aFunction):undefined
+========== Test Ends   ==========
+From Web Page onload we have typeof anObject:object
+From Web Page onload we have typeof anArray:object
+From Web Page onload we have typeof aFuncion:function
+========== Test Starts =========
+win is data:text/html;fileName=chrome%3A%2F%2Ftest%2Fcontent%2FtestWebPage.html,%3Chtml%3E%0D%0A%3Chead%3E%0D%0A%3Ctitle%3ETest%20Web%20Page%20for%20testExtension%40mozilla.org%3C%2Ftitle%3E%0D%0A%3Cscript%20type%3D%22application%2Fx-javascript%22%3E%0D%0Awindow.onload%20%3D%20function(event)%20%7B%0D%0A%20%20%20%20window.anObject%20%3D%20%7B%20aProperty%3A%20%22value%22%20%7D%3B%0D%0A%20%20%20%20window.anArray%20%3D%20%5B%22firstElement%22%2C%20%22secondElement%22%5D%3B%0D%0A%20%20%20%20window.aFunction%20%3D%20function%20aFunctionName%20()%20%7B%0D%0A%20%20%20%20%20%20%20%20var%20goAway%20%3D%20%22there%20is%20nothing%20to%20see%22%3B%0D%0A%20%20%20%20%20%20%20%20return%20goAway%3B%0D%0A%20%20%20%20%7D%0D%0A%0D%0Adump(%22From%20Web%20Page%20onload%20we%20have%20typeof%20anObject%3A%22%2Btypeof(anObject)%2B%22%5Cn%22)%3B%0D%0Adump(%22From%20Web%20Page%20onload%20we%20have%20typeof%20anArray%3A%22%2Btypeof(anArray)%2B%22%5Cn%22)%3B%0D%0Adump(%22From%20Web%20Page%20onload%20we%20have%20typeof%20aFuncion%3A%22%2Btypeof(aFunction)%2B%22%5Cn%22)%3B%0D%0A%0D%0A%7D%0D%0A%3C%2Fscript%3E%0D%0A%3C%2Fhead%3E%0D%0A%3Cbody%3E%0D%0A%3Ch1%3ETest%20Web%20Page%20for%20testExtension%40mozilla.org%3C%2Fh1%3E%0D%0A%3C%2Fbody%3E%0D%0A%3C%2Fhtml%3E
+From test.xul we have typeof(anObject):object
+From test.xul we have typeof(anArray):object
+From test.xul we have typeof(aFunction):object
+========== Test Ends   ==========
+</pre>
+</body>
+</html>
