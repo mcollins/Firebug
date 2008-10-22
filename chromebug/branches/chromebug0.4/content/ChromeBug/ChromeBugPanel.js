@@ -39,6 +39,7 @@ const fbBox = $("fbContentBox");
 const interfaceList = $("cbInterfaceList");
 const inspectClearProfileBar = $("fbToolbar");
 const appcontent = $("appcontent");
+const versionURL = "chrome://chromebug/content/branch.properties";
 
 const tabBrowser = $("content");
 const statusText = $("cbStatusText");
@@ -693,6 +694,10 @@ var ChromeBugWindowInfo = {
         this.xulWindowTagSeed = FBL.getUniqueId();
         this.fakeTabBrowser = $("content");
         this.fakeTabBrowser.browsers = [];
+        
+        this.fullVersion = Firebug.loadVersion(versionURL);
+        if (this.fullVersion)
+        	window.title = "Chromebug "+this.fullVersion;
     },
 
     watchXULWindows: function()

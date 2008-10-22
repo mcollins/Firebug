@@ -19,11 +19,11 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="chromebug"
         windowtype="chromebug:ui"
-        title="Chromebug"
+        title="Chromebug 0.4"
         width="600" height="400"
         persist="screenX,screenY,width,height"
         >
-
+ 
     <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
     <script type="application/x-javascript">
     var FBTrace = Components.classes["@joehewitt.com/firebug-trace-service;1"]
@@ -34,7 +34,7 @@
 
     <!-- BEGIN add scripts -->
     <script type="application/x-javascript" src="chrome://fb4cb/content/lib.js"/>
-
+ 
     <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
