@@ -98,10 +98,12 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
                 messageInfo.type, data, messageInfo.obj);
 
             if (this.tracePanel)
+            {
             	this.tracePanel.dump(new Firebug.TraceModule.TraceMessage(
             			messageInfo.type, data, messageInfo.obj));
-            else
-            	window.dump("tracePanel not ready for messages "+messageInfo.text+"\n");
+            	return false;
+            }
+            return false;
         }
     },
 
