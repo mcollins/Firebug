@@ -1192,13 +1192,20 @@ Firebug.Chromebug = extend(Firebug.Module,
            FBTrace.sysout("Firebug.Chromebug.initializeUI ", extensionPref+"="+token);
 
         $('fbInspectButton').setAttribute('collapsed', true);
-
-        var ssEnabled = prefs.getBoolPref("browser.sessionstore.enabled");
-        if (!ssEnabled)
+        
+        try
         {
-            $('reload-button').setAttribute('disabled', 'true');
-            $('reload-button').setAttribute("tooltiptext", "Set browser.sessionstore.enabled true and restart to allow reload current window");
-            FirebugChrome.setGlobalAttribute("cmd_reload", "checked", "false");
+        	var ssEnabled = prefs.getBoolPref("browser.sessionstore.enabled");
+        	if (!ssEnabled)
+        	{
+        		$('reload-button').setAttribute('disabled', 'true');
+        		$('reload-button').setAttribute("tooltiptext", "Set browser.sessionstore.enabled true and restart to allow reload current window");
+        		FirebugChrome.setGlobalAttribute("cmd_reload", "checked", "false");
+        	}
+        }
+        catch (err)
+        {
+        	FBTrace.sysout("getBoolPref FAILS for browser.sessionstore.enabled", err)
         }
          
         var defaultScriptPanelLocation = prefs.getCharPref("extensions.chromebug.defaultScriptPanelLocation");
@@ -1248,7 +1255,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     else
                     {
                        FBTrace.sysout("Firebug.Chromebug.setTimeout opening Firefox with no url\n");
-                       var ff = window.open();
+                       var ff = window.open("http://getfirebug.com","Firefox no URL" );
                        if (ff)
                              ff.home();
                     }
