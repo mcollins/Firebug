@@ -55,6 +55,7 @@ TRUNK=
                 <zipfileset dir="${chromelist.dir}" includes="defaults/**/*"/>
                 <zipfileset dir="${chromelist.dir}" includes="content/**/*"/>
                 <zipfileset dir="${chromelist.dir}" includes="locale/**/*"/>
+            	<zipfileset dir="${chromelist.dir}" includes="fb4cb/**/*"/>
                 <zipfileset dir="${chromelist.dir}" includes="license.txt"/>
                 <zipfileset dir="${chromelist.dir}" includes="chrome.manifest"/>
                 <zipfileset dir="${chromelist.dir}" includes="install.rdf"/>
