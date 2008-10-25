@@ -1193,21 +1193,6 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         $('fbInspectButton').setAttribute('collapsed', true);
         
-        try
-        {
-        	var ssEnabled = prefs.getBoolPref("browser.sessionstore.enabled");
-        	if (!ssEnabled)
-        	{
-        		$('reload-button').setAttribute('disabled', 'true');
-        		$('reload-button').setAttribute("tooltiptext", "Set browser.sessionstore.enabled true and restart to allow reload current window");
-        		FirebugChrome.setGlobalAttribute("cmd_reload", "checked", "false");
-        	}
-        }
-        catch (err)
-        {
-        	FBTrace.sysout("getBoolPref FAILS for browser.sessionstore.enabled", err)
-        }
-         
         var defaultScriptPanelLocation = prefs.getCharPref("extensions.chromebug.defaultScriptPanelLocation");
         if (defaultScriptPanelLocation)
         {
