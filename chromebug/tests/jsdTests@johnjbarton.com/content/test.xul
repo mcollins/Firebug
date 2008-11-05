@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script type="application/x-javascript" src="chrome://jsdtest/content/testUtil.js"></script>
+    
+    <script type="application/x-javascript" >
+    <![CDATA[
+
+function testAfterLoad(event)
+{
+    // Uncomment the next line to verify that the extension loaded
+    //win.alert("Test");
+	
+	var win = event.target.defaultView;
+    try {
+		var result = win.document.getElementById("result");
+		 
+  		win.sysout = function(msg) {
+  			var div = result.ownerDocument.createElement("li");
+  			div.innerHTML = msg;
+  			result.appendChild(div);
+  		}
+  		win.dump("set sysout on "+win.location+"\n");
+// ******************************************
+// TEST CODE HERE
+        
+       win.sysout("Test start "+win.location);
+       win.test();       
+       win.sysout("Test stop");
+
+// ******************************************
+
+    }
+    catch (e)
+    {
+    	if (win) win.sysout("FAILED "+e);
+    	else throw e;
+    }
+}
+
+function doLoad()
+{
+    var page = "chrome://jsdtest/content/testWebPage.html"
+    //var testWindow = Util.openChromeResourceAsContent(page, testAfterLoad);
+    var testWindow = Util.openURL(page, null);
+}
+
+    ]]>
+</script>
+    <commandset id="mainCommandSet">
+        <command id="cmd_testNow" oncommand="doLoad()"/>
+    </commandset>
+   <menupopup id="menu_ToolsPopup">
+            <menuitem id="menu_TestNow"
+                tooltiptext="Test Now"
+                label="Test Now" accesskey="t" command="cmd_testNow"/>
+    </menupopup>
+</overlay>

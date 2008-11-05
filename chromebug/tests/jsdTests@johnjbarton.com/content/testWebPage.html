@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>jsd Tests testExtension@mozilla.org</title>
+<script type="text/javascript">
+// Allow chrome urls into web pages. 
+netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+</script>
+ 
+<!-- predefined functions by TestSuite -->
+     <script type="text/javascript" src="jsd/shell.js"></script>
+<!-- The Test Case -->
+     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script>
+<style type="text/css">
+.testPass {
+    background-color: green;
+}
+.testFail {
+    background-color: red;
+}
+.testHeader {
+    font-size: large;
+}
+</style>
+<script type="text/javascript">
+
+window.log = function(msg)
+{
+	//window.console.log(msg);
+}
+window.output  = {
+heading: function(prefix)
+{
+	 var result = document.getElementById('result');
+	 var h = document.createElement('li');
+	 h.innerHTML = prefix;
+	 h.setAttribute("class", "testHeader");
+	 result.appendChild(h);
+	 this.testResult = document.createElement('ol');
+	 result.appendChild(this.testResult);
+},
+report: function(expr, successMessage, failedMessage)
+{
+    var line = document.createElement('li');
+    if (expr)
+    {
+        line.innerHTML = successMessage;
+        line.setAttribute("class", "testPass");
+    }
+    else
+    {
+        line.innerHTML = failedMessage;
+        line.setAttribute("class", "testFail");
+    }
+    
+    this.testResult.appendChild(line);
+}
+}
+//test defined by testcase
+window.addEventListener('load', test, false);
+</script>
+</head>
+<body>
+<h1>jsd Test Web Page</h1>
+ 
+<ol id="result"/>
+</body>
+</html>
