@@ -1,6 +1,6 @@
 <html><body><pre>
 
-Test Extension for Mozilla
+JSD Test Extension for Mozilla
 
 INSTALL:
 Create a profile using the bugzilla number
