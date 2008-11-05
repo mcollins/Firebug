@@ -4,12 +4,17 @@
 <script type="text/javascript">
 // Allow chrome urls into web pages. 
 netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+window.dump("hello\n");
 </script>
  
 <!-- predefined functions by TestSuite -->
      <script type="text/javascript" src="jsd/shell.js"></script>
 <!-- The Test Case -->
-     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script>
+<!--      <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script> -->
+     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-463239.js"></script>
+<script type="text/javascript">
+window.dump("hello2\n");
+</script>
 <style type="text/css">
 .testPass {
     background-color: green;
@@ -25,7 +30,7 @@ netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
 
 window.log = function(msg)
 {
-	//window.console.log(msg);
+    window.dump(msg);
 }
 window.output  = {
 heading: function(prefix)
