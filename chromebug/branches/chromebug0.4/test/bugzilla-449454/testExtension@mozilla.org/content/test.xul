@@ -2,133 +2,14 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script type="application/x-javascript" src="chrome://test/content/testUtil.js"></script>
+    
     <script type="application/x-javascript" >
     <![CDATA[
-const PrefService = Components.classes["@mozilla.org/preferences-service;1"];
-const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
-const prefs = PrefService.getService(nsIPrefBranch2);
 
-var appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].
-                    getService(Components.interfaces.nsIAppShellService);
-
-var hiddenWindow = appShellService.hiddenDOMWindow;
-
-
-var testOnScriptCreated ={
-        
-    run: function(win)
-    {
-        this.initialize(win);
-        
-        var jsd = this.startJSD(win); 
-        
-        this.hookCompilationUnits(jsd, win);
-        
-        this.createScript(win);
-        
-        this.removeHooks(jsd, win);
-    },
-    
-    initialize: function(win)
-    {
-        prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
-        prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
-        prefs.setBoolPref("nglayout.debug.disable_xul_fastload", true);
-        win.sysout("WARNING: set nglayout.debug.disable_xul_fastload  and nglayout.debug.disable_xul_cache true\n");
-    },
-        
-    getHiddenWindow: function()
-    {
-        var appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].getService(Components.interfaces.nsIAppShellService);
-        return appShellService.hiddenDOMWindow;
-    },
-    
-    startJSD: function(win)
-    {
-        var DebuggerService = Components.classes["@mozilla.org/js/jsd/debugger-service;1"];
-        var jsdIDebuggerService2 = Components.interfaces["jsdIDebuggerService2"]
-        jsd = DebuggerService.getService(jsdIDebuggerService2);
-
-		if (jsd)
-			win.sysout("Found jsdIDebuggerService2");
-		else
-			throw "No jsdIDebuggerService2";
-
-        if (jsd.isOn)
-             win.sysout("chromebug_command_line gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");        
-
-
-        jsd.on();
-        jsd.flags |= jsdIDebuggerService2.DISABLE_OBJECT_TRACE;
-        jsd.initAtStartup = true;
-
-        win.sysout("jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");         
-        return jsd;
-    },
-
-    hookCompilationUnits: function(jsd, win)
-    {
-    	jsd.compilationHook = 
-    	{
-			onTopLevelCompilation: function(frame, outerScript, innerScripts)
-			{
-				win.sysout("onTopLevelCompilation");
-				win.sysout("outerScript: "+outerScript.tag);
-				win.sysout("innerScripts");
-				while (innerScripts.hasMoreElements())
-    			{
-        			win.sysout(innerScripts.getNext().tag+", ");
-   				}
-			},
-	  		onEvalCompilation: function(frame, outerScript, nestedScripts)
-			{
-				win.sysout("onEvalCompilation");
-			},  
-			onGeneratedCompilation: function(frame, outerScript, nestedScripts)
-			{
-				win.sysout("onGeneratedCompilation");
-			}, 
-		}; 
-		jsd.scriptHook =
-        {
-            onScriptCreated: function(script)
-            {
-                 win.sysout("script created "+script.tag+" "+script.fileName+"\n");
-            },
-            onScriptDestroyed: function(script)
-            {
-                win.sysout("script destroyed "+script.tag+" "+script.fileName+"\n");
-            },
-        };
-        jsd.errorHook =
-        {
-            onError: function(message, fileName, lineNo, pos, flags, errnum, exc)
-            {
-                win.sysout("errorHook: "+message+"@"+ fileName +"."+lineNo+"\n");
-                return true;
-            }
-        }; 
-    },
-    
-    removeHooks: function(jsd, win)
-    {
-        jsd.scriptHook = null;
-        jsd.errorHook = null;
-        win.sysout("hooks removed\n");
-    },
-    
-    createScript: function(win)
-    {
-        win.sysout("createScript start\n");
-        var testFunction = "function testForScriptCreation() { return true; }";
-        var evalResult = eval(testFunction);
-        win.sysout("createScript end\n");
-    },
-};
 function testAfterLoad(event)
 {
-// Uncomment the next line to verify that the extension loaded
-//win.alert("Test");
+    // Uncomment the next line to verify that the extension loaded
+    //win.alert("Test");
 	
 	var win = event.target.defaultView;
     try {
@@ -139,12 +20,13 @@ function testAfterLoad(event)
   			div.innerHTML = msg;
   			result.appendChild(div);
   		}
+  		win.dump("set sysout on "+win.location+"\n");
 // ******************************************
 // TEST CODE HERE
         
-       win.sysout("Start test");
-       testOnScriptCreated.run(win);
-       win.sysout("Test stops");
+       win.sysout("Test start "+win.location);
+       win.test();       
+       win.sysout("Test stop");
 
 // ******************************************
 
@@ -152,17 +34,19 @@ function testAfterLoad(event)
     catch (e)
     {
     	if (win) win.sysout("FAILED "+e);
-        hiddenWindow.dump("Test threw: "+e+"\n");
+    	else throw e;
     }
 }
+
 function doLoad()
 {
-       hiddenWindow.testWindow = Util.openChromeResourceAsContent("chrome://test/content/testWebPage.html", testAfterLoad);
-       window.removeEventListener('load', doLoad, false);
+    var page = "chrome://test/content/testWebPage.html"
+    //var testWindow = Util.openChromeResourceAsContent(page, testAfterLoad);
+    var testWindow = Util.openURL(page, null);
 }
-window.addEventListener('load', doLoad, false);
+
     ]]>
-    </script>
+</script>
     <commandset id="mainCommandSet">
         <command id="cmd_testNow" oncommand="doLoad()"/>
     </commandset>

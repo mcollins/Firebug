@@ -5,8 +5,8 @@
 
     <Description about="urn:mozilla:install-manifest">
 
-        <em:id>testExtension@mozilla.org</em:id>
-        <em:name>Test Extension</em:name>
+        <em:id>jsdTests@johnjbarton.com</em:id>
+        <em:name>JSD Test Extension</em:name>
         <em:version>1</em:version>
   <!-- Firefox -->
     <em:targetApplication>
@@ -18,15 +18,9 @@
     </em:targetApplication>
 
         <em:description>Test</em:description>
-        <em:creator>An Extension Developer</em:creator>
+        <em:creator>johnjbarton</em:creator>
         <em:homepageURL></em:homepageURL>
-        <em:targetApplication>
-            <Description>
-                <em:id>mccoy@developer.mozilla.org</em:id>
-                <em:minVersion>0.5</em:minVersion>
-                <em:maxVersion>3.0.*</em:maxVersion>
-            </Description>
-        </em:targetApplication>
+ 
 
     </Description>
 

@@ -6,6 +6,11 @@ var Util = {
     {
         var content = this.getResource(chromeURL);
         var dataURL = this.getDataURLForContent(content, chromeURL);
+        openURL(dataURL, handleOnLoad);
+    },
+
+	openURL: function(dataURL, handleOnLoad)
+	{
         gBrowser.selectedTab = gBrowser.addTab(dataURL);
         if (handleOnLoad)
         {
@@ -45,7 +50,7 @@ var Util = {
     {
         // data:text/javascript;fileName=x%2Cy.js;baseLineNumber=10,<the-url-encoded-data>
         var uri = "data:text/html;";
-        uri += "fileName="+encodeURIComponent(url)+ ","
+        uri += "fileName="+encodeURIComponent(url)+ ",";
         uri += encodeURIComponent(content);
         return uri;
     }
