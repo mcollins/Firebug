@@ -254,6 +254,11 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     {
         return true; // Chromebug is always enabled for now
     },
+    
+    isAlwaysEnabled: function(context)
+    {
+        return true; // Chromebug is always enabled for now
+    },
 
     suspendFirebug: function()
     {
@@ -285,6 +290,7 @@ function overrideFirebugFunctions()
 
         Firebug.Spy.skipSpy = ChromeBugOverrides.skipSpy;
         Firebug.ActivableModule.isHostEnabled = ChromeBugOverrides.isHostEnabled;
+        Firebug.ActivableModule.isAlwaysEnabled = ChromeBugOverrides.isAlwaysEnabled;
         Firebug.suspendFirebug = ChromeBugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
 

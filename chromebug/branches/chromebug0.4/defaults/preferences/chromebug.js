@@ -33,8 +33,8 @@ pref("extensions.chromebug.showChromeMessages", false);
 pref("extensions.chromebug.showExternalErrors", false);
 pref("extensions.chromebug.showXMLHttpRequests", false);
 
-pref("extensions.chromebug.console.enableLocalFiles", "default");
-pref("extensions.chromebug.console.enableSystemPages", "default");
+pref("extensions.chromebug.console.enableLocalFiles", "enable");
+pref("extensions.chromebug.console.enableSystemPages", "enable");
 pref("extensions.chromebug.alwaysOpenTraceConsole", true);
 
 // HTML
@@ -65,15 +65,15 @@ pref("extensions.chromebug.showAdjacentLayout", false);
 pref("extensions.chromebug.showRulers", true);
 
 // Script
-pref("extensions.chromebug.script.enableLocalFiles", "default");
-pref("extensions.chromebug.script.enableSystemPages", "default");
+pref("extensions.chromebug.script.enableLocalFiles", "enable");
+pref("extensions.chromebug.script.enableSystemPages", "enable");
 
 // Net
 pref("extensions.chromebug.netFilterCategory", "all");
 pref("extensions.chromebug.disableNetMonitor", false);
 pref("extensions.chromebug.collectHttpHeaders", true);
-pref("extensions.chromebug.net.enableLocalFiles", "default");
-pref("extensions.chromebug.net.enableSystemPages", "default");
+pref("extensions.chromebug.net.enableLocalFiles", "enable");
+pref("extensions.chromebug.net.enableSystemPages", "enable");
 
 // External Editors
 pref("extensions.chromebug.externalEditors", "");
