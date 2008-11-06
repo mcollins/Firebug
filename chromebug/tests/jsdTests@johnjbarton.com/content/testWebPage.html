@@ -4,17 +4,19 @@
 <script type="text/javascript">
 // Allow chrome urls into web pages. 
 netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-window.dump("hello\n");
+
+var allTests = [];
 </script>
  
 <!-- predefined functions by TestSuite -->
      <script type="text/javascript" src="jsd/shell.js"></script>
 <!-- The Test Case -->
-<!--      <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script> -->
-     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-463239.js"></script>
-<script type="text/javascript">
-window.dump("hello2\n");
-</script>
+     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script>
+     <script type="text/javascript" >allTests.push(test);</script>
+      
+    <script type="text/javascript" src="jsd/jsdIScript/bugzilla-463239.js"></script>
+    <script type="text/javascript" >allTests.push(test);</script>
+     
 <style type="text/css">
 .testPass {
     background-color: green;
@@ -33,35 +35,40 @@ window.log = function(msg)
     window.dump(msg);
 }
 window.output  = {
-heading: function(prefix)
-{
-	 var result = document.getElementById('result');
-	 var h = document.createElement('li');
-	 h.innerHTML = prefix;
-	 h.setAttribute("class", "testHeader");
-	 result.appendChild(h);
-	 this.testResult = document.createElement('ol');
-	 result.appendChild(this.testResult);
-},
-report: function(expr, successMessage, failedMessage)
-{
-    var line = document.createElement('li');
-    if (expr)
+    heading: function(prefix)
     {
-        line.innerHTML = successMessage;
-        line.setAttribute("class", "testPass");
-    }
-    else
+	   var result = document.getElementById('result');
+	   var h = document.createElement('li');
+	   h.innerHTML = prefix;
+	   h.setAttribute("class", "testHeader");
+	   result.appendChild(h);
+	   this.testResult = document.createElement('ol');
+	   result.appendChild(this.testResult);
+	},
+
+    report: function(expr, successMessage, failedMessage)
     {
-        line.innerHTML = failedMessage;
-        line.setAttribute("class", "testFail");
-    }
+	    var line = document.createElement('li');
+	    if (expr)
+	    {
+	        line.innerHTML = successMessage;
+	        line.setAttribute("class", "testPass");
+	    }
+	    else
+	    {
+	        line.innerHTML = failedMessage;
+	        line.setAttribute("class", "testFail");
+	    }
     
-    this.testResult.appendChild(line);
+	    this.testResult.appendChild(line);
+	}
 }
+function runAllTests()
+{
+    for (var i = 0; i < allTests.length; i++)
+        allTests[i].call();
 }
-//test defined by testcase
-window.addEventListener('load', test, false);
+window.addEventListener('load', runAllTests, false);
 </script>
 </head>
 <body>

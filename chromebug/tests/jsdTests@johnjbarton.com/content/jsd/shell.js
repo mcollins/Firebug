@@ -76,9 +76,14 @@ var TestJSD = {
     
     doTest: function(win, prefix)
     {
-    	this.before(win);
+    	var spec = win.location.toString();
+    	if (spec.indexOf("http") == -1)
+    		this.before(win);
+    	
     	output.heading(prefix);
     	this.test(win);
-    	this.after(win);
+    	
+    	if (spec.indexOf("http") == -1)
+        	this.after(win);
     },
 }
