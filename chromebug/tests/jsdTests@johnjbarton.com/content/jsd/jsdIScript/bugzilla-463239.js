@@ -1,4 +1,4 @@
-window.dump("463239\n");
+log("463239\n");
  
 var Test463239 = TestJSD.extend
 (
@@ -38,8 +38,8 @@ var Test463239 = TestJSD.extend
 			{ 
 				onExecute: function breakpointHook(frame, type, rv)
 	        	{
-					window.dump("breakpointHook: "+type+" line "+frame.line+" pc:"+frame.pc+"\n");
-					window.dump("script: "+frame.script.functionSource+"\n");
+					log("breakpointHook: "+type+" line "+frame.line+" pc:"+frame.pc+"\n");
+					log("script: "+frame.script.functionSource+"\n");
 					return 1;
 	        	}
 			};
@@ -84,18 +84,18 @@ var Test463239 = TestJSD.extend
 	    	var script = Test463239.scriptForb463239;
 	    	if (script)
 	    	{
-	    		window.dump("scriptForb463239:"+ script.tag+"\n");
-	    		window.dump("scriptForb463239:"+ script.baseLineNumber+"-"+script.lineExtent+"\n");
+	    		log("scriptForb463239:"+ script.tag+"\n");
+	    		log("scriptForb463239:"+ script.baseLineNumber+"-"+script.lineExtent+"\n");
 	    		for (var i = 0; i < script.lineExtent; i++)
 	    		{
 	    			var jsdLine = i + script.baseLineNumber;
 	    			var pc = script.lineToPc(jsdLine, 1);
-	    			window.dump(jsdLine+" = "+pc+"\n");
+	    			log(jsdLine+" = "+pc+"\n");
 	    		}
 	    		script.setBreakpoint(21);
 	    	}
 	    	b463239({aString: "Hello World"});
-	    	window.dump("test 463239\n");
+	    	log("test 463239\n");
 	    }
 	}
 );

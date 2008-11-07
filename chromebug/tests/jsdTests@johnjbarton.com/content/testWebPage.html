@@ -1,22 +1,6 @@
 <html>
 <head>
 <title>jsd Tests testExtension@mozilla.org</title>
-<script type="text/javascript">
-// Allow chrome urls into web pages. 
-netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-
-var allTests = [];
-</script>
- 
-<!-- predefined functions by TestSuite -->
-     <script type="text/javascript" src="jsd/shell.js"></script>
-<!-- The Test Case -->
-     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script>
-     <script type="text/javascript" >allTests.push(test);</script>
-      
-    <script type="text/javascript" src="jsd/jsdIScript/bugzilla-463239.js"></script>
-    <script type="text/javascript" >allTests.push(test);</script>
-     
 <style type="text/css">
 .testPass {
     background-color: green;
@@ -29,10 +13,15 @@ var allTests = [];
 }
 </style>
 <script type="text/javascript">
+//Allow chrome urls into web pages. 
+netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+
+var allTests = [];
 
 window.log = function(msg)
 {
-    window.dump(msg);
+    if (window.location.toString().indexOf("http") != -1)
+    	window.console.log(msg);
 }
 window.output  = {
     heading: function(prefix)
@@ -65,11 +54,33 @@ window.output  = {
 }
 function runAllTests()
 {
-    for (var i = 0; i < allTests.length; i++)
-        allTests[i].call();
+    try 
+    {
+    	for (var i = 0; i < allTests.length; i++)
+        	allTests[i].call();
+    }
+    catch (exc)
+    {
+        window.dump("runAllTests failed: "+exc+"\n");
+        for (var p in exc)
+            window.dump("exc["+p+"]="+exc[p]+"\n");
+    }
 }
 window.addEventListener('load', runAllTests, false);
 </script>
+<!-- predefined functions by TestSuite -->
+     <script type="text/javascript" src="jsd/shell.js"></script>
+<!-- The Test Case -->
+     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script>
+     <script type="text/javascript" >allTests.push(test);</script>
+      
+    <script type="text/javascript" src="jsd/jsdIScript/bugzilla-463239.js"></script> 
+    <script type="text/javascript" >allTests.push(test);</script>
+    
+     <script type="text/javascript" src="jsd/jsdIDebuggerService2/shell.js"></script>
+    <script type="text/javascript" src="jsd/jsdIDebuggerService2/bugzilla-379410.js"></script>
+    <script type="text/javascript" >allTests.push(test);</script>
+    <!-- You can debug the code a bit by loading this page in Firefox directly -->
 </head>
 <body>
 <h1>jsd Test Web Page</h1>
