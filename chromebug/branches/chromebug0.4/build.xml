@@ -22,7 +22,7 @@ RELEASE=.0a8
 VERSION=0.2
 TRUNK=
         -->
-    <property file="branch.properties" />
+    <property file="content/chromebug/branch.properties" />
 
        <property name="DESCRIPTION" value="ChromeBug Firebug Extension Development"/>
 
@@ -55,7 +55,6 @@ TRUNK=
                 <zipfileset dir="${chromelist.dir}" includes="defaults/**/*"/>
                 <zipfileset dir="${chromelist.dir}" includes="content/**/*"/>
                 <zipfileset dir="${chromelist.dir}" includes="locale/**/*"/>
-            	<zipfileset dir="${chromelist.dir}" includes="fb4cb/**/*"/>
                 <zipfileset dir="${chromelist.dir}" includes="license.txt"/>
                 <zipfileset dir="${chromelist.dir}" includes="chrome.manifest"/>
                 <zipfileset dir="${chromelist.dir}" includes="install.rdf"/>
@@ -88,6 +87,7 @@ TRUNK=
                  <zipfileset dir="." includes="chrome.manifest" />
                  <zipfileset dir="." includes="content/**/*"/>
                  <zipfileset dir="." includes="components/**/*"/>
+            	 <zipfileset dir="." includes="fb4cb/**/*"/>
                  <zipfileset dir="." includes="defaults/**/*"/>
                  <zipfileset dir="." includes="icons/**/*"/>
                  <zipfileset dir="." includes="skin/**/*"/>
