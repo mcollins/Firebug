@@ -23,9 +23,9 @@ var Test462704 = TestJSD.extend
 						log(lineOut+"|"+lines[i]);
 					}
 					if (script.functionName == "b462704Spoiled")
-						output.report(script.lineExtent == 4, script.functionName+" lineExtent correct", script.functionName+" lineExtent ("+script.lineExtent+") incorrect");
+						output.report(script.lineExtent == 4, script.functionName+" lineExtent correct", "462704 FAILED "+script.functionName+" lineExtent ("+script.lineExtent+") incorrect");
 					if (script.functionName == "b462704WhileEndsMethod")
-						output.report(script.lineExtent == 4, script.functionName+" lineExtent correct", script.functionName+" lineExtent ("+script.lineExtent+") incorrect");
+						output.report(script.lineExtent == 4, script.functionName+" lineExtent correct", "462704 FAILED "+script.functionName+" lineExtent ("+script.lineExtent+") incorrect");
 				},
 				
 				onScriptDestroyed: function(script)

@@ -12,16 +12,19 @@
     font-size: large;
 }
 </style>
-<script type="text/javascript">
-//Allow chrome urls into web pages. 
-netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+<script>
 
 var allTests = [];
 
 window.log = function(msg)
 {
-    if (window.location.toString().indexOf("http") != -1)
+    //window.dump(msg);
+    if ((window.location.toString().indexOf("http") != -1) && window.console)
     	window.console.log(msg);
+	try {
+		output.heading(msg);
+	} catch (exc) {
+	}
 }
 window.output  = {
     heading: function(prefix)
@@ -37,6 +40,8 @@ window.output  = {
 
     report: function(expr, successMessage, failedMessage)
     {
+	    if (expr) window.dump(successMessage+"\n");
+	    else window.dump(failedMessage+"\n");
 	    var line = document.createElement('li');
 	    if (expr)
 	    {
@@ -73,7 +78,7 @@ window.addEventListener('load', runAllTests, false);
 <!-- The Test Case -->
      <script type="text/javascript" src="jsd/jsdIScript/bugzilla-462704.js"></script>
      <script type="text/javascript" >allTests.push(test);</script>
-      
+        
     <script type="text/javascript" src="jsd/jsdIScript/bugzilla-463239.js"></script> 
     <script type="text/javascript" >allTests.push(test);</script>
     
@@ -86,5 +91,6 @@ window.addEventListener('load', runAllTests, false);
 <h1>jsd Test Web Page</h1>
  
 <ol id="result"/>
+
 </body>
 </html>

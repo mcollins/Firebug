@@ -1,11 +1,11 @@
-window.dump("379410\n");
+ 
  
 var Test379410 = TestJSD.extend
 (
     TestJSD, 
     {
-        onScriptsCreated: [],  // All scripts coming through onScriptCreated
-        onScriptsCompiled: [], // All scripts coming through onCompilation
+        onScriptsCreated: {},  // All scripts coming through onScriptCreated
+        onScriptsCompiled: {}, // All scripts coming through onCompilation
         
         setHooks: function(jsd, win)
         {
@@ -15,7 +15,7 @@ var Test379410 = TestJSD.extend
             {
                 onScriptCreated: function(script)
                 {
-                    Test379410.onScriptsCreated.push(script.tag);
+                    Test379410.onScriptsCreated[script.tag] = script;
                     log("script created "+script.tag+" "+script.functionName+": "+script.baseLineNumber+"-"+script.lineExtent+":"+script.fileName+"\n");
                     var lines = script.functionSource.split("\n");
                     var lineNo = script.baseLineNumber;
@@ -46,18 +46,23 @@ var Test379410 = TestJSD.extend
             {
                 onCompilation: function(frame, compilationUnitType, outerScript)
                 {
-                    Test379410.onScriptsCompiled.push(outerScript.tag);
+                    Test379410.onScriptsCompiled[outerScript.tag] = outerScript;
                     log("onCompilation type:"+compilationUnitType+"\n");
                     log("outerScript: "+outerScript.tag);
                     log("innerScripts: ");
+                    var hiddenWindow = Test379410.getHiddenWindow();
+                    hiddenWindow.onScriptCompiled = [];
                     jsd.enumerateCompiledScripts(
                     {
                         enumerateScript: function sayIt(script)
                         {
-                            Test379410.onScriptCompiled.push(script.tag);
+                            var hw = Components.classes["@mozilla.org/appshell/appShellService;1"].getService(Components.interfaces.nsIAppShellService).hiddenDOMWindow;
+                            hw.onScriptCompiled.push(script);
                             log(script.tag+", ");
                         }
                     });
+                    for (var i = 0; i < hiddenWindow.onScriptCompiled.length; i++)
+                        Test379410.onScriptsCompiled[hiddenWindow.onScriptCompiled[i].tag] = hiddenWindow.onScriptCompiled[i];
                 },
             }; 
         },
@@ -66,12 +71,14 @@ var Test379410 = TestJSD.extend
         {
             jsd.scriptHook = null;
             jsd.interruptHook = null;
+            jsd.compilationHook = null;
             TestJSD.removeHooks(jsd, win);
-            Test379410.doAccounting();
+            //Test379410.doAccounting();
         },
         
         doAccounting: function()
         {
+            log("doAccounting");
             for (var tag in Test379410.onScriptsCreated)
             {
                 if (tag in Test379410.onScriptsCompiled)
@@ -82,35 +89,37 @@ var Test379410 = TestJSD.extend
                 }
                 else
                 {
-                    output.report( (tag in Test379410.onScriptsCompiled), "Found script "+tag+" in both lists", "Script "+tag+" Not in onCompilation list");
+                    output.report( (tag in Test379410.onScriptsCompiled), "379410 Found script "+tag+" in both lists", "379410 FAILED: Script "+tag+" Not in onCompilation list");
                 }
             }
             for (var tag in Test379410.onScriptsCompiled)
             {
-                output.report( (tag in Test379410.onScriptsCreated),  "Found script "+tag+" in both lists", "Script "+tag+" Not in onScriptCreated list");
+                output.report( (tag in Test379410.onScriptsCreated),  "379410 Found script "+tag+" in both lists", "379410 FAILED: Script "+tag+" Not in onScriptCreated list");
             }
+            Test379410.done = true;
+        },
+        
+        waitFor: function()
+        {
+            log("Test379410.waitFor "+Test379410.done+"\n");
+            return Test379410.done;
         },
         
         test: function()
         {
-            var testFunction = "function testForScriptCreation() { return true; }";
-            var evalResult = eval(testFunction);
+            Test379410.done = false;
+            var iframe = document.createElement('iframe');
+            iframe.setAttribute("id", "t379410");
+            var body = document.getElementsByTagName('body')[0];
+            body.appendChild(iframe);
             
-            var script = Test379410.scriptForb379410;
-            if (script)
-            {
-                window.dump("scriptForb379410:"+ script.tag+"\n");
-                window.dump("scriptForb379410:"+ script.baseLineNumber+"-"+script.lineExtent+"\n");
-                for (var i = 0; i < script.lineExtent; i++)
-                {
-                    var jsdLine = i + script.baseLineNumber; 
-                    var pc = script.lineToPc(jsdLine, 1);
-                    window.dump(jsdLine+" = "+pc+"\n");
-                }
-                script.setBreakpoint(21);
-            }
-            testForScriptCreation();
-            window.dump("test 379410\n");
+            iframe.addEventListener('load', this.doAccounting, true);
+             
+            iframe.setAttribute("src", "jsd/jsdIDebuggerService2/createScripts.html");
+            
+            window.dump("test 379410 exit\n");
+            
+            return this.waitFor;
         }
     }
 );

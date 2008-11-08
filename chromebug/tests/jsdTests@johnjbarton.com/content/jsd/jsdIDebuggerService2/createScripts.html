@@ -1,0 +1,77 @@
+<html>
+<head>
+<title>jsd Test case: All the possible ways to create a function using Javascript</title>
+<script>
+function inlineScriptTag_Step()
+{
+	return true;
+}
+function inlineScriptTag()
+{
+    inlineScriptTag_Step(); // set breakpoint on this line
+    inlineScriptTag_Step();
+}
+inlineScriptTag();
+</script>
+<script type="text/javascript" src="jsFile.js"></script>
+<script type="text/javascript">
+var src =""; 
+src += "function evalCall_Step()\n";
+src += "{\n";
+src += "	return true;\n";
+src += "}\n";
+src += "function evalCall()\n";
+src += "{\n";
+src += "    evalCall_Step(); // set breakpoint on this line\n";
+src += "    evalCall_Step();\n";
+src += "}\n";
+src += "evalCall();\n";
+eval(src); 
+</script>
+<script type="text/javascript">
+var src =""; 
+src += "function newFunction_Step()\n";
+src += "{\n";
+src += "	return true;\n";
+src += "}\n";
+src += "function newFunction()\n";
+src += "{\n";
+src += "    newFunction_Step(); // set breakpoint on this line\n";
+src += "    newFunction_Step();\n";
+src += "}\n";
+src += "newFunction();\n";
+var f = new Function(src); 
+</script>
+
+</head>
+<body>
+<h1>All the ways a function can be created in Javascript</h1>
+<ol>
+<li>Script tag in html file (inline script tag)</li>
+<li>Script tag with src attribute (javascript file)</li>
+<li>eval</li>
+<li>new Function()</li>
+<li>contentDocument.write(script) documentWriteInline</li>
+</ol>
+<iframe id="testFrame" src="about:blank" style="display:none"></iframe>
+
+</body>
+<script type="text/javascript">
+var src ="<script type='text/javascript'>"; 
+src += "function documentWriteInline_Step()\n";
+src += "{\n";
+src += "	return true;\n";
+src += "}\n";
+src += "function documentWriteInline()\n";
+src += "{\n";
+src += "    documentWriteInline_Step(); // set breakpoint on this line\n";
+src += "    documentWriteInline_Step();\n";
+src += "}\n";
+src += "documentWriteInline();\n";
+src += "</scr"+"ipt> \n ";
+var writeTarget = document.getElementById("testFrame");
+writeTarget.contentDocument.open();
+writeTarget.contentDocument.write(src);
+writeTarget.contentDocument.close();
+</script>
+</html>

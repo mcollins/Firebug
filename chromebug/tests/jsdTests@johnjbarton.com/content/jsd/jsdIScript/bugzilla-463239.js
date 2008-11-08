@@ -47,7 +47,7 @@ var Test463239 = TestJSD.extend
 		
 	    removeHooks: function(jsd, win)
 	    {
-	        jsd.scriptHook = null;
+	        jsd.scriptHook = null; 
 	        jsd.interruptHook = null;
 	        TestJSD.removeHooks(jsd, win);
 	    },
@@ -76,7 +76,7 @@ var Test463239 = TestJSD.extend
 	        src+= "{\n";
 	        src+= "    var condition  = (ex.fileName != null) && (ex.lineNumber != null); // Set a breakpoint here.\n";
 	        //src+= "    \n";
-	        src+= "    output.report(condition, 'success', 'failed');\n";
+	        src+= "    output.report(condition, 'Test463239 success', 'Test463239 FAILED');\n";
 	        src+= "}\n";
 	        src+= "}\n";
 	    	eval(src);

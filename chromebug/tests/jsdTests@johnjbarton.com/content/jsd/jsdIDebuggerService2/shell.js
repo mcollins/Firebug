@@ -23,13 +23,13 @@ TestJSD.startJSD = function(win)  // override
                 log("startJSD gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");        
 
             jsd.on();
-            jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
+            jsd.flags |= jsdIDebuggerService2.DISABLE_OBJECT_TRACE;
 
             log("jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");         
             return jsd;
         } 
         catch (exc)
-        {
+        {log("exc in startJSD "+exc);
             this.hasJSD = 1;
             return this.parentStartJSD(win);
         }

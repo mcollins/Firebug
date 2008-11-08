@@ -23,7 +23,7 @@ var TestJSD = {
     },
     
     startJSD: function(win)
-    {
+    { 
     	netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
         var DebuggerService = Components.classes["@mozilla.org/js/jsd/debugger-service;1"];
         var jsdIDebuggerService = Components.interfaces["jsdIDebuggerService"]
@@ -43,7 +43,6 @@ var TestJSD = {
         log("jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");         
         return jsd;
     },
-    
 
     setHooks: function(jsd, win)
     {
@@ -71,7 +70,13 @@ var TestJSD = {
     
     after: function(win)
     {
-        this.removeHooks(this.jsd, win);
+        if (TestJSD.waiter && TestJSD.waiter())
+        {
+            TestJSD.removeHooks(this.jsd, win);
+            clearInterval(TestJSD.afterInterval);
+        }
+        else
+            TestJSD.removeHooks(this.jsd, win);
     },
     
     doTest: function(win, prefix)
@@ -81,9 +86,21 @@ var TestJSD = {
     		this.before(win);
     	
     	output.heading(prefix);
-    	this.test(win);
+    	try {
+    	    TestJSD.waiter = this.test(win);  
+    	    log("TestJSD.waiter "+TestJSD.waiter)  	     
+    	}
+    	catch(exc)
+    	{
+    	    output.report(false, "", exc);
+    	}
     	
     	if (spec.indexOf("http") == -1)
-        	this.after(win);
+    	{
+    	    if (TestJSD.waiter)
+    	        TestJSD.afterInterval = setInterval(this.after, 200, win);
+    	    else
+    	        this.after(win);
+    	}
     },
 }
