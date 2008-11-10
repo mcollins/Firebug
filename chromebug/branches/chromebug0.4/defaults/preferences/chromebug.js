@@ -35,7 +35,6 @@ pref("extensions.chromebug.showXMLHttpRequests", false);
 
 pref("extensions.chromebug.console.enableLocalFiles", "enable");
 pref("extensions.chromebug.console.enableSystemPages", "enable");
-pref("extensions.chromebug.alwaysOpenTraceConsole", true);
 
 // HTML
 pref("extensions.chromebug.showCommentNodes", false);
@@ -80,7 +79,7 @@ pref("extensions.chromebug.externalEditors", "");
 
 // Trace  /*@explore*/
 pref("extensions.chromebug.enableTraceConsole", true);     /*@explore*/
-pref("extensions.chromebug.alwaysOpenTraceConsole", true);     /*@explore*/
+pref("extensions.chromebug.alwaysOpenTraceConsole", false);     /*@explore*/
 pref("extensions.chromebug.trace.maxMessageLength", 400);     /*@explore*/
 pref("extensions.chromebug.trace.enableScope", false);     /*@explore*/
 pref("extensions.chromebug.trace.enableJSConsoleLogs", false);     /*@explore*/
