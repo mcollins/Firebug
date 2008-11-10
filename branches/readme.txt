@@ -19,11 +19,6 @@ ant build.xml files use local.properties file that you must create.
  ant dev-setup
    expands install.rdf, and creates links for direct loading of source into firefox
 
- ant unexplore
-   Builds by copy to the branch to branches/eval and removes any line with /*@explore*/,
-   changes the branch.properties to remove X from the release number,
-   then builds with ant createBranchXPI.  Result in branch subdir "dist".
-
 -----
 
 
@@ -43,8 +38,7 @@ Setup for development by reading the source directly into Firefox:
    Go back to your source, eg firebug/branches/firebug1.2
       create local.properties, here's mine, adjust for your paths:
         install.dir=C:/Documents and Settings/John J. Barton/Application Data/Mozilla/Firefox/Profiles/firebug1.2
-        update.xpi.path=http://fireclipse.xucia.com/files/fireclipse
-        update.rdf.path=http://fireclipse.xucia.com/files/fireclipse
+        update.path=http://getfirebug.com/releases
 
  Links:
    ant dev-setup
