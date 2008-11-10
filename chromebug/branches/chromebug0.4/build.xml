@@ -143,7 +143,7 @@ TRUNK=
         <property name="UPDATEPATH" value="${update.path}" />
         <property name="dist_dir" location="${build_dir}/dist" />
         <property name="XPI" value="chromebug-${FULLVERSION}.xpi"/>
-        <property name="firebug.dir" value="../firebug/branches/firebug${FIREBUG.VERSION}"/>
+        <property name="firebug.dir" value="../../../firebug/branches/firebug${FIREBUG.VERSION}"/>
     </target>
 
     <target name="dev-setup" depends="create-extension-links, expand-templates">

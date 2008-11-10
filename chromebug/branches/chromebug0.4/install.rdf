@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>chromebug@johnjbarton.com</em:id>
-    <em:version>0.4.0a1</em:version>
+    <em:version>0.4.0a2</em:version>
     <em:type>2</em:type>
 
     <!-- Firefox -->
