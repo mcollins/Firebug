@@ -52,6 +52,7 @@ var f = new Function(src);
 <li>eval</li>
 <li>new Function()</li>
 <li>contentDocument.write(script) documentWriteInline</li>
+<li>document.createElement('script').appendChild(text)</li> 
 </ol>
 <iframe id="testFrame" src="about:blank" style="display:none"></iframe>
 
@@ -73,5 +74,24 @@ var writeTarget = document.getElementById("testFrame");
 writeTarget.contentDocument.open();
 writeTarget.contentDocument.write(src);
 writeTarget.contentDocument.close();
+</script>
+<script  type="text/javascript">
+var src = "";
+src += "function documentCreateElementAppendChild_Step()\n";
+src += "{\n";
+src += "    return true;\n";
+src += "}\n";
+src += "function documentCreateElementAppendChild()\n";
+src += "{\n";
+src += "    documentCreateElementAppendChild_Step(); // set breakpoint on this line\n";
+src += "    documentCreateElementAppendChild_Step();\n";
+src += "}\n";
+src += "documentCreateElementAppendChild();\n";
+ 
+var newScript = document.createElement('script'); 
+newScript.setAttribute('type', 'text/javascript');
+var textNode = document.createTextNode(src);
+newScript.appendChild(textNode);
+document.getElementsByTagName('head')[0].appendChild(newScript);
 </script>
 </html>
