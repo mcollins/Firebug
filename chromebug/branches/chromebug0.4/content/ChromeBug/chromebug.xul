@@ -36,11 +36,11 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/lib.js"/>
  
     <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/contextManager.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabContext.js"/>
 
 	<script type="application/x-javascript" src="chrome://fb4cb/content/tabCache.js"/>
