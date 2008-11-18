@@ -46,26 +46,7 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
     createTracePanel: function(context)
     {
     	var panel = context.getPanel("trace", false); // create if need be.
-    	/*
-        var fbTracePanelNode = panel.panelNode;
-        var doc = fbTracePanelNode.ownerDocument;
-        var iframe = doc.createElement("iframe");
-
-        var self = this;
-        iframe.addEventListener("load", function attachTraceConsoleToPanel()
-        {
-            var rootNode = iframe.contentDocument.getElementById("panelNode-traceConsole");
-            self.onLoadConsole(window, rootNode);
-        }, true);
-
-        iframe.setAttribute("id", "FirebugTraceConsoleIFrame");
-        iframe.setAttribute("src", "chrome://firebug/content/traceConsole.html");
-        iframe.setAttribute("height", "100%");
-        iframe.setAttribute("width", "100%");
-        iframe.setAttribute("frameborder", "0");
-        fbTracePanelNode.appendChild(iframe);
-        */
-        return panel;
+    	return panel;
     },
 
     onLoadConsole: function(win, rootNode)  // NOT CALLED
@@ -188,7 +169,20 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
 
     getOptionsMenuItems: function()
     { 
-    	 return this.controller.getOptionsMenuItems();
+    	 var items = this.controller.getOptionsMenuItems();
+    	 items.push(this.getAllOffOptionMenuItem());
+    	 return items;
+    },
+    
+    getAllOffOptionMenuItem: function()
+    {
+    	var self = this;
+        return {label: "AllOptionsOff",  nol10n: true, type: "checkbox", checked: false,
+            command: function allOff()
+        {
+        	FBTrace.sysout("getAllOffOptionMenuItem ", self.controller)
+        	self.controller.clearOptions();
+        }};
     },
     
     onPrefChange: function(optionName, optionValue)
