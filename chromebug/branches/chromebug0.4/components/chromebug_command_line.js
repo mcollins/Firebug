@@ -19,6 +19,7 @@ const iosvc = Components.classes["@mozilla.org/network/io-service;1"].getService
 const chromeReg = Components.classes["@mozilla.org/chrome/chrome-registry;1"].getService(Components.interfaces.nsIToolkitChromeRegistry);
 
 const  clh_contractID = "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug";
+const appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
 
 const  clh_CID = Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}");
 
@@ -81,7 +82,8 @@ const  chromebugCommandLineHandler = {
         if (jsd.isOn)
             return;
 
-        window.dump("chromebug_command_line gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
+        
+        window.dump("chromebug_command_line version: "+appInfo.version+" gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
 
         prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
         prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
