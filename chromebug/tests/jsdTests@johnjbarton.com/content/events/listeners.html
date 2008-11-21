@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>Event Tests testExtension@mozilla.org</title>
+<style type="text/css" src="../testIOStyle.css"></style>
+<script type="text/javascript" src="../testIO.js"></script>
+<script type="text/javascript">
+netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+function dumpEvents() 
+{
+	try 
+	{
+		var eventListenerService = Components.classes["@mozilla.org/eventlistenerservice;1"].getService(Components.interfaces.nsIEventListenerService);
+		var elt = document.getElementById("result");
+		var info = eventListenerService.getListenerInfoFor(elt);
+		if (info instanceof nsIVariant)
+		{
+			output.heading("typeof info: "+typeof info+"\n");
+		}
+	} 
+	catch (exc)	
+	{
+		output.heading("Failed to get eventListenerService: "+exc+"\n");
+	}
+}
+function setEvents()
+{
+	var result = document.getElementById("result");
+	result.addEventListener("click", function testOnClickInfo(event) { window.dump("result onclick\n"); }, true);
+}
+function doEvents()
+{
+    output.heading("doEvents\n");
+	setEvents();
+	dumpEvents();
+}
+window.addEventListener("load", doEvents, true);
+</script>
+    <!-- You can debug the code a bit by loading this page in Firefox directly -->
+</head>
+<body>
+<h1>Event Test Web Page</h1>
+ 
+<ol id="result"></ol>
+<p>
+To get the event service we need the service name:
+<code>@mozilla.org/eventlistenerservice;1</code>
+and the interface name:
+<code>nsIEventListenerService</code>, for use in a call like
+<pre>
+const eventListenerService = Cc["@mozilla.org/eventlistenerservice;1"].getService(Ci.nsIEventListenerService);
+</pre>
+</p>
+</body>
+</html>
