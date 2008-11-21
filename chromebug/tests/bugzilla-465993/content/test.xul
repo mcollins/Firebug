@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script type="application/x-javascript" src="chrome://jsdtest/content/testUtil.js"></script>
+    
+    <script type="application/x-javascript" >
+    <![CDATA[
+function doLoad()
+{
+    var testWindow = window.open("https://bugzilla.mozilla.org/show_bug.cgi?id=465993");
+}
+    ]]>
+</script>
+    <commandset id="mainCommandSet">
+        <command id="cmd_testNow" oncommand="doLoad()"/>
+    </commandset>
+   <menupopup id="menu_ToolsPopup">
+            <menuitem id="menu_TestNow"
+                tooltiptext="Test Now"
+                label="Test Now" accesskey="t" command="cmd_testNow"/>
+    </menupopup>
+</overlay>
