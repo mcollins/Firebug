@@ -9,6 +9,9 @@ function doLoad()
 {
     var testWindow = window.open("https://bugzilla.mozilla.org/show_bug.cgi?id=465993");
 }
+/* Both of these fail */
+setTimeout(doLoad, 100);
+//window.addEventListener('load', doLoad, true);
     ]]>
 </script>
     <commandset id="mainCommandSet">
