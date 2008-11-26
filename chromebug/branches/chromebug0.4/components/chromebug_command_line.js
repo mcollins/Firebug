@@ -10,6 +10,7 @@ const  nsIFactory            = Components.interfaces.nsIFactory;
 const  nsIModule             = Components.interfaces.nsIModule;
 const  nsIWindowWatcher      = Components.interfaces.nsIWindowWatcher;
 const  jsdIExecutionHook 	 = Components.interfaces.jsdIExecutionHook;
+const  jsdIFilter            = Components.interfaces.jsdIFilter;
 
 const PrefService = Components.classes["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
@@ -93,11 +94,38 @@ const  chromebugCommandLineHandler = {
         jsd.on();
         jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
         jsd.initAtStartup = true;
+        
+        this.setJSDFilters(jsd);
         this.hookJSDContexts(jsd, window);
 
         window.dump("chromebug_command_line sets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
     },
 
+    setJSDFilters: function(jsd)
+    {
+        var filterChromebug = 
+        {
+             globalObject: null,
+                flags: jsdIFilter.FLAG_ENABLED,
+                urlPattern: "chrome://chromebug/*",
+                startLine: 0,
+                endLine: 0
+            };
+        var filterfb4cb = {
+                globalObject: null,
+                flags: jsdIFilter.FLAG_ENABLED,
+                urlPattern: "chrome://fb4cb/*",
+                startLine: 0,
+                endLine: 0
+            };
+        jsd.appendFilter(filterChromebug);
+        jsd.appendFilter(filterfb4cb);
+        jsd.enumerateFilters({ enumerateFilter: function(filter)
+            {
+                window.dump("chromebug_command_line filter "+filter.urlPattern+"\n");
+            }});
+    },
+    
     hookJSDContexts: function(jsd, hiddenWindow)
     {
         // This is a minature version of the double hook in firebug-service.js
