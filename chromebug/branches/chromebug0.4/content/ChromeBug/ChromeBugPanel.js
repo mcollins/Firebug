@@ -605,7 +605,7 @@ var ChromeBugWindowInfo = {
                     FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell xul_win.docShell has no nsIInterfaceRequestor\n");
             }
             else
-                FBTrace.dumpStack("Firebug.Chromebug.getDOMWindowByDocShell xul_win has no docShell", xul_win);
+                FBTrace.dumpStack("Firebug.Chromebug.getDOMWindowByDocShell xul_win has no docShell");
         }
         catch (exc)
         {
@@ -755,12 +755,15 @@ var ChromeBugWindowInfo = {
     {
         if (!xul_window.docShell)
             FBTrace.dumpProperties("Firebug.Chromebug.addXULWindow no docShell", xul_window);
+        
         var outerDOMWindow = this.getDOMWindowByDocShell(xul_window.docShell);
 
         if (outerDOMWindow == document.defaultView)
-        {
             return;  // This is my life we're talking about.
-        }
+
+        if (outerDOMWindow.location.href == "chrome://fb4cb/content/traceConsole.xul")
+            return; // don't track our own tracing console.
+        window.dump("outerDOMWindow.location.href "+outerDOMWindow.location.href+"\n");
 
         this.xulWindows.push(xul_window);
         var newTag = "tag-"+this.xulWindowTagSeed++;
@@ -931,8 +934,17 @@ var ChromeBugWindowInfo = {
             {
                 var tag = this.getXULWindowTag(xul_win);
                 FBTrace.sysout("Chromebugpanel.onWindowTitleChange tag:"+tag+" to \'"+newTitle+"\'\n");
+                
+                var outerDOMWindow = this.getDOMWindowByDocShell(xul_win.docShell);
+
+                if (outerDOMWindow.location.href == "chrome://fb4cb/content/traceConsole.xul")
+                {
+                    window.dump("onWindowTitleChange ignoring outerDOMWindow.location.href "+outerDOMWindow.location.href+"\n");
+                    this.onCloseWindow(xul_win);  // don't track our own tracing console.
+                }
+                
             }
-            catch (exc) {dump("ChromeBugPanel.onWindowTitleChange", exc);}   // sometimes FBTrace is not defined?
+            catch (exc) {window.dump("ChromeBugPanel.onWindowTitleChange:"+exc+"\n");}   // sometimes FBTrace is not defined?
         }
         return;
     },
