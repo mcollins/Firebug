@@ -42,7 +42,8 @@ function doLoad()
 {
     var page = "chrome://jsdtest/content/testWebPage.html"
     //var testWindow = Util.openChromeResourceAsContent(page, testAfterLoad);
-    var testWindow = Util.openURL(page, null);
+    //var testWindow = Util.openURL(page, null);
+    window.open("chrome://jsdtest/content/testWindow.xul");
 }
 
     ]]>

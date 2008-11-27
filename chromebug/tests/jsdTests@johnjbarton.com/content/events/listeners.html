@@ -10,11 +10,35 @@ function dumpEvents()
 	try 
 	{
 		var eventListenerService = Components.classes["@mozilla.org/eventlistenerservice;1"].getService(Components.interfaces.nsIEventListenerService);
-		var elt = document.getElementById("result");
+		var elt = document.getElementById("button");
 		var info = eventListenerService.getListenerInfoFor(elt);
-		if (info instanceof nsIVariant)
+		if (info instanceof Components.interfaces.nsIVariant)
 		{
-			output.heading("typeof info: "+typeof info+"\n");
+			output.heading("nsIVariant typeof info: "+typeof info+"\n");
+		}
+		else if (info.wrappedJSObject) 
+		{
+		    output.heading("wrappedJSObject typeof info: "+typeof info.wrappedJSObject+"\n");
+		}
+		else
+		{
+			output.heading("info "+info+"\n");
+			output.heading("info.length "+info.length+"\n");
+			for (var i = 0; i < info.length; i++)
+			{
+				var anInfo = info[i];
+				if (anInfo instanceof Components.interfaces.nsIEventListenerInfo)
+					output.heading("info["+i+"] "+anInfo);
+				for (var p in info[i])
+					output.heading('info['+i+"]["+p+']='+info[i][p]);
+				s = "info["+i+"]";
+				 s += " type: " + anInfo.type;
+				 s += ", stringValue: " + anInfo.stringValue;
+				 s += ", capturing:" + anInfo.capturing;
+				 s += ", allowsUntrusted: " + anInfo.allowsUntrusted;
+				 s += ", inSystemEventGroup: " + anInfo.inSystemEventGroup + "\n";
+				 output.heading(s);
+			}
 		}
 	} 
 	catch (exc)	
@@ -24,8 +48,12 @@ function dumpEvents()
 }
 function setEvents()
 {
-	var result = document.getElementById("result");
-	result.addEventListener("click", function testOnClickInfo(event) { window.dump("result onclick\n"); }, true);
+	var result = document.getElementById("button");
+	result.addEventListener("click", function testOnClickInfo(event) 
+	{ 
+	    output.heading("button onclick\n");
+		window.dump("result onclick\n"); 
+	}, true);
 }
 function doEvents()
 {
@@ -39,7 +67,7 @@ window.addEventListener("load", doEvents, true);
 </head>
 <body>
 <h1>Event Test Web Page</h1>
- 
+<button id="button">Test me</button> 
 <ol id="result"></ol>
 <p>
 To get the event service we need the service name:

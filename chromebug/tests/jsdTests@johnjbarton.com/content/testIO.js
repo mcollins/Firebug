@@ -43,7 +43,7 @@ window.output  = {
     }
 }
 function runAllTests()
-{
+{window.dump("runAlltests\n")
     try 
     {
         for (var i = 0; i < allTests.length; i++)
@@ -56,4 +56,5 @@ function runAllTests()
             window.dump("exc["+p+"]="+exc[p]+"\n");
     }
 }
+window.dump("test io adding event listeners \n")
 window.addEventListener('load', runAllTests, false);

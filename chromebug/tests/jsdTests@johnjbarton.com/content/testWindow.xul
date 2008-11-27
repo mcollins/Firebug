@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<window
+    id="test-window"
+    title="Firebug 2.0 Infrastructure Tests"
+    orient="horizontal"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<groupbox flex="1">
+  <caption label="Tests"/>
+  <browser type="content" src="chrome://jsdtest/content/testSelector.html" flex="1"/>
+</groupbox>
+</window>
+
+
