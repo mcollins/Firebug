@@ -142,8 +142,6 @@ Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
         var htmlPanel = context.chrome.selectPanel("html");
         this.previousObject = htmlPanel.selection;
 
-        FirebugChrome.focus();
-
         htmlPanel.panelNode.focus();
         htmlPanel.startInspecting();
 

@@ -22,10 +22,10 @@
    <menupopup id="menu_ToolsPopup">
             <menuitem id="menu_OpenChromeBugNow" insertbefore="menu_firebug"
                 tooltiptext="ChromeBug: Firebug for Chrome"
-                label="Open ChromeBug Now" accesskey="b" command="cmd_openChromeBugNow"/>
+                label="Use firefox.exe -chrome chrome://chromebug/content/chromebug.xul not Open ChromeBug Now" accesskey="b" command="cmd_openChromeBugNow"/>
             <menuitem id="menu_OpenChromeBugAlways" insertbefore="menu_firebug"
                 tooltiptext="When Checked, Start ChromeBug Before Firefox" autocheck="false"
-                label="Open ChromeBug Always" command="cmd_openChromeBugAlways" type="checkbox"/>
+                label="Use firefox.exe -chrome chrome://chromebug/content/chromebug.xul not Open ChromeBug Always" command="cmd_openChromeBugAlways" type="checkbox"/>
             <menuseparator insertbefore="menu_firebug"/>
     </menupopup>
 </overlay>
