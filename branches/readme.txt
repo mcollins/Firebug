@@ -3,7 +3,13 @@ eval -- release source (no tracing)
 firebug1.1 -- stable source with tracing
 firebug1.2 -- feature-add source with tracing
 explore -- abandoned
+trunk -- abandoned
 performance -- tests comparing versions and features
+-----
+
+Highly recommended:
+https://developer.mozilla.org/En/Setting_up_extension_development_environment
+
 -----
 Building:
 
