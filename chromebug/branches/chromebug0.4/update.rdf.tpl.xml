@@ -7,20 +7,20 @@
     <r:Seq>
       <r:li>
         <r:Description>
-          <version>@FULLVERSION@</version>
+          <version>@VERSION@@RELEASE@</version>
           <targetApplication>
             <r:Description>
               <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
               <minVersion>0.8</minVersion>
               <maxVersion>3.9</maxVersion>
-              <updateLink>@UPDATEPATH@/chromebug-@FULLVERSION@.xpi</updateLink>
+              <updateLink>http://getfirebug.com/releases/chromebug/chromebug-@VERSION@@RELEASE@.xpi</updateLink>
             </r:Description>
           </targetApplication>
         </r:Description>
       </r:li>
     </r:Seq>
   </updates>
-  <version>@FULLVERSION@</version>
-  <updateLink>@UPDATEPATH@/chromebug-@FULLVERSION@.xpi</updateLink>
+  <version>@VERSION@@RELEASE@</version>
+  <updateLink>http://getfirebug.com/releases/chromebug/chromebug-@VERSION@@RELEASE@.xpi</updateLink>
 </r:Description>
 </r:RDF>
