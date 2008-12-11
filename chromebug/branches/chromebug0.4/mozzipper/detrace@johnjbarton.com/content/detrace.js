@@ -99,7 +99,7 @@ var DetraceZipperExtension = {
                 tmp.createUnique(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);
         
             return tmp;
-     
+        }
         catch (e)
         {
             FBTrace.dumpProperties("detrace.getTmpFolder FAILS "+e, tmp);            

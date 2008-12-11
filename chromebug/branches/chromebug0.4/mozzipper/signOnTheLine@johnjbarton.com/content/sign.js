@@ -40,8 +40,12 @@ var SignZipperExtension = {
                 window.dump("SignZipperExtension found install.rdf  "+i+") "+zip.files[i].path+"\n");
             }
             if (reBranchProperties.test(filename))
-            {
-                this.loadProperties(zip.files[i], zip);
+            {FBTrace.sysout("SignZipperExtension this.propertiesLoaded "+this.propertiesLoaded+"\n"); 
+                if (!this.propertiesLoaded)
+                    this.loadProperties(zip.files[i], zip);
+                else
+                    window.dump("SignZipperExtension got properities, skipping "+filename+"\n"); 
+                this.propertiesLoaded = true;
             }
         }
     },
