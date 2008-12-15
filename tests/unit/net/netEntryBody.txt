@@ -1,0 +1,1 @@
+Response for netEntryBody.html test.

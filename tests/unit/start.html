@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script>
+if (fireunit.forceHttp()) {
+    fireunit.runTests( 
+        "net/netPanel.html",        // Existence of net panel
+        "net/netEntry.html",        // Existence of a simple entry in net panel
+        "net/netEntryBody.html",    // Net entry can be expanded and info body is there 
+        "net/issue176.html",        // Filter for Flash requests
+        "net/issue601.html",        // Response Tab
+        "net/issue1256.html",       // Params Tab
+        //"net/issue372.html",        // Post Tab
+        "net/issue700.html",        // HTML Tab
+        "net/issue1299.html",       // Firebug must cache even responses coming from FF cache
+        //"net/issue1308.html",       // + sign in POST (proper encoding, Copy Location With Parameters)
+        "net/netPanelListener.html",     // Test listener for Firebug.NetMonitor
+        "net/netInfoBodyListener.html",  // Test listener for Firebug.NetMonitor.NetInfoBody 
+        "net/netSpyListener.html",       // Test listener for Firebug.Spy
+        "net/netCacheListener.html",      // Test listener for Firebug.Spy
+        "net/issue372.html"        // Post Tab
+    );
+}
+</script>
+</head>
+<body>
+</body>
+</html>
