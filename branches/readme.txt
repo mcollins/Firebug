@@ -1,10 +1,14 @@
 http://fbug.googlecode.com/svn/branches/
-eval -- release source (no tracing)
-firebug1.1 -- stable source with tracing
-firebug1.2 -- feature-add source with tracing
+eval -- abandoned
+firebug1.1 -- abandoned
+firebug1.2 -- adddons.mozilla.org version
+firebug1.3 -- support for avoiding double load, targets FF3.0.4
+firebug1.4 -- targets FF 3.1
+firebug1.5 -- targets FF 3.2, support for eventlistenerInfo
 explore -- abandoned
 trunk -- abandoned
 performance -- tests comparing versions and features
+diff -- extension for recording edits
 -----
 
 Highly recommended:
