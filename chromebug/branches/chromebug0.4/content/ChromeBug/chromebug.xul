@@ -110,7 +110,7 @@
                  disabled="true"/>
         <command id="cmd_closeWindow" oncommand="window.close()"/>
         <command id="cmd_toggleCategoryBrowser" oncommand="Firebug.Chromebug.CategoryBrowser.toggleCategoryBrowser()"/>
-        <command id="cmd_firefox" oncommand="window.open();"/>
+        <command id="cmd_firefox" oncommand="window.open().home();"/>
         <command id="cmd_chromeList" oncommand="Firebug.Chromebug.chromeList()"/>
         <command id="cmd_xulExplorer" oncommand="Firebug.Chromebug.openXULExplorer()"/>
         <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.CategoryBrowser.toggleCategoryBrowser()"/>
