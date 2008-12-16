@@ -14,3 +14,14 @@ var FBL = browser.FBL;
 var FirebugChrome = browser.FirebugChrome;
 var FirebugContext = browser.FirebugContext;
 var FBTrace = browser.FBTrace;
+
+// Handle unexpected errors on the page.
+window.onerror = function(errType, errURL, errLineNum) {
+    var path = window.location.pathname;
+    var fileName = path.substr(path.lastIndexOf("/") + 1);
+    var errorDesc = errType + " (" + errLineNum + ")" + " " + errURL;
+    FBTrace.sysout(fileName + " ERROR " + errorDesc);
+    fireunit.ok(false, errorDesc);
+    fireunit.testDone();
+    return false;
+}
