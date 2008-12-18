@@ -1,0 +1,12 @@
+<!doctype html>
+<title>issue 241</title>
+<script>
+function addScript(mode) {
+var head = document.getElementsByTagName("head")[0],
+script = document.createElement("script");
+script.src = "data:application/javascript,alert('firebug')";
+head.appendChild(script);
+}
+</script>
+<div><button onclick="addScript()">Add script with data uri</button></div>
+<div><button onclick="">Just a button with an empty onclick handler</button></div>
