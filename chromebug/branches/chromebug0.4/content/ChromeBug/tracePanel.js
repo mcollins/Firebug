@@ -74,9 +74,6 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
             // type is controlled by FBTrace.prefDomain in the XULWindow that sent the trace message
             if (messageInfo.type != "extensions.firebug")  // TODO selectable 
                 return;
-             
-            var message = new Firebug.TraceModule.TraceMessage(
-                messageInfo.type, data, messageInfo.obj);
 
             if (this.tracePanel)
             {
