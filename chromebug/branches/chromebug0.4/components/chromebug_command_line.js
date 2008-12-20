@@ -118,11 +118,20 @@ const  chromebugCommandLineHandler = {
                 startLine: 0,
                 endLine: 0
             };
+        var passDebuggerHalter = {
+                globalObject: null,
+                flags: jsdIFilter.FLAG_ENABLED | jsdIFilter.FLAG_PASS,
+                urlPattern: "*/debuggerHalter.js",
+                startLine: 0,
+                endLine: 0
+            };
+        jsd.appendFilter(passDebuggerHalter); // first in, first compared
         jsd.appendFilter(filterChromebug);
         jsd.appendFilter(filterfb4cb);
+
         jsd.enumerateFilters({ enumerateFilter: function(filter)
             {
-                window.dump("chromebug_command_line filter "+filter.urlPattern+"\n");
+                window.dump("chromebug_command_line filter "+filter.urlPattern+" "+filter.flags+"\n");
             }});
     },
     
