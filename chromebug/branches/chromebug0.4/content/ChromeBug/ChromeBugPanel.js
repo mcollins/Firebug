@@ -1192,19 +1192,33 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
             Firebug.Chromebug.toggleIntroduction();
 
+        this.prepareForCloseEvents();
+        this.restoreDefaultPanel();
+        this.initializeDebugger();
+        this.restructureUI();
+        
+        if (FBTrace.DBG_INITIALIZE)
+            FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
+        ChromeBugWindowInfo.watchXULWindows(); // Start creating contexts
+        
+        this.openFirstWindow();
+    },
+    
+    prepareForCloseEvents: function()
+    {
         // Prepare for close events
         var chromeBugDOMWindow = document.defaultView; // or window.parentNode.defaultView
         this.onUnloadTopWindow = bind(this.onUnloadTopWindow, this); // set onUnload hook on the domWindow of our chromebug
         chromeBugDOMWindow.addEventListener("close", this.onUnloadTopWindow, true);
-
-        var extensionPref = "extensions.chromebug.extensions";
-        var token = prefs.getCharPref(extensionPref);
-
-        if (FBTrace.DBG_INITIALIZE)
-           FBTrace.sysout("Firebug.Chromebug.initializeUI ", extensionPref+"="+token);
-
-        $('fbInspectButton').setAttribute('collapsed', true);
-        
+    },
+    
+    restructureUI: function()
+    {
+    	$('fbInspectButton').setAttribute('collapsed', true);
+    },
+    
+    restoreDefaultPanel: function()
+    {
         var defaultScriptPanelLocation = prefs.getCharPref("extensions.chromebug.defaultScriptPanelLocation");
         if (defaultScriptPanelLocation)
         {
@@ -1220,8 +1234,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         	if (FBTrace.DBG_INITIALIZE)
         		FBTrace.sysout("initializeUI NO defaultScriptPanelLocation ");
         }
-        
-
+    },
+    
+    initializeDebugger: function()
+    {
         fbs.DBG_FBS_FF_START = true;
 
         if (FBTrace.DBG_STACK || FBTrace.DBG_LINETABLE || FBTrace.DBG_SOURCEFILES)
@@ -1231,10 +1247,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Debugger.wrappedJSObject = Firebug.Debugger;
         var jsdStatus = fbs.registerDebugger(Firebug.Debugger);
 
-        // Start creating contexts
-
-        ChromeBugWindowInfo.watchXULWindows();
-
+    },
+    
+    openFirstWindow: function()
+    {
         var ChromeBugCommandLineHandler = Components.classes['@mozilla.org/commandlinehandler/general-startup;1?type=chromebug'].
             getService(Components.interfaces.nsICommandLineHandler);
         var opener = ChromeBugCommandLineHandler.wrappedJSObject;
