@@ -103,6 +103,13 @@ const  chromebugCommandLineHandler = {
 
     setJSDFilters: function(jsd)
     {
+        var passDebuggerHalter = {
+                globalObject: null,
+                flags: jsdIFilter.FLAG_ENABLED | jsdIFilter.FLAG_PASS,
+                urlPattern: "*/debuggerHalter.js",
+                startLine: 0,
+                endLine: 0
+            };
         var filterChromebug = 
         {
              globalObject: null,
@@ -118,16 +125,17 @@ const  chromebugCommandLineHandler = {
                 startLine: 0,
                 endLine: 0
             };
-        var passDebuggerHalter = {
-                globalObject: null,
-                flags: jsdIFilter.FLAG_ENABLED | jsdIFilter.FLAG_PASS,
-                urlPattern: "*/debuggerHalter.js",
-                startLine: 0,
-                endLine: 0
-            };
+        var filterTrace = {
+        		 globalObject: null,
+                 flags: jsdIFilter.FLAG_ENABLED,
+                 urlPattern: "chrome://firebug/content/trace*",
+                 startLine: 0,
+                 endLine: 0
+             };	
         jsd.appendFilter(passDebuggerHalter); // first in, first compared
         jsd.appendFilter(filterChromebug);
         jsd.appendFilter(filterfb4cb);
+        jsd.appendFilter(filterTrace);
 
         jsd.enumerateFilters({ enumerateFilter: function(filter)
             {
