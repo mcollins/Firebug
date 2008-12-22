@@ -276,9 +276,23 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
 };
 
 ChromeBugOverrides.commandLine = {
+		
+		isAttached: function(context)
+	    {
+	FBTrace.sysout("ChromebugOverride isAttached for "+context.window, context.window);
+	    	return context && context.window && context.window._FirebugCommandLine;
+	    },
+	    
 		evaluate: function(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction)
 		{
 			FBTrace.sysout('ChromebugOverrides.commandLine context.window '+context.window.location+" targetWindow "+targetWindow);
+			
+			var halter = context.window.document.getElementById("chromebugHalter");
+			if (halter)
+				context.window.document.removeElement(halter);
+			
+			halter = addScript(context.window.document, "chromebugHalter", "debugger;");
+			/*
 			Firebug.Debugger.halt(function evaluateInAFrame(frame)
 			{
 				context.currentFrame = frame;
@@ -286,6 +300,7 @@ ChromeBugOverrides.commandLine = {
 				
 				Firebug.CommandLine.evaluateInDebugFrame(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction);
 			});
+			*/
 		},
 		onCommandLineFocus: function(event)
 		{
@@ -317,9 +332,9 @@ function overrideFirebugFunctions()
         Firebug.suspendFirebug = ChromeBugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
         
-        Firebug.CommandLine.evaluate = ChromeBugOverrides.commandLine.evaluate;
-        Firebug.CommandLine.onCommandLineFocus = ChromeBugOverrides.commandLine.onCommandLineFocus;
-
+        //Firebug.CommandLine.evaluate = ChromeBugOverrides.commandLine.evaluate;
+        //Firebug.CommandLine.onCommandLineFocus = ChromeBugOverrides.commandLine.onCommandLineFocus;
+        Firebug.CommandLine.isAttached = ChromeBugOverrides.commandLine.isAttached;
         // Trace message coming from Firebug should be displayed in Chromebug's panel
         //
         Firebug.setPref("extensions.firebug", "enableTraceConsole", "panel");

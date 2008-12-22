@@ -481,6 +481,7 @@ var ChromeBugWindowInfo = {
             context.detached = true;
             context.originalChrome = null;
             context.global = domWindow;
+            context.windows.push(domWindow); // since we don't watchWindows in chromebug
 
             var persistedState = FBL.getPersistedState(context, "script");
             if (!persistedState.enabled)  // for now default all chromebug window to enabled.
@@ -863,6 +864,8 @@ var ChromeBugWindowInfo = {
         }
         //outerDOMWindow.addEventListener("unload", bind(context.destructContext, context), true);
 
+        outerDOMWindow.addEventListener("keypress", bind(this.keypressToBreakIntoWindow, this, context), true);
+        
         if (xul_window.docShell instanceof nsIWebProgress)
         {
             var progressListener = new ChromeBugProgressListener(xul_window, this);
@@ -874,6 +877,30 @@ var ChromeBugWindowInfo = {
         return newTag;
     },
 
+    keypressToBreakIntoWindow: function(event, context)
+    {  
+    	if (event.charCode == 126) // twiddle '~'
+    	{  FBTrace.sysout("keypressToBreakIntoWindow  "+context.window.location, event);
+    		if (isControlShift(event))
+    		{ 
+    			if (FBTrace.DBG_CHROMEBUG)
+    				FBTrace.sysout("keypressToBreakIntoWindow isControlShift "+context.window.location, event);
+    			cancelEvent(event);
+    			Firebug.Debugger.breakOnNext(context);
+    			/*
+    			var halter = context.window.document.getElementById("chromebugHalter");
+    			if (halter)
+    				halter.parentNode.removeChild(halter);
+    			var haltingScript = "window.dump(\"halting in \"+window.location);\ndebugger;\n";
+    			halter = addScript(context.window.document, "chromebugHalter", haltingScript);
+    			if (FBTrace.DBG_CHROMEBUG)
+    				FBTrace.sysout("keypressToBreakIntoWindow haltingScript "+haltingScript, halter);
+    			
+    			*/ 
+    		}
+    	}
+    },
+    
     onCloseWindow: function(xul_win)
     {
         try

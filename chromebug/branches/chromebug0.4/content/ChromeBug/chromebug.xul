@@ -66,9 +66,11 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/profiler.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/errors.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/spy.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/consoleInjector.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/jsonViewer.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/consoleAPI.js"/>
-    <!-- <script type="application/x-javascript" src="chrome://fb4cb/content/commandLineAPI.js"/> -->
+     <script type="application/x-javascript" src="chrome://fb4cb/content/commandLineAPI.js"/>  
 
     
 
