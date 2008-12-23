@@ -1299,7 +1299,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                        if (ff)
                              ff.home();
                     }
-                 });
+                 }, 250);
              }
              else // else we already have FF
                  FBTrace.sysout("Firebug.Chromebug.initializeUI opener says useExistingWindows;\n");
