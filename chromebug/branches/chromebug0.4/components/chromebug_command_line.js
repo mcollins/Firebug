@@ -232,7 +232,7 @@ const  chromebugCommandLineHandler = {
 
     },
 
-    openChromeBug: function(window)
+    openChromebug: function(window)
     {
         var inType = "chromebug:ui"; // MUST BE windowType on chromebug.xul
         var url = "chrome://chromebug/content/chromebug.xul";
@@ -259,7 +259,7 @@ const  chromebugCommandLineHandler = {
     openNow: function(window)
     {
         this.useExistingWindows = true;
-        return this.openChromeBug(window);
+        return this.openChromebug(window);
     },
 
   /* nsISupports */
@@ -302,6 +302,15 @@ const  chromebugCommandLineHandler = {
             }
             else  // New chromebug that may launch FF
             {
+                try 
+                {
+                    var launchChromebug = cmdLine.handleFlag("chromebug", false);
+                    if (launchChromebug)
+                        chromebugCommandLineHandler.openChromebug(window);
+                }
+                catch (e)
+                {
+                }
                 try
                 {
                     this.firefoxURL = cmdLine.handleFlagWithParam("firefox", false);
@@ -375,7 +384,8 @@ const  chromebugCommandLineHandler = {
   // and finally, the string should end with a newline
   //          01234567890123456789001234
   helpInfo : "  -chrome                 chrome://chromebug/content/chromebug.xul   Launch chromebug \n"+
-             "  -firefoxURL             <url> chromebug should start Firefox with <url>\n",
+             "  -firefox                <url> chromebug should start Firefox with <url>\n"+
+             "  -chromebug              start chromebug then continue as normal\n",
 
   /* nsIFactory */
 
