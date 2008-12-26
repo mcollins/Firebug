@@ -12,8 +12,9 @@
 <!DOCTYPE window [
 <!ENTITY % firebugDTD SYSTEM "chrome://firebug/locale/firebug.dtd">
 %firebugDTD;
-<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
-%browserDTD;
+<!ENTITY % chromebugDTD SYSTEM "chrome://global/locale/editMenuOverlay.dtd">
+%chromebugDTD;
+
 ]>
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -106,7 +107,7 @@
                  disabled="true"/>
         <command id="cmd_delete"
                  oncommand="goDoCommand('cmd_delete')"
-                 valueDefault="&deleteCmd.label;"
+                 valueDefault="deleteCmd_label"
                  disabled="true"/>
         <command id="cmd_selectAll"
                  oncommand="goDoCommand('cmd_selectAll')"
@@ -148,8 +149,8 @@
              modifiers="accel"/>
         <key id="key_delete" keycode="VK_DELETE" command="cmd_delete"/>
         <key id="key_selectAll" key="&selectAllCmd.key;" modifiers="accel"/>
-        <key key="&reloadCmd.commandkey;" command="cmd_reload" modifiers="accel" id="key_reload"/>
-        <key key="&reloadCmd.commandkey;" command="cmd_reload" modifiers="accel,shift"/>
+        <key key="r" command="cmd_reload" modifiers="accel" id="key_reload"/>
+        <key key="r" command="cmd_reload" modifiers="accel,shift"/>
         <key id="key_closeWindow" key="w" command="cmd_closeWindow" modifiers="accel"/>
         <key id="key_search" key="/" command="cmd_search" />
     </keyset>
@@ -183,7 +184,7 @@
                     <menuseparator/>
 
                     <menuitem id="menu_reload" command="cmd_reload" key="key_reload"
-                              label="&reloadCmd.label;" accesskey="reloadCmd.accesskey"/>
+                              label="reload" accesskey="reloadCmd.accesskey"/>
                     <menuseparator/>
 
                     <menu label="&firebug.TextSize;">
