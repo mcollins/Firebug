@@ -7,7 +7,7 @@ of Firebug's live object editors like the Style panel editor. Later we hope to
 add diffs for changes caused by Javascript actions. 
 
 Firebug won't be able to provide source-code diffs because it does not work 
-with source code. Firebug will take the live object diffs with the source URL 
+with source code. Firebug will tag the live object diffs with the source URL 
 of the live object when that information is available from Firefox.  However, 
 since web pages can be highly dynamic the source URL may be incorrect and the 
 actual source inside of the server may not be what the browser saw anyway. 
@@ -19,3 +19,10 @@ install as extension to Firebug 1.4+
  * Need "all/one" toggle
  * Need to merge changes from same element.
  * watch panel shows up but only in the update not prev windows
+
+ 0.4 thunderbird;
+ Warning: Warning: Unrecognized chrome registration modifier 'contentaccessible=yes'.
+Source File: file:///C:/bartonjj/projects/fireclipse/fbug/branches/firebug1.4/chrome.manifest
+Line: 1
+
+ 0.4 songbird 1.0: crashes
