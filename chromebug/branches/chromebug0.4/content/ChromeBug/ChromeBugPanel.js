@@ -36,7 +36,7 @@ const prefService = PrefService.getService(nsIPrefService);
 const reChromeBug = /^chrome:\/\/chromebug\//;
 const reComponents = /:.*\/([^\/]*)\/components\//;
 const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
-
+const reResource = /resource:\/\/([^\/]*)\//;
 
 const fbBox = $("fbContentBox");
 const interfaceList = $("cbInterfaceList");
@@ -282,6 +282,8 @@ var GlobalScopeInfos =
         var context = ChromeBugWindowInfo.createContextForDOMWindow(hidden_window);
         this.hiddenWindow = new HiddenWindow(hidden_window, context);
         this.add(context, this.hiddenWindow);
+        if (FBTrace.DBG_CHROMEBUG)
+        	FBTrace.sysout("addHiddenWindow as context "+context.getName());
         return context;
     },
 
@@ -1475,8 +1477,8 @@ Firebug.Chromebug = extend(Firebug.Module,
     onJSDActivate: function(jsd)  // just before hooks are set in fbs
     {
         //if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromeBug onJSDActivate ", this.jsContexts?"already have jsContexts":"take the stored jsContexts");
-        if (!this.jsContexts)
+            FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
+        try
         {
             var appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].
                     getService(Components.interfaces.nsIAppShellService);
@@ -1498,24 +1500,37 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (!this.scriptsByJSContextTag)
                     this.scriptsByJSContextTag = {};
 
-                this.jsContexts = hiddenWindow._chromebug.jsContext;
                 if (!this.jsContexts)
                     this.jsContexts = {};
+                
+                for (var tag in hiddenWindow._chromebug.jsContext)
+                {
+                	if(!this.jsContexts.hasOwnProperty(tag))
+                		this.jsContexts[tag] = hiddenWindow._chromebug.jsContext[tag];
+                }
 
                 delete hiddenWindow._chromebug.scriptsByJSContextTag;
                 delete hiddenWindow._chromebug.jsContext;
             }
             else
                 FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in hiddenWindow, maybe the command line handler is broken\n");
-
+            
+            FBTrace.sysout('adding hiddenWindow');
             var context = GlobalScopeInfos.addHiddenWindow(hiddenWindow);
-
-            if (FBTrace.DBG_CHROMEBUG)
-                this.diagnosePreexistingJSContexts(hiddenWindow);
+            FBTrace.sysout('extracting Scripts from hiddenWindow '+hiddenWindow.location);
+            this.extractScriptsFromJSContexts(hiddenWindow);
+        }
+        catch(exc)
+        {
+        	FBTrace.sysout("onJSDActivate fails "+exc);
+        }
+        finally
+        {
+        	FBTrace.sysout("onJSDActivate exit");
         }
     },
 
-    diagnosePreexistingJSContexts: function(hiddenWindow)
+    extractScriptsFromJSContexts: function(hiddenWindow)
     {
        for(var jscontext in this.jsContexts)
         {
@@ -2334,14 +2349,14 @@ Firebug.Chromebug.PackageList = {
 				FBTrace.sysout("addGlobalScopePackages "+i+"/"+globals.length+"="+global.getContext().window.location);
 		}
 	},
-	
+
 	assignContextToPackage: function(context)  // a window context  
 	{
 		var url = context.getWindowLocation();
-		var m = FBL.reChrome.exec(url);
-		if (m)
+		var description = Firebug.Chromebug.parseURI(url);
+		if (description && description.path)
 		{
-			var pkgName = m[1];
+			var pkgName = description.path;
 			if (!this.pkgs.hasOwnProperty(pkgName))
 				this.pkgs[pkgName] = new Firebug.Chromebug.Package(pkgName, "scope");
 			this.pkgs[pkgName].appendContext(context);
@@ -2680,7 +2695,7 @@ Firebug.Chromebug.InterfaceListLocator = function(xul_element)
             
             parseURI: function(URIString)
             {
-                var m = FBL.reChrome.exec(URIString) || reExtensionInFileURL.exec(URIString);
+                var m = FBL.reChrome.exec(URIString) || reExtensionInFileURL.exec(URIString) || reResource.exec(URIString);
                 var pkgName, remainder;
                 if (m)
                 {
@@ -2697,7 +2712,7 @@ Firebug.Chromebug.InterfaceListLocator = function(xul_element)
                 	// else not one of ours
                 	return null;
                 }
-                return {path: pkgName, name: URIString.substr(remainder)};
+                return {path: pkgName, name: URIString.substr(remainder), kind:'extension'};
             },
 
             onSelectLocation: function(event)
@@ -2838,15 +2853,7 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
 
             getObjectDescription: function(overlay)
             {
-                var c = FBL.reChrome.exec(overlay.href);
-                if (c)
-                {
-                    var extension = c[1];
-                    var split = FBL.splitURLTrue(overlay.href);
-                    return {path: extension, name: split.name }
-                }
-                else
-                    return FBL.splitURLTrue(overlay.href);
+                return Firebug.Chromebug.parseURI(overlay.href);
             },
             
             getBrowserForOverlay: function(url)
@@ -2894,19 +2901,6 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
         xul_element.addEventListener("selectObject", Firebug.Chromebug.OverlayList.onSelectLocation, false);
     }
     return Firebug.Chromebug.OverlayList;
-}
-
-function getURLDescription(url)
-{
-    var c = FBL.reChrome.exec(url);
-    if (c)
-    {
-        var extension = c[1];
-        var split = FBL.splitURLTrue(url);
-        return {path: extension, name: split.name }
-    }
-    else
-        return FBL.splitURLTrue(url);
 }
 
 Firebug.Chromebug.parseURI = function(URI)
@@ -2957,7 +2951,7 @@ Firebug.Chromebug.parseURI = function(URI)
                 {
                 	var component = m[1];
                 	var remainder = m[0].length;
-                    return { path: component, name: URIString.substr(remainder) };
+                    return { path: component, name: URIString.substr(remainder), kind: 'component' };
                 }
                 else
                 	return null;
@@ -3067,7 +3061,7 @@ Firebug.Chromebug.ComponentListLocator = function(xul_element)
 
             getObjectDescription: function(jscontext)
             {
-                return getURLDescription( this.getObjectLocation(jscontext) );
+                return Firebug.Chromebug.parseURI( this.getObjectLocation(jscontext) );
             },
 
             getContextByLocation: function(location)
