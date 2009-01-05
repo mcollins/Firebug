@@ -3,8 +3,6 @@
 <!DOCTYPE window [
 <!ENTITY % firebugDTD SYSTEM "chrome://firebug/locale/firebug.dtd">
 %firebugDTD;
-<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
-%browserDTD;
 ]>
 
 <!-- overlays browser.xul to add menu items -->

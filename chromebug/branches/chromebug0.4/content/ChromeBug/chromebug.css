@@ -3,6 +3,14 @@
 @import "chrome://chromebug/skin/chromebug.css";
 @import "chrome://browser/skin/browser.css";
 
+
+#cbPackageList {
+    /* This triggers initialize() calls , see bindings.xml */
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+
 #cbGlobalScopeList {
     /* This triggers initialize() calls , see bindings.xml */
     -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
@@ -39,14 +47,17 @@
      font-weight: bold;
      color: blue;
 }
-/*
-#cbCategoryList {
+
+#cbPathList {
     -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
-*/
+
 #cbDocumentLabel {
+    font-weight: bold;
+}
+#cbPackageLabel {
     font-weight: bold;
 }
 /*

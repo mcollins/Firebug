@@ -72,7 +72,7 @@ Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
         if (domWindow == this.scanningDOMWindow)
             return;
 
-        var context = Firebug.Chromebug.xulWindowInfo.getContextByDOMWindow(domWindow);
+        var context = Firebug.Chromebug.getContextByDOMWindow(domWindow);
         if (!context)
         {
              if (FBTrace.DBG_INSPECT)

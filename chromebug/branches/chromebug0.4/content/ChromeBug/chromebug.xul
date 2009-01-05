@@ -41,6 +41,8 @@
     <script type="application/x-javascript" src="chrome://chromebug/content/contextManager.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/traceModule.js"/>
+    
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabContext.js"/>
 
@@ -55,7 +57,6 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/plugin.js"/>
      <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>  
      <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
-     <script type="application/x-javascript" src="chrome://fb4cb/content/traceModule.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/tracePanel.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/html.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/css.js"/>
@@ -118,7 +119,7 @@
         <command id="cmd_chromeList" oncommand="Firebug.Chromebug.chromeList()"/>
         <command id="cmd_xulExplorer" oncommand="Firebug.Chromebug.openXULExplorer()"/>
         <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.CategoryBrowser.toggleCategoryBrowser()"/>
-        <command id="cmd_reload" oncommand="Firebug.Chromebug.reload()"/>
+        <command id="cmd_reload" disabled="true" oncommand="Firebug.Chromebug.reload()"/>
         <command id="cmd_reloadSkipCache" oncommand="Firebug.Chromebug.reload(true)"/>
         <command id="cmd_toggleOrient" oncommand="FirebugChrome.toggleOrient()" />
         <command id="cmd_toggleInterfaceList" oncommand="Firebug.Chromebug.toggleInterfaceList()"
@@ -229,19 +230,21 @@
             </menu>
         </menubar>
         	<vbox><spacer flex="1"/>
-            <label value="|" control="cbGlobalScopeList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
+            <label value="|" control="cbPackageList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
 			<spacer flex="1"/></vbox> 
-            <toolbarbutton  id="reload-button" class="toolbarbutton-1"
-                            command="cmd_reload" tooltiptext="Reload current window"/>
+
             <vbox><spacer flex="1"/>
-            <label value="Global Scopes:" control="cbGlobalScopeList" id="cbDocumentLabel" class="toolbar-text-menubutton"
-                        tooltiptext="Chrome Documents and their Contained Documents" />
+            <label value="context:" control="cbPackageList" id="cbPackageLabel" class="toolbar-text-menubutton"
+                        tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
             <spacer flex="1"/></vbox>            
                      
-            <toolbarbutton label="Document" id="cbGlobalScopeList" locationProvider="Firebug.Chromebug.GlobalScopeListLocator;"
+            <toolbarbutton label="context" id="cbPackageList" locationProvider="Firebug.Chromebug.PackageListLocator;"
                             class="toolbar-text-menubutton"
-                            tooltiptext="Chrome Documents and their Contained Documents"
+                            tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+           
+           <toolbarbutton  id="reload-button" class="toolbarbutton-1"
+                            command="cmd_reload" tooltiptext="Reload current window"/>
         
     </hbox>
         <browser id="content" flex="2" src="chrome://chromebug/content/introduction.html" />
@@ -291,6 +294,9 @@
             <toolbarbutton label="Interfaces" id="cbInterfaceList" locationProvider="Firebug.Chromebug.InterfaceListLocator;"
                            class="toolbar-text-menubutton"  tooltiptext="XPCOM Interfaces"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+            <toolbarbutton label="Paths" id="cbPathList" locationProvider="Firebug.Chromebug.PathListLocator;"
+                           class="toolbar-text-menubutton"  tooltiptext="Files and Directories"
+                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
                             <!--  All toolbarbuttons also need XBL hook in chromebug.css -->
             </toolbar>
         </toolbox>
@@ -303,6 +309,9 @@
             </panelbar>
             </hbox>
          </vbox>
+     </vbox>
+     <vbox id="cbOverlayViewer" flex="1" collapsed="true">
+        <!-- <browser src=... type="content" flex="1" /> -->
      </vbox>
     <statusbar id="status-bar">
         <spacer flex="1"/>

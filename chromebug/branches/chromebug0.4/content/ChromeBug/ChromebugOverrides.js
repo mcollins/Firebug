@@ -8,7 +8,6 @@ const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
 	
 var ChromeBugWindowInfo = Firebug.Chromebug.xulWindowInfo;
 
-var reComponents = /:.*\/([^\/]*)\/components\//;
 var ChromeBugOverrides = {
 
     //****************************************************************************************
@@ -182,7 +181,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     {
         try {
             var xulWindowInfo = ChromeBugWindowInfo;
-            var context = (win ? xulWindowInfo.getContextByDOMWindow(win, true) : null);
+            var context = (win ? Firebug.Chromebug.getContextByDOMWindow(win, true) : null);
 
             if (context && context.globalScope instanceof ContainedDocument)
             {
@@ -190,7 +189,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                     return false;
             }
 
-            if (FBTrace.DBG_STACK) FBTrace.sysout("ChromeBugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
+            if (FBTrace.DBG_LOCATIONS) FBTrace.sysout("ChromeBugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
             this.breakContext = context;
             return !!context;
         }
@@ -202,35 +201,70 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     },
 
     // Override debugger
-    supportsGlobal: function(global)
+    supportsGlobal: function(global, frame)
     {
         try {
-            var context = ChromeBugWindowInfo.getContextByGlobal(global);
+            var rootDOMWindow = getRootWindow(global);
+            if (rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
+                return false;  // ignore self
+            
+            var context = null;  // our goal is to set this.
+            
+        	var description = Firebug.Chromebug.parseURI(frame.script.fileName);
+        	if (description && description.path)
+        	{
+        		var pkg = Firebug.Chromebug.PackageList.getPackageByName(description.path);
+        		if (pkg)
+        		{
+        			pkg.eachContext(function findMatchingContext(pkgContext)
+        			{
+        				if (pkgContext.window == rootDOMWindow)
+        					context = pkgContext;
+        			});
+        			if (!context)
+        			{
+        				// we know the script being run is part of a package, but no context in the package supports the window.
+        				context = pkg.createContextInPackage(rootDOMWindow) 
+        			}
+        			if (FBTrace.DBG_LOCATIONS)
+                    	FBTrace.sysout("debugger.supportsGlobal set context via pkg "+description.path+" to "+context.getName());
+        		}
+        		else
+        		{
+        			var str = "";
+        			Firebug.Chromebug.PackageList.eachPackage(function appendNames(pkg)
+        			{
+        				str += pkg.name+" ";
+        			});
+        			if (FBTrace.DBG_LOCATIONS)
+        				FBTrace.sysout("no package named "+description.path + " in "+str);
+        		}
+        	}
+        	
+        	if (!context)
+        	{
+        		context = Firebug.Chromebug.getContextByGlobal(global);  // eg browser.xul
+    			if (FBTrace.DBG_LOCATIONS)
+                	FBTrace.sysout("debugger.supportsGlobal saw pkg: "+(description?description.path:"null")+" set context via ChromeBugWindowInfo to "+context.getName());
+        	}
+        	
             if (!context)
             {
                 if (global.location)  // then we have a window, it will be an nsIDOMWindow, right?
                 {
-                    var location = global.location.toString();
-                    if (location.indexOf("chrome://chromebug/") != -1)
-                        return false;
-                    if (location.indexOf("chrome:") != 0)
-                        return false; // That is the "chrome" in ChromeBug ;-)
+                    context = ChromeBugWindowInfo.addFrameGlobal(global);
 
-                    var rootDOMWindow = getRootWindow(global);
-                    if (rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
-                        return false;  // eg panel.html in chromebug
-
-                    context = ChromeBugWindowInfo.createContextForDOMWindow(global);
-                    var gs = new FrameGlobalScopeInfo(global, context);
-                    Firebug.Chromebug.globalScopeInfos.add(context, gs);
-                }
-                else
-                {
-                    if (FBTrace.DBG_CHROMEBUG && FBTrace.DBG_WINDOWS)
-                       FBTrace.sysout("ChromeBugPanel.supportsGlobal but no context and ", "no location");
+        			if (FBTrace.DBG_LOCATIONS)
+                    	FBTrace.sysout("debugger.supportsGlobal created frameGlobal "+context.getName());
                 }
             }
 
+            if (!context)
+            {
+       			if (FBTrace.DBG_LOCATIONS)
+                   FBTrace.sysout("ChromeBugPanel.supportsGlobal but no context and no location");
+            }
+            
             this.breakContext = context;
             return !!context;
         }
