@@ -2,29 +2,61 @@
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<script>
-if (fireunit.forceHttp()) {
-    fireunit.runTests( 
-        "net/netPanel.html",        // Existence of net panel
-        "net/netEntry.html",        // Existence of a simple entry in net panel
-        "net/netEntryBody.html",    // Net entry can be expanded and info body is there 
-        "net/issue176.html",        // Filter for Flash requests
-        "net/issue601.html",        // Response Tab
-        "net/issue1256.html",       // Params Tab
-        "net/issue372.html",        // Post Tab
-        "net/issue700.html",        // HTML Tab
-        "net/issue1299.html",       // Firebug must cache even responses coming from FF cache
-        "net/issue1308.html",       // + sign in POST (proper encoding, Copy Location With Parameters)
-        "net/netPanelListener.html",     // Test listener for Firebug.NetMonitor
-        "net/netInfoBodyListener.html",  // Test listener for Firebug.NetMonitor.NetInfoBody 
-        "net/netSpyListener.html",       // Test listener for Firebug.Spy
-        "net/netCacheListener.html",     // Test listener for Firebug.Spy
-        "net/issue369.html",        // Inspect JSON data in HTTP responses
-        "net/netSelection.html"     // Test for Net panel selection using chrome.select and NetFileLink
-    );
-}
-</script>
 </head>
 <body>
+    <button onclick="runTests()">Run All</button>
+    <br/>
+    <div id="testList"></div>
+<script>
+if (fireunit.forceHttp()) {
+var testDesc = [
+    {uri: "net/netPanel.html",          desc: "Existence of net panel" },
+    {uri: "net/netEntry.html",          desc: "Existence of a simple entry in net panel" },
+    {uri: "net/netEntryBody.html",      desc: "Net entry can be expanded and info body is there" }, 
+    {uri: "net/issue176.html",          desc: "Filter for Flash requests" },
+    {uri: "net/issue601.html",          desc: "Response Tab" },
+    {uri: "net/issue1256.html",         desc: "Params Tab" },
+    {uri: "net/issue372.html",          desc: "Post Tab" },
+    {uri: "net/issue700.html",          desc: "HTML Tab" },
+    {uri: "net/issue1299.html",         desc: "Firebug must cache even responses coming from FF cache" },
+    {uri: "net/issue1308.html",         desc: "+ sign in POST (proper encoding, Copy Location With Parameters)" },
+    {uri: "net/netPanelListener.html",  desc: "Test listener for Firebug.NetMonitor" },
+    {uri: "net/netInfoBodyListener.html", desc: "Test listener for Firebug.NetMonitor.NetInfoBody" },
+    {uri: "net/netSpyListener.html",    desc: "Test listener for Firebug.Spy" },
+    {uri: "net/netCacheListener.html",  desc: "Test listener for Firebug.Spy" },
+    {uri: "net/issue369.html",          desc: "Inspect JSON data in HTTP responses" },
+    {uri: "net/netSelection.html",      desc: "Test for Net panel selection using chrome.select and NetFileLink" },
+];
+
+function runTests() {
+    var tests = [];
+    for (var i=0; i<testDesc.length; i++)
+        tests.push(testDesc[i].uri);
+    fireunit.runTests.apply(fireunit, tests);
+}
+
+function runTest(testUri) {
+    fireunit.runTests(testUri);
+}
+
+var testList = document.getElementById("testList");
+for (var i=0; i<testDesc.length; i++) {
+    var link = document.createElement("a");
+    link.innerHTML = link.href = testDesc[i].uri;
+    link.onclick = function(event) {
+        runTest(event.target.href);
+    }
+    testList.appendChild(link);
+    
+    var desc = document.createElement("span");
+    desc.innerHTML = "&nbsp;&nbsp;&nbsp;" + testDesc[i].desc;
+    desc.style.fontStyle = "italic";
+    desc.style.color = "gray";
+    testList.appendChild(desc);
+    
+    testList.appendChild(document.createElement("br"));
+}}
+
+</script>
 </body>
 </html>
