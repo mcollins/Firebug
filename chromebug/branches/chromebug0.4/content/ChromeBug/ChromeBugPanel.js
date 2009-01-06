@@ -1709,11 +1709,16 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (context != FirebugContext)
         {
         	var panel = FirebugChrome.getSelectedPanel();
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set FirebugContext to "+context.getName()+" at "+panel.name);
+        	
             FirebugContext = context;
             
-            FirebugChrome.selectPanel(panel.name);
+            if (panel)
+            {
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set FirebugContext to "+context.getName()+" at "+panel.name);
+
+                FirebugChrome.selectPanel(panel.name);
+            }
         }
     },
     //*****************************************************************************
