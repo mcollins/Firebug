@@ -27,6 +27,7 @@ const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverServ
 const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
 const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
 
+
 const PrefService = Cc["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
 const prefs = PrefService.getService(nsIPrefBranch2);
@@ -34,7 +35,7 @@ const nsIPrefService = Components.interfaces.nsIPrefService;
 const prefService = PrefService.getService(nsIPrefService);
 
 const reChromeBug = /^chrome:\/\/chromebug\//;
-const reComponents = /:.*\/([^\/]*)\/components\//;
+const reComponents = /:\/\/(.*)\/components\//; // chrome:// or file://
 const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
 const reResource = /resource:\/\/([^\/]*)\//;
 
@@ -1121,14 +1122,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.restoreDefaultPanel();
         this.restructureUI();
 
-        Firebug.Chromebug.PackageList.buildInitialPackageList();
-        this.initializeDebugger();   // from this point forward scripts should come via debugger interface  
-
-        
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
         ChromeBugWindowInfo.watchXULWindows(); // Start creating contexts
         
+        Firebug.Chromebug.PackageList.buildInitialPackageList();
+        this.initializeDebugger();   // from this point forward scripts should come via debugger interface  
+
         this.openFirstWindow();
     },
     
@@ -1480,8 +1480,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            var appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].
-                    getService(Components.interfaces.nsIAppShellService);
+        	var appShellService = this.getAppShellService();
             hiddenWindow = appShellService.hiddenDOMWindow;
 
             if (hiddenWindow._chromebug)
@@ -1508,17 +1507,18 @@ Firebug.Chromebug = extend(Firebug.Module,
                 	if(!this.jsContexts.hasOwnProperty(tag))
                 		this.jsContexts[tag] = hiddenWindow._chromebug.jsContext[tag];
                 }
+                
+                FBTrace.sysout('adding hiddenWindow');
+                var context = GlobalScopeInfos.addHiddenWindow(hiddenWindow);
+                FBTrace.sysout('extracting Scripts from hiddenWindow '+hiddenWindow.location);
+                this.extractScriptsFromJSContexts(hiddenWindow);
 
                 delete hiddenWindow._chromebug.scriptsByJSContextTag;
                 delete hiddenWindow._chromebug.jsContext;
             }
             else
                 FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in hiddenWindow, maybe the command line handler is broken\n");
-            
-            FBTrace.sysout('adding hiddenWindow');
-            var context = GlobalScopeInfos.addHiddenWindow(hiddenWindow);
-            FBTrace.sysout('extracting Scripts from hiddenWindow '+hiddenWindow.location);
-            this.extractScriptsFromJSContexts(hiddenWindow);
+
         }
         catch(exc)
         {
@@ -1530,6 +1530,14 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
     },
 
+    getAppShellService: function()
+    {
+    	if (!this.appShellService)
+    		this.appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].
+    			getService(Components.interfaces.nsIAppShellService);
+    	return this.appShellService;
+    },
+    
     extractScriptsFromJSContexts: function(hiddenWindow)
     {
        for(var jscontext in this.jsContexts)
@@ -1745,7 +1753,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         	});
         });
         
-        this.createSourceFilesFromEnumerateScripts(allSourceFileMap);  // add any ones we don't have. 
         if (FBTrace.DBG_CHROMEBUG) FBTrace.dumpProperties("ChromeBug, createSourceFilesFromEnumerateScripts", allSourceFileMap);
 
         var sourceFiles = FBL.sourceFilesAsArray(allSourceFileMap);
@@ -1767,9 +1774,9 @@ Firebug.Chromebug = extend(Firebug.Module,
                 FBTrace.sysout("syncSourceFiles not an extension or component:"+sourceFile.href);
         }
         if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout(ExtensionList.extensions.length + " Extensions", Firebug.Chromebug.ExtensionList.extensions);
+                FBTrace.sysout(ExtensionList.extensions.length + " Extensions", Firebug.Chromebug.ExtensionList.list);
         if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout(ComponentList.components.length + " Components", Firebug.Chromebug.ComponentList.components);
+                FBTrace.sysout(ComponentList.components.length + " Components", Firebug.Chromebug.ComponentList.list);
     },
 
     formatLists: function(header, lists)
@@ -1808,7 +1815,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 sourceFile = new FBL.EnumeratedSourceFile(url);
                 sourceFileMap[url] = sourceFile;
                 if (FBTrace.DBG_SOURCEFILES)
-                    FBTrace.sysout("Firebug.Chromebug.createSourceFilesFromEnumerateScripts script.fileName="+url+"\n");
+                    FBTrace.sysout("Firebug.Chromebug.createSourceFile script.fileName="+url+"\n");
             }
             sourceFile.innerScripts.push(script);
     },
@@ -2174,24 +2181,32 @@ Firebug.Chromebug.Package = function(name, kind)
 {
 	this.name = name;
 	this.kind = kind;
+
 	this.contexts = [];
 	this.windowLessSourceFiles = [];
 	
-	// *****************************************************************
-	this.appendContext = function(context)
+	FBTrace.sysout("Create Package "+name+"("+kind+")");
+}
+
+Firebug.Chromebug.Package.prototype = 
+{
+	appendContext: function(context)
 	{
 		this.contexts.push(context);
 		context.pkg = this;
-	}
-	this.getContexts = function()
+	},
+	
+	getContexts: function()
 	{
 		return this.contexts;
-	}
-	this.hasContext = function(context)
+	},
+	
+	hasContext: function(context)
 	{
 		return (this.contexts.indexOf(context) != -1);
-	}
-	this.getPreferedContext = function()
+	},
+	
+	getPreferedContext: function()
 	{
 		// TODO store/retrieve previous context selection
 		for(var i = 0; i < this.contexts.length; i++)
@@ -2199,14 +2214,16 @@ Firebug.Chromebug.Package = function(name, kind)
 				return this.contexts[i];
 		
 		return this.contexts[0];
-	}
-	this.eachContext = function(fnTakesContext)
+	},
+	
+	eachContext: function(fnTakesContext)
 	{
 		for (var i = 0; i < this.contexts.length; i++)
 			fnTakesContext(this.contexts[i]);
-	}
+	},
+	
 	// *****************************************************************
-	this.createContextInPackage = function(win, browser)
+	createContextInPackage: function(win, browser)
 	{
 		var parentContext = Firebug.Chromebug.getContextByDOMWindow(win);
 		if (parentContext)
@@ -2218,17 +2235,19 @@ Firebug.Chromebug.Package = function(name, kind)
 			return context;  // these contexts have both .pkg and .parentContext set.
 		}
 		FBTrace.sysout("Package.createContextInPackage no parent context for window "+((win && win.location)?win.location:win));
-	}
+	},
 	// *****************************************************************
-	this.assignSourceFilesToPackage = function(sourceFiles)
+	assignSourceFilesToPackage: function(sourceFiles)
 	{
 		for (var i = 0; i < sourceFiles.length; i++)
 		{
 			var sourceFile = sourceFiles[i];
 			this.windowLessSourceFiles[sourceFile.href] = sourceFile;
 		}
-	}
-	this.syncContext = function(context)
+		FBTrace.sysout("assigned "+sourceFiles.length+" to package "+this.name+"("+this.kind+")");
+	},
+	
+	syncContext: function(context)
 	{
 		FBTrace.sysout("PackageList.syncContext incoming context.sourceFileMap ", context.sourceFileMap);
 		// the context is about to be shown, update it with any component info
@@ -2238,12 +2257,14 @@ Firebug.Chromebug.Package = function(name, kind)
 				context.sourceFileMap[p] = this.windowLessSourceFiles[p];  // what about dupes?
 		}
 		FBTrace.sysout("PackageList.syncContext added windowLessSourceFiles ", this.windowLessSourceFiles);
-	}
-	this.deleteContext = function(context)
+	},
+	
+	deleteContext: function(context)
 	{
 		var i = this.contexts.indexOf(context);
 		this.contexts.slice(i, 1);
-	}
+	},
+	
 }
 //**************************************************************************
 // chrome://<packagename>/<part>/<file>
@@ -2292,13 +2313,8 @@ Firebug.Chromebug.PackageList = {
 		var packageNames = sourceList.getPackageNames();
 		for (var i = 0; i < packageNames.length; i++)
 		{
-			var pkgName = packageNames[i];
-			if (!this.pkgs.hasOwnProperty(pkgName))  // then we have an extension unrepresented as a window
-				var pkg = new Firebug.Chromebug.Package(pkgName, sourceList.kind);
-			else
-				var pkg = this.pkgs[pkgName];
-			
-			pkg.assignSourceFilesToPackage(sourceList.getSourceFiles(pkgName));
+			var pkg = this.getOrCreate(packageNames[i], sourceList.kind);
+			pkg.assignSourceFilesToPackage(sourceList.getSourceFiles(packageNames[i]));
 		}
 	},
 
@@ -2326,13 +2342,18 @@ Firebug.Chromebug.PackageList = {
 	
 	buildInitialPackageList: function()
 	{
+        this.addGlobalScopePackages();
+        var str = "All Packages =(";
+        this.eachPackage(function sayAll(pkg){ str+=pkg.name+","; });
+        str[str.length - 1] = ")";
+        FBTrace.sysout(str);
 		Firebug.showAllSourceFiles  = true;
 		var sourceFileMap = {};
+
 		this.buildEnumeratedSourceFiles(sourceFileMap);
 		
 		this.assignToLists(sourceFileMap);
-
-        this.addGlobalScopePackages();
+		 
         this.assignToPackages(Firebug.Chromebug.ComponentList);
         this.assignToPackages(Firebug.Chromebug.ExtensionList);
 	},
@@ -2355,16 +2376,22 @@ Firebug.Chromebug.PackageList = {
 		}
 	},
 
+	getOrCreate: function(pkgName, kind)
+	{
+		if (!this.pkgs.hasOwnProperty(pkgName))
+			this.pkgs[pkgName] = new Firebug.Chromebug.Package(pkgName, kind);
+		
+		return this.pkgs[pkgName];
+	},
+	
 	assignContextToPackage: function(context)  // a window context  
 	{
 		var url = context.getWindowLocation();
 		var description = Firebug.Chromebug.parseURI(url);
 		if (description && description.path)
 		{
-			var pkgName = description.path;
-			if (!this.pkgs.hasOwnProperty(pkgName))
-				this.pkgs[pkgName] = new Firebug.Chromebug.Package(pkgName, "scope");
-			this.pkgs[pkgName].appendContext(context);
+			var pkg = this.getOrCreate(description.path, "scope");
+			pkg.appendContext(context);
 		}
 		else 
 		{
@@ -2615,120 +2642,131 @@ Firebug.Chromebug.InterfaceListLocator = function(xul_element)
     return connectedList(xul_element, Firebug.Chromebug.InterfaceList);
 }
 
-        Firebug.Chromebug.ExtensionList = {
+var SourceFileListBase = 
+{
+    list: [],
 
-        	kind: "extension",
+    clear: function()
+    {
+    	this.list = [];
+    },
+    
+    supports: function(sourceFile)
+    {
+    	var description = this.getObjectDescription(sourceFile);
+        if (description)
+        {
+        	if (! (this.list.hasOwnProperty(description.path) )  )
+            this.list[description.path] = [];
+        this.list[description.path].push(sourceFile);
         	
-            extensions: [],
-                	
-            appURLStem: Firebug.Chromebug.getPlatformStringURL("resource:app"),
-            
-            clear: function()
-            {
-            	this.extensions = [];
-            },
-            
-            supports: function(sourceFile)
-            {
-            	var description = this.getObjectDescription(sourceFile);
-                if (description)
-                {
-                	if (! (this.extensions.hasOwnProperty(description.name) )  )
-                        this.extensions[description.name] = [];
-                    this.extensions[description.name].push(sourceFile);
-                	
-                	return true;
-                }
-                else
-                	return false;
-            },
-            
-            getPackageNames: function()
-            {
-            	var list = [];
-            	for (var p in this.extensions)
-            		if (this.extensions.hasOwnProperty(p))
-            			list.push(p);
-            	return list;
-            },
-            
-            getSourceFiles: function(packageName)
-            {
-            	return this.extensions[packageName];
-            },
-            
-            getLocationList: function()
-            {
-                if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("ExtensionListLocator getLocationLst FirebugContext",FirebugContext.window.location)
-                if (FirebugContext)
-                {
-                    Firebug.Chromebug.syncSourceFiles();  // TODO dont sync every time!!
-                    var list = [];
-                    for (var e in this.extensions)
-                    {
-                    	if (this.extensions.hasOwnProperty(e))
-                    	{
-                    		var srcs = this.extensions[e];
-                    		for (var i = 0; i < srcs.length; i++ )
-                    		{
-                    			list.push(srcs[i]);
-                    		}
-                    	}
-                    }
-                    return list;
-                }
-            },
-
-            getDefaultLocation: function()
-            {
-                var locations = this.getLocationList();
-                if (locations && locations.length > 0) return locations[0];
-            },
-
-            getObjectLocation: function(sourceFile)
-            {
-            	if (sourceFile)
-            		return sourceFile.href;
-            },
-
-            getObjectDescription: function(sourceFile) // path: package name, name: remainder
-            {
-            	if(sourceFile)
-            		return this.parseURI(sourceFile.href);
-            },
-            
-            parseURI: function(URIString)
-            {
-                var m = FBL.reChrome.exec(URIString) || reExtensionInFileURL.exec(URIString) || reResource.exec(URIString);
-                var pkgName, remainder;
-                if (m)
-                {
-                	pkgName = m[1];
-                	remainder = m[0].length;
-                }
-                else 
-                {	
-                	if (URIString && URIString.indexOf(this.appURLStem) == 0)
-                	{
-                		pkgName = "application";
-                		remainder = this.appURLStem.length;
-                	}
-                	// else not one of ours
-                	return null;
-                }
-                return {path: pkgName, name: URIString.substr(remainder), kind:'extension'};
-            },
-
-            onSelectLocation: function(event)
-            {
-                var object = event.currentTarget.repObject;
-                if (object)
-                    FirebugChrome.select(object, "script", "watch", true);  // SourceFile
-                else
-                    FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
-            }
+        	return true;
         }
+        else
+        	return false;
+    },
+    
+    avoidSelf: function(name)
+    {
+    	return (name == "chromebug" || name == "fb4cb" );
+    },
+    
+    getPackageNames: function()
+    {
+    	var list = [];
+    	for (var p in this.list)
+    		if (this.list.hasOwnProperty(p))
+    			list.push(p);
+    	return list;
+    },
+    
+    getSourceFiles: function(packageName)
+    {
+    	return this.list[packageName];
+    },
+    
+    getLocationList: function()
+    {
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("ExtensionListLocator getLocationLst FirebugContext",FirebugContext.window.location)
+        if (FirebugContext)
+        {
+            Firebug.Chromebug.syncSourceFiles();  // TODO dont sync every time!!
+            var list = [];
+            for (var e in this.list)
+            {
+                if (this.list.hasOwnProperty(e))
+                {
+                	var srcs = this.list[e];
+                	for (var i = 0; i < srcs.length; i++ )
+                	{
+                		list.push(srcs[i]);
+                	}
+               	}
+             }
+             return list;
+        }
+    },
+
+    getDefaultLocation: function()
+    {
+        var locations = this.getLocationList();
+        if (locations && locations.length > 0) return locations[0];
+    },
+
+    getObjectLocation: function(sourceFile)
+    {
+    	if (sourceFile)
+    		return sourceFile.href;
+    },
+
+    getObjectDescription: function(sourceFile) // path: package name, name: remainder
+    {
+    	if(sourceFile)
+    		return this.parseURI(sourceFile.href);
+    },
+    
+}
+
+Firebug.Chromebug.ExtensionList = extend(SourceFileListBase, {
+
+    kind: "extension",
+        
+    appURLStem: Firebug.Chromebug.getPlatformStringURL("resource:app"),
+
+    parseURI: function(URIString)
+    {
+        var m = FBL.reChrome.exec(URIString) || reExtensionInFileURL.exec(URIString) || reResource.exec(URIString);
+        var pkgName, remainder;
+        if (m)
+        {
+        	pkgName = m[1];
+           	if (this.avoidSelf(pkgName))
+           		return null;
+        	remainder = m[0].length;
+        }
+        else 
+        {	
+        	if (URIString && URIString.indexOf(this.appURLStem) == 0)
+        	{
+        		pkgName = "application";
+        		remainder = this.appURLStem.length;
+        	}
+        	// else not one of ours
+        	return null;
+        }
+        return {path: pkgName, name: URIString.substr(remainder), kind:'extension'};
+    },
+
+    onSelectLocation: function(event)
+    {
+    	var object = event.currentTarget.repObject;
+    	if (object)
+    		FirebugChrome.select(object, "script", "watch", true);  // SourceFile
+    	else
+    		FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+    }
+});
         
 Firebug.Chromebug.ExtensionListLocator = function(xul_element)
 {
@@ -2923,103 +2961,33 @@ Firebug.Chromebug.parseURI = function(URI)
     return description;
 }
 
-        Firebug.Chromebug.ComponentList = {
-        	kind: "component",
-            components: [],
+Firebug.Chromebug.ComponentList = extend(SourceFileListBase, {
+  	kind: "component",
             
-            clear: function()
-            {
-        		this.components = [];
-            },
-            
-            supports: function(sourceFile)
-            {
-            	var description = this.parseURI(sourceFile.href);
-            	if (description)
-            	{
-            		if ( !this.components.hasOwnProperty(description.path) )
-                        this.components[description.path] = [];
-            		this.components[description.path].push(sourceFile);
-                    
-            		// This adjustment needs to be done for components
-                    sourceFile.lineNumberShift = +1;
-                    return true;
-            	}
-            	else
-            		return false;
-            },
-            
-            parseURI: function(URIString)
-            {
-                var m = reComponents.exec(URIString);
-                if (m)
-                {
-                	var component = m[1];
-                	var remainder = m[0].length;
-                    return { path: component, name: URIString.substr(remainder), kind: 'component' };
-                }
-                else
-                	return null;
-            },
-            
-            getPackageNames: function()
-            {
-            	var list = [];
-            	for (var p in this.components)
-            		if (this.components.hasOwnProperty(p))
-            			list.push(p);
-            	return list;
-            },
-            
-            getSourceFiles: function(packageName)
-            {
-            	return this.components[packageName];
-            },
-            
-            getLocationList: function()
-            {
-                if (FirebugContext)
-                {
-                    Firebug.Chromebug.syncSourceFiles();
-
-                    var list = [];
-                    for (var e in this.components)
-                    {
-                        var srcs = this.components[e]
-                        for (var i = 0; i < srcs.length; i++ )
-                        {
-                            list.push(srcs[i]);
-                        }
-                    }
-                    return list;
-                }
-            },
-
-            getDefaultLocation: function()
-            {
-                var locations = this.getLocationList();
-                if (locations && locations.length > 0) return locations[0];
-            },
-
-            getObjectLocation: function(sourceFile)
-            {
-                return sourceFile.href;
-            },
-
-            getObjectDescription: function(sourceFile)
-            {
-                return this.parseURI(sourceFile.href);
-            },
-
-            onSelectLocation: function(event)
-            {
-                var object = event.currentTarget.repObject;
-                if (object)
-                     FirebugChrome.select(object, "script", null, true);  // SourceFile
-                else
-                    FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
-            }
+    parseURI: function(URIString)
+    {
+    	var m = reComponents.exec(URIString);
+        if (m)
+        {
+           	var component = m[1];
+           	if (this.avoidSelf(component))
+           		return null;
+           	var remainder = m[0].length;
+            return { path: component, name: URIString.substr(remainder), kind: 'component' };
         }
+        else
+          	return null;
+    },
+            
+    onSelectLocation: function(event)
+    {
+    	var object = event.currentTarget.repObject;
+        if (object)
+        	FirebugChrome.select(object, "script", null, true);  // SourceFile
+        else
+            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+    }
+});
 
 Firebug.Chromebug.ComponentListLocator = function(xul_element)
 {
@@ -3056,7 +3024,7 @@ Firebug.Chromebug.ComponentListLocator = function(xul_element)
                 {
                     var document = global.document;
                     if (document)
-                         return document.location;
+                         return document.location.toString();
                     else
                         return "noDocument://"+jscontext.tag;
                 }
