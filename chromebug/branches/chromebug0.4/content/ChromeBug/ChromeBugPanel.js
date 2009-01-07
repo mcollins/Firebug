@@ -166,7 +166,7 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
 
     getGlobal: function()
     {
-        return getDOMWindow();
+        return this.getDOMWindow();
     },
     
     getRootDOMWindow: function()  // maybe a container hierarchy?
@@ -930,7 +930,8 @@ var ChromeBugWindowInfo = {
             };
         browser.addProgressListener = function() {}
         browser.contentWindow = { location: {href: "chromebug:fake"} };
-        browser.currentURI = domWindow.location;
+        if (domWindow)
+        	browser.currentURI = domWindow.location;
 
         browser.tag = this.fakeTabBrowser.browsers.length;
         this.fakeTabBrowser.browsers[browser.tag] = browser;
@@ -1122,6 +1123,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.restoreDefaultPanel();
         this.restructureUI();
 
+        // This does not seem to be needed, watchXULWindows picks them up this.addGlobalScopePackages();
+        
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
         ChromeBugWindowInfo.watchXULWindows(); // Start creating contexts
@@ -1273,8 +1276,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         context.loaded = true;
         context.detached = true;
         context.originalChrome = null;
-        context.global = domWindow;
-        context.windows.push(domWindow); // since we don't watchWindows in chromebug
+        if (domWindow)
+        {
+        	context.global = domWindow;
+        	context.windows.push(domWindow); // since we don't watchWindows in chromebug
+        }
         
         if (!this.contexts)
             this.contexts = TabWatcher.contexts;
@@ -1504,6 +1510,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 
                 for (var tag in hiddenWindow._chromebug.jsContext)
                 {
+                	hiddenWindow.dump("onJSD jsContext tag" + tag+"\n");
                 	if(!this.jsContexts.hasOwnProperty(tag))
                 		this.jsContexts[tag] = hiddenWindow._chromebug.jsContext[tag];
                 }
@@ -1511,7 +1518,8 @@ Firebug.Chromebug = extend(Firebug.Module,
                 FBTrace.sysout('adding hiddenWindow');
                 var context = GlobalScopeInfos.addHiddenWindow(hiddenWindow);
                 FBTrace.sysout('extracting Scripts from hiddenWindow '+hiddenWindow.location);
-                this.extractScriptsFromJSContexts(hiddenWindow);
+                
+           		Firebug.Chromebug.extractScriptsFromJSContexts()
 
                 delete hiddenWindow._chromebug.scriptsByJSContextTag;
                 delete hiddenWindow._chromebug.jsContext;
@@ -1538,30 +1546,25 @@ Firebug.Chromebug = extend(Firebug.Module,
     	return this.appShellService;
     },
     
-    extractScriptsFromJSContexts: function(hiddenWindow)
+    extractScriptsFromJSContexts: function( )
     {
-       for(var jscontext in this.jsContexts)
+        for(var tag in this.jsContexts)
         {
-            if (jscontext.isValid)
+    	    var jscontext = this.jsContexts[tag];
+    	    if (jscontext.isValid)
             {
                 var frameGlobal = jscontext.globalObject.getWrappedValue();
                 var info = GlobalScopeInfos.getGlobalScopeInfoByGlobal(frameGlobal);
-                if (info)
+                if (!info)
                 {
-                    var context = info.getContext();
-                       var scripts = this.scriptsByJSContextTag[jscontext.tag];  // array of jsdIScripts
-                       for (var i = 0; i < scripts.length; i++)
-                       {
-                           var script = scripts[i];
-                           Firebug.Chromebug.createSourceFile(context.sourceFileMap, script);
-                       }
-                       FBTrace.sysout("onJSDActivate added "+script.length+" scripts to "+context.window.location);
-                }
-                else
-                {
-                    FBTrace.sysout("A pre-existing jsContext is not a known scope\n");
+                	// THIS is the case we want??
+                    FBTrace.sysout("A pre-existing jsContext "+tag+" is not a known scope", frameGlobal);
                 }
             }
+    	    else
+    	    {
+    	    	FBTrace.sysout("extractScriptsFromJSContexts "+tag+" isValid: "+jscontext.isValid);
+    	    }
         }
 
     },
@@ -2194,6 +2197,8 @@ Firebug.Chromebug.Package.prototype =
 	{
 		this.contexts.push(context);
 		context.pkg = this;
+		if (FBTrace.DBG_LOCATIONS)
+			FBTrace.sysout("appendContext "+context.getName()+" to "+this.name);
 	},
 	
 	getContexts: function()
@@ -2285,6 +2290,14 @@ Firebug.Chromebug.PackageList = {
 				fnTakesPackage(this.pkgs[p]);
 	},
 	
+	getSummary: function(where)
+	{
+		var str = where + ": All Packages =(";
+		this.eachPackage(function sayAll(pkg){ str+=pkg.name+","; });
+		str[str.length - 1] = ")";
+		return str;
+	},
+	
 	buildEnumeratedSourceFiles: function(sourceFileMap)
 	{
 	    FBL.jsd.enumerateScripts({enumerateScript: function(script)
@@ -2340,22 +2353,27 @@ Firebug.Chromebug.PackageList = {
         }
 	},
 	
+	createComponentsPackage: function()
+	{
+		var pkg = this.getOrCreate("components", "component");
+		var context = Firebug.Chromebug.createContext(); // all nulls
+		pkg.appendContext(context);
+	},
+	
 	buildInitialPackageList: function()
 	{
-        this.addGlobalScopePackages();
-        var str = "All Packages =(";
-        this.eachPackage(function sayAll(pkg){ str+=pkg.name+","; });
-        str[str.length - 1] = ")";
-        FBTrace.sysout(str);
 		Firebug.showAllSourceFiles  = true;
 		var sourceFileMap = {};
 
+		this.createComponentsPackage();
 		this.buildEnumeratedSourceFiles(sourceFileMap);
 		
 		this.assignToLists(sourceFileMap);
 		 
         this.assignToPackages(Firebug.Chromebug.ComponentList);
+        FBTrace.sysout(this.getSummary("added component packages"));
         this.assignToPackages(Firebug.Chromebug.ExtensionList);
+        FBTrace.sysout(this.getSummary("added extension list packages"));
 	},
 	
 	addGlobalScopePackages: function()
@@ -2374,6 +2392,7 @@ Firebug.Chromebug.PackageList = {
 			if (FBTrace.DBG_CHROMEBUG)
 				FBTrace.sysout("addGlobalScopePackages "+i+"/"+globals.length+"="+global.getContext().window.location);
 		}
+		FBTrace.sysout(this.getSummary("added global scope packages"));
 	},
 
 	getOrCreate: function(pkgName, kind)
@@ -2441,7 +2460,11 @@ Firebug.Chromebug.PackageList = {
         		list = list.concat(this.pkgs[p].getContexts());
         }
 
-        if (FBTrace.DBG_LOCATIONS) FBTrace.sysout("PackageList getLocationList list "+list.length, list);
+        if (FBTrace.DBG_LOCATIONS) 
+        {
+        	FBTrace.sysout(this.getSummary("getLocationList"));
+        	FBTrace.sysout("PackageList getLocationList list "+list.length, list);
+        }
         
         return list;
     },
@@ -2972,8 +2995,8 @@ Firebug.Chromebug.ComponentList = extend(SourceFileListBase, {
            	var component = m[1];
            	if (this.avoidSelf(component))
            		return null;
-           	var remainder = m[0].length;
-            return { path: component, name: URIString.substr(remainder), kind: 'component' };
+           	//var remainder = m[0].length;
+            return { path: "components", name: URIString, kind: 'component' };
         }
         else
           	return null;
