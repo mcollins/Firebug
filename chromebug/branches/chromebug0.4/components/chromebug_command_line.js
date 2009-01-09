@@ -18,7 +18,7 @@ const prefs = PrefService.getService(nsIPrefBranch2);
 
 const iosvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
 const chromeReg = Components.classes["@mozilla.org/chrome/chrome-registry;1"].getService(Components.interfaces.nsIToolkitChromeRegistry);
-
+const appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].getService(Components.interfaces.nsIAppShellService);
 const  clh_contractID = "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug";
 const appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
 
@@ -82,10 +82,9 @@ const  chromebugCommandLineHandler = {
 
         if (jsd.isOn)
             return;
-
         
         window.dump("chromebug_command_line version: "+appInfo.version+" gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
-
+        //tmpout("starting\n");
         prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
         prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
         prefs.setBoolPref("nglayout.debug.disable_xul_fastload", true);
@@ -155,6 +154,7 @@ const  chromebugCommandLineHandler = {
         {
             onScriptCreated: function(script)
             {
+        		 // tmpout(script.fileName+"\n");
                  if (!script.functionName) // top or eval-level
                  {
                      var cb = hiddenWindow._chromebug;
@@ -197,6 +197,7 @@ const  chromebugCommandLineHandler = {
             {
                 frame.script.clearBreakpoint(0);
                 var script = frame.script;
+                //hiddenWindow.dump("breakpointHook script "+script.tag+"\n");
                 var cb = hiddenWindow._chromebug;
                 var broken = cb.breakpointedScripts[script.tag];
                 if (broken)
@@ -209,6 +210,7 @@ const  chromebugCommandLineHandler = {
                     if (frame.executionContext)
                     {
                         var tag = frame.executionContext.tag;
+                        //hiddenWindow.dump("breakpointHook jsContext "+tag+"\n");
                         if(!cb.scriptsByJSContextTag[tag])
                         {
                             cb.scriptsByJSContextTag[tag] = [];
@@ -283,8 +285,6 @@ const  chromebugCommandLineHandler = {
     {
         try
         {
-            var appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].
-                getService(Components.interfaces.nsIAppShellService);
             window = appShellService.hiddenDOMWindow;
 
             chromebugCommandLineHandler.startJSD(window);
@@ -466,4 +466,47 @@ const  chromebugCommandLineHandlerModule = {
 function NSGetModule(comMgr, fileSpec)
 {
   return chromebugCommandLineHandlerModule;
+}
+
+function getTmpFile() 
+{
+	var file = Components.classes["@mozilla.org/file/directory_service;1"].
+    	getService(Components.interfaces.nsIProperties).
+    	get("TmpD", Components.interfaces.nsIFile);
+	file.append("fbs.tmp");
+	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
+	appShellService.hiddenDOMWindow.dump("cbcl opened tmp file "+file.path+"\n");
+	return file;
+}
+
+function getTmpStream(file)
+{
+	// file is nsIFile, data is a string
+	var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].
+	                         createInstance(Components.interfaces.nsIFileOutputStream);
+
+	// use 0x02 | 0x10 to open file for appending.
+	foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); 
+	// write, create, truncate
+	// In a c file operation, we have no need to set file mode with or operation,
+	// directly using "r" or "w" usually.
+	
+	return foStream;
+}
+ 
+function tmpout(text)
+{
+	var fbs = appShellService.hiddenDOMWindow;
+	if (!fbs.foStream)
+		fbs.foStream = getTmpStream(getTmpFile());
+	
+	if (!fbs.uniqueURLs)
+		fbs.uniqueURLs = {};
+	
+	if (fbs.uniqueURLs.hasOwnProperty(text))
+		return;
+	fbs.uniqueURLs[text] = text.length;
+
+	fbs.foStream.write(text, text.length);
+	
 }

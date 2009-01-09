@@ -203,42 +203,45 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     // Override debugger
     supportsGlobal: function(global, frame)
     {
+    	if (FBTrace.DBG_FBS_FINDDEBUGGER)
+    	{
+    		var fileName = normalizeURL(frame.script.fileName);
+    		FBTrace.sysout("ChromebugOverrides supportsGlobal "+fileName);
+    	}
         try {
-            var rootDOMWindow = getRootWindow(global);
-            if (rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
-                return false;  // ignore self
+        	if (global)
+        	{
+        		var rootDOMWindow = getRootWindow(global);
+        		if (rootDOMWindow && rootDOMWindow.location && rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
+        			return false;  // ignore self
+        	}
             
             var context = null;  // our goal is to set this.
-            
-        	var description = Firebug.Chromebug.parseURI(frame.script.fileName);
+            var fileName = normalizeURL(frame.script.fileName);
+        	var description = Firebug.Chromebug.parseURI(fileName);
         	if (description && description.path)
         	{
-        		var pkg = Firebug.Chromebug.PackageList.getPackageByName(description.path);
-        		if (pkg)
+        		var pkg = Firebug.Chromebug.PackageList.getOrCreate(description.path);
+        		pkg.eachContext(function findMatchingContext(pkgContext)
         		{
-        			pkg.eachContext(function findMatchingContext(pkgContext)
+        			if (pkgContext.window == rootDOMWindow)
+        				context = pkgContext;
+        		});
+
+        		if (!context)
+    			{
+    				// we know the script being run is part of a package, but no context in the package supports the window.
+        			if (global)
+        				context = pkg.createContextInPackage(rootDOMWindow);
+        			else
         			{
-        				if (pkgContext.window == rootDOMWindow)
-        					context = pkgContext;
-        			});
-        			if (!context)
-        			{
-        				// we know the script being run is part of a package, but no context in the package supports the window.
-        				context = pkg.createContextInPackage(rootDOMWindow) 
+        				// The jscontext for these are out reach currently...
+        				var context = Firebug.Chromebug.createContext();  
+        				pkg.appendContext(context);
         			}
-        			if (FBTrace.DBG_LOCATIONS)
-                    	FBTrace.sysout("debugger.supportsGlobal set context via pkg "+description.path+" to "+context.getName());
-        		}
-        		else
-        		{
-        			var str = "";
-        			Firebug.Chromebug.PackageList.eachPackage(function appendNames(pkg)
-        			{
-        				str += pkg.name+" ";
-        			});
-        			if (FBTrace.DBG_LOCATIONS)
-        				FBTrace.sysout("no package named "+description.path + " in "+str);
-        		}
+    			}
+    			if (FBTrace.DBG_LOCATIONS)
+                	FBTrace.sysout("debugger.supportsGlobal set context via pkg "+description.path+" to "+context.getName()+" during "+frame.script.fileName);
         	}
         	
         	if (!context)
