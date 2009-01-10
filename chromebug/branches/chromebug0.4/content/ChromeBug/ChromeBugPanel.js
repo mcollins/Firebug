@@ -43,6 +43,7 @@ const fbBox = $("fbContentBox");
 const interfaceList = $("cbInterfaceList");
 const inspectClearProfileBar = $("fbToolbar");
 const appcontent = $("appcontent");
+const cbPackageList = $('cbPackageList');
 const versionURL = "chrome://chromebug/content/branch.properties";
 
 const tabBrowser = $("content");
@@ -1941,7 +1942,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             }
         }
         // else ask for a window
-        $('cbPackageList').showPopup();
+        cbPackageList.showPopup();
     },
 
     chromeList: function()
@@ -2228,7 +2229,11 @@ Firebug.Chromebug.Package.prototype =
 	eachContext: function(fnTakesContext)
 	{
 		for (var i = 0; i < this.contexts.length; i++)
-			fnTakesContext(this.contexts[i]);
+		{
+			var rc = fnTakesContext(this.contexts[i]);
+			if (rc)
+			    return rc;
+		}
 	},
 	
 	// *****************************************************************
@@ -2269,7 +2274,8 @@ Firebug.Chromebug.Package.prototype =
 	
 }
 //**************************************************************************
-// chrome://<packagename>/<part>/<file>
+// chrome://<packagename>/<part>/<file> 
+// A list of packages each with a context list
 // 
 Firebug.Chromebug.PackageList = {  
     //  key name of package, value array of contexts under that package
@@ -2283,8 +2289,22 @@ Firebug.Chromebug.PackageList = {
 	eachPackage: function(fnTakesPackage) 
 	{
 		for (var p in this.pkgs)
+		{
 			if (this.pkgs.hasOwnProperty(p))
-				fnTakesPackage(this.pkgs[p]);
+			{
+				var rc = fnTakesPackage(this.pkgs[p]);
+				if (rc) 
+				    return rc;
+			}
+		}
+	},
+	
+	eachContext: function(fnTakesContext)
+	{
+	    this.eachPackage( function overContexts(pkg)
+	    {
+	        return pkg.eachContext(fnTakesContext);
+	    });
 	},
 	
 	getSummary: function(where)
@@ -2441,13 +2461,13 @@ Firebug.Chromebug.PackageList = {
 	
 	getCurrentLocation: function() // a context in a package
 	{
-		return $('cbPackageList').location;
+		return cbPackageList.location;
 	},
     
 	setCurrentLocation: function(context)
     {
-    	// TODO type test, cache?
-    	$('cbPackageList').location = context;
+    	if (cbPackageList.location != context)
+    	    cbPackageList.location = context;
     },
 	
     getLocationList: function()  // list of contexts

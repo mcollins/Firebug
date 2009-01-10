@@ -13,7 +13,7 @@ var ChromeBugOverrides = {
     //****************************************************************************************
     // Overrides
 
-    // Override FirebugChrome.syncTitle
+    // Override FirebugChrome
     syncTitle: function()
     {
         window.document.title = "ChromeBug";
@@ -22,6 +22,58 @@ var ChromeBugOverrides = {
         FBTrace.sysout("Chromebug syncTitle"+window.document.title+"\n");
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Location interface provider for binding.xml panelFileList
+
+    getLocationProvider: function()
+    {
+        // a function that returns an object with .getObjectDescription() and .getLocationList()
+        return function multiContextLocator() 
+        {
+            var locatorDelegator = 
+            {
+                    getObjectDescription: function(object)
+                    {
+                        // the selected panel may not be able to handle this because its in the wrong context
+                        FBTrace.sysout("MultiContextLocator "+object, object);
+                        FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
+                    },
+                    getLocationList: function()
+                    {
+                        // The select panel is in charge.
+                        FirebugContext.chrome.getSelectedPanel().getLocationList();
+                    },
+            }
+            return locatorDelegator;We
+        }
+     },
+     
+     select: function(object, panelName, sidePanelName, forceUpdate)
+     {
+         if (FBTrace.DBG_PANELS)                                                                                                                       /*@explore*/
+             FBTrace.sysout("ChromebugOverrides.select object:"+object+" panelName:"+panelName+" sidePanelName:"+sidePanelName+" forceUpdate:"+forceUpdate, object);  /*@explore*/
+         if (!panelName)
+             panelName = FirebugContext.panelName;
+         
+         var bestPanelName = getBestPanelName(object, panelName);  // type testing.
+         
+         // Type testing  has found a panel name. Now we ask each context to check if it has the object
+         var context = Firebug.Chromebug.PackageList.eachContext(function findObject(context)
+         {
+             var panel = context.getPanel(bestPanelName);
+             FBTrace.sysout("ChromebugOverrides select panel "+bestPanelName, panel);
+             if (panel && panel.hasObject(object))
+                 return context;             
+         });
+         
+         if (context)  // else don't move
+             Firebug.Chromebug.PackageList.setLocation(context);
+         
+         var panel = FirebugChrome.selectPanel(bestPanelName, sidePanelName, true);
+         if (panel)
+             panel.select(object, forceUpdate);
+     },
+    
     // Override Firebug.HTMLPanel.prototype
     getParentObject: function(node)
     {
@@ -226,6 +278,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         		{
         			if (pkgContext.window == rootDOMWindow)
         				context = pkgContext;
+        			return context; // if null, look at another context.
         		});
 
         		if (!context)
@@ -278,6 +331,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
 
     },
 
+    // Override
     // Override FBL
 
     skipSpy: function(win)
@@ -353,6 +407,9 @@ function overrideFirebugFunctions()
     try {
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
+        top.FirebugChrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
+        top.FirebugChrome.select = ChromeBugOverrides.select;
+         
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
         top.Firebug.HTMLPanel.prototype.getAnonymousChildObject = ChromeBugOverrides.getAnonymousChildObject;
@@ -390,6 +447,54 @@ function echo(header, elt)
         FBTrace.sysout(header + (elt ? elt.localName:"null")+"\n");
     return elt;
 }
+// TODO make this FBL or chrome . functions
+function panelSupportsObject(panelType, object)
+{
+    if (panelType)
+    {
+        try {
+            // This tends to throw exceptions often because some objects are weird
+            return panelType.prototype.supportsObject(object)
+        } catch (exc) {}
+    }
 
+    return 0;
+}
+
+function getBestPanelName(object, panelName)
+{
+
+    // Check if the suggested panel name supports the object, and if so, go with it
+    if (panelName)
+    {
+        panelType = Firebug.getPanelType(panelName);
+        if (panelSupportsObject(panelType, object))
+            return panelType.prototype.name;
+    }
+
+    // The suggested name didn't pan out, so search for the panel type with the
+    // most specific level of support
+
+    var bestLevel = 0;
+    var bestPanel = null;
+
+    for (var i = 0; i < Firebug.panelTypes.length; ++i)
+    {
+        var panelType = Firebug.panelTypes[i];
+        if (!panelType.prototype.parentPanel)
+        {
+            var level = panelSupportsObject(panelType, object);
+            if (!bestLevel || (level && (level > bestLevel) ))
+            {
+                bestLevel = level;
+                bestPanel = panelType;
+            }
+            if (FBTrace.DBG_PANELS)                                                                                                                      /*@explore*/
+                FBTrace.sysout("chrome.getBestPanelName panelType: "+panelType.prototype.name+" level: "+level+" bestPanel: "+ (bestPanel ? bestPanel.prototype.name : "null")+" bestLevel: "+bestLevel+"\n"); /*@explore*/
+        }
+    }
+
+    return bestPanel ? bestPanel.prototype.name : null;
+}
 overrideFirebugFunctions();
 }});
