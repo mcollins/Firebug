@@ -57,7 +57,16 @@ hg qinit -c
 
 copy .mozconfig into the top directory, src for me
 
-make -f client.mk
-run obj-i686-pc-minggw32/dist/bin/firefox.exe
+The .mozconfig will not work without a patch to the build system.
+First name the patch for your local mq:
+  hg qnew bugzilla-338224-nspr4
+Second Apply this patch:
+  https://bugzilla.mozilla.org/attachment.cgi?id=348289
+Third build 
+  make -f client.mk
+  run obj-i686-pc-minggw32/dist/bin/firefox.exe
+Fourth commit the patch
+  hg qcommit
+  
 
-Now import the patchs TBD
+
