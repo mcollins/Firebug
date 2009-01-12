@@ -52,6 +52,9 @@ Steps:
 install build tools on C:
 be some where you have 4Gb, g:/mozilla/mozilla-central/src for me
 
+Open a mozilla shell, eg something like
+C:\mozilla-build\start-msvc8.bat
+
 hg clone http://hg.mozilla.org/releases/mozilla-1.9.1 
 hg qinit -c
 
@@ -62,7 +65,9 @@ First name the patch for your local mq:
   hg qnew bugzilla-338224-nspr4
 Second Apply this patch:
   https://bugzilla.mozilla.org/attachment.cgi?id=348289
-Third build 
+Third set: 
+export MOZ_DEBUG_SYMBOLS=1
+Fourth build:
   make -f client.mk
   run obj-i686-pc-minggw32/dist/bin/firefox.exe
 Fourth commit the patch
