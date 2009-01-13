@@ -78,7 +78,7 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
             if (this.tracePanel)
             {
             	this.tracePanel.dump(new Firebug.TraceModule.TraceMessage(
-            			messageInfo.type, data, messageInfo.obj));
+            			messageInfo.type, data, messageInfo.obj, messageInfo.scope));
             	return false;
             }
             return false;

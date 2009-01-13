@@ -1694,11 +1694,30 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var isAStackFrame = hasClass(event.target, "stackFrameLink");
                 if (isAStackFrame) 
                 {
+                	var context = FirebugContext;
+                    var info = getAncestorByClass(event.target, "messageInfoBody");
+                    var message = info.repObject;
+                    if (!message && info.wrappedJSObject)
+                        message = info.wrappedJSObject.repObject;
+                    if (message)
+                    {
+                    	if (message.scope)
+                    	{
+                    		context = Firebug.Chromebug.getContextByDOMWindow(message.scope);
+                    		Firebug.Chromebug.syncToolBarToContext(context);
+                            FBTrace.sysout("onLoadConsole.eventListener found message.scope: "+message.scope.location+" context set to "+context.getName(), message);
+                    	}
+                    	else
+                    		FBTrace.sysout("onLoadConsole.eventListener found message, no scope", message);
+                    }
+                    else
+                    	FBTrace.sysout("onLoadConsole.eventListener no message found on info", info);
+                	
                     var line = event.target.getAttribute("lineNumber");
                     var filename = event.target.text;
                     var link = new SourceLink(filename, line, "js" );
-                    FBTrace.sysout("Chromebug click on traceConsole isAStackFrame", {target: event.target, href: filename, lineNo:line, link:link});
-                    FirebugContext.chrome.select(link);
+                    FBTrace.sysout("Chromebug click on traceConsole isAStackFrame SourceLink:"+(link instanceof SourceLink), {target: event.target, href: filename, lineNo:line, link:link});
+                    context.chrome.select(link);
                     
                     event.stopPropagation();
                 }
@@ -2126,7 +2145,7 @@ window.timeOut = function(title)
         	return $('cbGlobalScopelist').location;
         },
         
-        setCurrentLocation: function(globalScope)
+        setCurrentLocation: function(globalScope)  
         {
         	// TODO type test, cache?
         	$('cbGlobalScopelist').location = globalScope;
@@ -2231,9 +2250,11 @@ Firebug.Chromebug.Package.prototype =
 		for (var i = 0; i < this.contexts.length; i++)
 		{
 			var rc = fnTakesContext(this.contexts[i]);
+			FBTrace.sysout("ChromeBugPanel "+this.name+" eachContext "+i+"/"+this.contexts.length+" rc:"+rc);
 			if (rc)
 			    return rc;
 		}
+		return false;
 	},
 	
 	// *****************************************************************
@@ -2464,7 +2485,7 @@ Firebug.Chromebug.PackageList = {
 		return cbPackageList.location;
 	},
     
-	setCurrentLocation: function(context)
+	setCurrentLocation: function(context) // call from Firebug.Chromebug.syncToolBarToContext(context);
     {
     	if (cbPackageList.location != context)
     	    cbPackageList.location = context;
@@ -2768,7 +2789,12 @@ var SourceFileListBase =
     getObjectDescription: function(sourceFile) // path: package name, name: remainder
     {
     	if(sourceFile)
-    		return this.parseURI(sourceFile.href);
+    	{
+    		var d = this.parseURI(sourceFile.href);
+    		if (d)
+    			d.name = FBL.cropString(d.name, 80);
+    		return d;
+    	}
     	return {path: "SourceFileListBase", name:"no source file"};
     },
     
@@ -2875,8 +2901,8 @@ Firebug.Chromebug.AllFilesList = extend(SourceFileListBase, {
                 FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+url); 
                 ChromeBugWindowInfo.selectBrowser(context.browser);
                 TabWatcher.dispatch("showContext", [context.browser, context]);
-
-                Firebug.Chromebug.PackageList.setCurrentLocation(context);
+                
+                Firebug.Chromebug.syncToolBarToContext(context);
                 FirebugChrome.select(object, "script", "watch", true);  // SourceFile
             }
             else

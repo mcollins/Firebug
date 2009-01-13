@@ -29,6 +29,7 @@
     <script type="application/x-javascript">
     var FBTrace = Components.classes["@joehewitt.com/firebug-trace-service;1"]
                  .getService(Components.interfaces.nsISupports).wrappedJSObject.getTracer("extensions.chromebug");
+    FBTrace.setScope(window);
     </script>
     <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>

@@ -36,21 +36,21 @@ var ChromeBugOverrides = {
                     {
                         // the selected panel may not be able to handle this because its in the wrong context
                         FBTrace.sysout("MultiContextLocator "+object, object);
-                        FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
+                        return FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
                     },
                     getLocationList: function()
                     {
                         // The select panel is in charge.
-                        FirebugContext.chrome.getSelectedPanel().getLocationList();
+                        return FirebugContext.chrome.getSelectedPanel().getLocationList();
                     },
             }
-            return locatorDelegator;We
+            return locatorDelegator;
         }
      },
      
      select: function(object, panelName, sidePanelName, forceUpdate)
      {
-         if (FBTrace.DBG_PANELS)                                                                                                                       /*@explore*/
+         //if (FBTrace.DBG_PANELS)                                                                                                                       /*@explore*/
              FBTrace.sysout("ChromebugOverrides.select object:"+object+" panelName:"+panelName+" sidePanelName:"+sidePanelName+" forceUpdate:"+forceUpdate, object);  /*@explore*/
          if (!panelName)
              panelName = FirebugContext.panelName;
@@ -63,11 +63,14 @@ var ChromeBugOverrides = {
              var panel = context.getPanel(bestPanelName);
              FBTrace.sysout("ChromebugOverrides select panel "+bestPanelName, panel);
              if (panel && panel.hasObject(object))
-                 return context;             
+                 return context;
+             else
+            	 return false;
          });
+         FBTrace.sysout("ChromebugOverrides select found context "+context+" for bestPanelName "+bestPanelName);
          
          if (context)  // else don't move
-             Firebug.Chromebug.PackageList.setLocation(context);
+             Firebug.Chromebug.PackageList.setCurrentLocation(context);
          
          var panel = FirebugChrome.selectPanel(bestPanelName, sidePanelName, true);
          if (panel)
@@ -408,7 +411,7 @@ function overrideFirebugFunctions()
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
         top.FirebugChrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
-        top.FirebugChrome.select = ChromeBugOverrides.select;
+        //top.FirebugChrome.select = ChromeBugOverrides.select;
          
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
