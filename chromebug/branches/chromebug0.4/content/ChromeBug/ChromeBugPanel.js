@@ -2301,7 +2301,7 @@ Firebug.Chromebug.PackageList = {
 	
 	eachContext: function(fnTakesContext)
 	{
-	    this.eachPackage( function overContexts(pkg)
+	    return this.eachPackage( function overContexts(pkg)
 	    {
 	        return pkg.eachContext(fnTakesContext);
 	    });
@@ -2723,27 +2723,34 @@ var SourceFileListBase =
     
     getLocationList: function()
     {
-        if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ExtensionListLocator getLocationLst FirebugContext",FirebugContext.window.location)
-        if (FirebugContext)
-        {
-            Firebug.Chromebug.syncSourceFiles();  // TODO dont sync every time!!
-            var list = [];
-            for (var e in this.list)
-            {
-                if (this.list.hasOwnProperty(e))
-                {
-                	var srcs = this.list[e];
-                	for (var i = 0; i < srcs.length; i++ )
-                	{
-                		list.push(srcs[i]);
-                	}
-               	}
-             }
-             return list;
-        }
+        this.list = [];
+        this.updateLocationList();   
+        return this.list;
     },
-
+    
+    updateLocationList: function()
+    {
+        var self = this;
+        var allFiles = {};
+        Firebug.Chromebug.PackageList.eachContext(function buildList(context)
+        { 
+            var srcs = context.sourceFileMap;
+            for (var url in srcs)
+            {
+                if (srcs.hasOwnProperty(url))
+                {
+                    var d = self.parseURI(url);  // children implement
+                    allFiles[url] = srcs[url];  // removes duplicates
+                }
+            }
+        });
+        
+        for (var url in allFiles)
+            this.list.push(allFiles[url]);
+        
+        FBTrace.sysout("updateLocationList: "+this.list.length, this.list);
+    },
+    
     getDefaultLocation: function()
     {
         var locations = this.getLocationList();
@@ -2754,12 +2761,15 @@ var SourceFileListBase =
     {
     	if (sourceFile)
     		return sourceFile.href;
+    	else
+    	    return "no sourcefile:";
     },
 
     getObjectDescription: function(sourceFile) // path: package name, name: remainder
     {
     	if(sourceFile)
     		return this.parseURI(sourceFile.href);
+    	return {path: "SourceFileListBase", name:"no source file"};
     },
     
     avoidSelf: function(URI)
@@ -2767,6 +2777,24 @@ var SourceFileListBase =
     	return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);   
     },
     
+}
+
+Firebug.Chromebug.parseURI = function(URI)
+{
+    if (!URI || SourceFileListBase.avoidSelf(URI))
+        return null;
+    
+    var description = Firebug.Chromebug.ComponentList.parseURI(URI);
+    if (!description)
+        description = Firebug.Chromebug.ExtensionList.parseURI(URI);
+    if (!description)
+        description = Firebug.Chromebug.ModuleList.parseURI(URI);
+    if (!description)
+    {
+        //if (FBTrace.SOURCEFILES)
+            FBTrace.sysout("Firebug.Chromebug.parseURI: no match for "+URI);
+    }
+    return description;
 }
 
 Firebug.Chromebug.ExtensionList = extend(SourceFileListBase, {
@@ -2814,6 +2842,58 @@ Firebug.Chromebug.ExtensionListLocator = function(xul_element)
 {
     return connectedList(xul_element, Firebug.Chromebug.ExtensionList);
 }
+
+
+Firebug.Chromebug.AllFilesList = extend(SourceFileListBase, {
+
+    kind: "all",
+        
+    parseURI: Firebug.Chromebug.parseURI,
+
+    onSelectLocation: function(event)
+    {
+        var object = event.currentTarget.repObject;
+        if (object && object.href)
+        {
+            var url = object.href;
+            var context = Firebug.Chromebug.PackageList.eachContext(function buildList(context)
+            { 
+                //if (FBTrace.DBG_LOCATIONS)
+                    FBTrace.sysout("AllFilesList.onSelectLocation looking for "+url+" checking "+context.getName());
+                if (url in context.sourceFileMap)
+                {
+                    FBTrace.sysout("AllFilesList.onSelectLocation found "+context.getName())
+                    return context;
+                }
+                for (var p in context.sourceFileMap)
+                    if (url == p) FBTrace.sysout(url +" = "+(url == p)+" = "+p+" url in "+(url in context.sourceFileMap)+" and context.sourceFileMap.hasOwnProperty(url)"+context.sourceFileMap.hasOwnProperty(url));
+                //if (FBTrace.DBG_LOCATIONS)
+                    FBTrace.sysout("AllFilesList.onSelectLocation not in "+context.getName());
+            });
+            if (context)
+            {    
+                FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+url); 
+                ChromeBugWindowInfo.selectBrowser(context.browser);
+                TabWatcher.dispatch("showContext", [context.browser, context]);
+
+                Firebug.Chromebug.PackageList.setCurrentLocation(context);
+                FirebugChrome.select(object, "script", "watch", true);  // SourceFile
+            }
+            else
+                FBTrace.sysout("AllFilesList.onSelectLocation no context url:"+url);   
+        }
+        else
+        {
+            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+        }
+    }
+});
+        
+Firebug.Chromebug.AllFilesListLocator = function(xul_element)
+{FBTrace.sysout("AllFilesListLocator called");
+    return connectedList(xul_element, Firebug.Chromebug.AllFilesList);
+}
+
 
 Firebug.Chromebug.CategoryListLocator = function(xul_element)
 {
@@ -2988,23 +3068,6 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
     return Firebug.Chromebug.OverlayList;
 }
 
-Firebug.Chromebug.parseURI = function(URI)
-{
-	if (SourceFileListBase.avoidSelf(URI))
-		return null;
-	
-    var description = Firebug.Chromebug.ComponentList.parseURI(URI);
-    if (!description)
-    	description = Firebug.Chromebug.ExtensionList.parseURI(URI);
-    if (!description)
-    	description = Firebug.Chromebug.ModuleList.parseURI(URI);
-    if (!description)
-    {
-    	//if (FBTrace.SOURCEFILES)
-    		FBTrace.sysout("Firebug.Chromebug.parseURI: no match for "+URI);
-    }
-    return description;
-}
 
 Firebug.Chromebug.ComponentList = extend(SourceFileListBase, {
   	kind: "component",

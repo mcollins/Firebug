@@ -245,6 +245,16 @@
            
            <toolbarbutton  id="reload-button" class="toolbarbutton-1"
                             command="cmd_reload" tooltiptext="Reload current window"/>
+                            
+            <vbox><spacer flex="1"/>
+            <label value="files:" control="cbAllFilesList" id="cbAllFilesLabel" class="toolbar-text-menubutton"
+                        tooltiptext="All files known to Chromebug" />
+            <spacer flex="1"/></vbox>            
+                     
+            <toolbarbutton label="files" id="cbAllFilesList" locationProvider="Firebug.Chromebug.AllFilesListLocator;"
+                            class="toolbar-text-menubutton"
+                            tooltiptext="All files known to Chromebug"
+                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
         
     </hbox>
         <browser id="content" flex="2" src="chrome://chromebug/content/introduction.html" />

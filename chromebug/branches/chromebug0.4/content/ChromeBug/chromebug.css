@@ -11,6 +11,14 @@
      color: blue;
 }
 
+#cbAllFilesList {
+    /* This triggers initialize() calls , see bindings.xml */
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
+     font-weight: bold;
+     color: blue;
+}
+
+
 #cbGlobalScopeList {
     /* This triggers initialize() calls , see bindings.xml */
     -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
