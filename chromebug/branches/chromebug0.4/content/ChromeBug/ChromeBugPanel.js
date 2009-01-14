@@ -1277,6 +1277,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         context.loaded = true;
         context.detached = true;
         context.originalChrome = null;
+        
+        context.name = context.getName();
+        context.getName = function() { return this.name; }
+        
         if (domWindow)
         {
         	context.global = domWindow;
@@ -2265,8 +2269,8 @@ Firebug.Chromebug.Package.prototype =
 		{
 			var context = Firebug.Chromebug.createContext(win, parentContext, browser);
 			this.appendContext(context);
-			var pkgName = this.name;
-			context.getName = function() { return pkgName + "@" + parentContext.getWindowLocation(); }
+			var cn = new String(win.location);
+			context.getName = function() { return cn; }
 			return context;  // these contexts have both .pkg and .parentContext set.
 		}
 		FBTrace.sysout("Package.createContextInPackage no parent context for window "+((win && win.location)?win.location:win));
@@ -2363,12 +2367,14 @@ Firebug.Chromebug.PackageList = {
 	{
 		var packageNames = sourceList.getPackageNames();
 		for (var i = 0; i < packageNames.length; i++)
-		{
+		{FBTrace.sysout("assignToPackages "+packageNames[i]);
 			var pkg = this.getOrCreate(packageNames[i], sourceList.kind);
 			if (pkg.getContexts().length < 1)
 			{
 				// The jscontext for these are out reach currently...
-				var context = Firebug.Chromebug.createContext();  
+				var context = Firebug.Chromebug.createContext();
+				 
+				context.name = "(a jsContext out of reach)";
 				pkg.appendContext(context);
 			}	
 			pkg.assignSourceFilesToPackage(sourceList.getSourceFiles(packageNames[i]));
@@ -2523,14 +2529,10 @@ Firebug.Chromebug.PackageList = {
 
     getObjectDescription: function(context)
     {
-    	var globalScopeName = context.getWindowLocation().toString();
-    	var mark = globalScopeName.indexOf(context.pkg.name);
-    	if (mark > 0)
-    		globalScopeName = globalScopeName.substr(mark);
-    	
-        var d =  {path: context.pkg.name, name: globalScopeName +"   "+context.getTitle() };
+        var title = (context.window ? context.getTitle() : null);
+        var d =  {path: context.pkg.name, name: context.getName() +(title?"   "+title:"") };
     	if (FBTrace.DBG_LOCATIONS)
-    		FBTrace.sysout("getObjectDescription "+d, d);
+    		FBTrace.sysout("getObjectDescription path:"+d.path+" name:"+d.name, d);
         return d;
     },
 
@@ -2756,18 +2758,18 @@ var SourceFileListBase =
         Firebug.Chromebug.PackageList.eachContext(function buildList(context)
         { 
             var srcs = context.sourceFileMap;
+            var contextName = context.getName();
+            FBTrace.sysout("updateLocationList contextName "+contextName);
             for (var url in srcs)
             {
                 if (srcs.hasOwnProperty(url))
                 {
                     var d = self.parseURI(url);  // children implement
-                    allFiles[url] = srcs[url];  // removes duplicates
+                    srcs[url].contextName = contextName;
+                    self.list.push(srcs[url]);
                 }
             }
         });
-        
-        for (var url in allFiles)
-            this.list.push(allFiles[url]);
         
         FBTrace.sysout("updateLocationList: "+this.list.length, this.list);
     },
@@ -2792,7 +2794,11 @@ var SourceFileListBase =
     	{
     		var d = this.parseURI(sourceFile.href);
     		if (d)
-    			d.name = FBL.cropString(d.name, 80);
+    		{
+    			d.name = FBL.cropString(d.name, 120);
+    			var cn = sourceFile.contextName;
+    			d.path = FBL.cropString(d.path+(cn?"  ("+cn+")":""), 120);
+    		}
     		return d;
     	}
     	return {path: "SourceFileListBase", name:"no source file"};
@@ -2851,7 +2857,7 @@ Firebug.Chromebug.ExtensionList = extend(SourceFileListBase, {
         	// else not one of ours
         	return null;
         }
-        return {path: pkgName, name: URIString.substr(remainder), kind:'extension'};
+        return {path: pkgName, name: new String(URIString.substr(remainder)), kind:'extension'};
     },
 
     onSelectLocation: function(event)
@@ -3108,7 +3114,7 @@ Firebug.Chromebug.ComponentList = extend(SourceFileListBase, {
         {
            	var component = m[1];
            	//var remainder = m[0].length;
-            return { path: "components", name: URIString, kind: 'component' };
+            return { path: "components", name: new String(URIString), kind: 'component' };
         }
         else
           	return null;
@@ -3137,7 +3143,7 @@ Firebug.Chromebug.ModuleList = extend(SourceFileListBase, {
 		if (this.avoidSelf(URIString))
 			return null;
 		// anything that is not a component or extension...
-        return { path: "modules", name: URIString, kind: 'module' };
+        return { path: "modules", name: new String(URIString), kind: 'module' };
     },
             
     onSelectLocation: function(event)
