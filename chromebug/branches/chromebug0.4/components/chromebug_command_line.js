@@ -84,7 +84,6 @@ const  chromebugCommandLineHandler = {
             return;
         
         window.dump("chromebug_command_line version: "+appInfo.version+" gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
-        //tmpout("starting\n");
         prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
         prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
         prefs.setBoolPref("nglayout.debug.disable_xul_fastload", true);
@@ -149,12 +148,14 @@ const  chromebugCommandLineHandler = {
         hiddenWindow._chromebug.scriptsByJSContextTag = {};
         hiddenWindow._chromebug.jsContext = {};
         hiddenWindow._chromebug.breakpointedScripts = {};
+        hiddenWindow.dumpTrackFiles = function() { fbs.trackFiles.dump(); }
 
         jsd.scriptHook =
         {
             onScriptCreated: function(script)
             {
-        		 // tmpout(script.fileName+"\n");
+        		 fbs.trackFiles.add(script);
+        		 
                  if (!script.functionName) // top or eval-level
                  {
                      var cb = hiddenWindow._chromebug;
@@ -195,6 +196,8 @@ const  chromebugCommandLineHandler = {
         {
             onExecute: function(frame, type, val)
             {
+        		fbs.trackFiles.def(frame);
+            
                 frame.script.clearBreakpoint(0);
                 var script = frame.script;
                 //hiddenWindow.dump("breakpointHook script "+script.tag+"\n");
@@ -233,7 +236,21 @@ const  chromebugCommandLineHandler = {
         };
 
     },
-
+    getLocationSafe: function(global)
+    {
+		try
+		{
+			if (global && global.location)  // then we have a window, it will be an nsIDOMWindow, right?
+				return global.location.toString();
+			else if (global && global.tag)
+				return "global_tag_"+global.tag;
+		}
+		catch (exc)
+    	{
+            // FF3 gives (NS_ERROR_INVALID_POINTER) [nsIDOMLocation.toString]
+    	}
+		return null;
+    },
     openChromebug: function(window)
     {
         var inType = "chromebug:ui"; // MUST BE windowType on chromebug.xul
@@ -494,19 +511,62 @@ function getTmpStream(file)
 	return foStream;
 }
  
+var fbs = chromebugCommandLineHandler;
+	
 function tmpout(text)
 {
-	var fbs = appShellService.hiddenDOMWindow;
 	if (!fbs.foStream)
 		fbs.foStream = getTmpStream(getTmpFile());
-	
-	if (!fbs.uniqueURLs)
-		fbs.uniqueURLs = {};
-	
-	if (fbs.uniqueURLs.hasOwnProperty(text))
-		return;
-	fbs.uniqueURLs[text] = text.length;
 
 	fbs.foStream.write(text, text.length);
-	
+}
+
+fbs.trackFiles  = {
+	allFiles: {},
+	add: function(script)
+	{
+		var name = new String(script.fileName);
+		this.allFiles[name] = [script.functionName];
+	},
+	drop: function(fileName)
+	{
+		var name = new String(fileName);
+		this.allFiles[name].push("dropped");
+	},
+	def: function(frame)
+	{
+		var scopeName = "noJSContext";
+		var jscontext = frame.executionContext;
+    	if (jscontext)
+    	{
+    		frameGlobal = jscontext.globalObject.getWrappedValue();
+			scopeName = fbs.getLocationSafe(frameGlobal);
+    	}
+		
+		var name = new String(frame.script.fileName);
+		if (! (name in this.allFiles))
+			this.allFiles[name]=["not added"];
+		
+		this.allFiles[name].push(scopeName);
+	},
+	dump: function()
+	{
+		var n = 0;
+		for (var p in this.allFiles)
+		{
+			tmpout( (++n) + ") "+p);
+			var where = this.allFiles[p];
+			if (where.length > 0)
+			{
+				for (var i = 0; i < where.length; i++)
+				{
+					tmpout(", "+where[i]);
+				}
+				tmpout("\n");
+			}
+			else
+				tmpout("     bp did not hit\n");
+			
+		}
+	},
 }

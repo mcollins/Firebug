@@ -1492,7 +1492,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         try
         {
         	var appShellService = this.getAppShellService();
-            hiddenWindow = appShellService.hiddenDOMWindow;
+            var hiddenWindow = appShellService.hiddenDOMWindow;
 
             if (hiddenWindow._chromebug)
             {
@@ -3324,7 +3324,13 @@ Firebug.Chromebug.PathListLocator = function(xul_element)
     }
     return Firebug.Chromebug.PathList;
 }
-
+Firebug.Chromebug.dumpFileTrack = function()
+{
+	var appShellService = this.getAppShellService();
+    var hiddenWindow = appShellService.hiddenDOMWindow;
+	hiddenWindow.dumpTrackFiles();
+	fbs.dumpFileTrack();
+}
 function getFrameWindow(frame)
 {
    // if (debuggers.length < 1)  // too early, frame.eval will crash FF2
