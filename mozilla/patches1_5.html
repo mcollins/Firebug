@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Firefox patches for Firebug Future Investigations</title>
+ 
+</head>
+<body>
+<h1>Patches to Firefox 3.1 to Simulate Firebug 1.5 Environment</h1>
+<p>Apply these patches to <code>hg clone http://hg.mozilla.org/releases/mozilla-1.9.1 </code> (chosen as stable base for now).
+Firebug 1.5 will target FF3.2, so we will switch to that base as it gets closer.
+</p>
+<dl>
+<dt>Patch makefile for nspr4.pdb (not for try server)</dt>
+<dd>
+	<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=338224">bugzilla 338224</a>,
+	nspr4.dll and --disable-debug yields "no rule to make nspr4.pdb needed by export" 
+	<a href="https://bugzilla.mozilla.org/attachment.cgi?id=348289">PATCH</a>
+</dd>
+<dt>add nsIEventListenerService</dt>
+<dd>
+	<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=448602">bugzilla 448602</a>,  
+	Have a way to enumerate event listeners, 
+	<a href="https://bugzilla.mozilla.org/attachment.cgi?id=347341">PATCH</a>
+</dd>
+<dt>add jsdICompilationHook</dt>
+<dd>
+	<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=379410">bugzilla 379410</a>,
+ 	debugger script detection using parent JSScript*,
+ 	<a href="https://bugzilla.mozilla.org/attachment.cgi?id=345313">PATCH</a>
+</dd>
+</dl>
+</body>
+</html>
