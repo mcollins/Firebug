@@ -35,7 +35,7 @@ var ChromeBugOverrides = {
                     getObjectDescription: function(object)
                     {
                         // the selected panel may not be able to handle this because its in the wrong context
-                        FBTrace.sysout("MultiContextLocator "+object, object);
+                        FBTrace.sysout("MultiContextLocator getObjectDescription"+object, object);
                         return FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
                     },
                     getLocationList: function()
@@ -58,7 +58,7 @@ var ChromeBugOverrides = {
          var bestPanelName = getBestPanelName(object, panelName);  // type testing.
          
          // Type testing  has found a panel name. Now we ask each context to check if it has the object
-         var context = Firebug.Chromebug.PackageList.eachContext(function findObject(context)
+         var context = Firebug.Chromebug.ContextList.eachContext(function findObject(context)
          {
              var panel = context.getPanel(bestPanelName);
              FBTrace.sysout("ChromebugOverrides select panel "+bestPanelName, panel);
@@ -70,7 +70,7 @@ var ChromeBugOverrides = {
          FBTrace.sysout("ChromebugOverrides select found context "+context+" for bestPanelName "+bestPanelName);
          
          if (context)  // else don't move
-             Firebug.Chromebug.PackageList.setCurrentLocation(context);
+             Firebug.Chromebug.ContextList.setCurrentLocation(context);
          
          var panel = FirebugChrome.selectPanel(bestPanelName, sidePanelName, true);
          if (panel)
@@ -256,7 +256,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     },
 
     // Override debugger
-    supportsGlobal: function(global, frame)
+    supportsGlobal: function(global, frame)  // (set the breakContext and return true) or return false;  
     {
     	if (FBTrace.DBG_FBS_FINDDEBUGGER)
     	{
@@ -276,7 +276,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         	var description = Firebug.Chromebug.parseURI(fileName);
         	if (description && description.path)
         	{
-        		var pkg = Firebug.Chromebug.PackageList.getOrCreate(description.path);
+        		var pkg = Firebug.Chromebug.ContextList.getOrCreate(description.path);
         		pkg.eachContext(function findMatchingContext(pkgContext)
         		{
         			if (pkgContext.window == rootDOMWindow)

@@ -134,6 +134,7 @@
         <command id="cmd_clearTracePanel" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)"/>
         <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.TraceModule.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
         <command id="cmd_cbDumpFileTrack" oncommand="Firebug.Chromebug.dumpFileTrack()"/>
+        <command id="cmd_cbUnitTest" oncommand="Firebug.Chromebug.unitTest()"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -180,6 +181,9 @@
                     		key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole"/>
                     <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack" 
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
+                    <menuitem id="menu_chromebugUnitTest" command="cmd_cbUnitTest"
+                    		key="key_cbUnitTest" label="Start Firebug Unit Test"/>
+                    		
                 </menupopup>
             </menu>
             <menu id="view-menu" label="&firebug.View;">
@@ -233,24 +237,12 @@
                 </menupopup>
             </menu>
         </menubar>
+        
         	<vbox><spacer flex="1"/>
-            <label value="|" control="cbPackageList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
+            <label value="|" control="cbContextList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
 			<spacer flex="1"/></vbox> 
-
-            <vbox><spacer flex="1"/>
-            <label value="context:" control="cbPackageList" id="cbPackageLabel" class="toolbar-text-menubutton"
-                        tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
-            <spacer flex="1"/></vbox>            
-                     
-            <toolbarbutton label="context" id="cbPackageList" locationProvider="Firebug.Chromebug.PackageListLocator;"
-                            class="toolbar-text-menubutton"
-                            tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-           
-           <toolbarbutton  id="reload-button" class="toolbarbutton-1"
-                            command="cmd_reload" tooltiptext="Reload current window"/>
-                            
-            <vbox><spacer flex="1"/>
+			
+			            <vbox><spacer flex="1"/>
             <label value="files:" control="cbAllFilesList" id="cbAllFilesLabel" class="toolbar-text-menubutton"
                         tooltiptext="All files known to Chromebug" />
             <spacer flex="1"/></vbox>            
@@ -259,6 +251,20 @@
                             class="toolbar-text-menubutton"
                             tooltiptext="All files known to Chromebug"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+
+            <vbox><spacer flex="1"/>
+            <label value="context:" control="cbContextList" id="cbPackageLabel" class="toolbar-text-menubutton"
+                        tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
+            <spacer flex="1"/></vbox>            
+                     
+            <toolbarbutton label="context" id="cbContextList" locationProvider="Firebug.Chromebug.ContextListLocator;"
+                            class="toolbar-text-menubutton"
+                            tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
+                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+           
+           <toolbarbutton  id="reload-button" class="toolbarbutton-1"
+                            command="cmd_reload" tooltiptext="Reload current window"/>
+                            
         
     </hbox>
         <browser id="content" flex="2" src="chrome://chromebug/content/introduction.html" />

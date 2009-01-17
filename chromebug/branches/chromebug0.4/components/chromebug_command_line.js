@@ -30,6 +30,8 @@ const  clh_category = "b-chromebug";
 
 const  nsIWindowMediator = Components.interfaces.nsIWindowMediator;
 
+const reXUL = /\.xul$|\.xml$/;
+
 /**
  * The XPCOM component that implements nsICommandLineHandler.
  * It also implements nsIFactory to serve as its own singleton factory.
@@ -145,7 +147,7 @@ const  chromebugCommandLineHandler = {
     {
         // This is a minature version of the double hook in firebug-service.js
         hiddenWindow._chromebug = {};
-        hiddenWindow._chromebug.scriptsByJSContextTag = {};
+        hiddenWindow._chromebug.jsContextTagByScriptTag = {};
         hiddenWindow._chromebug.jsContext = {};
         hiddenWindow._chromebug.breakpointedScripts = {};
         hiddenWindow.dumpTrackFiles = function() { fbs.trackFiles.dump(); }
@@ -156,7 +158,7 @@ const  chromebugCommandLineHandler = {
             {
         		 fbs.trackFiles.add(script);
         		 
-                 if (!script.functionName) // top or eval-level
+                 if (!script.functionName || reXUL.test(script.fileName)) // top or eval-level
                  {
                      var cb = hiddenWindow._chromebug;
                      if (!cb)
@@ -171,10 +173,11 @@ const  chromebugCommandLineHandler = {
                          script.setBreakpoint(0);
                      }
                  }
+
             },
             onScriptDestroyed: function(script)
             {
-                if (!script.functionName) // top or eval-level
+                if (!script.functionName || reXUL.test(script.fileName)) // top or eval-level
                 {
                     var cb = hiddenWindow._chromebug;
                     if (!cb || !cb.breakpointedScripts)
@@ -208,20 +211,11 @@ const  chromebugCommandLineHandler = {
                     delete cb.breakpointedScripts[script.tag];
                 }
 
-                if (!frame.callingFrame) // then top-level
-                {
-                    if (frame.executionContext)
-                    {
-                        var tag = frame.executionContext.tag;
-                        //hiddenWindow.dump("breakpointHook jsContext "+tag+"\n");
-                        if(!cb.scriptsByJSContextTag[tag])
-                        {
-                            cb.scriptsByJSContextTag[tag] = [];
-                            cb.jsContext[tag] = frame.executionContext;
-                        }
-                        cb.scriptsByJSContextTag[tag].push(frame.script);
-                    }
-                }
+                if (frame.executionContext)
+                    cb.jsContextTagByScriptTag[frame.script.tag] = frame.executionContext.tag;
+                else
+                    cb.jsContextTagByScriptTag[frame.script.tag] = 0;
+                
                 return jsdIExecutionHook.RETURN_CONTINUE;
             }
         };
@@ -523,10 +517,18 @@ function tmpout(text)
 
 fbs.trackFiles  = {
 	allFiles: {},
+    avoidSelf: function(URI)
+    {
+        return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);   
+    },
 	add: function(script)
 	{
 		var name = new String(script.fileName);
-		this.allFiles[name] = [script.functionName];
+		
+		if (this.avoidSelf(name))
+		    this.allFiles[name] = ["dropped"];
+		else
+		    this.allFiles[name] = ["functionName="+script.functionName];
 	},
 	drop: function(fileName)
 	{
