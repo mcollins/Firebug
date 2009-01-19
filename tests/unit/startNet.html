@@ -2,13 +2,21 @@
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <script type="text/javascript" src="env.js" ></script>
+    <script type="text/javascript" src="chrome://firebug/content/domplate.js" ></script>
+    <link rel="stylesheet" href="startNet.css" type="text/css"/>
 </head>
 <body>
     <button onclick="runTests()">Run All</button>
-    <br/>
-    <div id="testList"></div>
+    <br/><br/>
+    <div id="testList"/>
 <script>
+// Reload page using http:
 if (fireunit.forceHttp()) {
+
+// Registered Tests
+//-----------------------------------------------------------------------------
+
 var testDesc = [
     {uri: "net/netPanel.html",          desc: "Existence of net panel" },
     {uri: "net/netEntry.html",          desc: "Existence of a simple entry in net panel" },
@@ -28,6 +36,9 @@ var testDesc = [
     {uri: "net/netSelection.html",      desc: "Test for Net panel selection using chrome.select and NetFileLink" },
 ];
 
+//-----------------------------------------------------------------------------
+
+// Run all tests in one test suite.
 function runTests() {
     var tests = [];
     for (var i=0; i<testDesc.length; i++)
@@ -35,27 +46,50 @@ function runTests() {
     fireunit.runTests.apply(fireunit, tests);
 }
 
-function runTest(testUri) {
-    fireunit.runTests(testUri);
-}
+with (FBL) {
 
-var testList = document.getElementById("testList");
-for (var i=0; i<testDesc.length; i++) {
-    var link = document.createElement("a");
-    link.innerHTML = link.href = testDesc[i].uri;
-    link.onclick = function(event) {
-        runTest(event.target.href);
+// Test List Template
+//-----------------------------------------------------------------------------
+
+var TestList = domplate(
+{
+    tag:
+        TABLE({"class": "testTable", cellpadding: 0, cellspacing: 0},
+            TBODY(
+                FOR("test", "$tests",
+                    TR({"class": "testListRow", _repObject: "$test"},
+                        TD({"class": "testListCol testUri"},
+                            SPAN({"class": "testLink", 
+                                onclick: "$onTestClick"},
+                                SPAN("$test.uri")
+                            )
+                        ),
+                        TD({"class": "testListCol testDesc"},
+                            SPAN("$test.desc")
+                        )
+                    )
+                )
+            )
+        ),
+
+    onTestClick: function(event)
+    {
+        if (isLeftClick(event))
+        {
+            var row = getAncestorByClass(event.target, "testListRow");
+            var testObj = row.repObject;
+            fireunit.runTests(testObj.uri);
+            cancelEvent(event);
+        }
     }
-    testList.appendChild(link);
-    
-    var desc = document.createElement("span");
-    desc.innerHTML = "&nbsp;&nbsp;&nbsp;" + testDesc[i].desc;
-    desc.style.fontStyle = "italic";
-    desc.style.color = "gray";
-    testList.appendChild(desc);
-    
-    testList.appendChild(document.createElement("br"));
-}}
+});
+
+// Build test list UI
+var content = document.getElementById("testList");
+TestList.tag.replace({tests: testDesc}, content);
+
+//-----------------------------------------------------------------------------
+}} 
 
 </script>
 </body>

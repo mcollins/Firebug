@@ -15,6 +15,9 @@ var FirebugChrome = browser.FirebugChrome;
 var FirebugContext = browser.FirebugContext;
 var FBTrace = browser.FBTrace;
 
+// Set test (one file) timeout
+fireunit.testTimeout = 7000;
+
 // Handle unexpected errors on the page.
 window.onerror = function(errType, errURL, errLineNum) {
     var path = window.location.pathname;
