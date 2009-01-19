@@ -35,7 +35,7 @@ var ChromeBugOverrides = {
                     getObjectDescription: function(object)
                     {
                         // the selected panel may not be able to handle this because its in the wrong context
-                        FBTrace.sysout("MultiContextLocator getObjectDescription"+object, object);
+                        FBTrace.sysout("MultiContextLocator getObjectDescription "+object, object);
                         return FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
                     },
                     getLocationList: function()
@@ -258,70 +258,39 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     // Override debugger
     supportsGlobal: function(global, frame)  // (set the breakContext and return true) or return false;  
     {
-    	if (FBTrace.DBG_FBS_FINDDEBUGGER)
-    	{
-    		var fileName = normalizeURL(frame.script.fileName);
-    		FBTrace.sysout("ChromebugOverrides supportsGlobal "+fileName);
-    	}
         try {
         	if (global)
         	{
         		var rootDOMWindow = getRootWindow(global);
         		if (rootDOMWindow && rootDOMWindow.location && rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
         			return false;  // ignore self
+            
+        		var context = Firebug.Chromebug.getContextByGlobal(global);  // eg browser.xul
+        		if (!context)
+        		{
+        			if (global.location)  // then we have a window, it will be an nsIDOMWindow, right?
+        				context = ChromeBugWindowInfo.addFrameGlobal(global);
+        			else 
+        			{
+        				var jsContext = frame.executionContext;
+        				if (jsContext)
+        					context = ChromeBugWindowInfo.addJSContext(global, jsContext);
+        			}
+        		}
+        	}
+        	else
+        	{
+        		var jsContext = frame.executionContext;
+				if (jsContext)
+					context = ChromeBugWindowInfo.addJSContext(null, jsContext);
         	}
             
-            var context = null;  // our goal is to set this.
-            var fileName = normalizeURL(frame.script.fileName);
-        	var description = Firebug.Chromebug.parseURI(fileName);
-        	if (description && description.path)
-        	{
-        		var pkg = Firebug.Chromebug.ContextList.getOrCreate(description.path);
-        		pkg.eachContext(function findMatchingContext(pkgContext)
-        		{
-        			if (pkgContext.window == rootDOMWindow)
-        				context = pkgContext;
-        			return context; // if null, look at another context.
-        		});
-
+        	if (FBTrace.DBG_LOCATIONS|| FBTrace.DBG_FBS_FINDDEBUGGER)
+        	{	
         		if (!context)
-    			{
-    				// we know the script being run is part of a package, but no context in the package supports the window.
-        			if (global)
-        				context = pkg.createContextInPackage(rootDOMWindow);
-        			else
-        			{
-        				// The jscontext for these are out reach currently...
-        				var context = Firebug.Chromebug.createContext();  
-        				pkg.appendContext(context);
-        			}
-    			}
-    			if (FBTrace.DBG_LOCATIONS)
-                	FBTrace.sysout("debugger.supportsGlobal set context via pkg "+description.path+" to "+context.getName()+" during "+frame.script.fileName);
-        	}
-        	
-        	if (!context)
-        	{
-        		context = Firebug.Chromebug.getContextByGlobal(global);  // eg browser.xul
-    			if (FBTrace.DBG_LOCATIONS)
-                	FBTrace.sysout("debugger.supportsGlobal saw pkg: "+(description?description.path:"null")+" set context via ChromeBugWindowInfo to "+context.getName());
-        	}
-        	
-            if (!context)
-            {
-                if (global.location)  // then we have a window, it will be an nsIDOMWindow, right?
-                {
-                    context = ChromeBugWindowInfo.addFrameGlobal(global);
-
-        			if (FBTrace.DBG_LOCATIONS)
-                    	FBTrace.sysout("debugger.supportsGlobal created frameGlobal "+context.getName());
-                }
-            }
-
-            if (!context)
-            {
-       			if (FBTrace.DBG_LOCATIONS)
-                   FBTrace.sysout("ChromeBugPanel.supportsGlobal but no context and no location");
+                   FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+" but no context and no location");
+        		else
+                	FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+" set context via ChromeBugWindowInfo to "+context.getName());
             }
             
             this.breakContext = context;

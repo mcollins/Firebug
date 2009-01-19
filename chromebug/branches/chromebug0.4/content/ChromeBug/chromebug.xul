@@ -267,7 +267,7 @@
                             
         
     </hbox>
-        <browser id="content" flex="2" src="chrome://chromebug/content/introduction.html" />
+        <browser id="content" flex="2" disablehistory="true" src="chrome://chromebug/content/introduction.html" />
         <splitter id="fbContentSplitter"/>
         <vbox id="fbContentBox" flex="1" collapsed="true">
             <toolbox id="fbToolBox">

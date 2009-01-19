@@ -5,6 +5,7 @@ pref("extensions.chromebug.extensions", "none");
 pref("extensions.chromebug.DBG_CHROMEBUG", false); // /*@explore*/
 pref("extensions.chromebug.DBG_CB_CONSOLE", true);      // /*@explore*/
 pref("extensions.chromebug.defaultScriptPanelLocation", "");
+pref("extensions.chromebug.previousContext", "");
 
 pref("extensions.chromebug.enableTraceConsole", true); 
 // Global
