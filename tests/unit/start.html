@@ -2,30 +2,13 @@
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<script type="text/javascript" src="testList.js" ></script>
 <script>
 if (fireunit.forceHttp()) {
-    fireunit.runTests( 
-        "console/inspect.html",     // Basic command line execution
-        "console/commandline.html", // Bunch of tests for command line APIs 
-        "console/issue1307.html",   // XhrRequests are not logged in the console window 
-        // xxxHonza: "domplate/domplate.html",   // Domplate tests 
-        "net/netPanel.html",        // Existence of net panel
-        "net/netEntry.html",        // Existence of a simple entry in net panel
-        "net/netEntryBody.html",    // Net entry can be expanded and info body is there 
-        "net/issue176.html",        // Filter for Flash requests
-        "net/issue601.html",        // Response Tab
-        "net/issue1256.html",       // Params Tab
-        "net/issue372.html",        // Post Tab
-        "net/issue700.html",        // HTML Tab
-        "net/issue1299.html",       // Firebug must cache even responses coming from FF cache
-        "net/issue1308.html",       // + sign in POST (proper encoding, Copy Location With Parameters)
-        "net/netPanelListener.html",     // Test listener for Firebug.NetMonitor
-        "net/netInfoBodyListener.html",  // Test listener for Firebug.NetMonitor.NetInfoBody 
-        "net/netSpyListener.html",       // Test listener for Firebug.Spy
-        "net/netCacheListener.html",     // Test listener for Firebug.Spy
-        "net/issue369.html",        // Inspect JSON data in HTTP responses
-        "net/netSelection.html"     // Test for Net panel selection using chrome.select and NetFileLink
-    );
+    var temp = [];
+    for (var i=0; i<testList.length; i++)
+        temp.push(testList[i].uri);
+    fireunit.runTests.apply(fireunit, temp);
 }
 </script>
 </head>
