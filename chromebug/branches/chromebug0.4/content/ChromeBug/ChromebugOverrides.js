@@ -48,35 +48,7 @@ var ChromeBugOverrides = {
         }
      },
      
-     select: function(object, panelName, sidePanelName, forceUpdate)
-     {
-         //if (FBTrace.DBG_PANELS)                                                                                                                       /*@explore*/
-             FBTrace.sysout("ChromebugOverrides.select object:"+object+" panelName:"+panelName+" sidePanelName:"+sidePanelName+" forceUpdate:"+forceUpdate, object);  /*@explore*/
-         if (!panelName)
-             panelName = FirebugContext.panelName;
-         
-         var bestPanelName = getBestPanelName(object, panelName);  // type testing.
-         
-         // Type testing  has found a panel name. Now we ask each context to check if it has the object
-         var context = Firebug.Chromebug.ContextList.eachContext(function findObject(context)
-         {
-             var panel = context.getPanel(bestPanelName);
-             FBTrace.sysout("ChromebugOverrides select panel "+bestPanelName, panel);
-             if (panel && panel.hasObject(object))
-                 return context;
-             else
-            	 return false;
-         });
-         FBTrace.sysout("ChromebugOverrides select found context "+context+" for bestPanelName "+bestPanelName);
-         
-         if (context)  // else don't move
-             Firebug.Chromebug.ContextList.setCurrentLocation(context);
-         
-         var panel = FirebugChrome.selectPanel(bestPanelName, sidePanelName, true);
-         if (panel)
-             panel.select(object, forceUpdate);
-     },
-    
+
     // Override Firebug.HTMLPanel.prototype
     getParentObject: function(node)
     {
@@ -380,7 +352,6 @@ function overrideFirebugFunctions()
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
         top.FirebugChrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
-        //top.FirebugChrome.select = ChromeBugOverrides.select;
          
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
