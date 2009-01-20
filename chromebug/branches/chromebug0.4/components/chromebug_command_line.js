@@ -29,7 +29,7 @@ const  clh_CID = Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}");
 const  clh_category = "b-chromebug";
 
 const  nsIWindowMediator = Components.interfaces.nsIWindowMediator;
-
+const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
 /**
  * The XPCOM component that implements nsICommandLineHandler.
  * It also implements nsIFactory to serve as its own singleton factory.
@@ -141,6 +141,7 @@ const  chromebugCommandLineHandler = {
             }});
     },
     
+    
     hookJSDContexts: function(jsd, hiddenWindow)
     {
         // This is a minature version of the double hook in firebug-service.js
@@ -149,12 +150,15 @@ const  chromebugCommandLineHandler = {
         hiddenWindow._chromebug.jsContext = {};
         hiddenWindow._chromebug.breakpointedScripts = {};
         hiddenWindow._chromebug.innerScripts = [];
+        hiddenWindow._chromebug.xulScriptsByURL = {};
         hiddenWindow.getTrackFiles = function() { return fbs.trackFiles.allFiles; }
 
         jsd.scriptHook =
         {
             onScriptCreated: function(script)
             {
+                if (fbs.trackFiles.avoidSelf(script.fileName))
+                    return;
         		 fbs.trackFiles.add(script);
         		 
         		 var cb = hiddenWindow._chromebug;
@@ -164,7 +168,6 @@ const  chromebugCommandLineHandler = {
                       //hiddenWindow.dump("onScriptCreated No hiddenWindow._chromebug for script:"+script.fileName+"\n");
                       return;
                  }
-                //XXXXXXXXXXXX or XUL!!
                  if (!script.functionName) // top or eval-level
                  {
                      if (cb.breakpointedScripts)  // should never be false but is once
@@ -174,10 +177,19 @@ const  chromebugCommandLineHandler = {
                          return;
                      }
                  }
+                 else if ( reXUL.test(script.fileName) )
+                 {
+                     if (!(script.fileName in cb.xulScriptsByURL))
+                         cb.xulScriptsByURL[script.fileName] = [];
+                     cb.xulScriptsByURL[script.fileName].push(script); // test for valid when removed
+                     return;
+                 }
                  cb.innerScripts.push(script);
             },
             onScriptDestroyed: function(script)
             {
+                if (fbs.trackFiles.avoidSelf(script.fileName))
+                    return;
             	var cb = hiddenWindow._chromebug;
                 
                 if (!script.functionName) // top or eval-level
@@ -225,16 +237,27 @@ const  chromebugCommandLineHandler = {
                     if (frame.executionContext)
                     {
                         var tag = frame.executionContext.tag;
-                        //hiddenWindow.dump("breakpointHook jsContext "+tag+"\n");
-                        cb.jsContextTagByScriptTag[frame.script.tag] = tag;
                         
-                        // add the unassigned innerscripts
-                        for (var i = 0; i < cb.innerScripts.length; i++)
+                        var jscontext = frame.executionContext;
+                        var frameGlobal = jscontext.globalObject.getWrappedValue();
+                        var scopeName = fbs.getLocationSafe(frameGlobal);
+                        if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
                         {
-                        	var script = cb.innerScripts[i];
-                        	if (script.fileName != frame.script.fileName)
-                        		hiddenWindow.dump("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
-                        	cb.jsContextTagByScriptTag[script.tag] = tag;
+                            //hiddenWindow.dump("breakpointHook jsContext "+tag+"\n");
+                            cb.jsContextTagByScriptTag[frame.script.tag] = tag;
+                        
+                            // add the unassigned innerscripts
+                            for (var i = 0; i < cb.innerScripts.length; i++)
+                            {
+                                var script = cb.innerScripts[i];
+                                if (script.fileName != frame.script.fileName)
+                                    hiddenWindow.dump("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
+                                cb.jsContextTagByScriptTag[script.tag] = tag;
+                            }
+                        }
+                        else
+                        {
+                            hiddenWindow.dump("dropping "+tag+" with location "+scopeName+"\n");
                         }
                         cb.innerScripts = [];
                     }
@@ -540,6 +563,10 @@ function tmpout(text)
 
 fbs.trackFiles  = {
 	allFiles: {},
+    avoidSelf: function(URI)
+    {
+        return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);   
+    },
 	add: function(script)
 	{
 		var name = new String(script.fileName);
