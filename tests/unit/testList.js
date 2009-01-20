@@ -31,6 +31,7 @@ var testList = [
     {category: "script",  uri: "script/scriptWatch1.html",  desc: "Use watch panel when debug"}, 
     //xxxHonza: this must be refactored yet: {category: "domplate",  uri: "domplate/domplate.html",  desc: "Domplate tests"}, 
     //xxxHonza: this must be refactored yet: {category: "console",  uri: "console/commandline.html",  desc: "Bunch of tests for command line APIs"},
+    {category: "console",  uri: "console/consoleListener.html",  desc: "Test listner for Console panel"},
 ];
 
 

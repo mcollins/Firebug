@@ -6,7 +6,6 @@
     <script type="text/javascript" src="chrome://firebug/content/domplate.js" ></script>
     <script type="text/javascript" src="testList.js" ></script>
     <link rel="stylesheet" href="testRunner.css" type="text/css"/>
-    <link rel="stylesheet" href="chrome://fireunit/skin/fireunit.css" type="text/css"/>
     <title>Firebug Test Runner</title>
 </head>
 <body>
@@ -15,15 +14,15 @@
 <ul>
     <li>Firebug and Fireunit must be installed.</li>
     <li><i>Enable Privileges</i> option in Fireunit must be on.</li>
-    <li>All panels in Fireug must be <i>always</i> enabled.</li>
+    <li>All panels in Firebug must be <i>always</i> enabled.</li>
 </ul>
 </p>
 
-<button onclick="runTests()">Run All</button>
+<button onclick="runAll()">Run All</button>
 <br/><br/>
 <div id="testList"/>
 <script>
-// Reload page using http:
+// Reload page using http.
 if (fireunit.forceHttp()) {
 
 //-----------------------------------------------------------------------------
@@ -52,16 +51,14 @@ var CategoryList = domplate(
             TBODY(
                 FOR("category", "$testList|categoryIterator",
                     TR({"class": "testCategoryRow", _repObject: "$category"},
-                        TD({"class": "categoryName testCategoryCol", width: "100%"},
+                        TD({"class": "categoryName testCategoryCol"},
                             SPAN({"class": "testCategoryName"},
                                 "$category|getCategoryName"
                             ),
                             SPAN({"class": "testCategoryCount"},
                                 "$category|getCategoryCount"
-                            )
-                        ),
-                        TD({"class": "categoryAction testCategoryCol"},
-                            DIV({"class": "testLink", onclick: "$onCategoryClick"},
+                            ),
+                            SPAN({"class": "categoryAction testLink", onclick: "$onCategoryClick"},
                                 SPAN("Run")
                             )
                         )
@@ -72,7 +69,7 @@ var CategoryList = domplate(
 
     categoryBodyTag:
         TR({"class": "categoryBodyRow", _repObject: "$category"},
-            TD({"class": "categoryBodyCol", colspan: 2})
+            TD({"class": "categoryBodyCol", colspan: 1})
         ),
 
     categoryIterator: function(testList)
