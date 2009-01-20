@@ -18,14 +18,17 @@
 </ul>
 </p>
 
-<button onclick="runAll()">Run All</button>
+<button id="runAll" onclick="runAll()" style="display:none">Run All</button>
 <br/><br/>
-<div id="testList"/>
+<div id="content"/>
 <script>
-// Reload page using http.
-if (fireunit.forceHttp()) {
-
+var content = document.getElementById("content");
+var runAll = document.getElementById("runAll");
+if (typeof fireunit != "undefined" && fireunit.forceHttp()) { with (FBL) {
 //-----------------------------------------------------------------------------
+
+// The Run All button can be visible now.
+runAll.style.display = "block";
 
 // Run all tests in one test suite.
 function runAll() {
@@ -38,8 +41,6 @@ function runTests(tests) {
         temp.push(tests[i].uri);
     fireunit.runTests.apply(fireunit, temp);
 }
-
-with (FBL) {
 
 // Test List Template
 //-----------------------------------------------------------------------------
@@ -178,13 +179,14 @@ var TestList = domplate(
 
 //-----------------------------------------------------------------------------
 
-// Build test list UI
-var content = document.getElementById("testList");
+// Build runner UI
 CategoryList.tableTag.replace({testList: testList}, content);
 
 //-----------------------------------------------------------------------------
 }} 
-
+else {
+    content.innerHTML ="<span style='color:red'>Fireunit must be installed.</span>";
+} 
 </script>
 </body>
 </html>
