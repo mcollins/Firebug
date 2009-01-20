@@ -24,7 +24,8 @@
 <script>
 var content = document.getElementById("content");
 var runAll = document.getElementById("runAll");
-if (typeof fireunit != "undefined" && fireunit.forceHttp()) { with (FBL) {
+if (typeof fireunit != "undefined") {
+if (fireunit.forceHttp()) { with (FBL) {
 //-----------------------------------------------------------------------------
 
 // The Run All button can be visible now.
@@ -183,7 +184,7 @@ var TestList = domplate(
 CategoryList.tableTag.replace({testList: testList}, content);
 
 //-----------------------------------------------------------------------------
-}} 
+}}}
 else {
     content.innerHTML ="<span style='color:red'>Fireunit must be installed.</span>";
 } 
