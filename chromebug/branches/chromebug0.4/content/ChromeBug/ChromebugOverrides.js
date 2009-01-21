@@ -35,7 +35,8 @@ var ChromeBugOverrides = {
                     getObjectDescription: function(object)
                     {
                         // the selected panel may not be able to handle this because its in the wrong context
-                        FBTrace.sysout("MultiContextLocator getObjectDescription "+object, object);
+                        if (FBTrace.DBG_LOCATIONS)
+                            FBTrace.sysout("MultiContextLocator getObjectDescription "+object, object);
                         return FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
                     },
                     getLocationList: function()
@@ -216,7 +217,8 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                     return false;
             }
 
-            if (FBTrace.DBG_LOCATIONS) FBTrace.sysout("ChromeBugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
+            if (FBTrace.DBG_LOCATIONS) 
+                FBTrace.sysout("ChromeBugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
             this.breakContext = context;
             return !!context;
         }
@@ -257,7 +259,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
 					context = ChromeBugWindowInfo.addJSContext(null, jsContext);
         	}
             
-        	if (FBTrace.DBG_LOCATIONS|| FBTrace.DBG_FBS_FINDDEBUGGER)
+        	if (FBTrace.DBG_LOCATIONS || FBTrace.DBG_FBS_FINDDEBUGGER)
         	{	
         		if (!context)
                    FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+" but no context and no location");

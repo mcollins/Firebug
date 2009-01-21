@@ -237,36 +237,60 @@
                 </menupopup>
             </menu>
         </menubar>
+            <vbox>
+            	<spacer flex="1"/>
+            	<label value="|" control="cbPackageList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
+				<spacer flex="1"/>
+			</vbox>          
+            <vbox>
+            	<spacer flex="1"/>
+            	<label value="filter:" control="cbPackageList" id="cbPackageLabel" class="toolbar-text-menubutton"
+                        tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
+            	<spacer flex="1"/>
+            </vbox>            
+                     
+            <toolbarbutton label="(no filter)" id="cbPackageList" locationProvider="Firebug.Chromebug.PackageListLocator;"
+                            class="toolbar-text-menubutton"
+                            tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
+                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
         
-        	<vbox><spacer flex="1"/>
-            <label value="|" control="cbContextList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
-			<spacer flex="1"/></vbox> 
+            <vbox>
+            	<spacer flex="1"/>
+            	<label value="|" control="cbAllFilesList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
+				<spacer flex="1"/>
+			</vbox> 
 			
-			            <vbox><spacer flex="1"/>
-            <label value="files:" control="cbAllFilesList" id="cbAllFilesLabel" class="toolbar-text-menubutton"
+			<vbox>
+				<spacer flex="1"/>
+            	<label value="All files:" control="cbAllFilesList" id="cbAllFilesLabel" class="toolbar-text-menubutton"
                         tooltiptext="All files known to Chromebug" />
-            <spacer flex="1"/></vbox>            
+            	<spacer flex="1"/>
+            </vbox>            
                      
             <toolbarbutton label="files" id="cbAllFilesList" locationProvider="Firebug.Chromebug.AllFilesListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="All files known to Chromebug"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+                  
 
-            <vbox><spacer flex="1"/>
-            <label value="context:" control="cbContextList" id="cbPackageLabel" class="toolbar-text-menubutton"
+
+            <vbox>
+            	<spacer flex="1"/>
+            	<label value="context:" control="cbContextList" id="cbContextLabel" class="toolbar-text-menubutton"
                         tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
-            <spacer flex="1"/></vbox>            
+            	<spacer flex="1"/>
+            </vbox>            
                      
             <toolbarbutton label="context" id="cbContextList" locationProvider="Firebug.Chromebug.ContextListLocator;"
                             class="toolbar-text-menubutton"
-                            tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
+                            tooltiptext="currently selected context"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
            
            <toolbarbutton  id="reload-button" class="toolbarbutton-1"
                             command="cmd_reload" tooltiptext="Reload current window"/>
                             
-        
-    </hbox>
+    	</hbox>
+    
         <browser id="content" flex="2" disablehistory="true" src="chrome://chromebug/content/introduction.html" />
         <splitter id="fbContentSplitter"/>
         <vbox id="fbContentBox" flex="1" collapsed="true">

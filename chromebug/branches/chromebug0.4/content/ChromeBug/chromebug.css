@@ -76,6 +76,9 @@
 #cbPackageLabel {
     font-weight: bold;
 }
+#cbContextLabel {
+    font-weight: bold;
+}
 /*
 .toolbarbutton-1, .toolbarbutton-menubutton-button {
     padding:5px;
