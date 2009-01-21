@@ -30,6 +30,8 @@ const  clh_category = "b-chromebug";
 
 const  nsIWindowMediator = Components.interfaces.nsIWindowMediator;
 const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
+
+const trace = false;
 /**
  * The XPCOM component that implements nsICommandLineHandler.
  * It also implements nsIFactory to serve as its own singleton factory.
@@ -165,7 +167,7 @@ const  chromebugCommandLineHandler = {
                  if (!cb)
                  { 
                       // Somehow the hook can be called before the hiddenWindow object is updated?
-                      //hiddenWindow.dump("onScriptCreated No hiddenWindow._chromebug for script:"+script.fileName+"\n");
+                      //if (trace) hiddenWindow.dump("onScriptCreated No hiddenWindow._chromebug for script:"+script.fileName+"\n");
                       return;
                  }
                  if (!script.functionName) // top or eval-level
@@ -198,7 +200,7 @@ const  chromebugCommandLineHandler = {
                     if (!cb || !cb.breakpointedScripts)
                     {
                         // about 4 of these can come out, some timing bug in mozilla.
-                        //hiddenWindow.dump("onScriptDestroyed No hiddenWindow._chromebug for script:"+script.fileName+"\n");
+                        //if (trace) hiddenWindow.dump("onScriptDestroyed No hiddenWindow._chromebug for script:"+script.fileName+"\n");
                         return;
                     }
                     var broken = cb.breakpointedScripts[script.tag];
@@ -224,7 +226,7 @@ const  chromebugCommandLineHandler = {
             
                 frame.script.clearBreakpoint(0);
                 var script = frame.script;
-                //hiddenWindow.dump("breakpointHook script "+script.tag+"\n");
+                //if (trace) hiddenWindow.dump("breakpointHook script "+script.tag+"\n");
                 var cb = hiddenWindow._chromebug;
                 var broken = cb.breakpointedScripts[script.tag];
                 if (broken)
@@ -243,25 +245,29 @@ const  chromebugCommandLineHandler = {
                         var scopeName = fbs.getLocationSafe(frameGlobal);
                         if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
                         {
-                            //hiddenWindow.dump("breakpointHook jsContext "+tag+"\n");
+                            if (trace) hiddenWindow.dump("assigning "+tag+" to "+frame.script.fileName+"\n");
                             cb.jsContextTagByScriptTag[frame.script.tag] = tag;
                         
                             // add the unassigned innerscripts
                             for (var i = 0; i < cb.innerScripts.length; i++)
                             {
                                 var script = cb.innerScripts[i];
-                                if (script.fileName != frame.script.fileName)
-                                    hiddenWindow.dump("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
+                                if (script.fileName != frame.script.fileName)  // so what tag then?
+                                    if (trace) hiddenWindow.dump("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
                                 cb.jsContextTagByScriptTag[script.tag] = tag;
                             }
                         }
                         else
                         {
-                            hiddenWindow.dump("dropping "+tag+" with location "+scopeName+"\n");
+                            if (trace) hiddenWindow.dump("dropping "+tag+" with location "+scopeName+"\n");
                         }
                         cb.innerScripts = [];
                     }
+                    else // looks like this is where command line handlers end up
+                    	if (trace) hiddenWindow.dump("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
                 }
+                else // looks like .xml/.xul ends up here.
+                	if (trace) hiddenWindow.dump("callingFrame for "+frame.script.fileName+"\n");
                 return jsdIExecutionHook.RETURN_CONTINUE;
             }
         };
