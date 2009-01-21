@@ -2430,7 +2430,7 @@ Firebug.Chromebug.PackageList = {
 	},
 	
 	getCurrentLocation: function() // a context filtered by package
-	{FBTrace.sysout("getCurrentLocation ", cbPackageList);
+	{ 
 		return cbPackageList.repObject;
 	},
     
@@ -2459,9 +2459,23 @@ Firebug.Chromebug.PackageList = {
         return list;
     },
 
+    getFilter: function()
+    {
+    	var current = this.getCurrentLocation();
+    	if (current && current.pkg.name != this.getDefaultPackageName())
+    		return current.pkg.name;
+    	else
+    		return "";
+    },
+    
+    getDefaultPackageName: function()
+    {
+    	return "        No Filtering, Current Context:   "; // in lexographical order the spaces will be early
+    },
+    
     getDefaultLocation: function()
     {
-        return {context: FirebugContext, pkg: {name: "        No Filtering, Current Context:   "}, label: "(no filter)"};
+        return {context: FirebugContext, pkg: {name: this.getDefaultPackageName() }, label: "(no filter)"};
     },
     
     getObjectLocation: function(filteredContext)
@@ -2976,7 +2990,8 @@ Firebug.Chromebug.AllFilesList = extend(SourceFileListBase, {
     
     setFilter: function()
     {
-        this.filter =  Firebug.Chromebug.PackageList.getCurrentLocation().pkg.name;
+        this.filter =  Firebug.Chromebug.PackageList.getFilter();
+         
         if (FBTrace.DBG_LOCATIONS)
             FBTrace.sysout("AllFilesList setFilter "+this.filter+" for current location:", Firebug.Chromebug.PackageList.getCurrentLocation());
     },
