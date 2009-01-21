@@ -276,6 +276,22 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         }
 
     },
+    
+    showThisSourceFile: function(sourceFile)
+    {
+        if (sourceFile.isEval() && !this.showEvals)
+               return false;
+
+        if (sourceFile.isEvent() && !this.showEvents)
+            return false;
+        
+        var description = Firebug.Chromebug.parseURI(sourceFile.href);
+        
+        if (Firebug.Chromebug.AllFilesList.isWantedDescription(description))
+        	return true;
+        else
+        	return false;
+    },
 
     // Override
     // Override FBL
@@ -360,6 +376,8 @@ function overrideFirebugFunctions()
         top.Firebug.HTMLPanel.prototype.getAnonymousChildObject = ChromeBugOverrides.getAnonymousChildObject;
         top.Firebug.Debugger.supportsWindow = ChromeBugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromeBugOverrides.supportsGlobal;
+        top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromeBugOverrides.showThisSourceFile;
+        
         top.Firebug.showBar = function() {
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("ChromeBugPanel.showBar NOOP\n");
