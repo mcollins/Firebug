@@ -1119,7 +1119,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Debugger.addListener(this);
         
-    	Firebug.Chromebug.AllFilesList.addListener(Firebug.Chromebug.PackageList);  // how changes to the package filter are sensed by AllFilesList
+    	Firebug.Chromebug.PackageList.addListener(Firebug.Chromebug.AllFilesList);  // how changes to the package filter are sensed by AllFilesList
 
         Firebug.TraceModule.addListener(this);
     },
@@ -1641,6 +1641,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
     },
     
+    avoidSelf: function(URI)
+    {
+        return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);   
+    },
+    
     buildInitialContextList: function(jsContextTagByScriptTag, xulScriptsByURL)
     {
         var unreachablesContext = Firebug.Chromebug.createContext();
@@ -1663,7 +1668,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                         FBTrace.sysout("buildEnumeratedSourceFiles got bad URL from script.fileName:"+script.fileName, script);
                     return;
                 }
-                if (SourceFileListBase.avoidSelf(url))
+                if (Firebug.Chromebug.avoidSelf(url))
                 {
                     delete jsContextTagByScriptTag[script.tag];
                     return;
@@ -2390,7 +2395,8 @@ Firebug.Chromebug.Package.prototype =
 // chrome://<packagename>/<part>/<file> 
 // A list of packages each with a context list
 // 
-Firebug.Chromebug.PackageList = {  
+Firebug.Chromebug.PackageList = extend(new Firebug.Listener(), 
+{
     //  key name of package, value Package object containing contexts
 	pkgs: {},
 	
@@ -2463,7 +2469,7 @@ Firebug.Chromebug.PackageList = {
 				pkg.deleteContext(context);
 		});
 	},
-	
+	 
 	getCurrentLocation: function() // a context filtered by package
 	{ 
 		return cbPackageList.repObject;
@@ -2472,9 +2478,10 @@ Firebug.Chromebug.PackageList = {
 	setCurrentLocation: function(filteredContext)  
     {
   	    cbPackageList.location = filteredContext;
-  	    
+  	    FBTrace.sysout("PackageList.setCurrentLocation sent onSetLocation to "+this.fbListeners.length)
+  	    dispatch(this.fbListeners, "onSetLocation", [this, filteredContext]);
     },
-	
+	 
     getLocationList: function()  // list of contextDescriptions
     {
         var list = [];
@@ -2539,7 +2546,7 @@ Firebug.Chromebug.PackageList = {
         	if (!FirebugContext)
         		FirebugContext = context;
         		
-            if (FBTrace.DBG_LOCATIONS)
+            //if (FBTrace.DBG_LOCATIONS)
                 FBTrace.sysout("Firebug.Chromebug.PackageList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
             
             ChromeBugWindowInfo.selectBrowser(context.browser);
@@ -2552,26 +2559,8 @@ Firebug.Chromebug.PackageList = {
     	   FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
        }
     },
-    
-    // **************************************************************************
-    // AllFilesList listener
-    
-    onSetLocation: function(packageList, current)
-    {
-    	FBTrace.sysout("onSetLocation current: "+current.pkg.name);
-		var noFilter = packageList.getDefaultPackageName();
-		if (current.pgk.name == noFilter)
-			packageList.setFilter(null)
-		else	
-		{
-			var targetName = current.pkg.name;
-			packageList.setFilter( function byPackageName(description) 
-			{
-				return (targetName == description.pkgName)
-			});
-		}
-    },
-}
+
+});
 
 Firebug.Chromebug.PackageListLocator = function(xul_element)
 {
@@ -2792,15 +2781,13 @@ Firebug.Chromebug.InterfaceListLocator = function(xul_element)
 {
     return connectedList(xul_element, Firebug.Chromebug.InterfaceList);
 }
-
-var SourceFileListBase = extend(new Firebug.Listener(),
+       
+function SourceFileListBase() 
 {
-    descriptionCache: {},
+}
 
-    clearCache: function()
-    {
-    	this.descriptionCache = {};
-    },
+SourceFileListBase.prototype = extend(new Firebug.Listener(),
+{
     
     getDescription: function(sourceFile)
     {
@@ -2868,7 +2855,6 @@ var SourceFileListBase = extend(new Firebug.Listener(),
     
     isWantedDescription: function(description)
     {
-    	FBTrace.sysout("isWantedDescription this.filter "+this.filter, description);
     	if (this.filter)
     		return this.filter(description);
     	else
@@ -2932,11 +2918,6 @@ var SourceFileListBase = extend(new Firebug.Listener(),
     	return {path: "SourceFileListBase", name:"no sourceFileDescription"};
     },
     
-    avoidSelf: function(URI)
-    {
-    	return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);   
-    },
-    
     toString: function()
     {
     	return "Source File List "+this.kind+" with "+this.getPackageNames().length+" packages"; 
@@ -2985,7 +2966,7 @@ var SourceFileListBase = extend(new Firebug.Listener(),
 
 Firebug.Chromebug.parseURI = function(URI)
 {
-    if (!URI || SourceFileListBase.avoidSelf(URI))
+    if (!URI || Firebug.Chromebug.avoidSelf(URI))
         return null;
     
     var description = Firebug.Chromebug.ComponentList.parseURI(URI);
@@ -3003,7 +2984,7 @@ Firebug.Chromebug.parseURI = function(URI)
     return description; 
 }
 
-Firebug.Chromebug.ExtensionList = extend(SourceFileListBase, {
+Firebug.Chromebug.ExtensionList = extend( new SourceFileListBase(), {
 
     kind: "extension",
         
@@ -3011,7 +2992,7 @@ Firebug.Chromebug.ExtensionList = extend(SourceFileListBase, {
 
     parseURI: function(URIString)
     {
-		if (this.avoidSelf(URIString))
+		if (Firebug.Chromebug.avoidSelf(URIString))
 			return null; 
 		
         var m = FBL.reChrome.exec(URIString) || reExtensionInFileURL.exec(URIString) || reResource.exec(URIString);
@@ -3042,11 +3023,31 @@ Firebug.Chromebug.ExtensionListLocator = function(xul_element)
 }
 
 
-Firebug.Chromebug.AllFilesList = extend(SourceFileListBase, {
+Firebug.Chromebug.AllFilesList = extend(new SourceFileListBase(), {
 
     kind: "all",
         
     parseURI: Firebug.Chromebug.parseURI,
+    
+    
+    // **************************************************************************
+    // PackageList listener
+    
+    onSetLocation: function(packageList, current)
+    {
+        FBTrace.sysout("onSetLocation current: "+current.pkg.name);
+        var noFilter = packageList.getDefaultPackageName();
+        if (current.pkg.name == noFilter)
+            Firebug.Chromebug.AllFilesList.setFilter(null)
+        else    
+        {
+            var targetName = current.pkg.name;
+            Firebug.Chromebug.AllFilesList.setFilter( function byPackageName(description) 
+            {
+                return (targetName == description.pkgName)
+            });
+        }
+    },
     
 });
 
@@ -3232,12 +3233,12 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
 }
 
 
-Firebug.Chromebug.ComponentList = extend(SourceFileListBase, {
+Firebug.Chromebug.ComponentList = extend(new SourceFileListBase(), {
   	kind: "component",
             
     parseURI: function(URIString)
     {
-		if (this.avoidSelf(URIString))
+		if (Firebug.Chromebug.avoidSelf(URIString))
 			return null;
 
 		var m = reComponents.exec(URIString);
@@ -3266,12 +3267,12 @@ Firebug.Chromebug.ComponentListLocator = function(xul_element)
     return connectedList(xul_element, Firebug.Chromebug.ComponentList);
 }
 
-Firebug.Chromebug.ModuleList = extend(SourceFileListBase, {
+Firebug.Chromebug.ModuleList = extend( new SourceFileListBase(), {
   	kind: "module",
             
     parseURI: function(URIString)
     {
-		if (this.avoidSelf(URIString))
+		if (Firebug.Chromebug.avoidSelf(URIString))
 			return null;
 		
 		var m = reModules.exec(URIString);
@@ -3336,7 +3337,7 @@ Firebug.Chromebug.JSContextList = {
         var URI = this.getObjectLocation(jscontext);
         if (!URI)
         	return {path: "no URI", name: "no URI"};
-        if (SourceFileListBase.avoidSelf(URI))
+        if (Firebug.Chromebug.avoidSelf(URI))
             var d = {path:"avoided chromebug", name: URI};
         if (!d)
             var d = Firebug.Chromebug.parseURI( URI );
@@ -3352,7 +3353,7 @@ Firebug.Chromebug.JSContextList = {
         if (!URI)
         	return null;
         
-        if (SourceFileListBase.avoidSelf(URI))
+        if (Firebug.Chromebug.avoidSelf(URI))
             return null;
         
         var global = jscontext.globalObject.getWrappedValue();
@@ -3378,7 +3379,7 @@ Firebug.Chromebug.JSContextList = {
             var context = ChromeBugWindowInfo.contexts[i];
             try
             {
-                if (context.getName() == location)
+                if (context.window.location == location)
                     return context;
             }
             catch(e)
