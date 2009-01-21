@@ -1149,7 +1149,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         // from this point forward scripts should come via debugger interface  
 
         // Wait to let the initial windows open, then return to users past settings
-        setTimeout( bind(Firebug.Chromebug.restoreState, this), 300);
+        this.retryRestoreID = setInterval( bind(Firebug.Chromebug.restoreState, this), 500);
     },
     
     prepareForCloseEvents: function()
@@ -1174,6 +1174,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         	if (!previousState)
         	{
         		FBTrace.sysout("restoreState could not parse previousStateJSON "+previousStateJSON);
+        		this.stopRestoration();
         		return;
         	}
         	else
@@ -1182,12 +1183,27 @@ Firebug.Chromebug = extend(Firebug.Module,
         	}
         	
         	var context = this.restoreContext(previousState);
-        	this.restoreFilter(previousState, context)
+        	if (context)
+        	{	
+        		var pkg = this.restoreFilter(previousState, context);
+        		if (pkg)
+        			this.stopRestoration(); // we got it all done
+        		// else keep trying
+        		
+        		// show the restored context, after we let the init finish
+        		setTimeout( function delayShowContext() 
+        		{
+        			TabWatcher.dispatch("showContext", [context.browser, context])
+        		});
+        	}
+        	// else keep trying
+        		
         }
         else
         {
         	//if (FBTrace.DBG_INITIALIZE)
         		FBTrace.sysout("restoreState NO previousStateJSON ");
+        	this.stopRestoration(); // no reason to beat our head against the wall...
         }
     },
     
@@ -1216,21 +1232,34 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (previousState.pkgName)
         {
             var pkg = Firebug.Chromebug.PackageList.getPackageByName(previousState.pkgName);
-            Firebug.Chromebug.PackageList.setCurrentLocation(pkg.getContextDescription(context));
-            FBTrace.sysout("restoreFilter found "+previousState.pkgName+" and set PackageList to ", Firebug.Chromebug.PackageList.getCurrentLocation());
+            if (pkg)
+            {
+            	Firebug.Chromebug.PackageList.setCurrentLocation(pkg.getContextDescription(context));
+            	FBTrace.sysout("restoreFilter found "+previousState.pkgName+" and set PackageList to ", Firebug.Chromebug.PackageList.getCurrentLocation());
+            	return pkg;
+            }
+            else  // we had a package named, but its not available (yet?) 
+            	return false;
         }
         else
+        {
             FBTrace.sysout("restoreFilter, no pkgName");
+            this.stopRestoration(); // we had a context but no package name, oh well we did our best.
+            return false;
+        }
     },
     
-    saveState: function(context)
+    saveState: function(context)  // only call on user operations
     {
+    	this.stopRestoration();
+    	
     	var panel = context.chrome.getSelectedPanel();
     	if (panel && panel.getSourceLink)
     	{
     		var sourceLink = panel.getSourceLink();
     		var sourceLinkJSON = sourceLink.toJSON();
     	}
+    	
     	var pkgDescription = Firebug.Chromebug.PackageList.getCurrentLocation();
     	
     	var previousContextJSON = "{"+
@@ -1242,6 +1271,15 @@ Firebug.Chromebug = extend(Firebug.Module,
     	prefs.setCharPref("extensions.chromebug.previousContext", previousContextJSON);
     	prefService.savePrefFile(null);
     	FBTrace.sysout("saveState "+previousContextJSON);
+    },
+
+    stopRestoration: function()
+    {
+    	if (this.retryRestoreID)
+    	{
+    		clearTimeout(this.retryRestoreID);
+    		delete this.retryRestoreID;
+    	}
     },
     
     initializeDebugger: function()
@@ -2308,7 +2346,7 @@ Firebug.Chromebug.Package.prototype =
 	
 	getContextDescription: function(context)
 	{
-	    return {context: context, pkg: this};
+	    return {context: context, pkg: this, label: this.name};
 	},
 	
 	getContextDescriptions: function()
@@ -2487,7 +2525,7 @@ Firebug.Chromebug.PackageList = {
     {
         var context = filteredContext.context;
         var title = (context.window ? context.getTitle() : null);
-        var d =  {path: filteredContext.pkg.name, name: context.getName() +(title?"   "+title:""), label:  filteredContext.pkg.name};
+        var d =  {path: filteredContext.pkg.name, name: context.getName() +(title?"   "+title:""), label:  filteredContext.label};
     	if (FBTrace.DBG_LOCATIONS)
     		FBTrace.sysout("getObjectDescription for context "+context.uid+" path:"+d.path+" name:"+d.name, d);
         return d;
