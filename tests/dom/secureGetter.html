@@ -3,7 +3,7 @@
 <script>
 function MyClass() {}
 MyClass.prototype = {
-  get myValue() { debugger; window.alert("nasty "+window.mc); return 'do something nasty here'; }
+  get myValue() { window.alert("nasty "+window.location); return 'do something nasty here'; }
 
 }
 
