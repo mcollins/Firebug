@@ -230,29 +230,29 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     },
 
     // Override debugger
-    supportsGlobal: function(global, frame)  // (set the breakContext and return true) or return false;  
+    supportsGlobal: function(frameWin, frame)  // (set the breakContext and return true) or return false;  
     {
         try {
-        	if (global)
+        	if (frameWin)
         	{
-        		var rootDOMWindow = getRootWindow(global);
+        		var rootDOMWindow = getRootWindow(frameWin);
         		if (rootDOMWindow && rootDOMWindow.location && rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
         			return false;  // ignore self
             
-        		var context = Firebug.Chromebug.getContextByGlobal(global);  // eg browser.xul
+        		var context = Firebug.Chromebug.getContextByGlobal(frameWin);  // eg browser.xul
         		if (!context)
         		{
-        			if (global.location)  // then we have a window, it will be an nsIDOMWindow, right?
-        				context = ChromeBugWindowInfo.addFrameGlobal(global);
+        			if (frameWin.location)  // then we have a window, it will be an nsIDOMWindow, right?
+        				context = ChromeBugWindowInfo.addFrameGlobal(frameWin);
         			else 
         			{
         				var jsContext = frame.executionContext;
         				if (jsContext)
-        					context = ChromeBugWindowInfo.addJSContext(global, jsContext);
+        					context = ChromeBugWindowInfo.addJSContext(frameWin, jsContext);
         			}
         		}
         	}
-        	else
+        	else // we did not find a Window
         	{
         		var jsContext = frame.executionContext;
 				if (jsContext)
