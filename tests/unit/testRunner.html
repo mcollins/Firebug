@@ -18,7 +18,7 @@
 </ul>
 </p>
 
-<button id="runAll" onclick="runAll()" style="display:none">Run All</button>
+<button id="runAll" onclick="runAllTests()" style="display:none">Run All</button>
 <br/><br/>
 <div id="content"/>
 <script>
@@ -32,7 +32,7 @@ if (fireunit.forceHttp()) { with (FBL) {
 runAll.style.display = "block";
 
 // Run all tests in one test suite.
-function runAll() {
+function runAllTests() {
     runTests(testList);
 }
 
