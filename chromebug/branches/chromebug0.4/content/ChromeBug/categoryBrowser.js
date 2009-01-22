@@ -8,7 +8,7 @@ const nsISupportsCString = Ci.nsISupportsCString;
 
 const browserElt = $('cbCategoryBrowser');
 const explorerElt = $('cbExplorer');
-const fbContentBox = $('appcontent');
+const fbContentBox = $('fbContentBox');
 
 Firebug.Chromebug.CategoryBrowser = extend(Firebug.Module,
 {

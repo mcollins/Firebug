@@ -183,7 +183,6 @@
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
                     <menuitem id="menu_chromebugUnitTest" command="cmd_cbUnitTest"
                     		key="key_cbUnitTest" label="Start Firebug Unit Test"/>
-                    		
                 </menupopup>
             </menu>
             <menu id="view-menu" label="&firebug.View;">
@@ -289,7 +288,7 @@
            <toolbarbutton  id="reload-button" class="toolbarbutton-1"
                             command="cmd_reload" tooltiptext="Reload current window"/>
                             
-    	</hbox>
+    	</hbox> <!-- cbCommandToolbox-->
     
         <browser id="content" flex="2" disablehistory="true" src="chrome://chromebug/content/introduction.html" />
         <splitter id="fbContentSplitter"/>
@@ -309,8 +308,8 @@
             </toolbox>
             <box id="fbPanelBox" flex="1"/>
             <hbox id="fbCommandBox"/>
-        </vbox>
-    </vbox>  <!-- appcontent -->
+        </vbox> <!-- fbContentBox -->
+    
     <vbox id="cbExplorer" flex="1" collapsed="true">
         <toolbox id="cbExplorerToolBox">
 
@@ -353,10 +352,11 @@
             </panelbar>
             </hbox>
          </vbox>
-     </vbox>
+     </vbox> <!-- cbExplorer -->
      <vbox id="cbOverlayViewer" flex="1" collapsed="true">
         <!-- <browser src=... type="content" flex="1" /> -->
      </vbox>
+     </vbox>  <!-- appcontent -->
     <statusbar id="status-bar">
         <spacer flex="1"/>
         <statusbarpanel id="cbStatusBar"
