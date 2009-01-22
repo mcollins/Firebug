@@ -240,39 +240,73 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         			return false;  // ignore self
             
         		var context = Firebug.Chromebug.getContextByGlobal(frameWin);  // eg browser.xul
-        		if (!context)
+        		if (context)
+        		{
+        			if (FBTrace.DBG_TOPLEVEL)
+        				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frameWin gave existing context "+context.getName());
+        		}
+        		else
         		{
         			if (frameWin.location)  // then we have a window, it will be an nsIDOMWindow, right?
+        			{
         				context = ChromeBugWindowInfo.addFrameGlobal(frameWin);
+            			if (FBTrace.DBG_TOPLEVEL)
+            				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frameWin.location created new context "+context.getName());
+        			}
         			else 
         			{
         				var jsContext = frame.executionContext;
         				if (jsContext)
         					context = ChromeBugWindowInfo.addJSContext(frameWin, jsContext);
+            			if (FBTrace.DBG_TOPLEVEL)
+            				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frameWin + jsContext gave existing context "+context.getName());
         			}
         		}
         	}
         	else // we did not find a Window
         	{
-        		var jsContext = frame.executionContext;
-				if (jsContext)
-					context = ChromeBugWindowInfo.addJSContext(null, jsContext);
-        	}
-            
-        	if (FBTrace.DBG_LOCATIONS || FBTrace.DBG_FBS_FINDDEBUGGER)
-        	{	
-        		if (!context)
-                   FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+" but no context and no location");
+        		var scope = frame.scope;
+        		if (scope)
+        		{	
+        			while(scope.jsParent) // walk out
+        				scope = scope.jsParent;
+        		
+        			var global = scope.getWrappedValue();
+        			
+        			if (FBTrace.DBG_TOPLEVEL)
+        				FBTrace.sysout("supportsGlobal found scope chain bottom, not Window: "+scope.jsClassName, global);
+        		}
+        		var context = Firebug.Chromebug.getContextByGlobal(global); 
+        		if (context)
+        		{
+        			if (FBTrace.DBG_TOPLEVEL)
+        				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
+        		}
         		else
-                	FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+" set context via ChromeBugWindowInfo to "+context.getName());
-            }
+        		{
+        			var jsContext = frame.executionContext;
+        			if (jsContext)
+        			{
+        				context = ChromeBugWindowInfo.addJSContext(global, jsContext);
+            			if (FBTrace.DBG_TOPLEVEL)
+            				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
+            		}
+        			else
+        			{
+        				FBTrace.sysout("frame.executionContext is null");
+        				context = ChromeBugWindowInfo.addFrameGlobal(global);
+            			if (FBTrace.DBG_TOPLEVEL)
+            				FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+": frame.scope gave new context "+context.getName());
+        			}
+        		}
+        	}
             
             this.breakContext = context;
             return !!context;
         }
         catch (exc)
         {
-           FBTrace.dumpProperties("supportsGlobal FAILS:", exc);
+           FBTrace.dumpProperties("supportsGlobal FAILS:"+exc, exc);
         }
 
     },

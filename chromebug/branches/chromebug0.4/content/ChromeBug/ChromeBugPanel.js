@@ -417,7 +417,7 @@ var ChromeBugWindowInfo = {
             return context;
 
         } catch(e) {
-            FBTrace.dumpProperties("createContextForDOMWindow failed:", e);
+            FBTrace.dumpProperties("createContextForDOMWindow failed:"+e, e);
         }
     },
 
@@ -643,10 +643,10 @@ var ChromeBugWindowInfo = {
         return context;
     },
     
-    addJSContext: function(global, jsContext)
+    addJSContext: function(global, jsContext)  // global is not a window
     {
         context = Firebug.Chromebug.createContext();
-        context.setName("jsContext "+jsContext.tag);
+        context.setName(jsContext.globalObject.jsClassname+" in "+jsContext.tag);
 		
         var gs = new JSContextScopeInfo(global, context, jsContext);
         Firebug.Chromebug.globalScopeInfos.add(context, gs);
@@ -1470,6 +1470,15 @@ Firebug.Chromebug = extend(Firebug.Module,
             {
                 var context = this.contexts[i];
                 if (context.global && context.global.window && context.global.window == global.window)
+                    return context;
+            }
+        }
+        else
+        {
+            for (var i = 0; i < this.contexts.length; ++i)
+            {
+                var context = this.contexts[i];
+                if (context.global && (context.global == global)) // will that test work?
                     return context;
             }
         }
@@ -3366,7 +3375,11 @@ Firebug.Chromebug.JSContextList = {
             if (global instanceof nsIDOMWindow)
                 return ChromeBugWindowInfo.createContextForDOMWindow(global, null);
             else
-                return Firebug.Chromebug.createContext(global);
+            {
+                var context = Firebug.Chromebug.createContext(global);
+                context.setName(jscontext.globalObject.jsClassname+" in "+jscontext.tag);
+                return context;
+            }
         }
         else
             return null;  // nsITimer for example
