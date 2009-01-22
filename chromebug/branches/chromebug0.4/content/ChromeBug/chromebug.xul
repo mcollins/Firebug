@@ -115,11 +115,11 @@
                  oncommand="goDoCommand('cmd_selectAll')"
                  disabled="true"/>
         <command id="cmd_closeWindow" oncommand="window.close()"/>
-        <command id="cmd_toggleCategoryBrowser" oncommand="Firebug.Chromebug.CategoryBrowser.toggleCategoryBrowser()"/>
+        <command id="cmd_toggleXPCOMBrowser" oncommand="Firebug.Chromebug.CategoryBrowser.toggleXPCOMBrowser()"/>
         <command id="cmd_firefox" oncommand="window.open().home();"/>
         <command id="cmd_chromeList" oncommand="Firebug.Chromebug.chromeList()"/>
         <command id="cmd_xulExplorer" oncommand="Firebug.Chromebug.openXULExplorer()"/>
-        <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.CategoryBrowser.toggleCategoryBrowser()"/>
+        <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.CategoryBrowser.toggleXPCOMBrowser()"/>
         <command id="cmd_reload" disabled="true" oncommand="Firebug.Chromebug.reload()"/>
         <command id="cmd_reloadSkipCache" oncommand="Firebug.Chromebug.reload(true)"/>
         <command id="cmd_toggleOrient" oncommand="FirebugChrome.toggleOrient()" />
@@ -317,7 +317,7 @@
                 <toolbarbutton label="Categories" id="cbCategoryList" locationProvider="Firebug.Chromebug.CategoryListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="XPCOM Categories"
-                            command="cmd_toggleCategoryBrowser"/>
+                            command="cmd_toggleXPCOMBrowser"/>
                 <toolbarbutton label="Extensions" id="cbExtensionList" locationProvider="Firebug.Chromebug.ExtensionListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="Extensions visible via Javascript"
@@ -346,8 +346,8 @@
         <vbox id="cbExplorerContentBox" flex="1">
             <hbox id="cbPanelBox" flex="1">
             <panelbar id="cbPanelBar" flex="3" persist="width,height" paneltooltip="cbTooltip" panelcontextmenu="cbContextMenu">
-                <vbox id="cbCategoryBrowserBox" flex="1">
-                    <browser id="cbCategoryBrowser" type="content" src="chrome://chromebug/content/categoryBrowser.html" flex="1" />
+                <vbox id="cbXPCOMBrowserBox" flex="1">
+                    <browser id="cbXPCOMBrowser" type="content" src="chrome://chromebug/content/categoryBrowser.html" flex="1" />
                 </vbox>
             </panelbar>
             </hbox>

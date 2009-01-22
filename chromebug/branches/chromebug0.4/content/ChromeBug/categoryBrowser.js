@@ -6,30 +6,30 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const nsISupportsCString = Ci.nsISupportsCString;
 
-const browserElt = $('cbCategoryBrowser');
+const browserElt = $('cbXPCOMBrowser');
 const explorerElt = $('cbExplorer');
 const fbContentBox = $('fbContentBox');
 
 Firebug.Chromebug.CategoryBrowser = extend(Firebug.Module,
 {
-    categoryBrowserUp: false,
+    XPCOMBrowserUp: false,
 
 
     //**********************************************************************************
-    toggleCategoryBrowser: function(context)
+    toggleXPCOMBrowser: function(context)
     {
-        if (this.categoryBrowserUp)
-            this.stopCategoryBrowser();
+        if (this.XPCOMBrowserUp)
+            this.stopXPCOMBrowser();
         else
-            this.startCategoryBrowser(context);
+            this.startXPCOMBrowser(context);
     },
 
-    startCategoryBrowser: function(context)
+    startXPCOMBrowser: function(context)
     {
         fbContentBox.setAttribute("collapsed", true);
         explorerElt.removeAttribute("collapsed");
-        this.categoryBrowserUp = true;
-        FirebugChrome.setGlobalAttribute("cmd_toggleCategoryBrowser", "checked", "true");
+        this.XPCOMBrowserUp = true;
+        FirebugChrome.setGlobalAttribute("cmd_toggleXPCOMBrowser", "checked", "true");
 
         if (!this.categoryBox)
             this.categoryBox = browserElt.contentDocument.getElementById('categoryBox');
@@ -37,12 +37,12 @@ Firebug.Chromebug.CategoryBrowser = extend(Firebug.Module,
         this.refresh();
     },
 
-    stopCategoryBrowser: function()
+    stopXPCOMBrowser: function()
     {
         explorerElt.setAttribute("collapsed", true);
         fbContentBox.removeAttribute("collapsed");
-        this.categoryBrowserUp = false;
-        FirebugChrome.setGlobalAttribute("cmd_toggleCategoryBrowser", "checked", "false");
+        this.XPCOMBrowserUp = false;
+        FirebugChrome.setGlobalAttribute("cmd_toggleXPCOMBrowser", "checked", "false");
     },
     //**************************************************************************************
     //
