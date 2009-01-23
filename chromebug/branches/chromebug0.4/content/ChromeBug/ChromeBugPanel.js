@@ -35,7 +35,7 @@ const nsIPrefService = Components.interfaces.nsIPrefService;
 const prefService = PrefService.getService(nsIPrefService);
 
 const reChromeBug = /^chrome:\/\/chromebug\//;
-const reComponents = /:\/\/(.*)\/components\//; // chrome:// or file://
+const reComponents = /:\/(.*)\/components\//; // chrome:/ or file:/
 const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
 const reResource = /resource:\/\/([^\/]*)\//;
 const reModules = /:\/\/(.*)\/modules\//; // chrome:// or file://
@@ -246,20 +246,21 @@ FrameGlobalScopeInfo.prototype = extend (HiddenWindow.prototype,
     }
 });
 
-function JSContextScopeInfo(global, context, jsContext)  // came first from debugger frame
+function JSContextScopeInfo(globalIValue, global, context, jsContext)  // came first from debugger frame
 {
     this.domWindow = null;  // maybe
     this.global = global;
+    this.globalIValue = globalIValue;
     this.context = context;
     this.kindOfInfo = "JSContext";
-    this.jsContextTag = jsContext.tag;
+    this.jsContextTag = (jsContext ? jsContext.tag : 0);
 }
 
 JSContextScopeInfo.prototype = extend (FrameGlobalScopeInfo.prototype,
 {
 	getObjectDescription: function()
 	{
-		return {path: "jsContext", name: " "+this.jsContextTag };
+		return {path: this.globalIValue.jsClassName, name: " "+this.jsContextTag };
 	}
 });
 var GlobalScopeInfos =
@@ -406,7 +407,7 @@ var ChromeBugWindowInfo = {
     {
         try {
 
-        	var context = Firebug.Chromebug.createContext(domWindow, parentContext);
+        	var context = Firebug.Chromebug.createContext(domWindow, domWindow, parentContext);
         	
             domWindow.addEventListener("unload", onUnloadDOMWindow, false);
 
@@ -635,20 +636,15 @@ var ChromeBugWindowInfo = {
     },
 
     //***********************************************************************************
-    addFrameGlobal: function(global)
-    {
-        context = this.createContextForDOMWindow(global);
-        var gs = new FrameGlobalScopeInfo(global, context);
-        Firebug.Chromebug.globalScopeInfos.add(context, gs);
-        return context;
-    },
     
-    addJSContext: function(global, jsContext)  // global is not a window
+    addJSContext: function(globalIValue, global, jsContext)  // global is not a window
     {
-        context = Firebug.Chromebug.createContext();
-        context.setName(jsContext.globalObject.jsClassname+" in "+jsContext.tag);
+    	var name = (globalIValue.jsClassName+" in "+(jsContext?jsContext.tag:0));
 		
-        var gs = new JSContextScopeInfo(global, context, jsContext);
+    	context = Firebug.Chromebug.createContext(global, null, null);
+        context.setName(name);
+        
+        var gs = new JSContextScopeInfo(globalIValue, global, context, jsContext);
         Firebug.Chromebug.globalScopeInfos.add(context, gs);
         return context;
     },
@@ -1150,6 +1146,10 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         // Wait to let the initial windows open, then return to users past settings
         this.retryRestoreID = setInterval( bind(Firebug.Chromebug.restoreState, this), 500);
+        setTimeout( function stopTrying() 
+        {
+        	Firebug.Chromebug.stopRestoration();  // if the window is not up by now give up.
+        }, 15000);
     },
     
     prepareForCloseEvents: function()
@@ -1341,15 +1341,17 @@ Firebug.Chromebug = extend(Firebug.Module,
     },
     
     // ******************************************************************************
-    createContext: function(domWindow, parentContext, browser)
+    createContext: function(global, domWindow, parentContext)
     {
         var persistedState = null; // TODO
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
         
-        if (!browser)
-        	browser = ChromeBugWindowInfo.createBrowser(domWindow);  // not a content window
-
+        if (!domWindow)
+        	browser = ChromeBugWindowInfo.createBrowser(global);  // not a content window
+        else
+        	browser = ChromeBugWindowInfo.createBrowser(global);  // ??
+        
         if (!FirebugChrome)
             FBTrace.dumpStack("FirebugChrome is null??");
 
@@ -1364,11 +1366,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         	this.name = name +" ("+this.uid+")"; 
         }
         
+        context.global = global; // maybe equal to domWindow
+
         if (domWindow)
-        {
-        	context.global = domWindow;
         	context.windows.push(domWindow); // since we don't watchWindows in chromebug
-        }
         
         if (!this.contexts)
             this.contexts = TabWatcher.contexts;
@@ -1541,29 +1542,18 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         if (FBTrace.DBG_CHROMEBUG)
         {
-            if (!context)
-                FBTrace.sysout( "Firebug.Chromebug.Module.initContext context: undefined\n");
-            else if (!context.window)
-                FBTrace.sysout("Firebug.Chromebug.Module.initContext context.window: undefined\n");
-            else
-            {
                 try {
                     FBTrace.sysout("Firebug.Chromebug.Module.initContext context: "+context.getName()+" FirebugContext="+(FirebugContext?FirebugContext.getName():"undefined")+"\n");
                 } catch(exc) {
                     FBTrace.sysout("Firebug.Chromebug.Module.initContext "+exc+"\n");
                 }
-            }
         }
-        
-        context.sourceCache.store("XStringBundle", "ChromeBugPanel.initContext: I just don't know what this XStringBundle is!");
     },
 
     loadedContext: function(context)
     {
          if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Firebug.Chromebug.Module.loadedContext context: "+context.getName()+"\n");
-         
-
     },
 
     showContext: function(browser, context)
@@ -1675,7 +1665,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     buildInitialContextList: function(jsContextTagByScriptTag, xulScriptsByURL)
     {
         var unreachablesContext = Firebug.Chromebug.createContext();
-        unreachablesContext.setName("unreachableContexts");
+        unreachablesContext.setName("chrome://unreachable/");
 
         this.buildEnumeratedSourceFiles(unreachablesContext, jsContextTagByScriptTag, xulScriptsByURL);
         
@@ -2473,7 +2463,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
 	
 	assignContextToPackage: function(context)  // a window context owned by a package
 	{
-		var url = context.getWindowLocation();
+		var url = context.getName();
 		var description = Firebug.Chromebug.parseURI(url);
 		if (description && description.path)
 		{
@@ -3265,7 +3255,7 @@ Firebug.Chromebug.ComponentList = extend(new SourceFileListBase(), {
         {
            	var component = m[1];
            	//var remainder = m[0].length;
-            return { path: "components", name: new String(URIString), href: URIString, kind: 'component' };
+            return { path: "components", pkgName: "components", name: new String(URIString), href: URIString, kind: 'component' };
         }
         else
           	return null;
@@ -3387,7 +3377,7 @@ Firebug.Chromebug.JSContextList = {
             else
             {
                 var context = Firebug.Chromebug.createContext(global);
-                context.setName(jscontext.globalObject.jsClassname+" in "+jscontext.tag);
+                context.setName(jscontext.globalObject.jsClassname+" in "+jscontext.tag);  // need URI
                 return context;
             }
         }

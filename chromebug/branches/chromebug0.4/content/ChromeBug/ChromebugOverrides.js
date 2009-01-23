@@ -233,7 +233,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     supportsGlobal: function(frameWin, frame)  // (set the breakContext and return true) or return false;  
     {
         try {
-        	if (frameWin)
+        	if (false || frameWin)
         	{
         		var rootDOMWindow = getRootWindow(frameWin);
         		if (rootDOMWindow && rootDOMWindow.location && rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
@@ -268,36 +268,26 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         		var scope = frame.scope;
         		if (scope)
         		{	
-        			while(scope.jsParent) // walk out
+        			while(scope.jsParent) // walk to the oldest scope
         				scope = scope.jsParent;
         		
         			var global = scope.getWrappedValue();
         			
-        			if (FBTrace.DBG_TOPLEVEL)
-        				FBTrace.sysout("supportsGlobal found scope chain bottom, not Window: "+scope.jsClassName, global);
+        			//if (FBTrace.DBG_TOPLEVEL)
+        				FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);
         		}
         		var context = Firebug.Chromebug.getContextByGlobal(global); 
         		if (context)
         		{
-        			if (FBTrace.DBG_TOPLEVEL)
+        			//if (FBTrace.DBG_TOPLEVEL)
         				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
         		}
         		else
         		{
-        			var jsContext = frame.executionContext;
-        			if (jsContext)
-        			{
-        				context = ChromeBugWindowInfo.addJSContext(global, jsContext);
-            			if (FBTrace.DBG_TOPLEVEL)
+        			var jsContext = frame.executionContext;  // may be null, mapped to tag zero
+        			context = ChromeBugWindowInfo.addJSContext(scope, global, jsContext);
+            		if (FBTrace.DBG_TOPLEVEL)
             				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
-            		}
-        			else
-        			{
-        				FBTrace.sysout("frame.executionContext is null");
-        				context = ChromeBugWindowInfo.addFrameGlobal(global);
-            			if (FBTrace.DBG_TOPLEVEL)
-            				FBTrace.sysout("supportsGlobal for "+normalizeURL(frame.script.fileName)+": frame.scope gave new context "+context.getName());
-        			}
         		}
         	}
             
