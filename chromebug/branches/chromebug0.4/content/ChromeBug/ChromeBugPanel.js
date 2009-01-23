@@ -444,8 +444,8 @@ var ChromeBugWindowInfo = {
     {
         var docShell = xul_window.docShell;
 
-        this.eachDocShell(docShell, true, this.destroyByDocShell);
-        this.eachDocShell(docShell, false, this.destroyByDocShell);
+        this.eachDocShell(docShell, true, bind(this.destroyByDocShell, this));
+        this.eachDocShell(docShell, false, bind(this.destroyByDocShell, this));
     },
 
     destroyByDocShell: function(childDocShell)
@@ -1401,6 +1401,23 @@ Firebug.Chromebug = extend(Firebug.Module,
 		}
 		return false;
 	},
+	
+	eachSourceFile: function(fnTakesSourceFile)
+	{
+	    return Firebug.Chromebug.eachContext(function visitSourceFiles(context)
+	    {
+	        for (var url in context.sourceFileMap)
+	        {   
+	            if (context.sourceFileMap.hasOwnProperty(url))
+	            {
+	                var sourceFile = context.sourceFileMap[url];
+                    var rc = fnTakesSourceFile(sourceFile);
+                    if (rc)
+                        return rc;
+                }
+            }
+        });
+    },
 	
 	getContextByJSContextTag: function(jsContextTag)
 	{
@@ -2838,21 +2855,14 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
     eachSourceFileDescription: function(fnTakesSourceFileDescription)
     {
     	var getDescription = bind(this.getDescription, this);
-    	var rc = Firebug.Chromebug.eachContext(function visitSourceFiles(context)
+    	var rc = Firebug.Chromebug.eachSourceFile(function visitSourceFiles(sourceFile)
     	{
-    		for (var url in context.sourceFileMap)
+    		var d = getDescription(sourceFile);
+    		if ( d )
     		{
-    			if (context.sourceFileMap.hasOwnProperty(url))
-    			{
-    				var sourceFile = context.sourceFileMap[url];
-    				var d = getDescription(sourceFile);
-    				if ( d )
-    				{
-    					var rc = fnTakesSourceFileDescription(d);
-    					if (rc)
-    						return rc;
-    				}
-    			}
+    			var rc = fnTakesSourceFileDescription(d);
+    			if (rc)
+    				return rc;
     		}
     	});
     },
