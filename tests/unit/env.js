@@ -18,6 +18,8 @@ var FBTrace = browser.FBTrace;
 // Set test (one file) timeout
 fireunit.testTimeout = 7000;
 
+var localHostURI = "http://localhost:7080/";
+
 // Handle unexpected errors on the page.
 window.onerror = function(errType, errURL, errLineNum) {
     var path = window.location.pathname;

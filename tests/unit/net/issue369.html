@@ -7,9 +7,6 @@
 <script>
 enablePrivilege("UniversalXPConnect");
 
-var index = location.pathname.lastIndexOf(".");
-var uriFileName = location.pathname.substr(0, index);
-
 var jsonString = "{'firstName':'John','lastName':'Smith','address':{" +
     "'streetAddress':'21 2nd Street','city':'New York','state':'NY','postalCode':10021}," +
     "'phoneNumbers':['212 555-1234','646 555-4567']}";
@@ -48,13 +45,13 @@ function requestHandler5(metadata, response) {
     response.write("var myObject = " + jsonString+ ";");
 } 
 
-fireunit.registerPathHandler(uriFileName + "-1.txt", requestHandler1);
-fireunit.registerPathHandler(uriFileName + "-2.txt", requestHandler2);
-fireunit.registerPathHandler(uriFileName + "-3.txt", requestHandler3);
-fireunit.registerPathHandler(uriFileName + "-4.txt", requestHandler4);
+fireunit.registerPathHandler("/issue369-1.txt", requestHandler1);
+fireunit.registerPathHandler("/issue369-2.txt", requestHandler2);
+fireunit.registerPathHandler("/issue369-3.txt", requestHandler3);
+fireunit.registerPathHandler("/issue369-4.txt", requestHandler4);
 
 // xxxHonza: Not implemented yet.
-//fireunit.registerPathHandler(uriFileName + "-5.txt", requestHandler5);
+//fireunit.registerPathHandler("/issue369-5.txt", requestHandler5);
 
 var counter = 1;
 function requestHandler(request) 
@@ -80,14 +77,14 @@ function requestHandler(request)
     // Execute next request (there is five test-cases) or finish the test.
     if (counter <= 4) {
         Firebug.NetMonitor.clear(FirebugContext);
-        makeRequest("GET", "issue369-" + counter + ".txt", requestHandler);
+        makeRequest("GET", localHostURI + "issue369-" + counter + ".txt", requestHandler);
     } else {
         FBTrace.sysout("fireunit.issue369.DONE");
         fireunit.testDone();
     }
 };
 
-makeRequest("GET", "issue369-1.txt", requestHandler);
+makeRequest("GET", localHostURI + "issue369-1.txt", requestHandler);
 </script>
 </head>
 <body>

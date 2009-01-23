@@ -23,14 +23,18 @@ window.onload = function() {
         fireunit.value(cmdLine, "a = 5;\n//");
         fireunit.key(cmdLine, 13);
 
-        // Check the result in console panel.
-        var panelNode = fireunit.panel("console");
-        var resultNode = FBL.getElementByClass(panelNode, "objectBox", "objectBox-number");
-        fireunit.reCompare("5", resultNode.innerHTML, "Console panel result verification");
+        setTimeout(function() {
+            enablePrivilege("UniversalXPConnect");
 
-        // Finish test
-        FBTrace.sysout("fireunit.issue1383.DONE");
-        fireunit.testDone();
+            // Check the result in console panel.
+            var panelNode = fireunit.panel("console");
+            var resultNode = FBL.getElementByClass(panelNode, "objectBox", "objectBox-number");
+            fireunit.reCompare("5", resultNode.innerHTML, "Console panel result verification");
+
+            // Finish test
+            FBTrace.sysout("fireunit.issue1383.DONE");
+            fireunit.testDone();
+        }, layoutTimeout);
     }, layoutTimeout);
 };
 </script>

@@ -29,8 +29,8 @@ var testList = [
     {category: "console", uri: "console/issue1307.html",   desc: "XhrRequests are not logged in the console window"},
     {category: "console", uri: "console/issue1383.html",   desc: "1.3: if the last line is a comment throws Syntax Error: missing"},
     {category: "script",  uri: "script/scriptWatch1.html",  desc: "Use watch panel when debug"}, 
-    //xxxHonza: this must be refactored yet: {category: "domplate",  uri: "domplate/domplate.html",  desc: "Domplate tests"}, 
-    //xxxHonza: this must be refactored yet: {category: "console",  uri: "console/commandline.html",  desc: "Bunch of tests for command line APIs"},
+    {category: "domplate",  uri: "domplate/domplate.html",  desc: "Domplate tests"}, 
+    {category: "console",  uri: "console/commandline.html",  desc: "Bunch of tests for command line APIs"},
     {category: "console",  uri: "console/consoleListener.html",  desc: "Test listner for Console panel"},
     {category: "net", uri: "net/issue1275.html",           desc: "firebug does not show JSON answers from server" },
 ];

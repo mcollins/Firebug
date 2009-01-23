@@ -12,18 +12,16 @@ var bodyContent = "<h1>Response for Issue700.html</h1>";
 var htmlResponse = "<html><head/><body>" + bodyContent + "</body></html>";
 
 // Implementation of a request handler (serve side)
-var index = location.pathname.lastIndexOf(".");
-var requestUri = location.pathname.substr(0, index) + ".txt";
 function requestHandler(metadata, response) {
     enablePrivilege("UniversalXPConnect");
     FBTrace.sysout("fireunit.issue700.pathHandler executed: " + metadata.path, [metadata, response]);
     response.setHeader("Content-Type", "text/html", false);
     response.write(htmlResponse);
 } 
-fireunit.registerPathHandler(requestUri, requestHandler);
+fireunit.registerPathHandler("/issue700.txt", requestHandler);
 
 // Check UI
-makeRequest("GET", "issue700.txt", function(request)
+makeRequest("GET", localHostURI + "issue700.txt", function(request)
 {
     enablePrivilege("UniversalXPConnect");
     FBTrace.sysout("fireunit.issue700.checkHtmlTab", request);

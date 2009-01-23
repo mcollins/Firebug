@@ -7,10 +7,6 @@
 <script>
 enablePrivilege("UniversalXPConnect");
 
-// Get current request URI without the file extension.
-var index = location.pathname.lastIndexOf(".");
-var requestUri = location.pathname.substr(0, index);
-
 // Implementation of a request handler (serve side)
 function requestHandler(metadata, response) {
     enablePrivilege("UniversalXPConnect");
@@ -25,11 +21,11 @@ function requestHandler(metadata, response) {
 } 
 
 // Register request handler for two different URLs
-fireunit.registerPathHandler(requestUri + ".flv", requestHandler);
-fireunit.registerPathHandler(requestUri + ".txt", requestHandler);
+fireunit.registerPathHandler("/issue176.flv", requestHandler);
+fireunit.registerPathHandler("/issue176.txt", requestHandler);
 
 var counter = 0;
-var uris = ["issue176.txt", "issue176.flv"];
+var uris = [localHostURI + "issue176.txt", localHostURI + "issue176.flv"];
 
 // Embed two files into the page as scripts.
 var head = document.getElementsByTagName("head")[0];

@@ -23,7 +23,7 @@ function requestHandler(metadata, response) {
     response.setHeader("Content-Type", "text/plain", false);
     response.write(responseBody);
 } 
-fireunit.registerPathHandler(getCurrentPath() + "netCacheListener.txt", requestHandler);
+fireunit.registerPathHandler("/netCacheListener.txt", requestHandler);
 
 enablePrivilege("UniversalXPConnect");
 var sourceCache = FirebugContext.sourceCache;
@@ -31,7 +31,7 @@ var sourceCache = FirebugContext.sourceCache;
 // This test is valid only for Firebug 1.3 running with Firefox 3.0.4 
 if ("addListener" in sourceCache) {
     sourceCache.addListener(netCacheListener);
-    makeRequest("GET", "netCacheListener.txt", function(request) {
+    makeRequest("GET", localHostURI + "netCacheListener.txt", function(request) {
         enablePrivilege("UniversalXPConnect");
         FBTrace.sysout("fireunit.netCacheListener.check callbacks from Firebug.TabCache.");
         fireunit.ok(onStoreResponse, "onStoreResponse callback verified");
