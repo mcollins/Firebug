@@ -233,38 +233,8 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     supportsGlobal: function(frameWin, frame)  // (set the breakContext and return true) or return false;  
     {
         try {
-        	if (false || frameWin)
-        	{
-        		var rootDOMWindow = getRootWindow(frameWin);
-        		if (rootDOMWindow && rootDOMWindow.location && rootDOMWindow.location.toString().indexOf("chrome://chromebug") != -1)
-        			return false;  // ignore self
-            
-        		var context = Firebug.Chromebug.getContextByGlobal(frameWin);  // eg browser.xul
-        		if (context)
-        		{
-        			if (FBTrace.DBG_TOPLEVEL)
-        				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frameWin gave existing context "+context.getName());
-        		}
-        		else
-        		{
-        			if (frameWin.location)  // then we have a window, it will be an nsIDOMWindow, right?
-        			{
-        				context = ChromeBugWindowInfo.addFrameGlobal(frameWin);
-            			if (FBTrace.DBG_TOPLEVEL)
-            				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frameWin.location created new context "+context.getName());
-        			}
-        			else 
-        			{
-        				var jsContext = frame.executionContext;
-        				if (jsContext)
-        					context = ChromeBugWindowInfo.addJSContext(frameWin, jsContext);
-            			if (FBTrace.DBG_TOPLEVEL)
-            				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frameWin + jsContext gave existing context "+context.getName());
-        			}
-        		}
-        	}
-        	else // we did not find a Window
-        	{
+        	// To map this frame to a context, we want the outermost scope of the current frame.
+        	// This is unlike Firebug, where we want to be in a Window, not just any scope.
         		var scope = frame.scope;
         		if (scope)
         		{	
@@ -289,7 +259,6 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
             		if (FBTrace.DBG_TOPLEVEL)
             				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
         		}
-        	}
             
             this.breakContext = context;
             return !!context;

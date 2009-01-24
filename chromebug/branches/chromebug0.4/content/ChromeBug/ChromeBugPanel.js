@@ -942,7 +942,7 @@ var ChromeBugWindowInfo = {
         browser.contentWindow = { location: {href: "chromebug:fake"} };
         browser.tag = this.fakeTabBrowser.browsers.length;
         
-        if (domWindow)
+        if (domWindow && 'location' in domWindow)
         	browser.currentURI = domWindow.location;
         else
         	browser.currentURI = "chrome://chromebug/fakeTabBrowser"+browser.tag;
@@ -1367,6 +1367,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         
         context.global = global; // maybe equal to domWindow
+        context.getGlobalScope = function() 
+        {
+        	return this.global;  // override Firebug's getGlobalScope; same iff global == domWindow
+        };
 
         if (domWindow)
         	context.windows.push(domWindow); // since we don't watchWindows in chromebug
