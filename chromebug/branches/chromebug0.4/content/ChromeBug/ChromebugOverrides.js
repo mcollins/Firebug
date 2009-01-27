@@ -243,13 +243,13 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         		
         			var global = scope.getWrappedValue();
         			
-        			//if (FBTrace.DBG_TOPLEVEL)
+        			if (FBTrace.DBG_TOPLEVEL)
         				FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);
         		}
         		var context = Firebug.Chromebug.getContextByGlobal(global); 
         		if (context)
         		{
-        			//if (FBTrace.DBG_TOPLEVEL)
+        			if (FBTrace.DBG_TOPLEVEL)
         				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
         		}
         		else
@@ -265,7 +265,8 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         }
         catch (exc)
         {
-           FBTrace.dumpProperties("supportsGlobal FAILS:"+exc, exc);
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("supportsGlobal FAILS:"+exc, exc);
         }
 
     },

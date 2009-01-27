@@ -1656,7 +1656,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         finally
         {
-        	Firebug.Chromebug.activeted = true;
+            Firebug.Chromebug.activated = true;
         	FBTrace.sysout("onJSDActivate exit");
         }
     },
@@ -1783,72 +1783,6 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
     },
 
-    getJSContextFromFrame: function(frame)
-    {
-        if (!frame.executionContext)
-        {
-            FBTrace.sysout("ChromeBug getJSContextFromFrame frame.executionContext null\n");
-            return null; // new in FF3 no executionContext
-        }
-        if (!frame.executionContext.isValid)
-        {
-            FBTrace.sysout("ChromeBug getJSContextFromFrame frame.executionContext.isValid false\n");
-            return null;
-        }
-        return frame.executionContext;
-    },
-    
-    onOuterScriptCreated: function(context, frame, url)
-    {
- 
-        var jsContext = this.getJSContextFromFrame(frame);
-        if (!jsContext)
-            return;
-        this.registerJSContext(context, jsContext, frame.script);
-    },
-    
-    registerJSContext: function(context, jsContext, script)
-    {
-        var tag = jsContext.tag;
-
-        if (!this.jsContextTagByScriptTag)
-            this.jsContextTagByScriptTag = {};
-        if (!this.jsContexts)
-            this.jsContexts = {};
-        
-        if (!this.jsContextTagByScriptTag[tag])
-        {
-            this.jsContextTagByScriptTag[tag] = [];
-            this.jsContexts[tag] = jsContext;
-        }
-        this.jsContextTagByScriptTag[tag].push(script);
-
-        if ( !context.jsContextTag )
-        {
-            context.jsContextTag = tag;
-            FBTrace.sysout("ChromeBug onOuterScriptCreated new context tag:"+tag);
-        }
-        else
-        {
-            if (context.jsContextTag != tag && FBTrace.DBG_CHROMEBUG) 
-            	FBTrace.sysout("ChromeBugPanel context "+context.getName()+" has different executionContext "+context.jsContextTag+" vs "+tag+" when processing "+script.fileName);
-        }
-    },
-
-    onEventScriptCreated: function(context, frame, url)
-    {
-        this.onOuterScriptCreated(context, frame, url);
-    },
-
-    onTopLevelScriptCreated: function(context, frame, url)
-    {
-        this.onOuterScriptCreated(context, frame, url);
-    },
-
-    onEvalScriptCreated: function(context, frame, url)
-    {
-        this.onOuterScriptCreated(context, frame, url);
-    },
 
     onXULScriptCreated: function(url, innerScripts)
     {
