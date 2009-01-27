@@ -2923,7 +2923,7 @@ Firebug.Chromebug.parseURI = function(URI)
         description = Firebug.Chromebug.ModuleList.parseURI(URI);
     if (!description)
     {
-        //if (FBTrace.SOURCEFILES)
+        if (FBTrace.SOURCEFILES)
             FBTrace.sysout("Firebug.Chromebug.parseURI: no match for "+URI);
         description = {path:"mystery", name:URI, kind: "mystery", pkgName: "unparsable"};
     }
