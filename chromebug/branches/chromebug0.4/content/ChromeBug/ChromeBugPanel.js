@@ -599,7 +599,7 @@ var ChromeBugWindowInfo = {
         
         this.fullVersion = Firebug.loadVersion(versionURL);
         if (this.fullVersion)
-        	window.title = "Chromebug "+this.fullVersion;
+        	document.title = "Chromebug "+this.fullVersion;
     },
 
     watchXULWindows: function()

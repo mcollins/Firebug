@@ -79,26 +79,7 @@
 #cbContextLabel {
     font-weight: bold;
 }
-/*
-.toolbarbutton-1, .toolbarbutton-menubutton-button {
-    padding:5px;
-}
-.toolbarbutton-1 {
-    -moz-box-orient:vertical;
-    list-style-image:url(chrome://browser/skin/Toolbar-small.png);
-    min-width:0pt;
-}
-toolbarbutton {
-    -moz-appearance:toolbarbutton;
-    -moz-box-align:center;
-    -moz-box-pack:center;
-    background-color:transparent;
-    border:1px solid transparent;
-    color:-moz-dialogtext;
-    margin:0pt;
-    padding:3px;
-}
-*/
+
 #profile-directory-name {
     cursor: pointer;
     font-weight: bold;
