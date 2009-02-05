@@ -1,0 +1,33 @@
+/* See license.txt for terms of usage */
+
+body {
+    background-color: #FFFFFF;
+    height: 100%;
+}
+
+/************************************************************************************************/
+
+#consoleToolbar toolbarbutton {
+    margin:1px;
+    -moz-box-orient: vertical;
+}
+
+#consoleToolbar toolbarbutton .toolbarbutton-icon {
+    padding:5px;
+}
+
+/************************************************************************************************/
+
+#runAll {
+    list-style-image: url("chrome://fbtest/skin/runAll.png");
+    -moz-image-region: rect(0px 16px 16px 0px);
+}
+
+#stopTest {
+    list-style-image: url("chrome://firebug/skin/trace/clear.png");
+}
+
+#refreshList {
+    list-style-image: url("chrome://browser/skin/Toolbar-small.png");
+    -moz-image-region: rect(0px 64px 16px 48px);
+}

@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+<?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://fbtest/skin/testConsole.css"?>
+
+<!DOCTYPE window [
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
+%browserDTD;
+<!ENTITY % findBarDTD SYSTEM "chrome://global/locale/findbar.dtd" >
+%findBarDTD;
+]>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        id="TestConsole" 
+        windowtype="FBTestConsole" 
+        title="Firebug Test Console"
+        width="640" height="480"
+        screenX="10" screenY="10"
+        persist="screenX screenY width height sizemode"
+        onload="TestConsole.initialize()"
+        onunload="TestConsole.shutdown()">
+
+    <!-- Firefox -->
+    <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
+    <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
+
+    <!-- Firebug -->
+    <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/xpcom.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/lib.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
+
+    <!-- FBTest -->
+    <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testList.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
+        <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
+    </stringbundleset>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_runAll" oncommand="TestConsole.onRunAll()"/>
+        <command id="cmd_stopTest" oncommand="TestConsole.onStopTest()"/>
+        <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
+        <command id="cmd_refreshList" oncommand="TestConsole.onRefreshList()"/>
+    </commandset>
+
+    <keyset id="mainKeyset">
+        <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
+    </keyset>
+
+    <toolbox id="consoleToolbox">
+        <toolbar id="consoleToolbar" align="center">
+            <toolbarbutton id="runAll"
+                label="test.cmd.Run All" class="toolbar-image-button"
+                tooltiptext="test.cmd.tip.Run All Tests" 
+                command="cmd_runAll"
+                disabled="true"/>
+            <toolbarbutton id="stopTest"
+                label="test.cmd.Stop" class="toolbar-image-button"
+                tooltiptext="test.cmd.tip.Stop" 
+                command="cmd_stopTest"/>
+            <!-- <toolbarbutton id="refreshList"
+                label="test.cmd.Refresh" class="toolbar-image-button"
+                tooltiptext="test.cmd.tip.Refresh" 
+                command="cmd_refreshList"/> -->
+        </toolbar>
+    </toolbox>
+
+    <popupset id="mainPopupSet">
+        <popup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
+        <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
+    </popupset>
+
+    <vbox flex="1">
+        <browser id="consoleFrame" type="content-primary"
+             src="chrome://fbtest/content/testConsole.html" flex="1"
+             disablehistory="true" contextmenu="fbContextMenu"
+             tooltip="fbTooltip"/>
+        <findbar id="FindToolbar" browserid="consoleFrame"/>
+    </vbox>
+
+    <!-- Test frame, all tests are launched within this frame -->
+    <browser id="testFrame" src="chrome://fbtest/content/testFrame.html" disablehistory="true"/>
+</window>

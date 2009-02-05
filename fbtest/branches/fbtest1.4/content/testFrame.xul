@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    xmlns:html="http://www.w3.org/1999/xhtml">
+    <script type="application/x-javascript">
+        var Cc = Components.classes;
+        var Ci = Components.interfaces;
+        var FBTest = window.parent.FBTest;
+        var basePath = "http://localhost:7080/tests/";
+
+        function getChromeWindow(win)
+        {
+            return win.QueryInterface(Ci.nsIInterfaceRequestor)
+               .getInterface(Ci.nsIWebNavigation)
+               .QueryInterface(Ci.nsIDocShellTreeItem)
+               .rootTreeItem
+               .QueryInterface(Ci.nsIInterfaceRequestor)
+               .getInterface(Ci.nsIDOMWindow); 
+        }
+    </script>
+    <script id="TestScript" type="application/x-javascript"></script>
+</window>

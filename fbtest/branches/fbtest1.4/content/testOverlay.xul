@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<overlay id="xfbtest-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script type="application/x-javascript" src="chrome://fbtest/content/testOverlay.js"/>
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
+    </stringbundleset>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_openTestConsole" oncommand="TestConsoleOverlay.open()"/>
+    </commandset>
+
+    <!-- Overlay for Firebug icon menu -->
+    <vbox id="appcontent">
+        <splitter id="fbContentSplitter" collapsed="true"/>
+        <vbox id="fbContentBox" collapsed="true" persist="height">
+            <toolbox id="fbToolbox">
+                <toolbar id="fbToolbar">
+                    <toolbarbutton id="fbFirebugMenu" type="menu">
+                        <menupopup id="fbFirebugMenuPopup">
+                            <menuseparator/>
+                            <menuitem id="menu_openTestConsole" label="Open Test Console" 
+                                command="cmd_openTestConsole"/>
+                        </menupopup>
+                    </toolbarbutton>
+                </toolbar>
+            </toolbox>
+        </vbox>
+    </vbox>
+</overlay>
