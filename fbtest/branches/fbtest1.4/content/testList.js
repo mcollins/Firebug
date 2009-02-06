@@ -9,7 +9,7 @@
  * @param: {String} desc        Short description of the test.
  */
 var testList = [
-    {category: "examples", uri: "examples/exampleTest.js",     desc: "Simple test example." },
+    {category: "examples", uri: "examples/exampleTest.html",     desc: "Simple test example." },
     {category: "net", uri: "net/issue1256.js",                 desc: "Issue1256: Firebug displays spaces as plus signs in POST fields" },
     //{category: "script", uri: "script/scriptWatch.js",       desc: "Watch panel" },
 ];

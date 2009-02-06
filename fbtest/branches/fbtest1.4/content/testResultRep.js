@@ -2,6 +2,8 @@
 
 // ************************************************************************************************
 // Shorcuts and Services
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 
 with (FBL) {
 
@@ -73,7 +75,7 @@ var TestResultRep = domplate(
         ),
 
     resultInfoTag:
-        TR({"class": "testResultInfoRow", _repObject: "$result", 
+        TR({"class": "testResultInfoRow", _repObject: "$result",
             $testError: "$result|isError"},
             TD({"class": "testResultInfoCol", colspan: 2})
         ),
@@ -183,24 +185,24 @@ var TestResultRep = domplate(
 
         if (testResult.stack)
         {
-            items.push({ 
-              label: $STR("fireunit.item.Copy"), 
-              nol10n: true, 
-              command: bindFixed(this.onCopy, this, testResult) 
+            items.push({
+              label: $STR("fireunit.item.Copy"),
+              nol10n: true,
+              command: bindFixed(this.onCopy, this, testResult)
             });
 
-            items.push({ 
-              label: $STR("fireunit.item.Copy_All"), 
-              nol10n: true, 
-              command: bindFixed(this.onCopyAll, this, testResult) 
+            items.push({
+              label: $STR("fireunit.item.Copy_All"),
+              nol10n: true,
+              command: bindFixed(this.onCopyAll, this, testResult)
             });
 
             items.push("-");
 
-            items.push({ 
-              label: $STR("fireunit.item.View_Source"), 
-              nol10n: true, 
-              command: bindFixed(this.onViewSource, this, testResult) 
+            items.push({
+              label: $STR("fireunit.item.View_Source"),
+              nol10n: true,
+              command: bindFixed(this.onViewSource, this, testResult)
             });
         }
 
@@ -233,7 +235,7 @@ var TestResultRep = domplate(
         var text = "";
         for (var row = tbody.firstChild; row; row = row.nextSibling) {
             if (hasClass(row, "testResultRow") && row.repObject) {
-                text += (hasClass(row, "testError") ? failLabel : passLabel); 
+                text += (hasClass(row, "testError") ? failLabel : passLabel);
                 text += ": " + row.repObject.msg;
                 text += ", " + row.repObject.fileName + "\n";
             }
@@ -259,7 +261,7 @@ var TestResultRep = domplate(
  * xxxHonza: since the tab view is used already several times, it would
  * be very useful to have a TabView widget defined in Firebug's Domplate
  * repository.
- */ 
+ */
 var TestResultTabView = domplate(
 {
     listeners: [],
@@ -282,20 +284,20 @@ var TestResultTabView = domplate(
         ),
 
     // List of tabs
-    tabBar: 
+    tabBar:
         DIV({"class": "tabBar"},
-            A({"class": "StackTab tab", onclick: "$onClickTab", 
+            A({"class": "StackTab tab", onclick: "$onClickTab",
                 view: "Stack", $collapsed: "$result|hideStackTab"},
                     $FB_STR("fireunit.tab.Stack")
             ),
-            A({"class": "CompareTab tab", onclick: "$onClickTab", 
+            A({"class": "CompareTab tab", onclick: "$onClickTab",
                 view: "Compare", $collapsed: "$result|hideCompareTab"},
                     $FB_STR("fireunit.tab.Compare")
             )
         ),
 
     // List of tab bodies
-    tabBodies: 
+    tabBodies:
         DIV({"class": "tabBodies"},
             DIV({"class": "tabStackBody tabBody"}),
             DIV({"class": "tabCompareBody tabBody"})
@@ -327,7 +329,7 @@ var TestResultTabView = domplate(
                     TD(
                         $FB_STR("fireunit.title.Expected")
                     ),
-                    TD({"class": "testResultCompareSwitch expected", 
+                    TD({"class": "testResultCompareSwitch expected",
                         onclick: "$onSwitchView"},
                         $FB_STR("fireunit.switch.view_source")
                     )
@@ -339,7 +341,7 @@ var TestResultTabView = domplate(
                     TD(
                         $FB_STR("fireunit.title.Result")
                     ),
-                    TD({"class": "testResultCompareSwitch result", 
+                    TD({"class": "testResultCompareSwitch result",
                         onclick: "$onSwitchView"},
                         $FB_STR("fireunit.switch.view_source")
                     )
@@ -347,7 +349,7 @@ var TestResultTabView = domplate(
                 TR(
                     TD({"class": "testResultResult", colspan: 2})
                 ),
-                TR({"class": "testResultCompareTitle diff", 
+                TR({"class": "testResultCompareTitle diff",
                     $collapsed: "$result|hideDiffGroup"},
                     TD({colspan: 2},
                         $FB_STR("fireunit.title.Difference")
@@ -367,7 +369,7 @@ var TestResultTabView = domplate(
     hideCompareTab: function(result)
     {
         // The Compare tab is visible if any of these two members is set.
-        // This is useful since sometimes the expected result is null and 
+        // This is useful since sometimes the expected result is null and
         // the user wants to see it also in the UI.
         return !result.expected && !result.result;
     },
@@ -401,7 +403,7 @@ var TestResultTabView = domplate(
             viewBody.selectedBody.removeAttribute("selected");
         }
 
-        // Store info about new active tab. Each tab has to have a body, 
+        // Store info about new active tab. Each tab has to have a body,
         // which is identified by class.
         var tabBody = getElementByClass(viewBody, "tab" + view + "Body");
         viewBody.selectedTab = tab;
@@ -489,7 +491,7 @@ var TestResultTabView = domplate(
 
         // Error handling
         var nsURI = "http://www.mozilla.org/newlayout/xml/parsererror.xml";
-        if (docElem.namespaceURI == nsURI && docElem.nodeName == "parsererror") 
+        if (docElem.namespaceURI == nsURI && docElem.nodeName == "parsererror")
         {
             var errorNode = ParseErrorRep.tag.replace({error: {
                 message: docElem.firstChild.nodeValue,
@@ -501,7 +503,7 @@ var TestResultTabView = domplate(
             return;
         }
 
-        // Generate UI. Get appropriate domplate tag for every element that is found 
+        // Generate UI. Get appropriate domplate tag for every element that is found
         // within the helper <wrapper> and append it into the parent container.
         for (var i=0; i<docElem.childNodes.length; i++)
             Firebug.HTMLPanel.CompleteElement.getNodeTag(docElem.childNodes[i]).
@@ -515,7 +517,7 @@ var TestResultTabView = domplate(
  * This template displays a parse-erros that can occurs when parsing
  * expected and acuall results (see compare method).
  */
-var ParseErrorRep = domplate( 
+var ParseErrorRep = domplate(
 {
     tag:
         DIV({"class": "xmlInfoError"},
@@ -524,8 +526,8 @@ var ParseErrorRep = domplate(
             BR(),
             PRE({"class": "xmlInfoSource"})
         ),
-    
-    getSource: function(error) 
+
+    getSource: function(error)
     {
         var parts = error.source.split("\n");
         if (parts.length != 2)
@@ -576,7 +578,7 @@ var TestResult = function(win, pass, msg, expected, result)
 
 // ************************************************************************************************
 
-function clean( str ) 
+function clean( str )
 {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

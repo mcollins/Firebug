@@ -1,7 +1,7 @@
 /* See license.txt for terms of usage */
 
 // ************************************************************************************************
-// Trace Console Implementation
+// Test Console Implementation
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
@@ -20,9 +20,13 @@ var TestConsole =
 {
     initialize: function()
     {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestConsole.initializing");
+
         var args = window.arguments[0];
         FBTrace = args.FBTrace;
         Firebug = args.Firebug;
+        FBTest.FirebugWindow = args.FirebugWindow;
 
         gFindBar = document.getElementById("FindToolbar");
 
@@ -82,9 +86,9 @@ var TestConsole =
 /**
  * HTTP Server helper
  */
-var TestServer = 
+var TestServer =
 {
-    start: function(dirPath) 
+    start: function(dirPath)
     {
         var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
         cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
@@ -96,21 +100,21 @@ var TestServer =
         this.getServer().registerDirectory("/tests/", this.localDir);
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestServer.registerDirectory: " + this.path + " => " + 
+            FBTrace.sysout("fbtest.TestServer.registerDirectory: " + this.path + " => " +
                 this.localDir.path);
 
         return true;
     },
 
-    stop: function() 
+    stop: function()
     {
         if (this.server)
             this.server.stop();
     },
 
-    getServer: function() 
+    getServer: function()
     {
-        if (!this.server) 
+        if (!this.server)
         {
             this.server = new nsHttpServer();
             this.server.start(serverPort);
@@ -121,7 +125,7 @@ var TestServer =
         return this.server;
     },
 
-    chromeToPath: function (aPath) 
+    chromeToPath: function (aPath)
     {
        if (!aPath || !(/^chrome:/.test(aPath)))
           return this.urlToPath( aPath );
@@ -139,9 +143,9 @@ var TestServer =
        return rv;
     },
 
-    urlToPath: function (aPath) 
+    urlToPath: function (aPath)
     {
-        if (!aPath || !/^file:/.test(aPath)) 
+        if (!aPath || !/^file:/.test(aPath))
             return;
 
         return Cc["@mozilla.org/network/protocol;1?name=file"]
@@ -158,22 +162,22 @@ var TestServer =
  */
 var TestRunner =
 {
-    initialize: function() 
+    initialize: function()
     {
         this.testFrame = document.getElementById("testFrame");
     },
-    
-    runTests: function(tests) 
+
+    runTests: function(tests)
     {
-        
+
     },
 
-    runTest: function(testObj) 
+    runTest: function(testObj)
     {
         if (this.currentTest)
             return;
 
-        try 
+        try
         {
             this.currentTest = testObj;
             this.currentTest.path = TestServer.path + testObj.uri;
@@ -181,32 +185,56 @@ var TestRunner =
             this.currentTest.error = false;
 
             if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path, 
+                FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
                     this.currentTest);
 
             setClass(this.currentTest.row, "running");
             removeClass(this.currentTest.row, "results");
             removeClass(this.currentTest.row, "error");
 
-            // Load script into a test frame.
-            var testSource = getResource(this.currentTest.path);
-            var doc = this.testFrame.contentWindow.document;
-            var script = doc.getElementById("TestScript");
-            if (script)
-                doc.body.removeChild(script);
-
-            script = doc.createElement("script");
-            script.setAttribute("id", "TestScript");
-            script.innerHTML = testSource;
-            doc.body.appendChild(script);
-
-            this.testFrame.contentWindow.runTest();
+            this.loadTestFrame(this.currentTest.path);
         }
         catch (e)
         {
             if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("fbtest.TestRunner.runTest EXCEPTION", e);
         }
+    },
+
+    loadTestFrame: function(testURL)
+    {
+        var outerWindow =  this.testFrame.contentWindow;
+        var doc = outerWindow.document;
+
+        // Look first to see if we already have the test case loaded
+        var testCaseIframe = null;
+        var frames = doc.getElementsByTagName("iframe");
+        for (var i = 0; i < frames.length; i++)
+        {
+            if (frames[i].getAttribute("src") == testURL)
+            {
+                testCaseIframe = frames[i];
+                break;
+            }
+        }
+        if (!testCaseIframe) // no, add it
+        {
+            testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
+            testCaseIframe.setAttribute("src", "about:blank");
+            var body = doc.getElementsByTagName("body")[0];
+            body.appendChild(testCaseIframe);
+            // now hook the load event, so the next src= will trigger it.
+            testCaseIframe.addEventListener("load", function triggerTest(event)
+            {
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("load event "+event.target, event.target);
+                var testDoc = event.target;
+                var win = testDoc.defaultView;
+                win.runTest();
+            }, true);
+        }
+        // Load or reload the test page
+        testCaseIframe.setAttribute("src", testURL);
     },
 
     testDone: function()
@@ -217,7 +245,7 @@ var TestRunner =
             setClass(this.currentTest.row, "results");
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path, 
+            FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
                 this.currentTest);
 
         this.currentTest = null;
@@ -226,7 +254,7 @@ var TestRunner =
     appendResult: function(result)
     {
         this.currentTest.results.push(result);
-        
+
         // xxxHonza: what about appendResults?
         if (!result.pass)
         {
@@ -261,7 +289,7 @@ var TestRunner =
 /**
  * Unit Test APIs intended to be used within test-file scope.
  */
-var FBTest = 
+var FBTest =
 {
     ok: function(pass, msg)
     {
@@ -275,18 +303,18 @@ var FBTest =
 
     compare: function(expected, actuall, msg)
     {
-        TestRunner.appendResult(new TestResult(window, expected == actuall, 
+        TestRunner.appendResult(new TestResult(window, expected == actuall,
             msg, expected, actuall));
     },
 
-    sysout: function(text, obj) 
+    sysout: function(text, obj)
     {
         TestRunner.sysout(text, obj);
     },
 
-    id: function(win, id) 
+    id: function(win, id)
     {
-        if (typeof id == "string") 
+        if (typeof id == "string")
             return win.document.getElementById(id);
         return id;
     },

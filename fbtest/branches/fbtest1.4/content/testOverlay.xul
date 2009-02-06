@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- overlay firebug to add menu item -->
+
 <overlay id="xfbtest-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script type="application/x-javascript" src="chrome://fbtest/content/testOverlay.js"/>
 
@@ -19,7 +22,7 @@
                     <toolbarbutton id="fbFirebugMenu" type="menu">
                         <menupopup id="fbFirebugMenuPopup">
                             <menuseparator/>
-                            <menuitem id="menu_openTestConsole" label="Open Test Console" 
+                            <menuitem id="menu_openTestConsole" label="Open Test Console"
                                 command="cmd_openTestConsole"/>
                         </menupopup>
                     </toolbarbutton>

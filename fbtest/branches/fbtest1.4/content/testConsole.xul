@@ -13,9 +13,9 @@
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
-        id="TestConsole" 
-        windowtype="FBTestConsole" 
-        title="Firebug Test Console"
+        id="TestConsole"
+        windowtype="FBTestConsole"
+        title="Firebug Test Console XUL Window"
         width="640" height="480"
         screenX="10" screenY="10"
         persist="screenX screenY width height sizemode"
@@ -32,15 +32,17 @@
     <script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/lib.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
-
+<script type="application/x-javascript" > window.dump("** 1**\n"); </script>
     <!-- FBTest -->
     <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
+
     <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testList.js"/>
+    <script type="application/x-javascript" > window.dump("** 3**\n"); </script>
     <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
-
+<script type="application/x-javascript" > window.dump("** 4**\n"); </script>
     <stringbundleset id="stringbundleset">
         <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
         <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
@@ -52,7 +54,7 @@
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_refreshList" oncommand="TestConsole.onRefreshList()"/>
     </commandset>
-
+<script type="application/x-javascript" > window.dump("** 5**\n"); </script>
     <keyset id="mainKeyset">
         <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
     </keyset>
@@ -61,16 +63,16 @@
         <toolbar id="consoleToolbar" align="center">
             <toolbarbutton id="runAll"
                 label="test.cmd.Run All" class="toolbar-image-button"
-                tooltiptext="test.cmd.tip.Run All Tests" 
+                tooltiptext="test.cmd.tip.Run All Tests"
                 command="cmd_runAll"
                 disabled="true"/>
             <toolbarbutton id="stopTest"
                 label="test.cmd.Stop" class="toolbar-image-button"
-                tooltiptext="test.cmd.tip.Stop" 
+                tooltiptext="test.cmd.tip.Stop"
                 command="cmd_stopTest"/>
             <!-- <toolbarbutton id="refreshList"
                 label="test.cmd.Refresh" class="toolbar-image-button"
-                tooltiptext="test.cmd.tip.Refresh" 
+                tooltiptext="test.cmd.tip.Refresh"
                 command="cmd_refreshList"/> -->
         </toolbar>
     </toolbox>
@@ -88,6 +90,8 @@
         <findbar id="FindToolbar" browserid="consoleFrame"/>
     </vbox>
 
+    <vbox flex="1">
     <!-- Test frame, all tests are launched within this frame -->
-    <browser id="testFrame" src="chrome://fbtest/content/testFrame.html" disablehistory="true"/>
+    <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html"  />
+    </vbox><script type="application/x-javascript" > window.dump("** 6**\n"); </script>
 </window>
