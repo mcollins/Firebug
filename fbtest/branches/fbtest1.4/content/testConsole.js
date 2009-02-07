@@ -28,8 +28,6 @@ var TestConsole =
         FBTrace = FirebugWindow.FBTrace;
         Firebug = FirebugWindow.Firebug;
         FBTest.FirebugWindow = FirebugWindow;
-FBTrace.sysout("FirebugWindow ", FirebugWindow);
-FBTrace.sysout("FirebugWindow "+ FirebugWindow.location);
         gFindBar = document.getElementById("FindToolbar");
 
         // Build UI
@@ -38,8 +36,14 @@ FBTrace.sysout("FirebugWindow "+ FirebugWindow.location);
         CategoryList.tableTag.replace({testList: testList}, consoleNode);
 
         // Start local HTTP server
-        TestServer.start(/* dir path */); //xxxHonza: the path should be specified by the user.
-        TestRunner.initialize();
+        // The chrome URL is mapped to an HTTP URL available via TestServer.getTestCaseRootPath()
+        //
+        TestServer.start("chrome://fbtest/content/tests/"); //xxxHonza: the path should be specified by the user.
+        
+        // Set up the Test Cases.
+        // The chrome URL is the baseURI for test case files
+        // This URI + the path in testList.js gives the test file path
+        TestRunner.initialize("chrome://fbtest/content/tests/");
 
         this.internationalizeUI();
 
@@ -90,16 +94,18 @@ FBTrace.sysout("FirebugWindow "+ FirebugWindow.location);
  */
 var TestServer =
 {
-    start: function(dirPath)
+	// Start the HTTP server mapping the server URL http://localhost:port/tests to the files at chromeRoot.
+	// chromeRoot cannot end at /content, it has to have something after that.
+    // (if you end in /content/, use parent to undo the convertToChromeURL file portion shorthand .parent;)
+    start: function(chromeRoot)
     {
         var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
         cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
         cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
-FBTrace.sysout("cache setup, now chromeToPath");
-// use parent to undo the convertToChromeURL file portion shorthand
-        this.localDir = this.chromeToPath("chrome://firebugTests/content/").parent;
+       
+        this.localDir = this.chromeToPath(chromeRoot);
         this.path = "http://localhost:" + serverPort + "/tests/";
-        FBTrace.sysout("localDir "+this.localDir.path);
+
         this.getServer().registerDirectory("/tests/", this.localDir);
 
         if (FBTrace.DBG_FBTEST)
@@ -115,6 +121,11 @@ FBTrace.sysout("cache setup, now chromeToPath");
             this.server.stop();
     },
 
+    getTestCaseRootPath: function()
+    {
+    	return this.path;
+    },
+    
     getServer: function()
     {
         if (!this.server)
@@ -165,8 +176,9 @@ FBTrace.sysout("cache setup, now chromeToPath");
  */
 var TestRunner =
 {
-    initialize: function()
+    initialize: function(baseURI)
     {
+		this.baseURI = baseURI;
         this.testFrame = document.getElementById("testFrame");
     },
 
@@ -183,7 +195,7 @@ var TestRunner =
         try
         {
             this.currentTest = testObj;
-            this.currentTest.path = TestServer.path + testObj.uri;
+            this.currentTest.path = this.baseURI + testObj.uri;
             this.currentTest.results = [];
             this.currentTest.error = false;
 
