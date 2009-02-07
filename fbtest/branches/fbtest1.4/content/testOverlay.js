@@ -28,9 +28,7 @@ var TestConsoleOverlay =
 
         var self = this;
         var args = {
-            FBL: FBL,
-            Firebug: Firebug,
-            FBTrace: FBTrace,
+            FirebugWindow: window
         };
 
         consoleWindow = window.openDialog(

@@ -70,7 +70,7 @@ function NS_ASSERT(cond, msg)
 
     var stack = new Error().stack.split(/\n/);
     dumpn(stack.map(function(val) { return "###!!!   " + val; }).join("\n"));
-    
+
     throw Cr.NS_ERROR_ABORT;
   }
 }
@@ -256,7 +256,7 @@ function toDateString(date)
   {
     var hrs = date.getUTCHours();
     var rv  = (hrs < 10) ? "0" + hrs : hrs;
-    
+
     var mins = date.getUTCMinutes();
     rv += ":";
     rv += (mins < 10) ? "0" + mins : mins;
@@ -458,16 +458,17 @@ nsHttpServer.prototype =
   //
   registerDirectory: function(path, directory)
   {
-    // XXX true path validation!
-    if (path.charAt(0) != "/" ||
-        path.charAt(path.length - 1) != "/" ||
-        (directory &&
-         (!directory.exists() || !directory.isDirectory())))
-      throw Cr.NS_ERROR_INVALID_ARG;
+    if (path.charAt(0) != "/")
+        throw new Error("nsIHttpServer.registerDirectory path must start with '/': "+path);
+    if (path.charAt(path.length - 1) != "/")
+        throw new Error("nsIHttpServer.registerDirectory path must end with '/': "+path);
+    if (directory && !directory.exists())
+        throw new Error("nsIHttpServer.registerDirectory directory does not exist "+(directory?directory.path:"directory argument undefined") );
+    if (!directory.isDirectory())
+        throw new Error("nsIHttpServer.registerDirectory path is not a directory "+directory.path );
 
     // XXX determine behavior of non-existent /foo/bar when a /foo/bar/ mapping
     //     exists!
-
     this._handler.registerDirectory(path, directory);
   },
 
@@ -531,7 +532,7 @@ nsHttpServer.prototype =
     return this._socketClosed && !this._handler.hasPendingRequests();
   },
 
-  
+
   // PRIVATE IMPLEMENTATION
 
   /**
@@ -598,7 +599,7 @@ function Connection(input, output, server, port)
 
   /** The port on which the server is running. */
   this.port = port;
-  
+
   /** State variables for debugging. */
   this._closed = this._processed = false;
 }
@@ -1433,7 +1434,7 @@ function maybeAddHeaders(file, metadata, response)
         code = status.substring(0, space);
         description = status.substring(space + 1, status.length);
       }
-    
+
       response.setStatusLine(metadata.httpVersion, parseInt(code, 10), description);
 
       line.value = "";
@@ -1845,12 +1846,12 @@ ServerHandler.prototype =
       catch (e) { /* lastModifiedTime threw, ignore */ }
 
       response.setHeader("Content-Type", type, false);
-  
+
       var fis = new FileInputStream(file, PR_RDONLY, 0444,
                                     Ci.nsIFileInputStream.CLOSE_ON_EOF);
       response.bodyOutputStream.writeFrom(fis, file.fileSize);
       fis.close();
-      
+
       maybeAddHeaders(file, metadata, response);
     }
   },
@@ -2004,7 +2005,7 @@ ServerHandler.prototype =
       connection.close();
       connection.server.stop();
     }
-  }, 
+  },
 
   /**
    * Handles a request which generates the given error code, using the
@@ -2401,7 +2402,7 @@ ServerHandler.prototype =
 
       if (metadata.queryString)
         body +=  "?" + metadata.queryString;
-        
+
       body += " HTTP/" + metadata.httpVersion + "\r\n";
 
       var headEnum = metadata.headers;
@@ -3204,12 +3205,12 @@ Request.prototype =
   //
   // see nsIPropertyBag.getProperty
   //
-  getProperty: function(name) 
+  getProperty: function(name)
   {
     this._ensurePropertyBag();
     return this._bag.getProperty(name);
   },
-  
+
   /** Ensures a property bag has been created for ad-hoc behaviors. */
   _ensurePropertyBag: function()
   {
@@ -3232,7 +3233,7 @@ function makeFactory(ctor)
     if (outer != null)
       throw Components.results.NS_ERROR_NO_AGGREGATION;
     return (new ctor()).QueryInterface(iid);
-  } 
+  }
 
   return {
            createInstance: ci,
@@ -3263,7 +3264,7 @@ const module =
   registerSelf: function(compMgr, fileSpec, location, type)
   {
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-    
+
     for (var key in this._objects)
     {
       var obj = this._objects[key];
@@ -3291,7 +3292,7 @@ const module =
       if (cid.equals(this._objects[key].CID))
         return this._objects[key].factory;
     }
-    
+
     throw Cr.NS_ERROR_NO_INTERFACE;
   },
   canUnload: function(compMgr)

@@ -24,10 +24,12 @@ var TestConsole =
             FBTrace.sysout("fbtest.TestConsole.initializing");
 
         var args = window.arguments[0];
-        FBTrace = args.FBTrace;
-        Firebug = args.Firebug;
-        FBTest.FirebugWindow = args.FirebugWindow;
-
+        var FirebugWindow = args.FirebugWindow;
+        FBTrace = FirebugWindow.FBTrace;
+        Firebug = FirebugWindow.Firebug;
+        FBTest.FirebugWindow = FirebugWindow;
+FBTrace.sysout("FirebugWindow ", FirebugWindow);
+FBTrace.sysout("FirebugWindow "+ FirebugWindow.location);
         gFindBar = document.getElementById("FindToolbar");
 
         // Build UI
@@ -93,10 +95,11 @@ var TestServer =
         var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
         cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
         cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
-
-        this.localDir = this.chromeToPath("chrome://fbtest/content/tests");
+FBTrace.sysout("cache setup, now chromeToPath");
+// use parent to undo the convertToChromeURL file portion shorthand
+        this.localDir = this.chromeToPath("chrome://firebugTests/content/").parent;
         this.path = "http://localhost:" + serverPort + "/tests/";
-
+        FBTrace.sysout("localDir "+this.localDir.path);
         this.getServer().registerDirectory("/tests/", this.localDir);
 
         if (FBTrace.DBG_FBTEST)
@@ -192,13 +195,27 @@ var TestRunner =
             removeClass(this.currentTest.row, "results");
             removeClass(this.currentTest.row, "error");
 
-            this.loadTestFrame(this.currentTest.path);
+            var testURL = this.currentTest.path;
+            if (/\.js$/.test(testURL))
+                testURL = this.wrapJS(testURL);
+
+            this.loadTestFrame(testURL);
         }
         catch (e)
         {
             if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("fbtest.TestRunner.runTest EXCEPTION", e);
         }
+    },
+
+    wrapJS: function(jsURL)
+    {
+        if (!this.wrapAJSFile)
+            this.wrapAJSFile = getResource("chrome://fbtest/content/wrapAJSFile.html");
+        var testURL = getDataURLForContent(new String(this.wrapAJSFile).replace("__replaceme__", jsURL), jsURL);
+
+        FBTrace.sysout("wrapJS converted "+jsURL, testURL);
+        return testURL;
     },
 
     loadTestFrame: function(testURL)
@@ -230,11 +247,21 @@ var TestRunner =
                     FBTrace.sysout("load event "+event.target, event.target);
                 var testDoc = event.target;
                 var win = testDoc.defaultView;
+                if (win.wrappedJSObject)
+                    win.wrappedJSObject.FBTest = window.FBTest;
+                else
+                    win.FBTest = window.FBTest;
+                if (win.wrappedJSObject)
+                    win.wrappedJSObject.FBTrace = window.FBTrace;
+                else
+                    win.FBTrace = window.FBTrace;
                 win.runTest();
             }, true);
         }
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
+        var docShell = getDocShellByDOMWindow(testCaseIframe);
+        FBTrace.sysout("iframe.docShell for "+testURL,  docShell);
     },
 
     testDone: function()
@@ -280,7 +307,26 @@ var TestRunner =
     sysout: function(msg, obj)
     {
         FBTrace.sysout(msg, obj);
-    }
+    },
+
+    getDocShellByDOMWindow: function(domWindow)
+    {
+       if (domWindow instanceof Components.interfaces.nsIInterfaceRequestor)
+        {
+            var navi = domWindow.getInterface(Components.interfaces.nsIWebNavigation);
+            if (navi instanceof Components.interfaces.nsIDocShellTreeItem)
+            {
+                return navi;
+            }
+            else
+                FBTrace.dumpStack("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
+        }
+        else
+        {
+            FBTrace.dumpProperties("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
+            FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+(domWindow instanceof nsIDOMWindow));
+        }
+    },
 };
 
 // ************************************************************************************************
