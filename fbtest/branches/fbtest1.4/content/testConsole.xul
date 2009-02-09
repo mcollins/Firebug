@@ -32,17 +32,16 @@
     <script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/lib.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
-<script type="application/x-javascript" > window.dump("** 1**\n"); </script>
+
     <!-- FBTest -->
     <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
 
     <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testList.js"/>
-    <script type="application/x-javascript" > window.dump("** 3**\n"); </script>
     <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
-<script type="application/x-javascript" > window.dump("** 4**\n"); </script>
+
     <stringbundleset id="stringbundleset">
         <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
         <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
@@ -54,7 +53,7 @@
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_refreshList" oncommand="TestConsole.onRefreshList()"/>
     </commandset>
-<script type="application/x-javascript" > window.dump("** 5**\n"); </script>
+
     <keyset id="mainKeyset">
         <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
     </keyset>
@@ -82,7 +81,7 @@
         <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
     </popupset>
 
-    <vbox flex="1">
+    <vbox flex="2">
         <browser id="consoleFrame" type="content-primary"
              src="chrome://fbtest/content/testConsole.html" flex="1"
              disablehistory="true" contextmenu="fbContextMenu"
@@ -90,7 +89,8 @@
         <findbar id="FindToolbar" browserid="consoleFrame"/>
     </vbox>
 
-    <!-- Test frame, all tests are launched within this frame -->
-    <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html" style="display:none"/>
-    <script type="application/x-javascript" > window.dump("** 6**\n"); </script>
+    <!-- Test frame, all tests are launched as frames within this frame -->
+    <vbox>
+        <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html"  />
+    </vbox> 
 </window>

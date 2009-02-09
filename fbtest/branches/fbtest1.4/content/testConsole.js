@@ -39,14 +39,11 @@ var TestConsole =
         // The chrome URL is mapped to an HTTP URL available via TestServer.getTestCaseRootPath()
         //
         TestServer.start("chrome://fbtest/content/tests/"); //xxxHonza: the path should be specified by the user.
-
+        
         // Set up the Test Cases.
         // The chrome URL is the baseURI for test case files
         // This URI + the path in testList.js gives the test file path
         TestRunner.initialize("chrome://fbtest/content/tests/");
-
-        // Register string bundle so, Firebug localization APIs can be used. 
-        Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
         this.internationalizeUI();
 
@@ -57,6 +54,7 @@ var TestConsole =
     internationalizeUI: function()
     {
         var buttons = ["runAll", "stopTest", "refreshList"];
+
         for (var i=0; i<buttons.length; i++)
         {
             var element = document.getElementById(buttons[i]);
@@ -325,10 +323,10 @@ var TestRunner =
 
     getDocShellByDOMWindow: function(domWindow)
     {
-       if (domWindow instanceof Ci.nsIInterfaceRequestor)
+       if (domWindow instanceof Components.interfaces.nsIInterfaceRequestor)
         {
-            var navi = domWindow.getInterface(Ci.nsIWebNavigation);
-            if (navi instanceof Ci.nsIDocShellTreeItem)
+            var navi = domWindow.getInterface(Components.interfaces.nsIWebNavigation);
+            if (navi instanceof Components.interfaces.nsIDocShellTreeItem)
             {
                 return navi;
             }
