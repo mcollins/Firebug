@@ -272,7 +272,7 @@ var TestRunner =
         }
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
-        var docShell = getDocShellByDOMWindow(testCaseIframe);
+        var docShell = this.getDocShellByDOMWindow(testCaseIframe);
         FBTrace.sysout("iframe.docShell for "+testURL,  docShell);
     },
 
@@ -323,10 +323,10 @@ var TestRunner =
 
     getDocShellByDOMWindow: function(domWindow)
     {
-       if (domWindow instanceof Components.interfaces.nsIInterfaceRequestor)
+       if (domWindow instanceof Ci.nsIInterfaceRequestor)
         {
-            var navi = domWindow.getInterface(Components.interfaces.nsIWebNavigation);
-            if (navi instanceof Components.interfaces.nsIDocShellTreeItem)
+            var navi = domWindow.getInterface(Ci.nsIWebNavigation);
+            if (navi instanceof Ci.nsIDocShellTreeItem)
             {
                 return navi;
             }
@@ -336,7 +336,8 @@ var TestRunner =
         else
         {
             FBTrace.dumpProperties("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
-            FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+(domWindow instanceof nsIDOMWindow));
+            FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+
+                (domWindow instanceof Ci.nsIDOMWindow));
         }
     },
 };

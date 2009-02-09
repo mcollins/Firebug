@@ -90,8 +90,7 @@
         <findbar id="FindToolbar" browserid="consoleFrame"/>
     </vbox>
 
-    <vbox flex="1">
     <!-- Test frame, all tests are launched within this frame -->
-    <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html"  />
-    </vbox><script type="application/x-javascript" > window.dump("** 6**\n"); </script>
+    <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html" style="display:none"/>
+    <script type="application/x-javascript" > window.dump("** 6**\n"); </script>
 </window>
