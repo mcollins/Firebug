@@ -34,26 +34,35 @@ var TestConsole =
 
         // Build UI
         var consoleFrame = document.getElementById("consoleFrame");
-        var consoleNode = consoleFrame.contentDocument.getElementById("testList");
-        CategoryList.tableTag.replace({testList: testList}, consoleNode);
+        try
+        {
+            var consoleNode = consoleFrame.contentDocument.getElementById("testList");
+            CategoryList.tableTag.replace({testList: testList}, consoleNode);
 
-        // Start local HTTP server
-        // The chrome URL is mapped to an HTTP URL available via TestServer.getTestCaseRootPath()
-        //
-        TestServer.start("chrome://fbtest/content/tests/"); //xxxHonza: the path should be specified by the user.
-        
-        // Set up the Test Cases.
-        // The chrome URL is the baseURI for test case files
-        // This URI + the path in testList.js gives the test file path
-        TestRunner.initialize("chrome://fbtest/content/tests/");
+            // Start local HTTP server
+            // The chrome URL is mapped to an HTTP URL available via TestServer.getTestCaseRootPath()
+            //
+            var userSuppliedRoot = "chrome://firebugTests/content/";
+            TestServer.start(userSuppliedRoot); //xxxHonza: the path should be specified by the user.
 
-        // Register strings so, Firebug's localization APIs can be used.
-        Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
+            // Set up the Test Cases.
+            // The chrome URL is the baseURI for test case files
+            // This URI + the path in testList.js gives the test file path
+            TestRunner.initialize(userSuppliedRoot);
 
-        this.internationalizeUI();
+            // Register strings so, Firebug's localization APIs can be used.
+            Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestConsole.initialized");
+            this.internationalizeUI();
+
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestConsole.initialized");
+        }
+        catch (e)
+        {
+            FBTrace.sysout("fbtest.TestConsole.initialize FAILS "+e, e);
+            document.title = e;
+        }
     },
 
     internationalizeUI: function()
@@ -99,15 +108,15 @@ var TestConsole =
  */
 var TestServer =
 {
-	// Start the HTTP server mapping the server URL http://localhost:port/tests to the files at chromeRoot.
-	// chromeRoot cannot end at /content, it has to have something after that.
+    // Start the HTTP server mapping the server URL http://localhost:port/tests to the files at chromeRoot.
+    // chromeRoot cannot end at /content, it has to have something after that.
     // (if you end in /content/, use parent to undo the convertToChromeURL file portion shorthand .parent;)
     start: function(chromeRoot)
     {
         var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
         cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
         cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
-       
+
         this.localDir = this.chromeToPath(chromeRoot);
         this.path = "http://localhost:" + serverPort + "/tests/";
 
@@ -128,9 +137,9 @@ var TestServer =
 
     getTestCaseRootPath: function()
     {
-    	return this.path;
+        return this.path;
     },
-    
+
     getServer: function()
     {
         if (!this.server)
@@ -154,6 +163,15 @@ var TestServer =
        var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
        var rv = cr.convertChromeURL(uri).spec;
 
+       if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+       {
+           var m = /(.*\/content\/)/.exec(rv);
+           if (m)
+           {
+               rv = m[1];
+           }
+       }
+
        if (/^file:/.test(rv))
           rv = this.urlToPath(rv);
        else
@@ -164,12 +182,19 @@ var TestServer =
 
     urlToPath: function (aPath)
     {
-        if (!aPath || !/^file:/.test(aPath))
-            return;
+        try
+        {
+            if (!aPath || !/^file:/.test(aPath))
+                return;
 
-        return Cc["@mozilla.org/network/protocol;1?name=file"]
-            .createInstance(Ci.nsIFileProtocolHandler)
-            .getFileFromURLSpec(aPath);
+            return Cc["@mozilla.org/network/protocol;1?name=file"]
+                      .createInstance(Ci.nsIFileProtocolHandler)
+                      .getFileFromURLSpec(aPath);
+        }
+        catch (e)
+        {
+            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
+        }
     }
 };
 
@@ -183,8 +208,9 @@ var TestRunner =
 {
     initialize: function(baseURI)
     {
-		this.baseURI = baseURI;
+        this.baseURI = baseURI;
         this.testFrame = document.getElementById("testFrame");
+
     },
 
     runTests: function(tests)
