@@ -6,8 +6,14 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+// Services
 var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
+var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 
+// Interfaces
+var nsIFilePicker = Ci.nsIFilePicker;
+
+// Global variables
 var gFindBar;
 var serverPort = 7080;
 
@@ -98,6 +104,26 @@ var TestConsole =
         var consoleFrame = document.getElementById("consoleFrame");
         var consoleNode = consoleFrame.contentDocument.getElementById("testList");
         CategoryList.tableTag.replace({testList: testList}, consoleNode);
+    },
+
+    onOpenTestList: function()
+    {
+        filePicker.init(window, null, nsIFilePicker.modeOpen);
+        filePicker.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterHTML);
+        filePicker.filterIndex = 1;
+        filePicker.defaultString = "testList.html";
+
+        var rv = filePicker.show();
+        if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) 
+        {
+            var testListURLBox = document.getElementById("testListURL");
+            testListURLBox.value = filePicker.file.path;
+
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.onOpenTestSuite " + filePicker.file.path, filePicker.file);
+
+            //xxxHonza, XXXjjb: TODO: reload the consoleFrame with provided file.
+        }
     }
 };
 
@@ -210,7 +236,6 @@ var TestRunner =
     {
         this.baseURI = baseURI;
         this.testFrame = document.getElementById("testFrame");
-
     },
 
     runTests: function(tests)

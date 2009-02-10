@@ -52,6 +52,7 @@
         <command id="cmd_stopTest" oncommand="TestConsole.onStopTest()"/>
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_refreshList" oncommand="TestConsole.onRefreshList()"/>
+        <command id="cmd_openTestList" oncommand="TestConsole.onOpenTestList()"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -73,6 +74,17 @@
                 label="test.cmd.Refresh" class="toolbar-image-button"
                 tooltiptext="test.cmd.tip.Refresh"
                 command="cmd_refreshList"/> -->
+        </toolbar>
+        <toolbar id="testListUrlBar" align="center" mode="text">
+            <toolbaritem>
+                <label value="Test Suite:" />
+            </toolbaritem>
+            <toolbaritem flex="1">
+                <textbox id="testListURL" flex="1" />
+            </toolbaritem>
+            <toolbarbutton id="testListPicker"
+                label="..."
+                command="cmd_openTestList" />
         </toolbar>
     </toolbox>
 
