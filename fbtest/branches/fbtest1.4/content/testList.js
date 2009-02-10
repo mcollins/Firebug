@@ -12,7 +12,9 @@ var testList = [
     {category: "examples", uri: "examples/exampleTest.html",    desc: "Simple test example." },
     {category: "net", uri: "net/issue1256.js",                  desc: "Issue1256: Firebug displays spaces as plus signs in POST fields" },
     {category: "firebug", uri: "firebug/activation.html",       desc: "Open/Close Firebug, Web pages; enable/disable panels"},
-    //{category: "script", uri: "script/scriptWatch.js",       desc: "Watch panel" },
+    //{category: "script", uri: "script/scriptWatch.js",        desc: "Watch panel" },
+    {category: "net", uri: "net/issue1275.js",                  desc: "Issue1275: firebug does not show JSON answers from server" },
+    {category: "examples", uri: "examples/exampleNetTest.js",   desc: "Example of a Net panel test." },
 ];
 
 
