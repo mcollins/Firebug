@@ -6,6 +6,8 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
+
 var gFindBar;
 var serverPort = 7080;
 
@@ -44,6 +46,9 @@ var TestConsole =
         // The chrome URL is the baseURI for test case files
         // This URI + the path in testList.js gives the test file path
         TestRunner.initialize("chrome://fbtest/content/tests/");
+
+        // Register strings so, Firebug's localization APIs can be used.
+        Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
         this.internationalizeUI();
 
@@ -278,6 +283,9 @@ var TestRunner =
 
     testDone: function()
     {
+        if (!this.currentTest)
+            return;
+
         removeClass(this.currentTest.row, "running");
 
         if (this.currentTest.results.length > 0)
@@ -399,6 +407,11 @@ var FBTest =
         event.initMouseEvent("mousedown", true, true, doc.defaultView, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
         return node.dispatchEvent(event);
     },
+
+    loadScript: function(scriptURI, scope)
+    {
+        return loader.loadSubScript(TestRunner.baseURI + scriptURI, scope);
+    }
 };
 
 // ************************************************************************************************
