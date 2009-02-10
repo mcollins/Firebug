@@ -20,7 +20,8 @@ function runTest(callback)
         if (request.readyState == 4 && request.status == 200)
             setTimeout(function() {
                 document.getElementById("finished").innerHTML = "Request Finished";
-                callback(request);
+                if (callback)
+                    callback(request);
             }, 300);
     };
 
@@ -28,8 +29,6 @@ function runTest(callback)
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     request.send("param1=1 %2B 2");
 }
-if (window.opener && window.opener.onTestLoaded)
-    window.opener.onTestLoaded(window);
 </script>
 </body>
 </html>

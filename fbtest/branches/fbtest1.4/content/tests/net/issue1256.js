@@ -1,57 +1,57 @@
 // Test entry point.
-function runTest() 
+function runTest()
 {
-    window.open(basePath + "net/issue1256.html", "FBTestWindow",
-        "width=500,height=300,status=yes,toolbar=yes,location=yes,menubar=yes");
-}
+    FBTest.loadScript("net/env.js", this);
 
-// Callback from the test page.
-function onTestLoaded(win) 
-{
-    FBTest.sysout("issue1256.test loaded");
-    var chrome = getChromeWindow(win);
-
-    // Open Firebug UI and activate Net panel.
-    chrome.Firebug.showBar(true);
-    chrome.FirebugChrome.selectPanel("net");
-
-    // Run test implemented on the page.
-    win.runTest(function(request) 
+    openNewTab(basePath + "net/issue1256.html", function(win)
     {
-        FBTest.sysout("issue1256.test response received");
+        FBTest.sysout("issue1256.START");
 
-        // Expand the test request with params
-        var panel = chrome.FirebugContext.getPanel("net");
-        var netRow = chrome.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr", 
-            "hasHeaders", "loaded");
+        var browser = FBTest.FirebugWindow;
 
-        FBTest.ok(netRow, "There must be just one xhr request.");
-        if (!netRow)
-            return endTest(win);
+        // Open Firebug UI and activate Net panel.
+        browser.Firebug.showBar(true);
+        browser.FirebugChrome.selectPanel("net");
 
-        FBTest.click(win, netRow);
-
-        // Activate Params tab.
-        var netInfoRow = netRow.nextSibling;
-        expandNetTabs(win, netInfoRow, "netInfoPostTab");
-
-        var postTable = chrome.FBL.getElementByClass(netInfoRow, "netInfoPostTable");
-        if (postTable) 
+        // Run test implemented on the page.
+        win.wrappedJSObject.runTest(function(request)
         {
-            var paramName = chrome.FBL.getElementByClass(postTable, "netInfoParamName").textContent;
-            var paramValue = chrome.FBL.getElementByClass(postTable, "netInfoParamValue").textContent;
+            FBTest.sysout("issue1256.response received: " + request.name);
 
-            FBTest.compare("param1", paramName, "The parameter name must be 'param1'.");
-            FBTest.compare("1 + 2", paramValue, "The parameter value must be '1 + 2'");
-        }
+            // Expand the test request with params
+            var panel = browser.FirebugContext.getPanel("net");
+            var netRow = browser.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr", 
+                "hasHeaders", "loaded");
 
-        endTest(win);
+            FBTest.ok(netRow, "There must be just one xhr request.");
+            if (!netRow)
+                return endTest(win);
+
+            FBTest.click(win, netRow);
+
+            // Activate Params tab.
+            var netInfoRow = netRow.nextSibling;
+            expandNetTabs(win, netInfoRow, "netInfoPostTab");
+
+            var postTable = browser.FBL.getElementByClass(netInfoRow, "netInfoPostTable");
+            if (postTable) 
+            {
+                var paramName = browser.FBL.getElementByClass(postTable, "netInfoParamName").textContent;
+                var paramValue = browser.FBL.getElementByClass(postTable, "netInfoParamValue").textContent;
+
+                FBTest.compare("param1", paramName, "The parameter name must be 'param1'.");
+                FBTest.compare("1 + 2", paramValue, "The parameter value must be '1 + 2'");
+            }
+
+            endTest(win);
+        });
     });
 }
 
 function endTest(win)
 {
     // Finish test
-    win.close();
+    removeCurrentTab();
+    FBTest.sysout("issue1256.DONE");
     FBTest.testDone();
 }
