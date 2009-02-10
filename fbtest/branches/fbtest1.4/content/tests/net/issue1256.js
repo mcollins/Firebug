@@ -20,7 +20,7 @@ function runTest()
 
             // Expand the test request with params
             var panel = browser.FirebugContext.getPanel("net");
-            var netRow = browser.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr", 
+            var netRow = browser.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr",
                 "hasHeaders", "loaded");
 
             FBTest.ok(netRow, "There must be just one xhr request.");
@@ -34,7 +34,7 @@ function runTest()
             expandNetTabs(win, netInfoRow, "netInfoPostTab");
 
             var postTable = browser.FBL.getElementByClass(netInfoRow, "netInfoPostTable");
-            if (postTable) 
+            if (postTable)
             {
                 var paramName = browser.FBL.getElementByClass(postTable, "netInfoParamName").textContent;
                 var paramValue = browser.FBL.getElementByClass(postTable, "netInfoParamValue").textContent;

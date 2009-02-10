@@ -22,7 +22,7 @@ function runTest(callback)
                 document.getElementById("finished").innerHTML = "Request Finished";
                 if (callback)
                     callback(request);
-            }, 300);
+            }, 600);
     };
 
     request.open("POST", "issue1256.txt", true);
