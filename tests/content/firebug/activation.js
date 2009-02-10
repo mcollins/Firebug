@@ -28,7 +28,18 @@ function initialize()
     {
         this.pressKey(123); // F12
     };
-   
+    
+    FBTest.isFirebugOpen = function()
+    {
+    	//FBTrace.sysout("isFirebugOpen");
+    	var browserDocument = FBTest.FirebugWindow.document;
+    	//FBTrace.sysout("isFirebugOpen browserDocument", browserDocument);
+    	var fbContentBox = browserDocument.getElementById('fbContentBox');
+    	//FBTrace.sysout("isFirebugOpen fbContentBox", fbContentBox);
+    	var collapsedFirebug = fbContentBox.getAttribute("collapsed");
+    	 
+    	return (collapsedFirebug?false:true);
+    };
     // *******************************************************************
 
     // var fooTest = new FBTest.TestHandlers("TestFoo");
@@ -54,29 +65,34 @@ function initialize()
     		var event = this.progressElement.ownerDocument.createEvent("Event");
     		event.initEvent(eventName, true, false); // bubbles and not cancelable
     		this.progressElement.innerHTML = eventName;
-    		FBTrace.sysout("fire this", this);
+    		//FBTrace.sysout("fire this", this);
     		this.progressElement.dispatchEvent(event);
     	},
     	// fooTest.fireOnNewPage("openFirebug", "http://getfirebug.com");
     	fireOnNewPage: function(eventName, url)
     	{
-    		var browser = FBTest.FirebugWindow.getBrowser();
+    		var tabbrowser = FBTest.FirebugWindow.getBrowser();
     		var testHandler = this;
+    		var newTab = tabbrowser.addTab(url);
+    		tabbrowser.selectedTab = newTab;
+    		var browser = tabbrowser.getBrowserForTab(newTab);
+    	    
     		var onLoadURLInNewTab = function(event)
     	    {
-    			var win = event.target;
-    	    	FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
+    			var win = event.target;   // actually  tab XUL elt
+    	    	//FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
+    			FBTest.FirebugWindow.getBrowser().selectedTab = win;
+        	    //FBTrace.sysout("selectedTab ", FBTest.FirebugWindow.getBrowser().selectedTab);
+        	    var selectedBrowser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
+        	    //FBTrace.sysout("selectedBrowser "+selectedBrowser.currentURI.spec);
     			browser.removeEventListener('load', onLoadURLInNewTab, true);
     			testHandler.fire(eventName);
     	    }
-    		FBTrace.sysout("fireOnNewPage "+FBTest.FirebugWindow, FBTest.FirebugWindow);
+    		//FBTrace.sysout("fireOnNewPage "+FBTest.FirebugWindow, FBTest.FirebugWindow);
     	    // Add tab, then make active (https://developer.mozilla.org/en/Code_snippets/Tabbed_browser)
     		
-    	    var newTab = browser.getBrowserForTab(browser.addTab(url));
-    	    newTab.addEventListener("load", onLoadURLInNewTab, true);
-
-    	    FBTest.FirebugWindow.gBrowser.selectedTab = newTab;
-    	    FBTrace.sysout("selectedTab ", FBTest.FirebugWindow.gBrowser.selectedTab);
+    	    browser.addEventListener("load", onLoadURLInNewTab, true);
+    	    //FBTrace.sysout("tabbrowser is ", tabbrowser);
     	},
     	// function onEnablePanels(event) {...; fooTest.done();}
     	done: function()
@@ -93,7 +109,7 @@ window.addEventListener('load', initialize, true);
 var testNumber = 0;
 function openAndOpen()
 {
-    var openAndOpenURL = "http://www.getfirebug.com";
+    var openAndOpenURL = "http://getfirebug.com/";
 
     
     var openTest = new FBTest.TestHandlers("openAndOpen");
@@ -101,21 +117,28 @@ function openAndOpen()
     // Actual test operations
     openTest.add( function onNewPage(event)
     {
+    	FBTrace.sysout("onNewPage starts", event);
+    	var isFirebugOpen = FBTest.isFirebugOpen();
+    	FBTest.ok(!isFirebugOpen, "Firebug starts closed");
+    	
     	FBTest.pressToggleFirebug();
 
+    	var isFirebugOpen = FBTest.isFirebugOpen();
+    	FBTest.ok(isFirebugOpen, "Firebug now open");
+    	
         if (FBTest.FirebugWindow.FirebugContext)
         {
         	var contextName = FBTest.FirebugWindow.FirebugContext.getName();
             FBTest.ok(true, "chromeWindow.FirebugContext "+contextName);
-            FBTest.ok(contextName == openAndOpenURL, "FirebugContext set to "+openAndOpenURL)
+            FBTest.ok(contextName == openAndOpenURL, "FirebugContext set to "+openAndOpenURL);
         }
         else
             FBTest.ok(false, "no FirebugContext");
         
-        
         openTest.done();
     });
 
+     
     openTest.fireOnNewPage("onNewPage", openAndOpenURL);
 }
 
