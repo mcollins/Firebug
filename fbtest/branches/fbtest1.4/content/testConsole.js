@@ -204,6 +204,14 @@ var TestRunner =
             this.currentTest.results = [];
             this.currentTest.error = false;
 
+            // Remove previous results (if any).
+            if (hasClass(this.currentTest.row, "opened"))
+            {
+                var infoBody = this.currentTest.row.nextSibling;
+                var resultsBody = FBL.getElementByClass(infoBody, "testBodyCol");
+                clearNode(resultsBody);
+            }
+
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
                     this.currentTest);
@@ -302,25 +310,24 @@ var TestRunner =
     {
         this.currentTest.results.push(result);
 
-        // xxxHonza: what about appendResults?
+        // If the test is currently opened, append the result directly into the UI.
+        if (hasClass(this.currentTest.row, "opened"))
+        {
+            var infoBodyRow = this.currentTest.row.nextSibling;
+            var table = FBL.getElementByClass(infoBodyRow, "testResultTable");
+            if (!table)
+                table = TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
+
+            var tbody = table.firstChild;
+            result.row = TestResultRep.resultTag.insertRows(
+                {results: [result]}, tbody.lastChild ? tbody.lastChild : tbody)[0];
+        }
+
+        // If it's an error update test so, it's reflecting an error state.
         if (!result.pass)
         {
             setClass(this.currentTest.row, "error");
             this.currentTest.error = true;
-        }
-    },
-
-    appendResults: function(queueResults)
-    {
-        var tbody = TestConsole.table.firstChild;
-        var row = TestResultRep.resultTag.insertRows(
-            {results: queueResults}, tbody.lastChild ? tbody.lastChild : tbody)[0];
-
-        for (var i=0; i<queueResults.length; i++)
-        {
-            var result = queueResults[i];
-            result.row = row;
-            row = row.nextSibling;
         }
     },
 
