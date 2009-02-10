@@ -306,7 +306,14 @@ var TestRunner =
                     win.wrappedJSObject.FBTrace = window.FBTrace;
                 else
                     win.FBTrace = window.FBTrace;
-                win.runTest();
+                try
+                {
+                    win.runTest();
+                }
+                catch (exc)
+                {
+                    FBTest.sysout("runTest FAILS "+exc, exc);
+                }
             }, true);
         }
         // Load or reload the test page
@@ -391,6 +398,11 @@ var TestRunner =
  */
 var FBTest =
 {
+    progress: function(msg)
+    {
+        TestRunner.appendResult(new TestResult(window, true, "progress: "+msg));
+    },
+
     ok: function(pass, msg)
     {
         TestRunner.appendResult(new TestResult(window, pass, msg));
