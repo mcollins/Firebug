@@ -38,7 +38,6 @@
     <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
 
     <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
-    <script type="application/x-javascript" src="chrome://fbtest/content/testList.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
 
@@ -51,7 +50,6 @@
         <command id="cmd_runAll" oncommand="TestConsole.onRunAll()"/>
         <command id="cmd_stopTest" oncommand="TestConsole.onStopTest()"/>
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
-        <command id="cmd_refreshList" oncommand="TestConsole.onRefreshList()"/>
         <command id="cmd_openTestList" oncommand="TestConsole.onOpenTestList()"/>
     </commandset>
 
@@ -70,10 +68,6 @@
                 label="test.cmd.Stop" class="toolbar-image-button"
                 tooltiptext="test.cmd.tip.Stop"
                 command="cmd_stopTest"/>
-            <!-- <toolbarbutton id="refreshList"
-                label="test.cmd.Refresh" class="toolbar-image-button"
-                tooltiptext="test.cmd.tip.Refresh"
-                command="cmd_refreshList"/> -->
         </toolbar>
         <toolbar id="testListUrlBar" align="center" mode="text">
             <toolbaritem>

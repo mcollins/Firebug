@@ -38,17 +38,14 @@ var TestConsole =
         FBTest.FirebugWindow = FirebugWindow;
         gFindBar = document.getElementById("FindToolbar");
 
-        // Build UI
-        var consoleFrame = document.getElementById("consoleFrame");
         try
         {
-            var consoleNode = consoleFrame.contentDocument.getElementById("testList");
-            CategoryList.tableTag.replace({testList: testList}, consoleNode);
+            // Build test list UI.
+            this.refreshTestList();
 
             // Start local HTTP server
             // The chrome URL is mapped to an HTTP URL available via TestServer.getTestCaseRootPath()
-            //
-            var userSuppliedRoot = "chrome://firebugTests/content/";
+            var userSuppliedRoot = "chrome://fbtest/content/tests/";
             TestServer.start(userSuppliedRoot); //xxxHonza: the path should be specified by the user.
 
             // Set up the Test Cases.
@@ -59,6 +56,7 @@ var TestConsole =
             // Register strings so, Firebug's localization APIs can be used.
             Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
+            // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 
             if (FBTrace.DBG_FBTEST)
@@ -66,8 +64,9 @@ var TestConsole =
         }
         catch (e)
         {
-            FBTrace.sysout("fbtest.TestConsole.initialize FAILS "+e, e);
-             
+            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("fbtest.TestConsole.initialize FAILS "+e, e);
+
             alert("There may be a useful message on the Error Console: "+e);
         }
     },
@@ -89,6 +88,22 @@ var TestConsole =
         TestServer.stop();
     },
 
+    refreshTestList: function() 
+    {
+        var frame = document.getElementById("consoleFrame");
+        var testList = frame.contentWindow.wrappedJSObject.testList;
+        if (!testList)
+        {
+            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("fbtest.refreshTestList; ERROR No testList defined in: " +
+                    frame.getAttribute("src"), frame.contentWindow);
+            return;
+        }
+
+        var consoleNode = frame.contentDocument.getElementById("testList");
+        CategoryList.tableTag.replace({testList: testList}, consoleNode);
+    },
+
     // UI Commands
     onRunAll: function()
     {
@@ -98,13 +113,6 @@ var TestConsole =
     onStopTest: function()
     {
         TestRunner.testDone();
-    },
-
-    onRefreshList: function()
-    {
-        var consoleFrame = document.getElementById("consoleFrame");
-        var consoleNode = consoleFrame.contentDocument.getElementById("testList");
-        CategoryList.tableTag.replace({testList: testList}, consoleNode);
     },
 
     onOpenTestList: function()
@@ -123,7 +131,29 @@ var TestConsole =
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.onOpenTestSuite " + filePicker.file.path, filePicker.file);
 
-            //xxxHonza, XXXjjb: TODO: reload the consoleFrame with provided file.
+            var self = this;
+            var consoleFrame = document.getElementById("consoleFrame");
+            var onTestListLoaded = function(event)
+            {
+                consoleFrame.removeEventListener("load", onTestListLoaded, true);
+
+                // Append proper styles.
+                var doc = event.target;
+                var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
+                for (var i=0; i<styles.length; i++)
+                    addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
+
+                // Build test list UI.
+                self.refreshTestList();
+
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("fbtest.onOpenTestSuite; Test List loaded: " +
+                        filePicker.file.path, doc);
+            }
+
+            // Load test-list file into the conent frame.
+            consoleFrame.addEventListener("load", onTestListLoaded, true);
+            consoleFrame.setAttribute("src", "file://" + filePicker.file.path);
         }
     }
 };
