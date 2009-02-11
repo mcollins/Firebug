@@ -12,7 +12,7 @@ function runTest()
         browser.Firebug.showBar(true);
         browser.FirebugChrome.selectPanel("net");
 
-        win.wrappedJSObject.jsonRequest(function(request)
+        win.jsonRequest(function(request)
         {
             // Expand the test request with params
             var panelNode = browser.FirebugContext.getPanel("net").panelNode;

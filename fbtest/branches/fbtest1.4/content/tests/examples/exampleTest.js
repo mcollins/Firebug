@@ -1,6 +1,6 @@
 function runTest() 
 {
-    FBTest.sysout("issue1256.started");
+    FBTest.sysout("exampleTest.started");
     FBTest.ok(true, "This is a positive test");
     FBTest.ok(false, "This is a negative test");
     FBTest.compare("Expected", "Expected", "Compare test (positive)");

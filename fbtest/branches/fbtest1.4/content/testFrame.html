@@ -4,47 +4,5 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head></head>
 <body>
-<script type="text/javascript">
-    var Cc = Components.classes;
-    var Ci = Components.interfaces;
-    var chrome = window.parent;
-    var FBTest = chrome.FBTest;
-    var basePath = "http://localhost:7080/tests/";
-
-    function getChromeWindow(win)
-    {
-        return win.QueryInterface(Ci.nsIInterfaceRequestor)
-           .getInterface(Ci.nsIWebNavigation)
-           .QueryInterface(Ci.nsIDocShellTreeItem)
-           .rootTreeItem
-           .QueryInterface(Ci.nsIInterfaceRequestor)
-           .getInterface(Ci.nsIDOMWindow); 
-    }
-
-    function expandNetRows(win, panelNode, className) // className, className, ...
-    {
-        var args = chrome.FBL.cloneArray(arguments); args.shift();
-        var rows = chrome.FBL.getElementsByClass.apply(null, args);
-        for (var i=0; i<rows.length; i++)
-        {
-            var row = rows[i];
-            if (!chrome.FBL.hasClass(row, "opened"))
-                FBTest.click(win, row);
-        }
-    }
-    
-    function expandNetTabs(win, panelNode, tabClass)
-    {
-        var args = chrome.FBL.cloneArray(arguments); args.shift();
-        var tabs = chrome.FBL.getElementsByClass.apply(null, args);
-        for (var i=0; i<tabs.length; i++)
-        {
-            var tab = tabs[i];
-            if (!chrome.FBL.hasClass(tab, "collapsed"))
-                FBTest.click(win, tab);
-        }
-    }
-</script>
-<!-- <script id="TestScript" type="text/javascript"></script> -->
 </body>
 </html>

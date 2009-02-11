@@ -32,16 +32,6 @@ window.onerror = function(errType, errURL, errLineNum)
 //-------------------------------------------------------------------------------------------------
 // Helpers
 
-function getChromeWindow(win)
-{
-    return win.QueryInterface(Ci.nsIInterfaceRequestor)
-       .getInterface(Ci.nsIWebNavigation)
-       .QueryInterface(Ci.nsIDocShellTreeItem)
-       .rootTreeItem
-       .QueryInterface(Ci.nsIInterfaceRequestor)
-       .getInterface(Ci.nsIDOMWindow); 
-}
-
 function expandNetRows(win, panelNode, className) // className, className, ...
 {
     var args = chrome.FBL.cloneArray(arguments); args.shift();
