@@ -32,29 +32,32 @@ var TestConsole =
 
     initialize: function()
     {
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestConsole.initializing");
-
-        var args = window.arguments[0];
-        var FirebugWindow = args.FirebugWindow;
-        FBTrace = FirebugWindow.FBTrace;
-        Firebug = FirebugWindow.Firebug;
-        FBTest.FirebugWindow = FirebugWindow;
-        gFindBar = document.getElementById("FindToolbar");
-
         try
         {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestConsole.initializing");
+    
+            var args = window.arguments[0];
+            var FirebugWindow = args.FirebugWindow;
+            FBTrace = FirebugWindow.FBTrace;
+            Firebug = FirebugWindow.Firebug;
+            FBTest.FirebugWindow = FirebugWindow;
+            gFindBar = document.getElementById("FindToolbar");
+
             // Register strings so, Firebug's localization APIs can be used.
             Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 
+            var defaultTestList = Firebug.getPref(Firebug.prefDomain, "fbtest.defaultTestSuite");
+            if (!defaultTestList)
+                defaultTestList = "chrome://fbtest/content/testList.html"; //xxxHonza: use proper default.
+
             // Load default test list. The test list is builded according to 
             // a 'testList' variable and server started using a 'baseURI' variable.
             // Both variables must be presented within the file.
-            // xxxHonza: load the last used testList.html from preferences.
-            this.loadTestList("chrome://fbtest/content/testList.html");
+            this.loadTestList(defaultTestList);
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
@@ -82,11 +85,16 @@ var TestConsole =
     shutdown: function()
     {
         TestServer.stop();
+
+        Firebug.setPref(Firebug.prefDomain, "fbtest.defaultTestSuite", this.testListPath);
     },
 
     loadTestList: function(testListPath)
     {
-        testListPath = TestServer.chromeToPath(testListPath).path;
+        if (/^chrome:/.test(testListPath))
+            testListPath = TestServer.chromeToPath(testListPath).path;
+
+        this.testListPath = testListPath;
 
         var self = this;
         var consoleFrame = document.getElementById("consoleFrame");
