@@ -76,7 +76,7 @@ function openNewTab(url, callback)
     var onLoadURLInNewTab = function(event)
     {
         browser.removeEventListener('load', onLoadURLInNewTab, true);
-        callback(browser.contentWindow);
+        setTimeout(function() { callback(browser.contentWindow); }, 100);
     }
     browser.addEventListener("load", onLoadURLInNewTab, true);
 }
