@@ -88,8 +88,7 @@
     </popupset>
 
     <vbox flex="2">
-        <browser id="consoleFrame" type="content-primary"
-             src="chrome://fbtest/content/testConsole.html" flex="1"
+        <browser id="consoleFrame" type="content-primary" src="" flex="1"
              disablehistory="true" contextmenu="fbContextMenu"
              tooltip="fbTooltip"/>
         <findbar id="FindToolbar" browserid="consoleFrame"/>

@@ -26,8 +26,10 @@ with (FBL) {
  */
 var TestConsole =
 {
-    homeURI: "chrome://firebugTests/content/",
-    
+    // These are set when a testList.html is loaded.
+    baseURI: null,
+    testList: null,
+
     initialize: function()
     {
         if (FBTrace.DBG_FBTEST)
@@ -42,23 +44,17 @@ var TestConsole =
 
         try
         {
-            //xxxHonza: 
-            // Load default test list, this will automatically build the UI
-            // and start the serve with proper home directory.
-            // loadTestList("chrome://firebugTests/testList.html");
-
-            // Build test list UI.
-            this.refreshTestListUI();
-
-            // Start local HTTP server. The chrome URL is mapped to an HTTP URL 
-            // available via TestServer.getTestCaseRootPath()
-            TestServer.start(this.homeURI);
-
             // Register strings so, Firebug's localization APIs can be used.
             Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
+
+            // Load default test list. The test list is builded according to 
+            // a 'testList' variable and server started using a 'baseURI' variable.
+            // Both variables must be presented within the file.
+            // xxxHonza: load the last used testList.html from preferences.
+            this.loadTestList("chrome://fbtest/content/testList.html");
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
@@ -90,6 +86,8 @@ var TestConsole =
 
     loadTestList: function(testListPath)
     {
+        testListPath = TestServer.chromeToPath(testListPath).path;
+
         var self = this;
         var consoleFrame = document.getElementById("consoleFrame");
         var onTestFrameLoaded = function(event)
@@ -102,24 +100,35 @@ var TestConsole =
             for (var i=0; i<styles.length; i++)
                 addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
 
-            // Build test list UI.
-            self.refreshTestListUI();
-
-            this.homeURI = doc.defaultView.wrappedJSObject.basePath;
-            if (this.homeURI)
+            var win = doc.defaultView.wrappedJSObject;
+            if (!win.testList || !win.baseURI)
             {
-                // Restart server with new home directory.
-                TestServer.restart(this.homeURI);
-    
-                if (FBTrace.DBG_FBTEST)
-                    FBTrace.sysout("fbtest.onOpenTestSuite; Test List loaded: " +
-                        filePicker.file.path, doc);
+                if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("fbtest.refreshTestList; ERROR testList or baseURI is missing in: " +
+                        testListPath, win);
             }
             else
             {
-                if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("fbtest.onOpenTestSuite; ERROR No basePath defined in: " +
-                        filePicker.file.path, doc);
+                self.baseURI = win.baseURI;
+
+                // Copy the test list definition since it comes from untrusted content.
+                self.testList = [];
+                for (var i=0; i<win.testList.length; i++)
+                    self.testList.push({
+                        category: win.testList[i].category,
+                        uri: win.testList[i].uri,
+                        desc: win.testList[i].desc
+                    });
+
+                // Restart server with new home directory.
+                TestServer.restart(self.baseURI);
+
+                // Build new test list UI.
+                self.refreshTestList();
+
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
+                        testListPath, doc);
             }
         }
 
@@ -132,18 +141,15 @@ var TestConsole =
         testListURLBox.value = testListPath;
     },
 
-    refreshTestListUI: function() 
+    refreshTestList: function()
     {
-        var frame = document.getElementById("consoleFrame");
-        this.testList = frame.contentWindow.wrappedJSObject.testList;
         if (!this.testList)
         {
-            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("fbtest.refreshTestList; ERROR No testList defined in: " +
-                    frame.getAttribute("src"), frame.contentWindow);
+            FBTrace.sysout("fbtest.refreshTestList; Test list UNDEFINED: ");
             return;
         }
 
+        var frame = document.getElementById("consoleFrame");
         var consoleNode = frame.contentDocument.getElementById("testList");
         CategoryList.tableTag.replace({testList: this.testList}, consoleNode);
     },
@@ -296,7 +302,7 @@ var TestRunner =
         try
         {
             this.currentTest = testObj;
-            this.currentTest.path = TestConsole.homeURI + testObj.uri;
+            this.currentTest.path = TestConsole.baseURI + testObj.uri;
             this.currentTest.results = [];
             this.currentTest.error = false;
 
@@ -533,7 +539,7 @@ var FBTest =
 
     loadScript: function(scriptURI, scope)
     {
-        return loader.loadSubScript(TestRunner.homeURI + scriptURI, scope);
+        return loader.loadSubScript(TestConsole.baseURI + scriptURI, scope);
     }
 };
 
