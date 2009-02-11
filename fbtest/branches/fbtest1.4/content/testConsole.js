@@ -26,6 +26,8 @@ with (FBL) {
  */
 var TestConsole =
 {
+    homeURI: "chrome://firebugTests/content/",
+    
     initialize: function()
     {
         if (FBTrace.DBG_FBTEST)
@@ -40,18 +42,17 @@ var TestConsole =
 
         try
         {
+            //xxxHonza: 
+            // Load default test list, this will automatically build the UI
+            // and start the serve with proper home directory.
+            // loadTestList("chrome://firebugTests/testList.html");
+
             // Build test list UI.
-            this.refreshTestList();
+            this.refreshTestListUI();
 
-            // Start local HTTP server
-            // The chrome URL is mapped to an HTTP URL available via TestServer.getTestCaseRootPath()
-            var userSuppliedRoot = "chrome://fbtest/content/tests/";
-            TestServer.start(userSuppliedRoot); //xxxHonza: the path should be specified by the user.
-
-            // Set up the Test Cases.
-            // The chrome URL is the baseURI for test case files
-            // This URI + the path in testList.js gives the test file path
-            TestRunner.initialize(userSuppliedRoot);
+            // Start local HTTP server. The chrome URL is mapped to an HTTP URL 
+            // available via TestServer.getTestCaseRootPath()
+            TestServer.start(this.homeURI);
 
             // Register strings so, Firebug's localization APIs can be used.
             Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
@@ -74,7 +75,6 @@ var TestConsole =
     internationalizeUI: function()
     {
         var buttons = ["runAll", "stopTest", "refreshList"];
-
         for (var i=0; i<buttons.length; i++)
         {
             var element = document.getElementById(buttons[i]);
@@ -88,11 +88,55 @@ var TestConsole =
         TestServer.stop();
     },
 
-    refreshTestList: function() 
+    loadTestList: function(testListPath)
+    {
+        var self = this;
+        var consoleFrame = document.getElementById("consoleFrame");
+        var onTestFrameLoaded = function(event)
+        {
+            consoleFrame.removeEventListener("load", onTestFrameLoaded, true);
+
+            // Append proper styles.
+            var doc = event.target;
+            var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
+            for (var i=0; i<styles.length; i++)
+                addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
+
+            // Build test list UI.
+            self.refreshTestListUI();
+
+            this.homeURI = doc.defaultView.wrappedJSObject.basePath;
+            if (this.homeURI)
+            {
+                // Restart server with new home directory.
+                TestServer.restart(this.homeURI);
+    
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("fbtest.onOpenTestSuite; Test List loaded: " +
+                        filePicker.file.path, doc);
+            }
+            else
+            {
+                if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("fbtest.onOpenTestSuite; ERROR No basePath defined in: " +
+                        filePicker.file.path, doc);
+            }
+        }
+
+        // Load test-list file into the conent frame.
+        consoleFrame.addEventListener("load", onTestFrameLoaded, true);
+        consoleFrame.setAttribute("src", "file://" + testListPath);
+
+        // Update URL
+        var testListURLBox = document.getElementById("testListURL");
+        testListURLBox.value = testListPath;
+    },
+
+    refreshTestListUI: function() 
     {
         var frame = document.getElementById("consoleFrame");
-        var testList = frame.contentWindow.wrappedJSObject.testList;
-        if (!testList)
+        this.testList = frame.contentWindow.wrappedJSObject.testList;
+        if (!this.testList)
         {
             if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("fbtest.refreshTestList; ERROR No testList defined in: " +
@@ -101,7 +145,7 @@ var TestConsole =
         }
 
         var consoleNode = frame.contentDocument.getElementById("testList");
-        CategoryList.tableTag.replace({testList: testList}, consoleNode);
+        CategoryList.tableTag.replace({testList: this.testList}, consoleNode);
     },
 
     // UI Commands
@@ -124,37 +168,7 @@ var TestConsole =
 
         var rv = filePicker.show();
         if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
-        {
-            var testListURLBox = document.getElementById("testListURL");
-            testListURLBox.value = filePicker.file.path;
-
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.onOpenTestSuite " + filePicker.file.path, filePicker.file);
-
-            var self = this;
-            var consoleFrame = document.getElementById("consoleFrame");
-            var onTestListLoaded = function(event)
-            {
-                consoleFrame.removeEventListener("load", onTestListLoaded, true);
-
-                // Append proper styles.
-                var doc = event.target;
-                var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
-                for (var i=0; i<styles.length; i++)
-                    addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
-
-                // Build test list UI.
-                self.refreshTestList();
-
-                if (FBTrace.DBG_FBTEST)
-                    FBTrace.sysout("fbtest.onOpenTestSuite; Test List loaded: " +
-                        filePicker.file.path, doc);
-            }
-
-            // Load test-list file into the conent frame.
-            consoleFrame.addEventListener("load", onTestListLoaded, true);
-            consoleFrame.setAttribute("src", "file://" + filePicker.file.path);
-        }
+            this.loadTestList(filePicker.file.path);
     }
 };
 
@@ -190,6 +204,12 @@ var TestServer =
     {
         if (this.server)
             this.server.stop();
+    },
+
+    restart: function(chromeRoot)
+    {
+        TestServer.stop();
+        TestServer.start(chromeRoot);
     },
 
     getTestCaseRootPath: function()
@@ -263,12 +283,6 @@ var TestServer =
  */
 var TestRunner =
 {
-    initialize: function(baseURI)
-    {
-        this.baseURI = baseURI;
-        this.testFrame = document.getElementById("testFrame");
-    },
-
     runTests: function(tests)
     {
 
@@ -282,7 +296,7 @@ var TestRunner =
         try
         {
             this.currentTest = testObj;
-            this.currentTest.path = this.baseURI + testObj.uri;
+            this.currentTest.path = TestConsole.homeURI + testObj.uri;
             this.currentTest.results = [];
             this.currentTest.error = false;
 
@@ -328,7 +342,8 @@ var TestRunner =
 
     loadTestFrame: function(testURL)
     {
-        var outerWindow =  this.testFrame.contentWindow;
+        var testFrame = document.getElementById("testFrame");
+        var outerWindow =  testFrame.contentWindow;
         var doc = outerWindow.document;
 
         // Look first to see if we already have the test case loaded
@@ -518,7 +533,7 @@ var FBTest =
 
     loadScript: function(scriptURI, scope)
     {
-        return loader.loadSubScript(TestRunner.baseURI + scriptURI, scope);
+        return loader.loadSubScript(TestRunner.homeURI + scriptURI, scope);
     }
 };
 
