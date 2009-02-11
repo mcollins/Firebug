@@ -67,7 +67,8 @@ var TestConsole =
         catch (e)
         {
             FBTrace.sysout("fbtest.TestConsole.initialize FAILS "+e, e);
-            document.title = e;
+             
+            alert("There may be a useful message on the Error Console: "+e);
         }
     },
 
@@ -236,8 +237,6 @@ var TestRunner =
     {
         this.baseURI = baseURI;
         this.testFrame = document.getElementById("testFrame");
-        //Application.storage.set("fbtest/FBTest", FBTest);
-        //Application.storage.set("fbtest/FBTrace", FBTrace);
     },
 
     runTests: function(tests)
@@ -283,6 +282,7 @@ var TestRunner =
         {
             if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("fbtest.TestRunner.runTest EXCEPTION", e);
+            FBTest.ok(false, "TestRunner.runTest FAILS: "+e);
         }
     },
 
