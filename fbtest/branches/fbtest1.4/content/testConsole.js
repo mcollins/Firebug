@@ -236,8 +236,8 @@ var TestRunner =
     {
         this.baseURI = baseURI;
         this.testFrame = document.getElementById("testFrame");
-        Application.storage.set("fbtest/FBTest", FBTest);
-        Application.storage.set("fbtest/FBTrace", FBTrace);
+        //Application.storage.set("fbtest/FBTest", FBTest);
+        //Application.storage.set("fbtest/FBTrace", FBTrace);
     },
 
     runTests: function(tests)
@@ -328,6 +328,15 @@ var TestRunner =
                 testCaseIframe.removeEventListener("load", triggerTest, true);
                 var testDoc = event.target;
                 var win = testDoc.defaultView;
+
+                if (win.wrappedJSObject)
+                    win.wrappedJSObject.FBTest = window.FBTest;
+                else
+                    win.FBTest = window.FBTest;
+                if (win.wrappedJSObject)
+                    win.wrappedJSObject.FBTrace = window.FBTrace;
+                else
+                    win.FBTrace = window.FBTrace;
 
                 try
                 {
