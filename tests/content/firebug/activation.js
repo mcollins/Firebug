@@ -1,11 +1,13 @@
-var initialized = false;
+
+
 function initialize()
 {
-    if (initialized)
-        return;
+
+
     // ****************************************************************
     // Operations on Firebug
-    FBTest.pressKey = function(keyCode)
+    FBTest.Firebug = {};
+    FBTest.Firebug.pressKey = function(keyCode)
     {
         var doc = FBTest.FirebugWindow.document;
         var keyEvent = doc.createEvent("KeyboardEvent");
@@ -24,26 +26,27 @@ function initialize()
         doc.documentElement.dispatchEvent(keyEvent);
     };
 
-    FBTest.pressToggleFirebug = function()
+    FBTest.Firebug.pressToggleFirebug = function()
     {
+        FBTrace.sysout("pressToggleFirebug");
         this.pressKey(123); // F12
     };
 
-    FBTest.isFirebugOpen = function()
+    FBTest.Firebug.isFirebugOpen = function()
     {
-        //FBTrace.sysout("isFirebugOpen");
+        FBTrace.sysout("isFirebugOpen");
         var browserDocument = FBTest.FirebugWindow.document;
-        //FBTrace.sysout("isFirebugOpen browserDocument", browserDocument);
+        FBTrace.sysout("isFirebugOpen browserDocument", browserDocument);
         var fbContentBox = browserDocument.getElementById('fbContentBox');
-        //FBTrace.sysout("isFirebugOpen fbContentBox", fbContentBox);
+        FBTrace.sysout("isFirebugOpen fbContentBox", fbContentBox);
         var collapsedFirebug = fbContentBox.getAttribute("collapsed");
-
-        return (collapsedFirebug?false:true);
+        FBTrace.sysout("isFirebugOpen collapsedFirebug"+ collapsedFirebug);
+        return (collapsedFirebug=="true") ? false : true;
     };
     // *******************************************************************
 
-    // var fooTest = new FBTest.TestHandlers("TestFoo");
-    FBTest.TestHandlers = function(testName)
+    // var fooTest = new FBTest.Firebug.TestHandlers("TestFoo");
+    FBTest.Firebug.TestHandlers = function(testName)
     {
         this.testName = testName;
         this.progressElement = document.getElementById(testName);
@@ -51,7 +54,7 @@ function initialize()
             throw new Error("TestHanders object requires element "+testName+" in document "+document.title);
     };
 
-    FBTest.TestHandlers.prototype =
+    FBTest.Firebug.TestHandlers.prototype =
     {
         // fooTest.add("openFirebug", onOpenFirebug);
         add: function(handlerFunction)
@@ -65,6 +68,9 @@ function initialize()
             var event = this.progressElement.ownerDocument.createEvent("Event");
             event.initEvent(eventName, true, false); // bubbles and not cancelable
             this.progressElement.innerHTML = eventName;
+            //window.dump("activation.js fire "+eventName+" FBTest "+FBTest+"\n");
+            //window.dump("activation.js fire  "+eventName+" FBTrace "+FBTrace+"\n");
+            //window.dump('activaiton.js fire window '+window.location+"\n");
             FBTest.progress(eventName);
             //FBTrace.sysout("fire this", this);
             this.progressElement.dispatchEvent(event);
@@ -81,7 +87,7 @@ function initialize()
             var onLoadURLInNewTab = function(event)
             {
                 var win = event.target;   // actually  tab XUL elt
-                //FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
+                FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
                 FBTest.FirebugWindow.getBrowser().selectedTab = win;
                 //FBTrace.sysout("selectedTab ", FBTest.FirebugWindow.getBrowser().selectedTab);
                 var selectedBrowser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
@@ -103,7 +109,7 @@ function initialize()
         }
     };
 }
-window.addEventListener('load', initialize, true);
+
 
 // ------------------------------------------------------------------------
 // Individual sub tests
@@ -113,18 +119,21 @@ function openAndOpen()
     var openAndOpenURL = "http://getfirebug.com/";
 
 
-    var openTest = new FBTest.TestHandlers("openAndOpen");
+    var openTest = new FBTest.Firebug.TestHandlers("openAndOpen");
 
     // Actual test operations
     openTest.add( function onNewPage(event)
     {
         FBTrace.sysout("onNewPage starts", event);
-        var isFirebugOpen = FBTest.isFirebugOpen();
+        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(!isFirebugOpen, "Firebug starts closed");
 
-        FBTest.pressToggleFirebug();
+        FBTest.Firebug.pressToggleFirebug();
+    });
 
-        var isFirebugOpen = FBTest.isFirebugOpen();
+    openTest.add( function onShowUI()
+    {
+        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(isFirebugOpen, "Firebug now open");
 
         if (FBTest.FirebugWindow.FirebugContext)
@@ -139,6 +148,23 @@ function openAndOpen()
         openTest.done();
     });
 
+    var uiListener =
+    {
+            showUI: function(browser, context) // called when the Firebug UI comes up in browser or detached
+            {
+                openTest.fire("onShowUI");
+            },
+
+            hideUI: function(brower, context)  // called when the Firebug UI comes down
+            {
+            },
+    };
+    FBTest.FirebugWindow.Firebug.registerExtension(uiListener);
+    window.addEventListener("unload", function cleanUp()
+    {
+        FBTrace.sysout("window.unload");
+        FBTest.FirebugWindow.Firebug.unregisterExtension(uiListener);
+    }, true);
 
     openTest.fireOnNewPage("onNewPage", openAndOpenURL);
 }
@@ -149,7 +175,7 @@ function openAndOpen()
 function runTest()
 {
     FBTest.sysout("Activation.started");
-
+    initialize();
     FBTrace.sysout("activation.js FBTest", FBTest);
 
     if (FBTest.FirebugWindow)
@@ -157,9 +183,6 @@ function runTest()
     else
         FBTest.ok(false, "No Firebug Window");
 
-    initialize();
     // Auto run sequence
     openAndOpen();
-
-
 }
