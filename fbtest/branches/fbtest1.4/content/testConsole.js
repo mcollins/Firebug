@@ -114,7 +114,7 @@ var TestConsole =
         filePicker.defaultString = "testList.html";
 
         var rv = filePicker.show();
-        if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace) 
+        if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
         {
             var testListURLBox = document.getElementById("testListURL");
             testListURLBox.value = filePicker.file.path;
@@ -228,7 +228,7 @@ var TestServer =
 // TestRunner
 
 /**
- * Test runner is inteded to run singl tests or test suites.
+ * Test runner is intended to run single tests or test suites.
  */
 var TestRunner =
 {
@@ -236,6 +236,8 @@ var TestRunner =
     {
         this.baseURI = baseURI;
         this.testFrame = document.getElementById("testFrame");
+        Application.storage.set("fbtest/FBTest", FBTest);
+        Application.storage.set("fbtest/FBTrace", FBTrace);
     },
 
     runTests: function(tests)
@@ -310,27 +312,23 @@ var TestRunner =
                 break;
             }
         }
-        if (!testCaseIframe) // no, add it
+        if (testCaseIframe) // yes, remove it
         {
+            testCaseIframe.parentNode.removeChild(testCaseIframe);
+        }
             testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
             testCaseIframe.setAttribute("src", "about:blank");
             var body = doc.getElementsByTagName("body")[0];
             body.appendChild(testCaseIframe);
             // now hook the load event, so the next src= will trigger it.
-            testCaseIframe.addEventListener("load", function triggerTest(event)
+            var triggerTest = function(event)
             {
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("load event "+event.target, event.target);
+                testCaseIframe.removeEventListener("load", triggerTest, true);
                 var testDoc = event.target;
                 var win = testDoc.defaultView;
-                if (win.wrappedJSObject)
-                    win.wrappedJSObject.FBTest = window.FBTest;
-                else
-                    win.FBTest = window.FBTest;
-                if (win.wrappedJSObject)
-                    win.wrappedJSObject.FBTrace = window.FBTrace;
-                else
-                    win.FBTrace = window.FBTrace;
+
                 try
                 {
                     win.runTest();
@@ -339,8 +337,9 @@ var TestRunner =
                 {
                     FBTest.sysout("runTest FAILS "+exc, exc);
                 }
-            }, true);
-        }
+            }
+            testCaseIframe.addEventListener("load", triggerTest, true);
+
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
         var docShell = this.getDocShellByDOMWindow(testCaseIframe);
