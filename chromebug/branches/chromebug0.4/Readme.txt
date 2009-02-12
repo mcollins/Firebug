@@ -31,8 +31,14 @@ Build:
         v) back in the chromebug source, copy install.ref.tpl.xml to install.rdf and edit to change anything in @..@
 
 Usage:
-  firefox.exe -chrome chrome://chromebug/content/chromebug.xul -p chromebug -firefox <url>
+  firefox.exe -chromebug -p chromebug  
 
-Trailing URL is optional.
+
+ 0.4 thunderbird;
+ Warning: Warning: Unrecognized chrome registration modifier 'contentaccessible=yes'.
+Source File: file:///C:/bartonjj/projects/fireclipse/fbug/branches/firebug1.4/chrome.manifest
+Line: 1
+
+ 0.4 songbird 1.0: crashes
 
 </pre></body></html>
