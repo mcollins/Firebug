@@ -14,7 +14,7 @@ function runTest()
         browser.FirebugChrome.selectPanel("net");
 
         // Run test implemented on the page.
-        win.runTest(function(request)
+        win.wrappedJSObject.runTest(function(request)
         {
             FBTest.sysout("issue1256.response received: " + request.name);
 
