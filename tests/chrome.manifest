@@ -1,2 +1,2 @@
-content firebugTests unit/  contentaccessible=yes
-content firebugTests unit/ 
+content firebugTests content/  contentaccessible=yes
+content firebugTests content/ 
