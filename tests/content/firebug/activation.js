@@ -29,6 +29,7 @@ function initialize()
     FBTest.Firebug.pressToggleFirebug = function()
     {
         FBTrace.sysout("pressToggleFirebug");
+        FBTest.progress("pressToggleFirebug");
         this.pressKey(123); // F12
     };
 
@@ -36,11 +37,11 @@ function initialize()
     {
         FBTrace.sysout("isFirebugOpen");
         var browserDocument = FBTest.FirebugWindow.document;
-        FBTrace.sysout("isFirebugOpen browserDocument", browserDocument);
+        FBTrace.sysout("isFirebugOpen browserDocument ", browserDocument);
         var fbContentBox = browserDocument.getElementById('fbContentBox');
-        FBTrace.sysout("isFirebugOpen fbContentBox", fbContentBox);
+        FBTrace.sysout("isFirebugOpen fbContentBox ", fbContentBox);
         var collapsedFirebug = fbContentBox.getAttribute("collapsed");
-        FBTrace.sysout("isFirebugOpen collapsedFirebug"+ collapsedFirebug);
+        FBTrace.sysout("isFirebugOpen collapsedFirebug "+ collapsedFirebug);
         return (collapsedFirebug=="true") ? false : true;
     };
     // *******************************************************************
@@ -67,20 +68,19 @@ function initialize()
         {
             var event = this.progressElement.ownerDocument.createEvent("Event");
             event.initEvent(eventName, true, false); // bubbles and not cancelable
-            this.progressElement.innerHTML = eventName;
-            //window.dump("activation.js fire "+eventName+" FBTest "+FBTest+"\n");
-            //window.dump("activation.js fire  "+eventName+" FBTrace "+FBTrace+"\n");
-            //window.dump('activaiton.js fire window '+window.location+"\n");
             FBTest.progress(eventName);
             //FBTrace.sysout("fire this", this);
             this.progressElement.dispatchEvent(event);
         },
+
         // fooTest.fireOnNewPage("openFirebug", "http://getfirebug.com");
-        fireOnNewPage: function(eventName, url)
+        fireOnNewPage: function(eventName, url, extensionCallbacks)
         {
             var tabbrowser = FBTest.FirebugWindow.getBrowser();
             var testHandler = this;
+            // Add tab, then make active (https://developer.mozilla.org/en/Code_snippets/Tabbed_browser)
             var newTab = tabbrowser.addTab(url);
+            newTab.setAttribute("firebug", "test");
             tabbrowser.selectedTab = newTab;
             var browser = tabbrowser.getBrowserForTab(newTab);
 
@@ -93,18 +93,43 @@ function initialize()
                 var selectedBrowser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
                 //FBTrace.sysout("selectedBrowser "+selectedBrowser.currentURI.spec);
                 browser.removeEventListener('load', onLoadURLInNewTab, true);
+
+                if (extensionCallbacks)
+                {
+                    FBTrace.sysout("fireOnNewPage register extensionCallbacks", extensionCallbacks);
+                    FBTest.FirebugWindow.Firebug.registerExtension(extensionCallbacks);
+                    browser.addEventListener("unload", function cleanUp()
+                    {
+                        FBTrace.sysout("window.unload, removing extensionCallbacks");
+                        FBTest.FirebugWindow.Firebug.unregisterExtension(extensionCallbacks);
+                    }, true);
+                }
+
                 testHandler.fire(eventName);
             }
             //FBTrace.sysout("fireOnNewPage "+FBTest.FirebugWindow, FBTest.FirebugWindow);
-            // Add tab, then make active (https://developer.mozilla.org/en/Code_snippets/Tabbed_browser)
 
             browser.addEventListener("load", onLoadURLInNewTab, true);
-            //FBTrace.sysout("tabbrowser is ", tabbrowser);
         },
+
+        cleanUpTestTabs: function()
+        {
+            var tabbrowser = FBTest.FirebugWindow.getBrowser();
+            for (var i = 0; i < tabbrowser.mTabs.length; i++)
+            {
+                var tab = tabbrowser.mTabs[i];
+                var firebugAttr = tab.getAttribute("firebug");
+                if (firebugAttr == "test")
+                    tabbrowser.removeTab(tab);
+            }
+        },
+
         // function onEnablePanels(event) {...; fooTest.done();}
         done: function()
         {
-            this.progressElement.innerHTML = this.testName +" done";
+            FBTest.progress("clean up tabs");
+            this.cleanUpTestTabs();
+            FBTest.progress(this.testName +" done");
             FBTest.testDone();
         }
     };
@@ -129,6 +154,7 @@ function openAndOpen()
         FBTest.ok(!isFirebugOpen, "Firebug starts closed");
 
         FBTest.Firebug.pressToggleFirebug();
+
     });
 
     openTest.add( function onShowUI()
@@ -144,6 +170,15 @@ function openAndOpen()
         }
         else
             FBTest.ok(false, "no FirebugContext");
+        // now close it
+        FBTest.Firebug.pressToggleFirebug();
+
+    });
+
+    openTest.add( function onHideUI()
+    {
+        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
+        FBTest.ok(!isFirebugOpen, "Firebug now closed");
 
         openTest.done();
     });
@@ -157,16 +192,12 @@ function openAndOpen()
 
             hideUI: function(brower, context)  // called when the Firebug UI comes down
             {
+                openTest.fire("onHideUI");
             },
     };
-    FBTest.FirebugWindow.Firebug.registerExtension(uiListener);
-    window.addEventListener("unload", function cleanUp()
-    {
-        FBTrace.sysout("window.unload");
-        FBTest.FirebugWindow.Firebug.unregisterExtension(uiListener);
-    }, true);
 
-    openTest.fireOnNewPage("onNewPage", openAndOpenURL);
+
+    openTest.fireOnNewPage("onNewPage", openAndOpenURL, uiListener);
 }
 
 //------------------------------------------------------------------------
