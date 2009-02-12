@@ -96,6 +96,8 @@ var TestConsole =
     {
         if (/^chrome:/.test(testListPath))
             testListPath = TestServer.chromeToUrl(testListPath, false);
+        else if (!/^file:/.test(testListPath))
+            testListPath = TestServer.pathToUrl(testListPath);
 
         this.testListPath = testListPath;
 
@@ -211,7 +213,17 @@ var TestConsole =
 
         var rv = filePicker.show();
         if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
-            this.loadTestList(filePicker.file.path);
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.onOpenTestList; Test list file picked: " +
+                    filePicker.file.path, filePicker.file);
+
+            var testListUrl = Cc["@mozilla.org/network/protocol;1?name=file"]
+                .createInstance(Ci.nsIFileProtocolHandler)
+                .getURLSpecFromFile(filePicker.file);
+
+            this.loadTestList(testListUrl);
+        }
     }
 };
 
