@@ -2047,7 +2047,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         var h = window.screen.availHeight;
         features = "outerWidth="+w+","+"outerHeight="+h;
         var params = "";
-        var chromeURI = iosvc.newURI("chrome://explorer/content/explorer.xul", null, null);
+        var chromeURI = makeURI("chrome://explorer/content/explorer.xul");
         try
         {
             var localURI = chromeReg.convertChromeURL(chromeURI);
@@ -3082,7 +3082,7 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
 
             getOverlayList: function(href)
             {
-            	var uri = iosvc.newURI(href, null, null);
+            	var uri = makeURI(href);
             	var prov = Components.classes["@mozilla.org/chrome/chrome-registry;1"].
                     getService(Components.interfaces.nsIXULOverlayProvider);
 

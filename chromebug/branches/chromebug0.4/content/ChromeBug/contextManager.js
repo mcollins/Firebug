@@ -365,7 +365,13 @@ top.TabWatcher =
 
     addListener: function(listener)
     {
-        listeners.push(listener);
+    	if (listener)
+    		listeners.push(listener);
+    	else
+    	{
+    		window.dump(getStackDump()+"\n");
+    		throw new Error("contextManager.addListener: null listener");
+    	}
     },
 
     removeListener: function(listener)
@@ -377,23 +383,22 @@ top.TabWatcher =
     {
         if (FBTrace.DBG_WINDOWS)                                                                                       /*@explore*/
             FBTrace.sysout("TabWatcher.dispatch "+name+" to "+listeners.length+" listeners\n");                        /*@explore*/
-                                                                                                                       /*@explore*/
-        for (var i = 0; i < listeners.length; ++i)
+          
+        try
         {
-            var listener = listeners[i];
-            if ( listener.hasOwnProperty(name) )
-            {
-                try
-                {
+        	for (var i = 0; i < listeners.length; ++i)
+        	{
+        		var listener = listeners[i];
+        		if ( listener.hasOwnProperty(name) )
                     listener[name].apply(listener, args);
-                }
-                catch (exc)
-                {
-                    ERROR(exc);
-                    FBTrace.dumpProperties(" Exception in TabWatcher.dispatch "+ name, exc);                           /*@explore*/
-                }
-            }
+        	}
         }
+        catch (exc)
+        {
+            ERROR(exc);
+            FBTrace.dumpProperties(" Exception in TabWatcher.dispatch "+ name, [exc, listeners]);   
+        }
+ 
     }
 };
 

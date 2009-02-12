@@ -420,40 +420,6 @@ function panelSupportsObject(panelType, object)
     return 0;
 }
 
-function getBestPanelName(object, panelName)
-{
 
-    // Check if the suggested panel name supports the object, and if so, go with it
-    if (panelName)
-    {
-        panelType = Firebug.getPanelType(panelName);
-        if (panelSupportsObject(panelType, object))
-            return panelType.prototype.name;
-    }
-
-    // The suggested name didn't pan out, so search for the panel type with the
-    // most specific level of support
-
-    var bestLevel = 0;
-    var bestPanel = null;
-
-    for (var i = 0; i < Firebug.panelTypes.length; ++i)
-    {
-        var panelType = Firebug.panelTypes[i];
-        if (!panelType.prototype.parentPanel)
-        {
-            var level = panelSupportsObject(panelType, object);
-            if (!bestLevel || (level && (level > bestLevel) ))
-            {
-                bestLevel = level;
-                bestPanel = panelType;
-            }
-            if (FBTrace.DBG_PANELS)                                                                                                                      /*@explore*/
-                FBTrace.sysout("chrome.getBestPanelName panelType: "+panelType.prototype.name+" level: "+level+" bestPanel: "+ (bestPanel ? bestPanel.prototype.name : "null")+" bestLevel: "+bestLevel+"\n"); /*@explore*/
-        }
-    }
-
-    return bestPanel ? bestPanel.prototype.name : null;
-}
 overrideFirebugFunctions();
 }});
