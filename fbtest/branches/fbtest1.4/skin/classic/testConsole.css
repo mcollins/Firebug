@@ -45,3 +45,8 @@ body {
     color: red;
     padding-top: 3px;
 }
+
+#progressMessage {
+    color: gray;
+    padding-top: 3px;
+}

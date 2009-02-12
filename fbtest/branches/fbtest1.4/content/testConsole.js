@@ -77,7 +77,7 @@ var TestConsole =
         var buttons = ["runAll", "stopTest", "refreshList"];
         for (var i=0; i<buttons.length; i++)
         {
-            var element = document.getElementById(buttons[i]);
+            var element = $(buttons[i]);
             FBL.internationalize(element, "label");
             FBL.internationalize(element, "tooltiptext");
         }
@@ -98,7 +98,7 @@ var TestConsole =
         this.testListPath = testListPath;
 
         var self = this;
-        var consoleFrame = document.getElementById("consoleFrame");
+        var consoleFrame = $("consoleFrame");
         var onTestFrameLoaded = function(event)
         {
             consoleFrame.removeEventListener("load", onTestFrameLoaded, true);
@@ -157,7 +157,7 @@ var TestConsole =
         consoleFrame.setAttribute("src", "file://" + testListPath);
 
         // Update test list URL box.
-        var testListURLBox = document.getElementById("testListURL");
+        var testListURLBox = $("testListURL");
         testListURLBox.value = testListPath;
     },
 
@@ -169,8 +169,8 @@ var TestConsole =
             return;
         }
 
-        var frame = document.getElementById("consoleFrame");
-        var consoleNode = frame.contentDocument.getElementById("testList");
+        var frame = $("consoleFrame");
+        var consoleNode = $("testList", frame.contentDocument);
         var table = CategoryList.tableTag.replace({categories: this.testCategories}, consoleNode);
         var row = table.firstChild.firstChild;
 
@@ -395,7 +395,7 @@ var TestRunner =
 
     loadTestFrame: function(testURL)
     {
-        var testFrame = document.getElementById("testFrame");
+        var testFrame = $("testFrame");
         var outerWindow =  testFrame.contentWindow;
         var doc = outerWindow.document;
 
@@ -561,7 +561,7 @@ var TestProgress =
 
     getMeter: function()
     {
-        return document.getElementById("progressMeter");
+        return $("progressMeter");
     }
 }
 
@@ -579,14 +579,16 @@ var TestSummary =
 
         result.pass ? this.passing++ : this.failing++;
 
-        var pasingLabel = document.getElementById("passingTests");
-        var failingLabel = document.getElementById("failingTests");
-
         if (this.passing)
-            pasingLabel.value = "Passing Tests: " + this.passing;       //xxxHonza: localization
+            $("passingTests").value = "Passing Tests: " + this.passing;       //xxxHonza: localization
 
         if (this.failing)
-            failingLabel.value = "Failing Tests: " + this.failing;      //xxxHonza: localization
+            $("failingTests").value = "Failing Tests: " + this.failing;      //xxxHonza: localization
+    },
+
+    setMessage: function(message)
+    {
+        $("progressMessage").value = message;
     },
 
     clear: function()
@@ -594,12 +596,10 @@ var TestSummary =
         this.results = [];
         this.passing = 0;
         this.failing = 0;
-        
-        var pasingLabel = document.getElementById("passingTests");
-        var failingLabel = document.getElementById("failingTests");
 
-        pasingLabel.value = "";
-        failingLabel.value = "";
+        $("passingTests").value = "";
+        $("failingTests").value = "";
+        $("progressMessage").value = "";
     }
 }
 
@@ -614,6 +614,7 @@ var FBTest =
     progress: function(msg)
     {
         TestRunner.appendResult(new TestResult(window, true, "progress: "+msg));
+        TestSummary.setMessage(msg);
     },
 
     ok: function(pass, msg)

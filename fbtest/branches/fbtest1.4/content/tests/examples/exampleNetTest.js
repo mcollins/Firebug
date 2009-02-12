@@ -16,6 +16,7 @@ function runTest()
 
             // Log test results.
             FBTest.ok(true, "Test OK");
+            FBTest.progress("Example progress message");
 
             // Finish test
             removeCurrentTab();
