@@ -44,6 +44,11 @@ function initialize()
         FBTrace.sysout("isFirebugOpen collapsedFirebug "+ collapsedFirebug);
         return (collapsedFirebug=="true") ? false : true;
     };
+    
+    FBTest.Firebug.setToKnownState = function()
+    {
+    	FBTest.FirebugWindow.Firebug.forceBarOff();  // pull Firebug down if it is up
+    };
     // *******************************************************************
 
     // var fooTest = new FBTest.Firebug.TestHandlers("TestFoo");
@@ -70,6 +75,7 @@ function initialize()
             event.initEvent(eventName, true, false); // bubbles and not cancelable
             FBTest.progress(eventName);
             //FBTrace.sysout("fire this", this);
+            //debugger;
             this.progressElement.dispatchEvent(event);
         },
 
@@ -153,6 +159,7 @@ function openAndOpen()
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(!isFirebugOpen, "Firebug starts closed");
 
+        this.next = "onShowUI";
         FBTest.Firebug.pressToggleFirebug();
 
     });
@@ -162,6 +169,8 @@ function openAndOpen()
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(isFirebugOpen, "Firebug now open");
 
+        FBTest.ok(this.next == "onShowUI", "showUI followed toggleFirebug");
+        
         if (FBTest.FirebugWindow.FirebugContext)
         {
             var contextName = FBTest.FirebugWindow.FirebugContext.getName();
@@ -171,6 +180,7 @@ function openAndOpen()
         else
             FBTest.ok(false, "no FirebugContext");
         // now close it
+        this.next = "onHideUI";
         FBTest.Firebug.pressToggleFirebug();
 
     });
@@ -180,6 +190,7 @@ function openAndOpen()
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(!isFirebugOpen, "Firebug now closed");
 
+        FBTest.ok(this.next == "onHideUI", "hideUI followed toggleFirebug");
         openTest.done();
     });
 
@@ -196,7 +207,8 @@ function openAndOpen()
             },
     };
 
-
+    // Now start the test.
+    FBTest.Firebug.setToKnownState();
     openTest.fireOnNewPage("onNewPage", openAndOpenURL, uiListener);
 }
 
