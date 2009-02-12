@@ -89,7 +89,8 @@ const  chromebugCommandLineHandler = {
         prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
         prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
         prefs.setBoolPref("nglayout.debug.disable_xul_fastload", true);
-        window.dump("WARNING: set nglayout.debug.disable_xul_fastload  and nglayout.debug.disable_xul_cache true\n");
+        prefs.setBoolPref("javascript.options.showInConsole", true);  // chrome errors show
+        window.dump("WARNING: set nglayout.debug.disable_xul_fastload  and nglayout.debug.disable_xul_cache javascript.options.showInConsole true\n");
 
         jsd.on();
         jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
