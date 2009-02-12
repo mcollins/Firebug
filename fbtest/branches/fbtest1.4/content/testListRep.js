@@ -55,7 +55,7 @@ var CategoryList = domplate(
             if (row) 
             {
                 cancelEvent(event);
-                runTests(row.repObject.tests);
+                TestRunner.runTests(row.repObject.tests);
             }
         }
     },
@@ -71,6 +71,12 @@ var CategoryList = domplate(
                 cancelEvent(event);
             }
         }
+    },
+
+    open: function(row)
+    {
+        if (!hasClass(row, "opened"))
+            this.toggleRow(row);
     },
 
     toggleRow: function(row)
@@ -156,6 +162,7 @@ var TestList = domplate(
         if (isLeftClick(event))
         {
             var row = getAncestorByClass(event.target, "testListRow");
+            TestSummary.clear();
             TestRunner.runTest(row.repObject);
             cancelEvent(event);
         }

@@ -17,6 +17,7 @@ body {
 }
 
 /************************************************************************************************/
+/* Toolbar buttons */
 
 #runAll {
     list-style-image: url("chrome://fbtest/skin/runAll.png");
@@ -30,4 +31,17 @@ body {
 #refreshList {
     list-style-image: url("chrome://browser/skin/Toolbar-small.png");
     -moz-image-region: rect(0px 64px 16px 48px);
+}
+
+/************************************************************************************************/
+/* Statusbar */ 
+ 
+#passingTests {
+    color: green;
+    padding-top: 3px;
+}
+
+#failingTests {
+    color: red;
+    padding-top: 3px;
 }

@@ -133,6 +133,7 @@ var TestConsole =
                             {name: test.category, tests: []});
 
                     category.tests.push({
+                        parent: category,
                         category: test.category,
                         uri: test.uri,
                         desc: test.desc
@@ -170,16 +171,15 @@ var TestConsole =
 
         var frame = document.getElementById("consoleFrame");
         var consoleNode = frame.contentDocument.getElementById("testList");
-        CategoryList.tableTag.replace({categories: this.testCategories}, consoleNode);
-    },
+        var table = CategoryList.tableTag.replace({categories: this.testCategories}, consoleNode);
+        var row = table.firstChild.firstChild;
 
-    // Callback from TestRunner
-    onTestDone: function(testQueue)
-    {
-        if (testQueue.length)
-            TestProgress.update(testQueue.length);
-        else 
-            TestProgress.stop();
+        for (var i=0; i<this.testCategories.length; i++)
+        {
+            var category = this.testCategories[i];
+            category.row = row;
+            row = row.nextSibling;
+        }
     },
 
     // UI Commands
@@ -190,15 +190,13 @@ var TestConsole =
         for (var i=0; i<this.testCategories.length; i++)
             testQueue.push.apply(testQueue, this.testCategories[i].tests);
 
-        TestProgress.start(testQueue.length);
-
         // ... and execute them as one test suite.
         TestRunner.runTests(testQueue);
     },
 
     onStop: function()
     {
-        this.testQueue = null;
+        TestRunner.testQueue = null;
         TestRunner.testDone();
     },
 
@@ -214,36 +212,6 @@ var TestConsole =
             this.loadTestList(filePicker.file.path);
     }
 };
-
-// ************************************************************************************************
-
-var TestProgress =
-{
-    start: function(max)
-    {
-        this.max = max;
-        var meter = this.getMeter();
-        meter.style.display = "block";
-    },
-
-    stop: function()
-    {
-        var meter = this.getMeter();
-        meter.style.display = "none";
-    },
-
-    update: function(value)
-    {
-        var current = this.max - value;
-        var meter = this.getMeter();
-        meter.value = current ? current / (this.max / 100) : 0;
-    },
-
-    getMeter: function()
-    {
-        return document.getElementById("progressMeter");
-    }
-}
 
 // ************************************************************************************************
 
@@ -359,6 +327,11 @@ var TestRunner =
 
     runTests: function(tests)
     {
+        tests = cloneArray(tests);
+
+        TestSummary.clear();
+        TestProgress.start(tests.length);
+
         this.testQueue = tests;
         this.runTest(this.testQueue.shift());
     },
@@ -374,6 +347,11 @@ var TestRunner =
             this.currentTest.path = TestConsole.baseURI + testObj.uri;
             this.currentTest.results = [];
             this.currentTest.error = false;
+
+            // Show the test within the UI (expand parent category)
+            var parentCategory = this.currentTest.parent;
+            CategoryList.open(parentCategory.row);
+            scrollIntoCenterView(parentCategory.row);
 
             // Remove previous results (if any).
             if (hasClass(this.currentTest.row, "opened"))
@@ -491,11 +469,16 @@ var TestRunner =
 
         this.currentTest = null;
 
-        TestConsole.onTestDone(this.testQueue);
-
         // If there are tests in the queue, execute them.
         if (this.testQueue && this.testQueue.length)
+        {
+            TestProgress.update(this.testQueue.length);
             this.runTest(this.testQueue.shift());
+        }
+        else
+        {
+            TestProgress.stop();
+        }
     },
 
     appendResult: function(result)
@@ -521,6 +504,9 @@ var TestRunner =
             setClass(this.currentTest.row, "error");
             this.currentTest.error = true;
         }
+
+        // Update summary in the status bar.
+        TestSummary.append(result);
     },
 
     sysout: function(msg, obj)
@@ -548,6 +534,74 @@ var TestRunner =
         }
     },
 };
+
+// ************************************************************************************************
+
+var TestProgress =
+{
+    start: function(max)
+    {
+        this.max = max;
+        var meter = this.getMeter();
+        meter.style.display = "block";
+    },
+
+    stop: function()
+    {
+        var meter = this.getMeter();
+        meter.style.display = "none";
+    },
+
+    update: function(value)
+    {
+        var current = this.max - value;
+        var meter = this.getMeter();
+        meter.value = current ? current / (this.max / 100) : 0;
+    },
+
+    getMeter: function()
+    {
+        return document.getElementById("progressMeter");
+    }
+}
+
+// ************************************************************************************************
+
+var TestSummary = 
+{
+    results: [],
+    passing: 0,
+    failing: 0,
+
+    append: function(result)
+    {
+        this.results.push(result);
+
+        result.pass ? this.passing++ : this.failing++;
+
+        var pasingLabel = document.getElementById("passingTests");
+        var failingLabel = document.getElementById("failingTests");
+
+        if (this.passing)
+            pasingLabel.value = "Passing Tests: " + this.passing;       //xxxHonza: localization
+
+        if (this.failing)
+            failingLabel.value = "Failing Tests: " + this.failing;      //xxxHonza: localization
+    },
+
+    clear: function()
+    {
+        this.results = [];
+        this.passing = 0;
+        this.failing = 0;
+        
+        var pasingLabel = document.getElementById("passingTests");
+        var failingLabel = document.getElementById("failingTests");
+
+        pasingLabel.value = "";
+        failingLabel.value = "";
+    }
+}
 
 // ************************************************************************************************
 // FBTest

@@ -99,7 +99,9 @@
     </vbox>
 
     <statusbar id="statusBar">
-        <statusbarpanel id="progressMessage" />
+        <label id="passingTests" />
+        <label id="failingTests" />
+        <label id="progressMessage" />
         <spacer flex="1" />
         <progressmeter id="progressMeter" mode="determined" style="display:none"/>
     </statusbar>
