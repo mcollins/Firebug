@@ -408,7 +408,7 @@ var TestRunner =
             // Show the test within the UI (expand parent category)
             var parentCategory = this.currentTest.parent;
             CategoryList.open(parentCategory.row);
-            scrollIntoCenterView(parentCategory.row);
+            scrollIntoCenterView(this.currentTest.row);
 
             // Remove previous results (if any).
             if (hasClass(this.currentTest.row, "opened"))
