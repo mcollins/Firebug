@@ -9,6 +9,7 @@ var Ci = Components.interfaces;
 // Services
 var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
 var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
+var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
 
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
@@ -28,7 +29,7 @@ var TestConsole =
 {
     // These are set when a testList.html is loaded.
     baseURI: null,
-    testList: null,
+    testCategories: null,
 
     initialize: function()
     {
@@ -119,14 +120,24 @@ var TestConsole =
             {
                 self.baseURI = win.baseURI;
 
-                // Copy the test list definition since it comes from untrusted content.
-                self.testList = [];
-                for (var i=0; i<win.testList.length; i++)
-                    self.testList.push({
-                        category: win.testList[i].category,
-                        uri: win.testList[i].uri,
-                        desc: win.testList[i].desc
+                // Create category list from the provided test list. Also clone all JS objects
+                // (tests) since they come from untrusted content.
+                var map = [];
+                self.testCategories = [];
+                for (var i=0; i<win.testList.length; i++) 
+                {
+                    var test = win.testList[i];
+                    var category = map[test.category];
+                    if (!category)
+                        self.testCategories.push(category = map[test.category] = 
+                            {name: test.category, tests: []});
+
+                    category.tests.push({
+                        category: test.category,
+                        uri: test.uri,
+                        desc: test.desc
                     });
+                }
 
                 // Restart server with new home directory.
                 TestServer.restart(self.baseURI);
@@ -140,36 +151,54 @@ var TestConsole =
             }
         }
 
-        // Load test-list file into the conent frame.
+        // Load test-list file into the content frame.
         consoleFrame.addEventListener("load", onTestFrameLoaded, true);
         consoleFrame.setAttribute("src", "file://" + testListPath);
 
-        // Update URL
+        // Update test list URL box.
         var testListURLBox = document.getElementById("testListURL");
         testListURLBox.value = testListPath;
     },
 
     refreshTestList: function()
     {
-        if (!this.testList)
+        if (!this.testCategories)
         {
-            FBTrace.sysout("fbtest.refreshTestList; Test list UNDEFINED: ");
+            FBTrace.sysout("fbtest.refreshTestList; ERROR There are no tests.");
             return;
         }
 
         var frame = document.getElementById("consoleFrame");
         var consoleNode = frame.contentDocument.getElementById("testList");
-        CategoryList.tableTag.replace({testList: this.testList}, consoleNode);
+        CategoryList.tableTag.replace({categories: this.testCategories}, consoleNode);
+    },
+
+    // Callback from TestRunner
+    onTestDone: function(testQueue)
+    {
+        if (testQueue.length)
+            TestProgress.update(testQueue.length);
+        else 
+            TestProgress.stop();
     },
 
     // UI Commands
     onRunAll: function()
     {
-        alert("TBD");
+        // Join all tests from all categories.
+        var testQueue = [];
+        for (var i=0; i<this.testCategories.length; i++)
+            testQueue.push.apply(testQueue, this.testCategories[i].tests);
+
+        TestProgress.start(testQueue.length);
+
+        // ... and execute them as one test suite.
+        TestRunner.runTests(testQueue);
     },
 
-    onStopTest: function()
+    onStop: function()
     {
+        this.testQueue = null;
         TestRunner.testDone();
     },
 
@@ -188,6 +217,36 @@ var TestConsole =
 
 // ************************************************************************************************
 
+var TestProgress =
+{
+    start: function(max)
+    {
+        this.max = max;
+        var meter = this.getMeter();
+        meter.style.display = "block";
+    },
+
+    stop: function()
+    {
+        var meter = this.getMeter();
+        meter.style.display = "none";
+    },
+
+    update: function(value)
+    {
+        var current = this.max - value;
+        var meter = this.getMeter();
+        meter.value = current ? current / (this.max / 100) : 0;
+    },
+
+    getMeter: function()
+    {
+        return document.getElementById("progressMeter");
+    }
+}
+
+// ************************************************************************************************
+
 /**
  * HTTP Server helper
  */
@@ -198,7 +257,6 @@ var TestServer =
     // (if you end in /content/, use parent to undo the convertToChromeURL file portion shorthand .parent;)
     start: function(chromeRoot)
     {
-        var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
         cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
         cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
 
@@ -297,9 +355,12 @@ var TestServer =
  */
 var TestRunner =
 {
+    testQueue: null,
+
     runTests: function(tests)
     {
-
+        this.testQueue = tests;
+        this.runTest(this.testQueue.shift());
     },
 
     runTest: function(testObj)
@@ -375,38 +436,38 @@ var TestRunner =
         {
             testCaseIframe.parentNode.removeChild(testCaseIframe);
         }
-            testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
-            testCaseIframe.setAttribute("src", "about:blank");
-            var body = doc.getElementsByTagName("body")[0];
-            body.appendChild(testCaseIframe);
-            // now hook the load event, so the next src= will trigger it.
-            var triggerTest = function(event)
+        testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
+        testCaseIframe.setAttribute("src", "about:blank");
+        var body = doc.getElementsByTagName("body")[0];
+        body.appendChild(testCaseIframe);
+        // now hook the load event, so the next src= will trigger it.
+        var triggerTest = function(event)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("load event "+event.target, event.target);
+            testCaseIframe.removeEventListener("load", triggerTest, true);
+            var testDoc = event.target;
+            var win = testDoc.defaultView;
+
+            if (win.wrappedJSObject)
+                win.wrappedJSObject.FBTest = window.FBTest;
+            else
+                win.FBTest = window.FBTest;
+            if (win.wrappedJSObject)
+                win.wrappedJSObject.FBTrace = window.FBTrace;
+            else
+                win.FBTrace = window.FBTrace;
+
+            try
             {
-                if (FBTrace.DBG_FBTEST)
-                    FBTrace.sysout("load event "+event.target, event.target);
-                testCaseIframe.removeEventListener("load", triggerTest, true);
-                var testDoc = event.target;
-                var win = testDoc.defaultView;
-
-                if (win.wrappedJSObject)
-                    win.wrappedJSObject.FBTest = window.FBTest;
-                else
-                    win.FBTest = window.FBTest;
-                if (win.wrappedJSObject)
-                    win.wrappedJSObject.FBTrace = window.FBTrace;
-                else
-                    win.FBTrace = window.FBTrace;
-
-                try
-                {
-                    win.runTest();
-                }
-                catch (exc)
-                {
-                    FBTest.sysout("runTest FAILS "+exc, exc);
-                }
+                win.runTest();
             }
-            testCaseIframe.addEventListener("load", triggerTest, true);
+            catch (exc)
+            {
+                FBTest.sysout("runTest FAILS "+exc, exc);
+            }
+        }
+        testCaseIframe.addEventListener("load", triggerTest, true);
 
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
@@ -429,6 +490,12 @@ var TestRunner =
                 this.currentTest);
 
         this.currentTest = null;
+
+        TestConsole.onTestDone(this.testQueue);
+
+        // If there are tests in the queue, execute them.
+        if (this.testQueue && this.testQueue.length)
+            this.runTest(this.testQueue.shift());
     },
 
     appendResult: function(result)
@@ -516,32 +583,25 @@ var FBTest =
         TestRunner.sysout(text, obj);
     },
 
-    id: function(win, id)
+    click: function(node)
     {
-        if (typeof id == "string")
-            return win.document.getElementById(id);
-        return id;
-    },
-
-    click: function(win, node)
-    {
-        node = this.id(win, node);
         if (node.click)
             return node.click();
 
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
-        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0, 
+            false, false, false, false, 0, null);
         return node.dispatchEvent(event);
     },
 
-    mouseDown: function(win, node)
+    mouseDown: function(node)
     {
-        node = this.id(win, node);
         if (node.click)
             return node.click();
 
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
-        event.initMouseEvent("mousedown", true, true, doc.defaultView, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        event.initMouseEvent("mousedown", true, true, doc.defaultView, 0, 0, 0, 0, 0, 
+            false, false, false, false, 0, null);
         return node.dispatchEvent(event);
     },
 

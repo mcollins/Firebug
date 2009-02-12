@@ -18,6 +18,7 @@ function runTest()
             FBTest.ok(true, "Test OK");
 
             // Finish test
+            removeCurrentTab();
             FBTest.testDone();
         })
     })

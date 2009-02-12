@@ -32,27 +32,25 @@ window.onerror = function(errType, errURL, errLineNum)
 //-------------------------------------------------------------------------------------------------
 // Helpers
 
-function expandNetRows(win, panelNode, className) // className, className, ...
+function expandNetRows(panelNode, className) // className, className, ...
 {
-    var args = chrome.FBL.cloneArray(arguments); args.shift();
-    var rows = chrome.FBL.getElementsByClass.apply(null, args);
+    var rows = chrome.FBL.getElementsByClass.apply(null, arguments);
     for (var i=0; i<rows.length; i++)
     {
         var row = rows[i];
         if (!chrome.FBL.hasClass(row, "opened"))
-            FBTest.click(win, row);
+            FBTest.click(row);
     }
 }
 
-function expandNetTabs(win, panelNode, tabClass)
+function expandNetTabs(panelNode, tabClass)
 {
-    var args = chrome.FBL.cloneArray(arguments); args.shift();
-    var tabs = chrome.FBL.getElementsByClass.apply(null, args);
+    var tabs = chrome.FBL.getElementsByClass.apply(null, arguments);
     for (var i=0; i<tabs.length; i++)
     {
         var tab = tabs[i];
         if (!chrome.FBL.hasClass(tab, "collapsed"))
-            FBTest.click(win, tab);
+            FBTest.click(tab);
     }
 }
 

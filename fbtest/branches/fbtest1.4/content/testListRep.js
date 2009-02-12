@@ -13,7 +13,7 @@ var CategoryList = domplate(
     tableTag:
         TABLE({"class": "categoryTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
             TBODY(
-                FOR("category", "$testList|categoryIterator",
+                FOR("category", "$categories",
                     TR({"class": "testCategoryRow", _repObject: "$category"},
                         TD({"class": "categoryName testCategoryCol"},
                             SPAN({"class": "testCategoryName"},
@@ -21,10 +21,10 @@ var CategoryList = domplate(
                             ),
                             SPAN({"class": "testCategoryCount"},
                                 "$category|getCategoryCount"
-                            )/*, xxxHonza: test suites TBD
+                            ),
                             SPAN({"class": "categoryAction testLink", onclick: "$onCategoryClick"},
                                 SPAN("Run")
-                            )*/
+                            )
                         )
                     )
                 )
@@ -35,21 +35,6 @@ var CategoryList = domplate(
         TR({"class": "categoryBodyRow", _repObject: "$category"},
             TD({"class": "categoryBodyCol", colspan: 1})
         ),
-
-    categoryIterator: function(testList)
-    {
-        var map = [];
-        var categories = [];
-        for (var i=0; i<testList.length; i++) 
-        {
-            var test = testList[i];
-            var category = map[test.category];
-            if (!category)
-                categories.push(category = map[test.category] = {name: test.category, tests: []});
-            category.tests.push(test);
-        }
-        return categories;
-    },
 
     getCategoryName: function(category) 
     {

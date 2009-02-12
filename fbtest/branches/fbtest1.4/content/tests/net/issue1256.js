@@ -27,11 +27,11 @@ function runTest()
             if (!netRow)
                 return endTest(win);
 
-            FBTest.click(win, netRow);
+            FBTest.click(netRow);
 
             // Activate Params tab.
             var netInfoRow = netRow.nextSibling;
-            expandNetTabs(win, netInfoRow, "netInfoPostTab");
+            expandNetTabs(netInfoRow, "netInfoPostTab");
 
             var postTable = browser.FBL.getElementByClass(netInfoRow, "netInfoPostTable");
             if (postTable)

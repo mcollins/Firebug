@@ -48,7 +48,7 @@
 
     <commandset id="mainCommandSet">
         <command id="cmd_runAll" oncommand="TestConsole.onRunAll()"/>
-        <command id="cmd_stopTest" oncommand="TestConsole.onStopTest()"/>
+        <command id="cmd_stopTest" oncommand="TestConsole.onStop()"/>
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_openTestList" oncommand="TestConsole.onOpenTestList()"/>
     </commandset>
@@ -62,8 +62,7 @@
             <toolbarbutton id="runAll"
                 label="test.cmd.Run All" class="toolbar-image-button"
                 tooltiptext="test.cmd.tip.Run All Tests"
-                command="cmd_runAll"
-                disabled="true"/>
+                command="cmd_runAll"/>
             <toolbarbutton id="stopTest"
                 label="test.cmd.Stop" class="toolbar-image-button"
                 tooltiptext="test.cmd.tip.Stop"
@@ -97,5 +96,11 @@
     <!-- Test frame, all tests are launched as frames within this frame -->
     <vbox>
         <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html"  />
-    </vbox> 
+    </vbox>
+
+    <statusbar id="statusBar">
+        <statusbarpanel id="progressMessage" />
+        <spacer flex="1" />
+        <progressmeter id="progressMeter" mode="determined" style="display:none"/>
+    </statusbar>
 </window>

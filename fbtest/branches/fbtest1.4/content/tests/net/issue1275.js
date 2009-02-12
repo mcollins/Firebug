@@ -17,8 +17,8 @@ function runTest()
             // Expand the test request with params
             var panelNode = browser.FirebugContext.getPanel("net").panelNode;
             FBTest.sysout("fbtest.panelNode", panelNode);
-            expandNetRows(win, panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
-            expandNetTabs(win, panelNode, "netInfoResponseTab");
+            expandNetRows(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
+            expandNetTabs(panelNode, "netInfoResponseTab");
 
             // The response must be displayed.
             var responseBody = browser.FBL.getElementByClass(panelNode, "netInfoResponseText", 
