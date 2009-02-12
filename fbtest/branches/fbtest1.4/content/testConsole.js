@@ -57,9 +57,9 @@ var TestConsole =
             if (!defaultTestList)
                 defaultTestList = "chrome://firebug/content/testList.html";
 
-            // Load default test list. The test list is builded according to 
+            // Load default test list. The test list is built according to 
             // a 'testList' variable and server started using a 'baseURI' variable.
-            // Both variables must be presented within the file.
+            // Both variables must be present within the file.
             this.loadTestList(defaultTestList);
 
             if (FBTrace.DBG_FBTEST)
@@ -94,10 +94,10 @@ var TestConsole =
 
     loadTestList: function(testListPath)
     {
-        if (/^chrome:/.test(testListPath))
-            testListPath = TestServer.chromeToUrl(testListPath, false);
-        else if (!/^file:/.test(testListPath))
-            testListPath = TestServer.pathToUrl(testListPath);
+//        if (/^chrome:/.test(testListPath))
+//            testListPath = TestServer.chromeToUrl(testListPath, false);
+//        else if (!/^file:/.test(testListPath))
+//            testListPath = TestServer.pathToUrl(testListPath);
 
         this.testListPath = testListPath;
 
@@ -122,8 +122,7 @@ var TestConsole =
             }
             else
             {
-                self.baseURI = TestServer.chromeToUrl(win.baseURI, true);
-
+            	self.baseURI = win.baseURI;
                 // Create category list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
                 var map = [];
@@ -144,8 +143,9 @@ var TestConsole =
                     });
                 }
 
-                // Restart server with new home directory.
-                TestServer.restart(self.baseURI);
+                // Restart server with new home directory using a file: url
+                var serverBaseURI = TestServer.chromeToUrl(win.baseURI, true);  
+                TestServer.restart(serverBaseURI);
 
                 // Build new test list UI.
                 self.refreshTestList();
