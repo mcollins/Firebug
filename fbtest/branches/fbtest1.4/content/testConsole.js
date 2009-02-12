@@ -10,6 +10,8 @@ var Ci = Components.interfaces;
 var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
 var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
+var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
+var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
 
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
@@ -53,7 +55,7 @@ var TestConsole =
 
             var defaultTestList = Firebug.getPref(Firebug.prefDomain, "fbtest.defaultTestSuite");
             if (!defaultTestList)
-                defaultTestList = "chrome://fbtest/content/testList.html"; //xxxHonza: use proper default.
+                defaultTestList = "chrome://firebug/content/testList.html";
 
             // Load default test list. The test list is builded according to 
             // a 'testList' variable and server started using a 'baseURI' variable.
@@ -93,7 +95,7 @@ var TestConsole =
     loadTestList: function(testListPath)
     {
         if (/^chrome:/.test(testListPath))
-            testListPath = TestServer.chromeToPath(testListPath).path;
+            testListPath = TestServer.chromeToUrl(testListPath, false);
 
         this.testListPath = testListPath;
 
@@ -118,7 +120,7 @@ var TestConsole =
             }
             else
             {
-                self.baseURI = win.baseURI;
+                self.baseURI = TestServer.chromeToUrl(win.baseURI, true);
 
                 // Create category list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
@@ -154,7 +156,7 @@ var TestConsole =
 
         // Load test-list file into the content frame.
         consoleFrame.addEventListener("load", onTestFrameLoaded, true);
-        consoleFrame.setAttribute("src", "file://" + testListPath);
+        consoleFrame.setAttribute("src", testListPath);
 
         // Update test list URL box.
         var testListURLBox = $("testListURL");
@@ -229,9 +231,9 @@ var TestServer =
         cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
 
         this.localDir = this.chromeToPath(chromeRoot);
-        this.path = "http://localhost:" + serverPort + "/tests/";
+        this.path = "http://localhost:" + serverPort + "/";
 
-        this.getServer().registerDirectory("/tests/", this.localDir);
+        this.getServer().registerDirectory("/", this.localDir);
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestServer.registerDirectory: " + this.path + " => " +
@@ -307,6 +309,49 @@ var TestServer =
             return Cc["@mozilla.org/network/protocol;1?name=file"]
                       .createInstance(Ci.nsIFileProtocolHandler)
                       .getFileFromURLSpec(aPath);
+        }
+        catch (e)
+        {
+            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
+        }
+    },
+
+    chromeToUrl: function (aPath, aDir)
+    {
+        if (!aPath || !(/^chrome:/.test(aPath)))
+            return this.pathToUrl(aPath);
+
+       var uri = ios.newURI(aPath, "UTF-8", null);
+       var rv = chromeRegistry.convertChromeURL(uri).spec;
+       if (aDir)
+            rv = rv.substr(0, rv.lastIndexOf("/") + 1);
+
+       if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+       {
+           var m = /(.*\/content\/)/.exec(rv);
+           if (m)
+           {
+               rv = m[1];
+           }
+       }
+
+       if (!/^file:/.test(rv))
+          rv = this.pathToUrl(rv);
+
+       return rv;
+    },
+
+    pathToUrl: function(aPath)
+    {
+        try
+        {
+            if (!aPath || /^file:/.test(aPath))
+                return aPath;
+
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            return Cc["@mozilla.org/network/protocol;1?name=file"]
+                .createInstance(Ci.nsIFileProtocolHandler)
+                .getURLSpecFromFile(uri).spec;
         }
         catch (e)
         {
