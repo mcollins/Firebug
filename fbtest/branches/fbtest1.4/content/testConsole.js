@@ -48,7 +48,8 @@ var TestConsole =
             gFindBar = document.getElementById("FindToolbar");
 
             // Register strings so, Firebug's localization APIs can be used.
-            Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
+            if (Firebug.registerStringBundle)
+                Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
@@ -76,7 +77,7 @@ var TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "refreshList"];
+        var buttons = ["runAll", "stopTest"];
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);

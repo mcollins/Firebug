@@ -93,9 +93,12 @@
         <findbar id="FindToolbar" browserid="consoleFrame"/>
     </vbox>
 
+    <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest" 
+        resizeAfter="closest" persist="state substate"/>
+
     <!-- Test frame, all tests are launched as frames within this frame -->
     <vbox>
-        <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html"  />
+        <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html" />
     </vbox>
 
     <statusbar id="statusBar">
