@@ -39,7 +39,7 @@ var TestConsole =
         {
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
-    
+
             var args = window.arguments[0];
             var FirebugWindow = args.FirebugWindow;
             FBTrace = FirebugWindow.FBTrace;
@@ -115,15 +115,21 @@ var TestConsole =
                 addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
 
             var win = doc.defaultView.wrappedJSObject;
-            if (!win.testList || !win.baseURI)
+            if (!win.testList)
             {
                 if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("fbtest.refreshTestList; ERROR testList or baseURI is missing in: " +
+                    FBTrace.sysout("fbtest.refreshTestList; ERROR testList is missing in: " +
                         testListPath, win);
             }
             else
             {
-            	self.baseURI = win.baseURI;
+                self.baseURI = win.baseURI;
+
+                // If the baseURI isn't provided use the directory where testList.html 
+                // file is located.
+                if (!self.baseURI)
+                    self.baseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
+
                 // Create category list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
                 var map = [];
@@ -145,7 +151,7 @@ var TestConsole =
                 }
 
                 // Restart server with new home directory using a file: url
-                var serverBaseURI = TestServer.chromeToUrl(win.baseURI, true);  
+                var serverBaseURI = TestServer.chromeToUrl(self.baseURI, true);  
                 TestServer.restart(serverBaseURI);
 
                 // Build new test list UI.
@@ -721,6 +727,21 @@ var FBTest =
     loadScript: function(scriptURI, scope)
     {
         return loader.loadSubScript(TestConsole.baseURI + scriptURI, scope);
+    },
+
+    registerPathHandler: function(path, handler)
+    {
+        return TestServer.getServer().registerPathHandler(path, function(metadata, response) 
+        {
+            try 
+            {
+                handler.apply(null, [metadata, response]);
+            }
+            catch (err) 
+            {
+                FBTrace.sysout("FBTest.registerPathHandler EXCEPTION", err);
+            }
+        });
     }
 };
 
