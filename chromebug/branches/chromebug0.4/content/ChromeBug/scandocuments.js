@@ -4,6 +4,7 @@ FBL.ns(function() { with (FBL) {
 
 Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
 {
+    dispatchName: "documentScanner",
     scanningDocuments: false,
 
     initialize: function()

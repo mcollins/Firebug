@@ -12,6 +12,7 @@ const fbContentBox = $('fbContentBox');
 
 Firebug.Chromebug.CategoryBrowser = extend(Firebug.Module,
 {
+    dispatchName: "categoryBrowser",
     XPCOMBrowserUp: false,
 
 

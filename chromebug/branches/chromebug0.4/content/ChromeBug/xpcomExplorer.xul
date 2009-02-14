@@ -18,9 +18,9 @@
 ]>
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-        id="chromebug"
+        id="xpcomExplorer"
         windowtype="chromebug:ui"
-        title="Chromebug 0.4"
+        title="XPCOM Explorer for Chromebug"
         width="600" height="400"
         persist="screenX,screenY,width,height"
         >
@@ -34,15 +34,14 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
 
-    <!-- BEGIN add scripts -->
+    <!-- Firebug scripts -->
     <script type="application/x-javascript" src="chrome://fb4cb/content/lib.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
-
+    <script type="application/x-javascript" src="chrome://chromebug/content/contextManager.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/tabWatcher.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/traceModule.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
@@ -52,35 +51,11 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/reps.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/editor.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/infotip.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/commandLine.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/search.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/inspector.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/plugin.js"/>
-     <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>
-     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
-    <script type="application/x-javascript" src="chrome://chromebug/content/tracePanel.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/html.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/css.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/layout.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/debuggerHalter.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/debugger.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/dom.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/net.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/profiler.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/errors.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/spy.js"/>
-    <script type="application/x-javascript" src="chrome://firebug/content/consoleInjector.js"/>
-    <script type="application/x-javascript" src="chrome://firebug/content/jsonViewer.js"/>
 
-    <script type="application/x-javascript" src="chrome://fb4cb/content/consoleAPI.js"/>
-     <script type="application/x-javascript" src="chrome://fb4cb/content/commandLineAPI.js"/>
-
-
-
-    <!-- END -->
- <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugOverrides.js"/>
-    <script type="application/x-javascript" src="chrome://chromebug/content/scandocuments.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/categoryBrowser.js"/>
 
     <commandset id="mainCommandSet">
@@ -120,7 +95,7 @@
         <command id="cmd_firefox" oncommand="window.open().home();"/>
         <command id="cmd_chromeList" oncommand="Firebug.Chromebug.chromeList()"/>
         <command id="cmd_xulExplorer" oncommand="Firebug.Chromebug.openXULExplorer()"/>
-        <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.openXPCOMExplorer()"/>
+        <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.CategoryBrowser.toggleXPCOMBrowser()"/>
         <command id="cmd_reload" disabled="true" oncommand="Firebug.Chromebug.reload()"/>
         <command id="cmd_reloadSkipCache" oncommand="Firebug.Chromebug.reload(true)"/>
         <command id="cmd_toggleOrient" oncommand="FirebugChrome.toggleOrient()" />
@@ -164,154 +139,7 @@
 
     <popupset id="mainPopupSet"/>
 
-    <vbox id="appcontent" flex="1">
-
-    <hbox id="cbCommandToolbox">
-        <menubar align="center" >
-            <menu id="file-menu" label="Tools">
-                <menupopup onpopupshowing="Firebug.Chromebug.onOptionsShowing(this)">
-                    <menuitem id="menu_firefox" command="cmd_firefox" key="key_firefox"
-                              label="Open Firefox"/>
-                    <menuitem id="menu_chromeList" command="cmd_chromeList" key="key_chromeList"
-                              label="Gijs Kruitbosch's Chrome List"/>
-                    <!-- <menuitem id="menu_xulExplorer" command="cmd_xulExplorer" key="key_xulExplorer"
-                              label="Mark Finkle's XUL Explorer"/> -->
-                    <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
-                              label="XPCOM Explorer"/>
-                    <menuitem id="menu_chromebugTraceConsole" command="cmd_toggleCBTraceConsole"
-                            key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole"/>
-                    <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
-                            key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
-                    <menuitem id="menu_chromebugUnitTest" command="cmd_cbUnitTest"
-                            key="key_cbUnitTest" label="Start Firebug Unit Test"/>
-                </menupopup>
-            </menu>
-            <menu id="view-menu" label="&firebug.View;">
-                <menupopup onpopupshowing="return Firebug.Chromebug.onOptionsShowing(this);">
-                    <menuitem id="menu_toggleOrient" command="cmd_toggleOrient" type="checkbox"
-                              label="&firebug.Vertical;" persist="checked"/>
-                    <menuseparator/>
-
-                    <menuitem id="menu_reload" command="cmd_reload" key="key_reload"
-                              label="reload" accesskey="reloadCmd.accesskey"/>
-                    <menuseparator/>
-
-                    <menu label="&firebug.TextSize;">
-                        <menupopup>
-                            <menuitem label="&firebug.IncreaseTextSize;" oncommand="Firebug.increaseTextSize(1)"/>
-                            <menuitem label="&firebug.DecreaseTextSize;" oncommand="Firebug.increaseTextSize(-1)"/>
-                            <menuitem label="&firebug.NormalTextSize;" oncommand="Firebug.setTextSize(0)"/>
-                        </menupopup>
-                    </menu>
-
-                    <menu label="&firebug.Options;">
-                        <menupopup onpopupshowing="return FirebugChrome.onOptionsShowing(this);">
-                            <menuitem type="checkbox" label="&firebug.AlwaysOpenInWindow;"
-                                       oncommand="FirebugChrome.onToggleOption(this)"
-                                       option="openInWindow"/>
-
-                            <menuitem type="checkbox" label="&firebug.ShowTooltips;"
-                                       oncommand="FirebugChrome.onToggleOption(this)"
-                                       option="showInfoTips"/>
-
-                            <menuitem type="checkbox" label="&firebug.ShadeBoxModel;"
-                                      oncommand="FirebugChrome.onToggleOption(this)"
-                                      option="shadeBoxModel"/>
-                        </menupopup>
-                    </menu>
-                </menupopup>
-            </menu>
-
-            <menu id="window-menu" label="&firebug.Help;">
-                <menupopup>
-                    <menuitem label="Show That Great Introduction" oncommand="Firebug.Chromebug.toggleIntroduction()"/>
-                    <menuseparator/>
-                    <menuitem label="&firebug.Website;" oncommand="Firebug.visitWebsite('main')"/>
-                    <menuitem label="&firebug.Documentation;" oncommand="Firebug.visitWebsite('docs')"/>
-                    <menuitem label="&firebug.KeyShortcuts;" oncommand="Firebug.visitWebsite('keyboard')"/>
-                    <menuitem label="&firebug.Forums;" oncommand="Firebug.visitWebsite('discuss')"/>
-                    <menuitem label="&firebug.Issues;" oncommand="Firebug.visitWebsite('issues')"/>
-                    <menuseparator/>
-
-                    <menuitem label="&firebug.About;" oncommand="Firebug.Chromebug.openAboutDialog()"/>
-                </menupopup>
-            </menu>
-        </menubar>
-            <vbox>
-                <spacer flex="1"/>
-                <label value="|" control="cbPackageList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
-                <spacer flex="1"/>
-            </vbox>
-            <vbox>
-                <spacer flex="1"/>
-                <label value="filter:" control="cbPackageList" id="cbPackageLabel" class="toolbar-text-menubutton"
-                        tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
-                <spacer flex="1"/>
-            </vbox>
-
-            <toolbarbutton label="(no filter)" id="cbPackageList" locationProvider="Firebug.Chromebug.PackageListLocator;"
-                            class="toolbar-text-menubutton"
-                            tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-
-            <vbox>
-                <spacer flex="1"/>
-                <label value="|" control="cbAllFilesList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
-                <spacer flex="1"/>
-            </vbox>
-
-            <vbox>
-                <spacer flex="1"/>
-                <label value="All files:" control="cbAllFilesList" id="cbAllFilesLabel" class="toolbar-text-menubutton"
-                        tooltiptext="All files known to Chromebug" />
-                <spacer flex="1"/>
-            </vbox>
-
-            <toolbarbutton label="files" id="cbAllFilesList" locationProvider="Firebug.Chromebug.AllFilesListLocator;"
-                            class="toolbar-text-menubutton"
-                            tooltiptext="All files known to Chromebug"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-
-
-
-            <vbox>
-                <spacer flex="1"/>
-                <label value="context:" control="cbContextList" id="cbContextLabel" class="toolbar-text-menubutton"
-                        tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
-                <spacer flex="1"/>
-            </vbox>
-
-            <toolbarbutton label="context" id="cbContextList" locationProvider="Firebug.Chromebug.ContextListLocator;"
-                            class="toolbar-text-menubutton"
-                            tooltiptext="currently selected context"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-
-           <toolbarbutton  id="reload-button" class="toolbarbutton-1"
-                            command="cmd_reload" tooltiptext="Reload current window"/>
-
-        </hbox> <!-- cbCommandToolbox-->
-
-        <browser id="content" flex="2" disablehistory="true" src="chrome://chromebug/content/introduction.html" />
-        <splitter id="fbContentSplitter"/>
-        <vbox id="fbContentBox" flex="1" collapsed="true">
-            <toolbox id="fbToolBox">
-                <toolbar id="fbToolbar" >
-                     <hbox id="fbToolbarInner">
-                        <toolbarbutton id="cbInspectButton" label="&firebug.Inspect;" class="toolbar-text-button"
-                           tooltiptext="&firebug.InspectTooltip;" command="cmd_toggleScanningDocuments" />
-                           <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="true">
-                                   <toolbarbutton label="Clear" class="toolbar-text-button"
-                                       tooltiptext="&firebug.ClearTooltip;" command="cmd_clearTracePanel"/>
-                           </hbox>
-                      </hbox>
-
-                </toolbar>
-            </toolbox>
-            <box id="fbPanelBox" flex="1"/>
-            <hbox id="fbCommandBox"/>
-        </vbox> <!-- fbContentBox -->
-
-    <vbox id="cbExplorer" flex="1" collapsed="true">
+    <vbox id="cbExplorer" flex="1" >
         <toolbox id="cbExplorerToolBox">
 
             <toolbar id="cbExplorerToolbar" >
@@ -354,10 +182,28 @@
             </hbox>
          </vbox>
      </vbox> <!-- cbExplorer -->
+             <splitter id="fbContentSplitter"/>
+        <vbox id="fbContentBox" flex="1" collapsed="true">
+            <toolbox id="fbToolBox">
+                <toolbar id="fbToolbar" >
+                     <hbox id="fbToolbarInner">
+                        <toolbarbutton id="cbInspectButton" label="&firebug.Inspect;" class="toolbar-text-button"
+                           tooltiptext="&firebug.InspectTooltip;" command="cmd_toggleScanningDocuments" />
+                           <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="true">
+                                   <toolbarbutton label="Clear" class="toolbar-text-button"
+                                       tooltiptext="&firebug.ClearTooltip;" command="cmd_clearTracePanel"/>
+                           </hbox>
+                      </hbox>
+
+                </toolbar>
+            </toolbox>
+            <box id="fbPanelBox" flex="1"/>
+            <hbox id="fbCommandBox"/>
+        </vbox> <!-- fbContentBox -->
      <vbox id="cbOverlayViewer" flex="1" collapsed="true">
         <!-- <browser src=... type="content" flex="1" /> -->
      </vbox>
-     </vbox>  <!-- appcontent -->
+
     <statusbar id="status-bar">
         <spacer flex="1"/>
         <statusbarpanel id="cbStatusBar"

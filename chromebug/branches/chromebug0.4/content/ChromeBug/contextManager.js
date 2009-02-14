@@ -133,8 +133,6 @@ top.TabWatcher =
         if (!context)
         {
             var browser = this.getBrowserByWindow(win);
-            if (!fbs.countContext(true))
-                return;
 
             // If the page is reloaded, store the persisted state from the previous
             // page on the new context
@@ -309,7 +307,7 @@ top.TabWatcher =
             context.browser.cancelNextLoad = true;
         }
 
-        fbs.countContext(false);
+        //fbs.countContext(false); // XXXXXXXXXXXXXXXXXXXXXXXXX this is not good
 
         this.owner.destroyTabContext(context.browser, context);
         context.destroy(persistedState);
