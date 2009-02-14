@@ -35,19 +35,17 @@ function initialize()
 
     FBTest.Firebug.isFirebugOpen = function()
     {
-        FBTrace.sysout("isFirebugOpen");
         var browserDocument = FBTest.FirebugWindow.document;
-        FBTrace.sysout("isFirebugOpen browserDocument ", browserDocument);
         var fbContentBox = browserDocument.getElementById('fbContentBox');
-        FBTrace.sysout("isFirebugOpen fbContentBox ", fbContentBox);
         var collapsedFirebug = fbContentBox.getAttribute("collapsed");
-        FBTrace.sysout("isFirebugOpen collapsedFirebug "+ collapsedFirebug);
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("isFirebugOpen collapsedFirebug "+ collapsedFirebug);
         return (collapsedFirebug=="true") ? false : true;
     };
-    
+
     FBTest.Firebug.setToKnownState = function()
     {
-    	FBTest.FirebugWindow.Firebug.forceBarOff();  // pull Firebug down if it is up
+        FBTest.FirebugWindow.Firebug.forceBarOff();  // pull Firebug down if it is up
     };
     // *******************************************************************
 
@@ -145,15 +143,15 @@ function initialize()
 // ------------------------------------------------------------------------
 // Individual sub tests
 var testNumber = 0;
-function openAndOpen()
+function openOpenCloseClose()
 {
-    var openAndOpenURL = "http://getfirebug.com/";
+    var openOpenCloseCloseURL = "http://localhost:7080/firebug/OpenFirebugOnThisPage.html";
 
 
-    var openTest = new FBTest.Firebug.TestHandlers("openAndOpen");
+    var openOpenCloseClose = new FBTest.Firebug.TestHandlers("openOpenCloseClose");
 
     // Actual test operations
-    openTest.add( function onNewPage(event)
+    openOpenCloseClose.add( function onNewPage(event)
     {
         FBTrace.sysout("onNewPage starts", event);
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
@@ -164,18 +162,18 @@ function openAndOpen()
 
     });
 
-    openTest.add( function onShowUI()
+    openOpenCloseClose.add( function onShowUI()
     {
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(isFirebugOpen, "Firebug now open");
 
         FBTest.ok(this.next == "onShowUI", "showUI followed toggleFirebug");
-        
+
         if (FBTest.FirebugWindow.FirebugContext)
         {
             var contextName = FBTest.FirebugWindow.FirebugContext.getName();
             FBTest.ok(true, "chromeWindow.FirebugContext "+contextName);
-            FBTest.ok(contextName == openAndOpenURL, "FirebugContext set to "+openAndOpenURL);
+            FBTest.ok(contextName == openOpenCloseCloseURL, "FirebugContext set to "+openOpenCloseCloseURL);
         }
         else
             FBTest.ok(false, "no FirebugContext");
@@ -185,31 +183,31 @@ function openAndOpen()
 
     });
 
-    openTest.add( function onHideUI()
+    openOpenCloseClose.add( function onHideUI()
     {
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(!isFirebugOpen, "Firebug now closed");
 
         FBTest.ok(this.next == "onHideUI", "hideUI followed toggleFirebug");
-        openTest.done();
+        openOpenCloseClose.done();
     });
 
     var uiListener =
     {
             showUI: function(browser, context) // called when the Firebug UI comes up in browser or detached
             {
-                openTest.fire("onShowUI");
+                openOpenCloseClose.fire("onShowUI");
             },
 
             hideUI: function(brower, context)  // called when the Firebug UI comes down
             {
-                openTest.fire("onHideUI");
+                openOpenCloseClose.fire("onHideUI");
             },
     };
 
     // Now start the test.
     FBTest.Firebug.setToKnownState();
-    openTest.fireOnNewPage("onNewPage", openAndOpenURL, uiListener);
+    openOpenCloseClose.fireOnNewPage("onNewPage", openOpenCloseCloseURL, uiListener);
 }
 
 //------------------------------------------------------------------------
@@ -227,5 +225,5 @@ function runTest()
         FBTest.ok(false, "No Firebug Window");
 
     // Auto run sequence
-    openAndOpen();
+    openOpenCloseClose();
 }
