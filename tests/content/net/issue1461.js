@@ -4,6 +4,10 @@ function runTest()
     FBTest.sysout("issue1461.START");
     FBTest.loadScript("net/env.js", this);
 
+    var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
+    cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
+    cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
+
     openURL(basePath + "net/issue1461.html", function(win)
     {
         FBTest.sysout("issue1461.openNewTab; " + win.location.href);
