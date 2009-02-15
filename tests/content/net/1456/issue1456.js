@@ -41,7 +41,7 @@ function runTest()
                 FBTest.compare(responseText, responseBody.textContent, "Response must match.");
 
             // Finish test
-            //removeCurrentTab();
+            removeCurrentTab();
             FBTest.sysout("issue1456.DONE");
             FBTest.testDone();
         })

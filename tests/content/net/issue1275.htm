@@ -30,6 +30,10 @@ function jsonRequest(callback)
 {
     try {
         request = new XMLHttpRequest();
+        request.onabort = function() {
+            // Never called in 3.0.6, but seems to be working in 3.1b2
+            //alert("aborted: " + request.responseText);
+        }
         request.onreadystatechange = function() {
             if (request.readyState == 4) {
                 if (request.status == 200) {

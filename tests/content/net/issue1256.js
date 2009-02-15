@@ -16,7 +16,7 @@ function runTest()
         // Run test implemented on the page.
         win.wrappedJSObject.runTest(function(request)
         {
-            FBTest.sysout("issue1256.response received: " + request.name);
+            FBTest.sysout("issue1256.response received: " + request.channel.URI.spec, request);
 
             // Expand the test request with params
             var panel = browser.FirebugContext.getPanel("net");

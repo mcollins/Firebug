@@ -10,6 +10,7 @@ var Ci = Components.interfaces;
 var chrome = window.parent.parent;
 var FBTest = chrome.FBTest;
 var FBL = chrome.FBL;
+var FW = FBTest.FirebugWindow;
 
 // Server
 var basePath = "http://localhost:7080/";
