@@ -58,7 +58,7 @@ function runTest()
                 }
 
                 // Finish test
-                //removeCurrentTab();
+                removeCurrentTab();
                 FBTest.sysout("issue1425.DONE");
                 FBTest.testDone();
             }, 300);
