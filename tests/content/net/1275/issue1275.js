@@ -2,7 +2,7 @@ function runTest()
 {
     FBTest.loadScript("net/env.js", this);
 
-    openNewTab(basePath + "net/issue1275.htm", function(win)
+    openNewTab(basePath + "net/1275/issue1275.htm", function(win)
     {
         FBTest.sysout("issue1275.START", win);
 
