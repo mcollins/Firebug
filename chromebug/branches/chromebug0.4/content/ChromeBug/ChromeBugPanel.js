@@ -246,11 +246,11 @@ FrameGlobalScopeInfo.prototype = extend (HiddenWindow.prototype,
     }
 });
 
-function JSContextScopeInfo(globalIValue, global, context, jsContext)  // came first from debugger frame
+function JSContextScopeInfo(jsClassName, global, context, jsContext)  // came first from debugger frame
 {
     this.domWindow = null;  // maybe
     this.global = global;
-    this.globalIValue = globalIValue;
+    this.jsClassName = jsClassName;
     this.context = context;
     this.kindOfInfo = "JSContext";
     this.jsContextTag = (jsContext ? jsContext.tag : 0);
@@ -260,7 +260,7 @@ JSContextScopeInfo.prototype = extend (FrameGlobalScopeInfo.prototype,
 {
     getObjectDescription: function()
     {
-        return {path: this.globalIValue.jsClassName, name: " "+this.jsContextTag };
+        return {path: this.jsClassName, name: " "+this.jsContextTag };
     }
 });
 var GlobalScopeInfos =
@@ -288,7 +288,7 @@ var GlobalScopeInfos =
 
     addHiddenWindow: function(hidden_window)
     {
-        var context = Firebug.Chromebug.getOrCreateContextForDOMWindow(hidden_window);  // addHiddenWindow
+        var context = Firebug.Chromebug.getOrCreateContext(hidden_window);  // addHiddenWindow
         this.hiddenWindow = new HiddenWindow(hidden_window, context);
         this.add(context, this.hiddenWindow);
         if (FBTrace.DBG_CHROMEBUG)
@@ -318,7 +318,7 @@ var GlobalScopeInfos =
                     {
                         var domWindow = ChromeBugWindowInfo.getDOMWindowByDocShell(childDocShell);
 
-                        var context = Firebug.Chromebug.getContextByDOMWindow(domWindow);
+                        var context = Firebug.Chromebug.getContextByGlobal(domWindow);
                         if (context)
                         {
                             GlobalScopeInfos.remove(context.globalScope);
@@ -326,9 +326,9 @@ var GlobalScopeInfos =
                         else
                         {
                             if (parentDOMWindow != domWindow)
-                                context = Firebug.Chromebug.getOrCreateContextForDOMWindow(domWindow, Firebug.Chromebug.getContextByDOMWindow(parentDOMWindow));
+                                context = Firebug.Chromebug.getOrCreateContext(domWindow, Firebug.Chromebug.getContextByGlobal(parentDOMWindow));
                             else
-                                context = Firebug.Chromebug.getOrCreateContextForDOMWindow(domWindow);
+                                context = Firebug.Chromebug.getOrCreateContext(domWindow);
                         }
 
                         var gs = new ContainedDocument(xul_window, context);
@@ -396,9 +396,9 @@ var ChromeBugWindowInfo = {
 
         var parentDOMWindow = this.getDOMWindowByDocShell(xul_window.docShell);
         if (parentDOMWindow != domWindow)
-            context = Firebug.Chromebug.getOrCreateContextForDOMWindow(domWindow, Firebug.Chromebug.getContextByDOMWindow(parentDOMWindow));
+            context = Firebug.Chromebug.getOrCreateContext(domWindow, Firebug.Chromebug.getContextByGlobal(parentDOMWindow));
         else
-            context = Firebug.Chromebug.getOrCreateContextForDOMWindow(domWindow);
+            context = Firebug.Chromebug.getOrCreateContext(domWindow);
 
         return context;
     },
@@ -438,7 +438,7 @@ var ChromeBugWindowInfo = {
 
     destroyContextByDOMWindow: function(domWindow)
     {
-        var context = Firebug.Chromebug.getContextByDOMWindow(domWindow);
+        var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (context)
         {
             FBTrace.sysout("TODO Firebug.Chromebug.deleteContext(context);");
@@ -618,11 +618,11 @@ var ChromeBugWindowInfo = {
 
     //***********************************************************************************
 
-    addJSContext: function(globalIValue, global, jsContext)  // global is not a window
+    addJSContext: function(jsClassName, global, jsContext)  // global is not a window
     {
-        var context = Firebug.Chromebug.getOrCreateContext(global, null, null);
+        var context = Firebug.Chromebug.getOrCreateContext(global, jsClassName, jsContext);
 
-        var gs = new JSContextScopeInfo(globalIValue, global, context, jsContext);
+        var gs = new JSContextScopeInfo(jsClassName, global, context, jsContext);
         Firebug.Chromebug.globalScopeInfos.add(context, gs);
         return context;
     },
@@ -662,7 +662,7 @@ var ChromeBugWindowInfo = {
         var newTag = "tag-"+this.xulWindowTagSeed++;
         this.xulWindowTags.push(newTag);
 
-        var context = Firebug.Chromebug.getOrCreateContextForDOMWindow(outerDOMWindow);  // addXULWindow
+        var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);  // addXULWindow
         var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
         GlobalScopeInfos.add(context, gs);
 
@@ -675,7 +675,6 @@ var ChromeBugWindowInfo = {
             var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
             var domWindow = event.target.defaultView;
 
-            var parentContext = this; // bindFixed at addEventListener
             if (domWindow == outerDOMWindow)
             {
                 if (FBTrace.DBG_CHROMEBUG)
@@ -689,7 +688,7 @@ var ChromeBugWindowInfo = {
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("context.domWindowWatcher, new window in outerDOMWindow", outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
-            var context = Firebug.Chromebug.getContextByDOMWindow(domWindow, true);
+            var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
             if (context)
             {
                 // then we had one, say from a Frame
@@ -698,7 +697,7 @@ var ChromeBugWindowInfo = {
             }
             else
             {
-                var context = Firebug.Chromebug.getOrCreateContextForDOMWindow(domWindow, parentContext); // subwindow
+                var context = Firebug.Chromebug.getOrCreateContext(domWindow); // subwindow
                 if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
             }
             var gs = new ContainedDocument(xul_window, context);
@@ -731,7 +730,7 @@ var ChromeBugWindowInfo = {
             {
                 if (domWindow instanceof nsIDOMWindow)
                 {
-                    var context = Firebug.Chromebug.getContextByDOMWindow(domWindow);
+                    var context = Firebug.Chromebug.getContextByGlobal(domWindow);
                     if (context)
                     {
                         FBTrace.sysout("Firebug.Chromebug.destructContext found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
@@ -1028,12 +1027,15 @@ var ChromeBugGlobalObserver = {
                 if (subject instanceof nsIDOMWindow)
                 {
                     if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS) FBTrace.sysout("ChromeBugGlobalObserver found domwindowopened "+subject.location+"\n");
-
-                    var context = Firebug.Chromebug.getContextByDOMWindow(subject);
-                    if (context)
-                        Firebug.Chromebug.dumpStackToConsole(context, "Opener for "+subject.location);
-                    else
-                        FBTrace.sysout("No context for DOM Window ", subject.location);
+                    // This event comes before TabWathcer is initiatilized if the Error Console is created
+                    // by -jsconsole command line argument.
+                    // Since we are not ready to create contexts, we will need to store info for later.
+                    // ...if we really need it.
+                    //var context = Firebug.Chromebug.getContextByGlobal(subject);
+                    //if (context)
+                    //    Firebug.Chromebug.dumpStackToConsole(context, "Opener for "+subject.location);
+                    //else
+                    //    FBTrace.sysout("No context for DOM Window ", subject.location);
                 }
             }
             catch(exc)
@@ -1054,8 +1056,6 @@ var ChromeBugGlobalObserver = {
     },
 
 };
-
-
 
 // ************************************************************************************************
 Firebug.Chromebug = extend(Firebug.Module,
@@ -1090,6 +1090,8 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         this.uid = FBL.getUniqueId();
 
+        if (!this.contexts)
+            this.contexts = TabWatcher.contexts;
 
         Firebug.disabledAlways = true; // The Chromebug will enable Firebug for specific windows
 
@@ -1328,7 +1330,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     },
 
     // ******************************************************************************
-    createContext: function(global, domWindow, parentContext)
+    createContext: function(global, jsClassName, jsContext)
     {
         var persistedState = null; // TODO
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
@@ -1338,9 +1340,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (!FirebugChrome)
             FBTrace.dumpStack("FirebugChrome is null??");
-        window.dump("createContext has browser "+browser+"\n");
 
-        //var context = Firebug.createTabContext(domWindow, browser, FirebugChrome, persistedState);
         var context = TabWatcher.createContext(global);
 
         context.isChromeBug = true;
@@ -1352,30 +1352,43 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             this.name = name +" ("+this.uid+")";
         }
-
+        
+        context.global = global;
+        if (global instanceof nsIDOMWindow)
+        {
+        	context.window = global;
+        }
+        else
+        {
+        	if (jsContext)
+        		var name = (jsClassName+" in "+(jsContext?jsContext.tag:0));
+        	else if (jsClassName)
+        		var name = jsClassName;
+        	else if (global && toString in global)
+        		var name = global.toString();
+        	else 
+        		var name ="noGlobal"
+        	context.setName(name);  // need URI
+        }
+        
         context.global = global; // maybe equal to domWindow
         context.getGlobalScope = function()
         {
             return this.global;  // override Firebug's getGlobalScope; same iff global == domWindow
         };
 
-        if (domWindow)
-            context.windows.push(domWindow); // since we don't watchWindows in chromebug
+        if (context.window)
+            context.windows.push(context.window); // since we don't watchWindows in chromebug
 
-        if (!this.contexts)
-            this.contexts = TabWatcher.contexts;
-        //this.contexts.push(context);
+
         context.uid = this.contexts.length;
-
-        if (parentContext)  // The JSContext is the same for all child docShell DOMWindows. ?
-            context.parentContext = parentContext;
-        else
-            context.parentContext = context;
 
         var persistedState = FBL.getPersistedState(context, "script");
         if (!persistedState.enabled)  // for now default all chromebug window to enabled.
             persistedState.enabled = "enable";
 
+        FBTrace.sysout("Chromebug.createContext: "+(context.global?" ":"NULL global ")+context.getName());
+        
         return context;
     },
 
@@ -1422,7 +1435,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         for (var i = 0; i < jsContexts.length; i++)
         {
             var jsContext = jsContexts[i];
-
+            
             var context = Firebug.Chromebug.getOrCreateContext(jsContext);
             if (context)
                 context.jsContextTag = jsContext.tag;
@@ -1441,81 +1454,18 @@ Firebug.Chromebug = extend(Firebug.Module,
         });
     },
 
-    getOrCreateContextForDOMWindow: function(domWindow, parentContext)
+    getOrCreateContext: function(global, jsClassName, jsContext)
     {
-        try {
-
-            var context = Firebug.Chromebug.getContextByDOMWindow(domWindow);
-            if (context)
-                return;
-
-            context = Firebug.Chromebug.createContext(domWindow, domWindow, parentContext);
-
-            domWindow.addEventListener("unload", onUnloadDOMWindow, false);
-
-            if (FBTrace.DBG_CHROMEBUG) {
-                FBTrace.sysout("ChromeBugPanel.getOrCreateContextForDOMWindow ++++++++++++++++++++++ id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
-            }
-
-            return context;
-
-        } catch(e) {
-            FBTrace.dumpProperties("getOrCreateContextForDOMWindow failed:"+e, e);
-        }
-    },
-
-    getOrCreateContext: function(jscontext)
-    {
-        var global = jscontext.globalObject?jscontext.globalObject.getWrappedValue():null;
-        if (global)
-        {
-            var context = Firebug.Chromebug.getContextByDOMWindow(global);
-            if (context)
-                return context;
-
-            if (global instanceof nsIDOMWindow)
-                return Firebug.Chromebug.getOrCreateContextForDOMWindow(global, null);  // getorcreate
-            else
-            {
-                var context = Firebug.Chromebug.createContext(global);
-                var name = (globalIValue.jsClassName+" in "+(jsContext?jsContext.tag:0));
-                context.setName(name);  // need URI
-                return context;
-            }
-        }
-        else
-        {
-            FBTrace.sysout("getOrCreateContext called for jscontext with no globalObject "+jscontext.tag);
-            return this.unreachablesContext;  // nsITimer for example
-        }
-    },
-
-    getContextByDOMWindow: function(win, dontYellIfNoFind)
-    {
-        if (!this.contexts)
-            this.contexts = TabWatcher.contexts;
-        if (!this.contexts)
-            return; // got called before initialize() on TabWatcher.
-
-        if (win)
-        {
-            for (var i = 0; i < this.contexts.length; ++i)
-            {
-                var context = this.contexts[i];
-                if (FBTrace.DBG_WINDOWS && win.location && context.getName()) FBTrace.sysout("ChromeBugPanel.getContextByDOMWindow looking for "+win.location.href+" trying "+(context.window && context.getName())?context.getName():"<no window>"+"\n");
-                if (context.window == win)
-                    return context;
-            }
-            if (!dontYellIfNoFind)
-                FBTrace.dumpStack("ChromeBugPanel.getContextByDOMWindow no find win.location:"+win.location+"\n");
-            return null;
-        }
-        FBTrace.dumpStack("ChromeBugPanel.getContextByDOMWindow win null");
+    	var context = Firebug.Chromebug.getContextByGlobal(global);
+    	if (!context)
+    		context = Firebug.Chromebug.createContext(global, jsClassName, jsContext);
+    		
+    	return context;
     },
 
     getContextByGlobal: function(global)
     {
-        if (!this.contexts)
+    	if (!this.contexts)
             this.contexts = TabWatcher.contexts;
 
         if (global.window)
@@ -1537,40 +1487,6 @@ Firebug.Chromebug = extend(Firebug.Module,
             }
         }
 
-        if (FBTrace.DBG_WINDOWS)
-        {
-            try {
-                var location = global.location;
-            } catch (exc) {
-                FBTrace.sysout("ChromeBugPanel.getContextByGlobal no find, no global.location\n");
-                return;
-            }
-            if (!location)
-            {
-                FBTrace.sysout("ChromeBugPanel.getContextByGlobal global.location undefined\n");
-                return;
-            }
-            FBTrace.sysout("ChromeBugPanel.getContextByGlobal checking "+this.contexts.length+" contexts for location:"+location+"\n");
-            for (var i = 0; i < this.contexts.length; ++i)
-            {
-                var context = this.contexts[i];
-                if (context.global.location)
-                {
-                    if (context.global.location != location)
-                        FBTrace.sysout("ChromeBugPanel.getContextByGlobal no find "+context.global.location+"!="+location+"\n");
-                    else
-                    {
-                        FBTrace.sysout("ChromeBugPanel.getContextByGlobal should have found windows"+context.global +"="+(context.global.window==global.window)+"="+global+"\n");
-                        FBTrace.sysout("ChromeBugPanel.getContextByGlobal context.global.location:"+context.global.location+"\n");
-                        FBTrace.sysout("ChromeBugPanel.getContextByGlobal         global.location:"+global.location+"\n");
-                    }
-                }
-                else
-                {
-                   FBTrace.sysout("ChromeBugPanel.getContextByGlobal context.global with no location\n");
-                }
-            }
-        }
         return null;
     },
 
@@ -1646,7 +1562,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            Firebug.Chromebug.syncContextsToJSContexts(); // Update our contexts based on current jsContexts
+            //Firebug.Chromebug.syncContextsToJSContexts(); // Update our contexts based on current jsContexts
 
             var appShellService = this.getAppShellService();
             var hiddenWindow = appShellService.hiddenDOMWindow;
@@ -1666,11 +1582,12 @@ Firebug.Chromebug = extend(Firebug.Module,
                 //hiddenWindow.dump('adding hiddenWindow\n');
                 //var context = GlobalScopeInfos.addHiddenWindow(hiddenWindow);
 
-                var jsContextTagByScriptTag = hiddenWindow._chromebug.jsContextTagByScriptTag;
+                var globals = hiddenWindow._chromebug.globals; // []
+                var globalTagByScriptTag = hiddenWindow._chromebug.globalTagByScriptTag; // globals index by script tag
                 var xulScriptsByURL = hiddenWindow._chromebug.xulScriptsByURL;
-                Firebug.Chromebug.buildInitialContextList(jsContextTagByScriptTag, xulScriptsByURL);
+                Firebug.Chromebug.buildInitialContextList(globals, globalTagByScriptTag, xulScriptsByURL);
 
-                delete hiddenWindow._chromebug.jsContextTagByScriptTag;
+                delete hiddenWindow._chromebug.globalTagByScriptTag;
                 delete hiddenWindow._chromebug.jsContexts;
             }
             else
@@ -1693,18 +1610,18 @@ Firebug.Chromebug = extend(Firebug.Module,
         return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);
     },
 
-    buildInitialContextList: function(jsContextTagByScriptTag, xulScriptsByURL)
+    buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL)
     {
         this.unreachablesContext = Firebug.Chromebug.createContext();
-        unreachablesContext.setName("chrome://unreachable/");
+        this.unreachablesContext.setName("chrome://unreachable/");
 
-        this.buildEnumeratedSourceFiles(unreachablesContext, jsContextTagByScriptTag, xulScriptsByURL);
+        this.buildEnumeratedSourceFiles(this.unreachablesContext, globals, globalTagByScriptTag, xulScriptsByURL);
 
         for (var url in xulScriptsByURL)
             Firebug.Chromebug.onXULScriptCreated(url, xulScriptsByURL);
     },
 
-    buildEnumeratedSourceFiles: function(unreachablesContext, jsContextTagByScriptTag, xulScriptsByURL)
+    buildEnumeratedSourceFiles: function(unreachablesContext, globals, globalTagByScriptTag, xulScriptsByURL)
     {
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
             {
@@ -1717,20 +1634,22 @@ Firebug.Chromebug = extend(Firebug.Module,
                 }
                 if (Firebug.Chromebug.avoidSelf(url))
                 {
-                    delete jsContextTagByScriptTag[script.tag];
+                    delete globalTagByScriptTag[script.tag];
                     return;
                 }
 
-                var jsContextTag = jsContextTagByScriptTag[script.tag];
-                if (!jsContextTag)
+                var globalsTag = globalTagByScriptTag[script.tag];
+                if (!globalsTag)
                 {
                     if (FBTrace.DBG_SOURCEFILES)
                         FBTrace.sysout("buildEnumeratedSourceFiles no jsContext (isChromebug?) "+script.tag+" in "+script.fileName);
                     return;  // chromebug file (we hope)
                 }
 
-                var context = Firebug.Chromebug.getContextByJSContextTag(jsContextTag);
-
+                var global = globals[globalsTag];
+                if (global)
+                	var context = Firebug.Chromebug.getOrCreateContext(global);
+                
                 if (!context)
                     context = unreachablesContext;
 
@@ -1742,7 +1661,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     context.addSourceFile(sourceFile);
                 }
                 if (FBTrace.DBG_SOURCEFILES)
-                    FBTrace.sysout("Using jsContextTag "+jsContextTag+ " assigned "+script.tag+"|"+url+" to "+ context.getName());
+                    FBTrace.sysout("Using globalsTag "+globalsTag+ " assigned "+script.tag+"|"+url+" to "+ context.getName());
                 sourceFile.innerScripts[script.tag] = script;
             }});
     },
@@ -1851,7 +1770,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     {
                         if (message.scope)
                         {
-                            context = Firebug.Chromebug.getContextByDOMWindow(message.scope);
+                            context = Firebug.Chromebug.getContextByGlobal(message.scope);
                             if (context)
                             {
                                 Firebug.Chromebug.syncToolBarToContext(context);
@@ -3374,7 +3293,7 @@ Firebug.Chromebug.JSContextList = {
             var global = jscontext.globalObject.getWrappedValue();
             if (global)
             {
-                var context = Firebug.Chromebug.getContextByDOMWindow(global)
+                var context = Firebug.Chromebug.getContextByGlobal(global)
                 if (context)
                 {
                     ChromeBugWindowInfo.selectBrowser(context.browser);

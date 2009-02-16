@@ -209,7 +209,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     {
         try {
             var xulWindowInfo = ChromeBugWindowInfo;
-            var context = (win ? Firebug.Chromebug.getContextByDOMWindow(win, true) : null);
+            var context = (win ? Firebug.Chromebug.getContextByGlobal(win) : null);
 
             if (context && context.globalScope instanceof ContainedDocument)
             {
@@ -257,7 +257,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         		else
         		{
         			var jsContext = frame.executionContext;  // may be null, mapped to tag zero
-        			context = ChromeBugWindowInfo.addJSContext(scope, global, jsContext);
+        			context = ChromeBugWindowInfo.addJSContext(scope.jsClassName, global, jsContext);
             		if (FBTrace.DBG_TOPLEVEL)
             				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
         		}

@@ -149,8 +149,8 @@ const  chromebugCommandLineHandler = {
     {
         // This is a minature version of the double hook in firebug-service.js
         hiddenWindow._chromebug = {};
-        hiddenWindow._chromebug.jsContextTagByScriptTag = {};
-        hiddenWindow._chromebug.jsContext = {};
+        hiddenWindow._chromebug.globalTagByScriptTag = {};
+        hiddenWindow._chromebug.globals = [];
         hiddenWindow._chromebug.breakpointedScripts = {};
         hiddenWindow._chromebug.innerScripts = [];
         hiddenWindow._chromebug.xulScriptsByURL = {};
@@ -237,17 +237,22 @@ const  chromebugCommandLineHandler = {
 
                 if (!frame.callingFrame) // then top-level
                 {
-                    if (frame.executionContext)
-                    {
-                        var tag = frame.executionContext.tag;
-                        
-                        var jscontext = frame.executionContext;
-                        var frameGlobal = jscontext.globalObject.getWrappedValue();
-                        var scopeName = fbs.getLocationSafe(frameGlobal);
-                        if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
+                    var scope = frame.scope;
+                	if (scope)
+                	{	
+                		while(scope.jsParent) // walk to the oldest scope
+                			scope = scope.jsParent;
+                		
+                		var frameGlobal = scope.getWrappedValue();
+                		var tag = cb.globals.indexOf(frameGlobal);
+                		if (tag < 0)
+                			tag = cb.globals.push(frameGlobal) - 1;
+                		
+                		var scopeName = fbs.getLocationSafe(frameGlobal);
+                		if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
                         {
                             if (trace) hiddenWindow.dump("assigning "+tag+" to "+frame.script.fileName+"\n");
-                            cb.jsContextTagByScriptTag[frame.script.tag] = tag;
+                            cb.globalTagByScriptTag[frame.script.tag] = tag;
                         
                             // add the unassigned innerscripts
                             for (var i = 0; i < cb.innerScripts.length; i++)
@@ -255,7 +260,7 @@ const  chromebugCommandLineHandler = {
                                 var script = cb.innerScripts[i];
                                 if (script.fileName != frame.script.fileName)  // so what tag then?
                                     if (trace) hiddenWindow.dump("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
-                                cb.jsContextTagByScriptTag[script.tag] = tag;
+                                cb.globalTagByScriptTag[script.tag] = tag;
                             }
                         }
                         else
