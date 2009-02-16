@@ -41,7 +41,6 @@ function runTest()
 function testDone(win)
 {
     // Finish test
-    removeCurrentTab();
     FBTest.sysout("issue1461.DONE");
     FBTest.testDone();
 }
