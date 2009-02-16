@@ -6,28 +6,23 @@ function runTest()
     {
         FBTest.sysout("issue1275.START", win);
 
-        var browser = FBTest.FirebugWindow;
-
         // Open Firebug UI and activate Net panel.
-        browser.Firebug.showBar(true);
-        browser.FirebugChrome.selectPanel("net");
+        FW.Firebug.showBar(true);
+        FW.FirebugChrome.selectPanel("net");
 
         win.wrappedJSObject.jsonRequest(function(request)
         {
-            // Expand the test request with params
-            var panelNode = browser.FirebugContext.getPanel("net").panelNode;
-            FBTest.sysout("fbtest.panelNode", panelNode);
-            expandNetRows(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
-            expandNetTabs(panelNode, "netInfoResponseTab");
+            // Verify Net panel response
+            var panel = FW.FirebugContext.getPanel("net");
+            expandNetRows(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
+            verifyResponse(panel);
 
-            // The response must be displayed.
-            var responseBody = browser.FBL.getElementByClass(panelNode, "netInfoResponseText", 
-                "netInfoText");
-
-            FBTest.ok(responseBody, "Response tab must exist.");
-            if (responseBody)
-                FBTest.compare("{ data1: 'value1', data2: 'value2' }",
-                    responseBody.textContent, "Test JSON response must match.");
+            // Verify Console panel response
+            panel = FW.FirebugChrome.selectPanel("console");
+            var spyLogRow = FW.FBL.getElementByClass(panel.panelNode, "logRow", "logRow-spy", "loaded");
+            var xhr = FW.FBL.getElementByClass(spyLogRow, "spyTitleCol", "spyCol");
+            FBTest.click(xhr);
+            verifyResponse(panel);
 
             // Finish test
             removeCurrentTab();
@@ -35,4 +30,17 @@ function runTest()
             FBTest.testDone();
         })
     })
+}
+
+function verifyResponse(panel)
+{
+    // The response must be displayed to be populated in the UI.
+    expandNetTabs(panel.panelNode, "netInfoResponseTab");
+    var responseBody = FW.FBL.getElementByClass(panel.panelNode, "netInfoResponseText", 
+        "netInfoText");
+
+    FBTest.ok(responseBody, "Response tab must exist in: " + panel.name);
+    if (responseBody)
+        FBTest.compare("{ data1: 'value1', data2: 'value2' }",
+            responseBody.textContent, "Test JSON response must match in: " + panel.name);
 }
