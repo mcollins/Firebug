@@ -1517,6 +1517,9 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     destroyContext: function(context)
     {
+    	if (context.browser)
+    		delete context.browser.detached;
+    	
         this.PackageList.deleteContext(context);
         GlobalScopeInfos.destroy(context);
         if (FBTrace.DBG_CHROMEBUG)

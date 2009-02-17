@@ -43,6 +43,13 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
         else
             this.tracePanel = this.createTracePanel(context);
     },
+    
+    destroyContext: function(context)
+    {
+    	// unpoint from this context to our panel so its not destroyed.
+    	if (this.tracePanel)
+    		context.setPanel(this.tracePanel.name, null);
+    },
 
     createTracePanel: function(context)
     {
@@ -115,10 +122,14 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         this.logs = Firebug.TraceModule.MessageTemplate.createTable(myPanelNode);
         Firebug.TraceModule.onLoadConsole(window, myPanelNode);
         this.unwrapper = bind(this.unWrapMessage, this);
+        if (FBTrace.DBG_CB_CONSOLE)
+        	FBTrace.sysout("TraceConsolePanel initializeNode");
     },
 
     destroyNode: function()
     {
+        if (FBTrace.DBG_CB_CONSOLE)
+        	FBTrace.sysout("TraceConsolePanel destroyNode");
     },
 
     show: function(state)
@@ -143,7 +154,7 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
     {
         this.showToolbarButtons("cbTraceButtons", false);
 
-        if (FBTrace.DBG_OPTIONS)
+        if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("TraceFirebug.panel hide", this);
 
         if (this.context && this.context.browser)
