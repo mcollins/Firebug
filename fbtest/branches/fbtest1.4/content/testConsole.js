@@ -729,6 +729,11 @@ var FBTest =
         return loader.loadSubScript(TestConsole.baseURI + scriptURI, scope);
     },
 
+    getHTTPURLBase: function()
+    {
+    	return TestServer.path;
+    },
+    
     registerPathHandler: function(path, handler)
     {
         return TestServer.getServer().registerPathHandler(path, function(metadata, response) 
