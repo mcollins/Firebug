@@ -39,6 +39,7 @@ const reComponents = /:\/(.*)\/components\//; // chrome:/ or file:/
 const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
 const reResource = /resource:\/\/([^\/]*)\//;
 const reModules = /:\/\/(.*)\/modules\//; // chrome:// or file://
+const reWeb = /(^http:|^ftp:|^mailto:|^https:|^ftps:)\//;
 
 const fbBox = $("fbContentBox");
 const interfaceList = $("cbInterfaceList");
@@ -282,7 +283,7 @@ var GlobalScopeInfos =
 
         Firebug.Chromebug.PackageList.assignContextToPackage(context);
 
-        //Firebug.dispatch("loadedContext", [context]);
+        Firebug.loadedContext(context);
         if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("GlobalScopeInfos add "+ gs.kindOfInfo+" for context "+context.uid+", "+context.getName() );
     },
 
@@ -738,7 +739,7 @@ var ChromeBugWindowInfo = {
                         {
                             GlobalScopeInfos.remove(context.globalScope);
                             remove(Firebug.Chromebug.contexts, context);
-                            //Firebug.dispatch("destroyContext", [context]);
+                            Firebug.destroyContext(context);
                         }
                         return;
                     }
@@ -1336,7 +1337,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
 
-        var browser = ChromeBugWindowInfo.createBrowser(global);  // ??
+        var browser = ChromeBugWindowInfo.createBrowser(global);
 
         if (!FirebugChrome)
             FBTrace.dumpStack("FirebugChrome is null??");
@@ -1350,27 +1351,26 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         context.setName = function(name)
         {
-            this.name = name +" ("+this.uid+")";
+            this.name = name;
         }
-        
+
         context.global = global;
         if (global instanceof nsIDOMWindow)
-        {
-        	context.window = global;
-        }
+            context.window = global;
         else
         {
-        	if (jsContext)
-        		var name = (jsClassName+" in "+(jsContext?jsContext.tag:0));
-        	else if (jsClassName)
-        		var name = jsClassName;
-        	else if (global && toString in global)
-        		var name = global.toString();
-        	else 
-        		var name ="noGlobal"
-        	context.setName(name);  // need URI
+            if (global)
+                var name = Firebug.Rep.getTitle(global);
+            else if (jsContext)
+                var name = (jsContext?jsContext.tag:0)+"/"+jsClassName;
+            else if (jsClassName)
+                var name = jsClassName;
+            else
+                var name ="mystery";
+
+            context.setName("noWindow://"+name);
         }
-        
+
         context.global = global; // maybe equal to domWindow
         context.getGlobalScope = function()
         {
@@ -1388,7 +1388,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             persistedState.enabled = "enable";
 
         FBTrace.sysout("Chromebug.createContext: "+(context.global?" ":"NULL global ")+context.getName());
-        
+
         return context;
     },
 
@@ -1429,43 +1429,18 @@ Firebug.Chromebug = extend(Firebug.Module,
          });
     },
 
-    syncContextsToJSContexts: function()
-    {
-        var jsContexts = cloneArray(Firebug.Chromebug.JSContextList.getLocationList());
-        for (var i = 0; i < jsContexts.length; i++)
-        {
-            var jsContext = jsContexts[i];
-            
-            var context = Firebug.Chromebug.getOrCreateContext(jsContext);
-            if (context)
-                context.jsContextTag = jsContext.tag;
-            else
-            {
-                FBTrace.sysout("syncContextsToJSContexts skipping jsContext: "+jsContext.tag);
-            }
-        }
-
-        this.eachContext(function reportMissing(context)
-        {
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("context "+context.getName()+" has jsContext "+context.jsContextTag);
-            if (!context.jsContextTag)
-                FBTrace.sysout("context "+context.getName()+" not bound to a jsContext!");
-        });
-    },
-
     getOrCreateContext: function(global, jsClassName, jsContext)
     {
-    	var context = Firebug.Chromebug.getContextByGlobal(global);
-    	if (!context)
-    		context = Firebug.Chromebug.createContext(global, jsClassName, jsContext);
-    		
-    	return context;
+        var context = Firebug.Chromebug.getContextByGlobal(global);
+        if (!context)
+            context = Firebug.Chromebug.createContext(global, jsClassName, jsContext);
+
+        return context;
     },
 
     getContextByGlobal: function(global)
     {
-    	if (!this.contexts)
+        if (!this.contexts)
             this.contexts = TabWatcher.contexts;
 
         if (global.window)
@@ -1612,16 +1587,13 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL)
     {
-        this.unreachablesContext = Firebug.Chromebug.createContext();
-        this.unreachablesContext.setName("chrome://unreachable/");
-
-        this.buildEnumeratedSourceFiles(this.unreachablesContext, globals, globalTagByScriptTag, xulScriptsByURL);
+        this.buildEnumeratedSourceFiles(globals, globalTagByScriptTag, xulScriptsByURL);
 
         for (var url in xulScriptsByURL)
             Firebug.Chromebug.onXULScriptCreated(url, xulScriptsByURL);
     },
 
-    buildEnumeratedSourceFiles: function(unreachablesContext, globals, globalTagByScriptTag, xulScriptsByURL)
+    buildEnumeratedSourceFiles: function(globals, globalTagByScriptTag, xulScriptsByURL)
     {
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
             {
@@ -1648,10 +1620,15 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 var global = globals[globalsTag];
                 if (global)
-                	var context = Firebug.Chromebug.getOrCreateContext(global);
-                
+                    var context = Firebug.Chromebug.getOrCreateContext(global);
+
                 if (!context)
-                    context = unreachablesContext;
+                {
+                    if (! Firebug.Chromebug.unreachablesContext)
+                        Firebug.Chromebug.unreachablesContext = Firebug.Chromebug.createContext();
+                        Firebug.Chromebug.unreachablesContext.setName("chrome://unreachable/");
+                    context =  Firebug.Chromebug.unreachablesContext;
+                }
 
                 var sourceFile = context.sourceFileMap[url];
 
@@ -1679,7 +1656,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         // FirebugContext is not context. Maybe this does not happen in firebug because the user always starts
         // with an active tab with FirebugContext and cause the breakpoints to land in the default context.
         if (FirebugContext != context)
-            Firebug.dispatch("showContext", [context.browser, context]);
+            Firebug.showContext(context.browser, context);
 
         var stopName = getExecutionStopNameFromType(type);
         FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName, "context.getName():"+context.getName() + " context.stopped:"+context.stopped );
@@ -2215,7 +2192,7 @@ window.timeOut = function(title)
                 }
 
                 ChromeBugWindowInfo.selectBrowser(context.browser);
-                Firebug.dispatch("showContext", [context.browser, context]);
+                Firebug.showContext(context.browser, context);
 
                 event.currentTarget.location = globalScope;
            }
@@ -2473,7 +2450,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
                 FBTrace.sysout("Firebug.Chromebug.PackageList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
 
             ChromeBugWindowInfo.selectBrowser(context.browser);
-            Firebug.dispatch("showContext", [context.browser, context]);
+            Firebug.showContext(context.browser, context);
 
             Firebug.Chromebug.PackageList.setCurrentLocation(filteredContext);
        }
@@ -2627,7 +2604,7 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
                     var xul_window = ChromeBugWindowInfo.getXULWindowByTag(xul_window_tag);
                     var context = ChromeBugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
                     ChromeBugWindowInfo.selectBrowser(context.browser);
-                    Firebug.dispatch("showContext", [context.browser, context]);
+                    Firebug.showContext(context.browser, context);
 
                     if (FBTrace.DBG_CHROMEBUG)
                         FBTrace.sysout("Firebug.Chromebug.WindowList.onSelectLocation context:", context.getName());
@@ -2870,7 +2847,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
              var sourceFile= context.sourceFileMap[description.href];
             FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+description.href, description);
             ChromeBugWindowInfo.selectBrowser(context.browser);
-            Firebug.dispatch("showContext", [context.browser, context]);
+            Firebug.showContext(context.browser, context);
 
             Firebug.Chromebug.syncToolBarToContext(context);
             FirebugChrome.select(sourceFile, "script", "watch", true);  // SourceFile
@@ -2882,6 +2859,34 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
 
 });
 
+Firebug.Chromebug.parseWebURI = function(uri)
+{
+    var m = reWeb.exec(uri);
+    if(m)
+    {
+        var split = FBL.splitURLBase(uri);
+        return {path: m[1], name: split.path+'/'+split.name, kind:"web", pkgName: m[1]};
+    }
+}
+
+Firebug.Chromebug.parseSystemURI = function(uri)
+{
+    if (isSystemURL(uri))
+    {
+        var split =  FBL.splitURLBase(uri);
+        return {path: split.path, name: split.name, kind: "system", pkgName: "system" }
+    }
+}
+
+Firebug.Chromebug.parseNoWindowURI = function(uri)
+{
+    if (uri.indexOf('noWindow')==0)
+    {
+        var split =  FBL.splitURLBase(uri);
+        return {path: uri.substr(0,9), name: uri.substr(10), kind: "noWindow", pkgName: "noWindow" }
+    }
+}
+
 Firebug.Chromebug.parseURI = function(URI)
 {
     if (!URI || Firebug.Chromebug.avoidSelf(URI))
@@ -2892,6 +2897,13 @@ Firebug.Chromebug.parseURI = function(URI)
         description = Firebug.Chromebug.ExtensionList.parseURI(URI);
     if (!description)
         description = Firebug.Chromebug.ModuleList.parseURI(URI);
+    if (!description)
+        description = Firebug.Chromebug.parseSystemURI(URI);
+    if (!description)
+        description = Firebug.Chromebug.parseWebURI(URI);
+    if (!description)
+        description = Firebug.Chromebug.parseNoWindowURI(URI);
+
     if (!description)
     {
         if (FBTrace.SOURCEFILES)
@@ -3297,7 +3309,7 @@ Firebug.Chromebug.JSContextList = {
                 if (context)
                 {
                     ChromeBugWindowInfo.selectBrowser(context.browser);
-                    Firebug.dispatch("showContext", [context.browser, context]);
+                    Firebug.showContext(context.browser, context);
                 }
                 else
                 {
