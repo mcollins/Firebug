@@ -8,14 +8,14 @@ function runTest()
     cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
     cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
 
-    openURL(basePath + "net/issue1461.html", function(win)
+    openURL(basePath + "net/1461/issue1461.html", function(win)
     {
         FBTest.sysout("issue1461.openNewTab; " + win.location.href);
 
         var browser = FBTest.FirebugWindow;
 
         // Open Firebug UI and activate Net panel.
-        browser.Firebug.showBar(true);
+        browser.Firebug.toggleBar(true);
         browser.FirebugChrome.selectPanel("net");
 
         var panelNode = browser.FirebugContext.getPanel("net").panelNode;
