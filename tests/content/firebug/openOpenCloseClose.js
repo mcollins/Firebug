@@ -49,8 +49,10 @@ function openOpenCloseClose()
         openOpenCloseClose.done();
     });
 
-    var uiListener =
+    var testListener =
     {
+        uiListener:
+        {
             showUI: function(browser, context) // called when the Firebug UI comes up in browser or detached
             {
                 openOpenCloseClose.fire("onShowUI");
@@ -60,46 +62,15 @@ function openOpenCloseClose()
             {
                 openOpenCloseClose.fire("onHideUI");
             },
+        }
     };
 
     // Now start the test.
     FBTest.Firebug.setToKnownState();
-    openOpenCloseClose.fireOnNewPage("onNewPage", openOpenCloseCloseURL, uiListener);
+    openOpenCloseClose.fireOnNewPage("onNewPage", openOpenCloseCloseURL, testListener);
 }
 
-function openNotOpenClose() 
-{
-    var openNotOpenCloseURL = FBTest.getHTTPURLBase()+"firebug/NeverOpenFirebugOnThisPage.html";
 
-
-    var openNotOpenClose = new FBTest.Firebug.TestHandlers("openNotOpenClose");
-
-    // Actual test operations
-    openNotOpenClose.add( function onNewPage(event)
-    {
-        FBTrace.sysout("onNewPage starts", event);
-        this.wasFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        this.next = "onHideUI";
-    });
-    
-    var uiListener =
-    {
-            showUI: function(browser, context) // called when the Firebug UI comes up in browser or detached
-            {
-                FBTest.ok(false, "showUI should not be called on this page");
-            },
-
-            hideUI: function(broswer, context)  // called when the Firebug UI comes down
-            {
-                FBTest.ok(openNotOpenClose.wasFirebugOpen, "hideUI can be called only if Firebug was open");
-            },
-            showContext: function(browser, context)
-            {
-            	FBTest.ok(!context, "showContext should be called with null context");
-            },
-    };
-    openNotOpenClose.fireOnNewPage("onNewPage", openNotOpenCloseURL, uiListener);
-}
 
 //------------------------------------------------------------------------
 // Auto-run test

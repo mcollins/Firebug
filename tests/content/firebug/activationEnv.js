@@ -42,7 +42,7 @@ function initialize()
 
     FBTest.Firebug.setToKnownState = function()
     {
-        FBTest.FirebugWindow.Firebug.forceBarOff();  // pull Firebug down if it is up
+        // TODO
     };
     // *******************************************************************
 
@@ -53,6 +53,7 @@ function initialize()
         this.progressElement = document.getElementById("firebugTestElement");
         if (!this.progressElement)
             throw new Error("TestHanders object requires element "+testName+" in document "+document.title);
+        this.windowLocation = new String(window.location);
     };
 
     FBTest.Firebug.TestHandlers.prototype =
@@ -68,6 +69,8 @@ function initialize()
         {
             var event = this.progressElement.ownerDocument.createEvent("Event");
             event.initEvent(eventName, true, false); // bubbles and not cancelable
+            if (window.closed)
+                throw "CLOSED "+this.windowLocation;
             FBTest.progress(eventName);
             //FBTrace.sysout("fire this", this);
             //debugger;
@@ -77,6 +80,51 @@ function initialize()
         // fooTest.fireOnNewPage("openFirebug", "http://getfirebug.com");
         fireOnNewPage: function(eventName, url, extensionCallbacks)
         {
+            if (extensionCallbacks)
+            {
+                var TabWatcher = FBTest.FirebugWindow.TabWatcher;
+                var hookFirebug =
+                {
+                        dispatchName: "activationEnv",
+                        initContext: function(context)
+                        {
+                            var uriString = context.getWindowLocation();
+                            if (uriString == url)
+                            {
+                                FBTrace.sysout("fireOnNewPage register extensionCallbacks in "+url, extensionCallbacks);
+                                if (extensionCallbacks.moduleListener) FBTest.FirebugWindow.Firebug.registerModule(extensionCallbacks.moduleListener);
+                                if (extensionCallbacks.uiListener) FBTest.FirebugWindow.Firebug.registerUIListener(extensionCallbacks.uiListener);
+                                if (extensionCallbacks.tabWatchListener) FBTest.FirebugWindow.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
+                            }
+                            else
+                                FBTrace.sysout("fireOnNewPage initContext skip "+uriString +" != "+url);
+                            return null;
+                        },
+                        destroyContext: function(context)
+                        {
+                            if (context)
+                            {
+                                if (context.window.location == url)
+                                {
+                                    FBTrace.sysout("destroyContext, removing extensionCallbacks in "+url);
+                                    if (extensionCallbacks.moduleListener) FBTest.FirebugWindow.Firebug.unregisterModule(extensionCallbacks.moduleListener);
+                                    if (extensionCallbacks.uiListener) FBTest.FirebugWindow.Firebug.unregisterUIListener(extensionCallbacks.uiListener);
+                                    if (extensionCallbacks.tabWatchListener) FBTest.FirebugWindow.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
+                                }
+                                else
+                                    FBTrace.sysout("fireOnNewPage destroyContext skip "+(context?context.getName():"null context"));
+                            }
+                        }
+                };
+                TabWatcher.addListener(hookFirebug);
+            }
+            function cleanUpTabWatcher(event)
+            {
+                TabWatcher.removeListener(hookFirebug);
+                window.removeEventListener("unload", cleanUpTabWatcher, true);
+            }
+            window.addEventListener("unload", cleanUpTabWatcher, true);
+
             var tabbrowser = FBTest.FirebugWindow.getBrowser();
             var testHandler = this;
             // Add tab, then make active (https://developer.mozilla.org/en/Code_snippets/Tabbed_browser)
@@ -94,17 +142,6 @@ function initialize()
                 var selectedBrowser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
                 //FBTrace.sysout("selectedBrowser "+selectedBrowser.currentURI.spec);
                 browser.removeEventListener('load', onLoadURLInNewTab, true);
-
-                if (extensionCallbacks)
-                {
-                    FBTrace.sysout("fireOnNewPage register extensionCallbacks", extensionCallbacks);
-                    FBTest.FirebugWindow.Firebug.registerExtension(extensionCallbacks);
-                    browser.addEventListener("unload", function cleanUp()
-                    {
-                        FBTrace.sysout("window.unload, removing extensionCallbacks");
-                        FBTest.FirebugWindow.Firebug.unregisterExtension(extensionCallbacks);
-                    }, true);
-                }
 
                 testHandler.fire(eventName);
             }
