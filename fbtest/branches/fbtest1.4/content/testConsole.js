@@ -731,9 +731,9 @@ var FBTest =
 
     getHTTPURLBase: function()
     {
-    	return TestServer.path;
+        return TestServer.path;
     },
-    
+
     registerPathHandler: function(path, handler)
     {
         return TestServer.getServer().registerPathHandler(path, function(metadata, response) 
@@ -747,7 +747,25 @@ var FBTest =
                 FBTrace.sysout("FBTest.registerPathHandler EXCEPTION", err);
             }
         });
-    }
+    },
+
+    pressKey: function(keyCode)
+    {
+        var doc = FBTest.FirebugWindow.document;
+        var keyEvent = doc.createEvent("KeyboardEvent");
+        keyEvent.initKeyEvent(
+            "keypress",       //  in DOMString typeArg,
+            true,             //  in boolean canBubbleArg,
+            true,             //  in boolean cancelableArg,
+            null,             //  in nsIDOMAbstractView viewArg,  Specifies UIEvent.view. This value may be null.
+            false,            //  in boolean ctrlKeyArg,
+            false,            //  in boolean altKeyArg,
+            false,            //  in boolean shiftKeyArg,
+            false,            //  in boolean metaKeyArg,
+            keyCode,          //  in unsigned long keyCodeArg,
+            0);               //  in unsigned long charCodeArg);
+        doc.documentElement.dispatchEvent(keyEvent);
+    },
 };
 
 // ************************************************************************************************
