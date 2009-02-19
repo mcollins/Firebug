@@ -4,30 +4,11 @@ function initialize()
     // ****************************************************************
     // Operations on Firebug
     FBTest.Firebug = {};
-    FBTest.Firebug.pressKey = function(keyCode)
-    {
-        var doc = FBTest.FirebugWindow.document;
-        var keyEvent = doc.createEvent("KeyboardEvent");
-        keyEvent.initKeyEvent(
-                "keypress",        //  in DOMString typeArg,
-                true,             //  in boolean canBubbleArg,
-                true,             //  in boolean cancelableArg,
-                null,             //  in nsIDOMAbstractView viewArg,  Specifies UIEvent.view. This value may be null.
-                false,            //  in boolean ctrlKeyArg,
-                false,            //  in boolean altKeyArg,
-                false,            //  in boolean shiftKeyArg,
-                false,            //  in boolean metaKeyArg,
-                 keyCode,               //  in unsigned long keyCodeArg,
-                 0);              //  in unsigned long charCodeArg);
-
-        doc.documentElement.dispatchEvent(keyEvent);
-    };
-
     FBTest.Firebug.pressToggleFirebug = function()
     {
         FBTrace.sysout("pressToggleFirebug");
         FBTest.progress("pressToggleFirebug");
-        this.pressKey(123); // F12
+        FBTest.pressKey(123); // F12
     };
 
     FBTest.Firebug.isFirebugOpen = function()
