@@ -16,36 +16,37 @@ function runTest()
 
     openNewTab(basePath + "net/846/issue846.htm", function(win)
     {
-        FW.Firebug.showBar(true);
-        FW.FirebugChrome.selectPanel("net");
-
-        win.wrappedJSObject.runTest(function(request)
+        // Open Firebug UI and enable Net panel.
+        enableNetPanel(function(win)
         {
-            FBTest.sysout("issue846.onRunTest", request);
-
-            // Expand all requests and select respnose bodies.
-            var panel = FW.FirebugContext.getPanel("net");
-            expandNetRows(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
-            expandNetTabs(panel.panelNode, "netInfoResponseTab");
-
-            var netRows = FW.FBL.getElementsByClass(panel.panelNode, "netRow", "category-xhr",
-                "hasHeaders", "loaded");
-            FBTest.compare(responses.length, netRows.length,
-                "There must be correct number of XHRs");
-
-            for (var i=0; i<netRows.length; i++)
+            win.wrappedJSObject.runTest(function(request)
             {
-                var row = netRows[i];
-                var responseBody = FW.FBL.getElementByClass(row.nextSibling, 
-                    "netInfoResponseText", "netInfoText");
-                FBTest.compare(responses[i], responseBody.textContent, 
-                    "Test response must match");
-            }
+                FBTest.sysout("issue846.onRunTest", request);
 
-            // Finish test
-            removeCurrentTab();
-            FBTest.sysout("issue846.DONE");
-            FBTest.testDone();
-        })
-    })
+                // Expand all requests and select respnose bodies.
+                var panel = FW.FirebugChrome.selectPanel("net");
+                expandNetRows(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
+                expandNetTabs(panel.panelNode, "netInfoResponseTab");
+
+                var netRows = FW.FBL.getElementsByClass(panel.panelNode, "netRow", "category-xhr",
+                    "hasHeaders", "loaded");
+                FBTest.compare(responses.length, netRows.length,
+                    "There must be correct number of XHRs");
+
+                for (var i=0; i<netRows.length; i++)
+                {
+                    var row = netRows[i];
+                    var responseBody = FW.FBL.getElementByClass(row.nextSibling, 
+                        "netInfoResponseText", "netInfoText");
+                    FBTest.compare(responses[i], responseBody.textContent, 
+                        "Test response must match");
+                }
+
+                // Finish test
+                cleanUpTestTabs();
+                FBTest.sysout("issue846.DONE");
+                FBTest.testDone();
+            });
+        });
+    });
 }

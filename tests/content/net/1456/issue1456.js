@@ -1,7 +1,7 @@
 function runTest()
 {
-    FBTest.loadScript("net/env.js", this);
     FBTest.sysout("issue1456.START");
+    FBTest.loadScript("net/env.js", this);
 
     var responseText = "$('tb').shake();\n$('tb').value='Some Response';\n";
 
@@ -18,32 +18,32 @@ function runTest()
 
     openNewTab(basePath + "net/1456/issue1456.htm", function(win)
     {
-        // Open Firebug UI and activate Net panel.
-        FW.Firebug.showBar(true);
-        FW.FirebugChrome.selectPanel("net");
-
-        win.wrappedJSObject.runTest(function(response)
+        // Open Firebug UI and enable Net panel.
+        enableNetPanel(function(win)
         {
-            FBTest.sysout("issue1456.onResponse: ", response);
+            win.wrappedJSObject.runTest(function(response)
+            {
+                FBTest.sysout("issue1456.onResponse: ", response);
 
-            // Expand the test request with params
-            var panelNode = FW.FirebugContext.getPanel("net").panelNode;
-            FBTest.sysout("fbtest.panelNode", panelNode);
-            expandNetRows(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
-            expandNetTabs(panelNode, "netInfoResponseTab");
+                // Expand the test request with params
+                var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
+                FBTest.sysout("fbtest.panelNode", panelNode);
+                expandNetRows(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
+                expandNetTabs(panelNode, "netInfoResponseTab");
 
-            // The response must be displayed.
-            var responseBody = FW.FBL.getElementByClass(panelNode, "netInfoResponseText", 
-                "netInfoText");
+                // The response must be displayed.
+                var responseBody = FW.FBL.getElementByClass(panelNode, "netInfoResponseText", 
+                    "netInfoText");
 
-            FBTest.ok(responseBody, "Response tab must exist.");
-            if (responseBody)
-                FBTest.compare(responseText, responseBody.textContent, "Response must match.");
+                FBTest.ok(responseBody, "Response tab must exist.");
+                if (responseBody)
+                    FBTest.compare(responseText, responseBody.textContent, "Response must match.");
 
-            // Finish test
-            removeCurrentTab();
-            FBTest.sysout("issue1456.DONE");
-            FBTest.testDone();
-        })
+                // Finish test
+                cleanUpTestTabs();
+                FBTest.sysout("issue1456.DONE");
+                FBTest.testDone();
+            })
+        });
     })
 }
