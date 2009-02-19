@@ -463,31 +463,25 @@ var TestRunner =
         var outerWindow =  testFrame.contentWindow;
         var doc = outerWindow.document;
 
-        // Look first to see if we already have the test case loaded
+        // clean up previous test if any
         var testCaseIframe = null;
         var frames = doc.getElementsByTagName("iframe");
         for (var i = 0; i < frames.length; i++)
         {
-            if (frames[i].getAttribute("src") == testURL)
-            {
-                testCaseIframe = frames[i];
-                break;
-            }
-        }
-        if (testCaseIframe) // yes, remove it
-        {
+            testCaseIframe = frames[i];
             testCaseIframe.parentNode.removeChild(testCaseIframe);
         }
+        
         testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
         testCaseIframe.setAttribute("src", "about:blank");
         var body = doc.getElementsByTagName("body")[0];
         body.appendChild(testCaseIframe);
         // now hook the load event, so the next src= will trigger it.
-        var triggerTest = function(event)
+        var loadTestCase = function(event)
         {
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("load event "+event.target, event.target);
-            testCaseIframe.removeEventListener("load", triggerTest, true);
+            testCaseIframe.removeEventListener("load", loadTestCase, true);
             var testDoc = event.target;
             var win = testDoc.defaultView;
 
@@ -499,17 +493,21 @@ var TestRunner =
                 win.wrappedJSObject.FBTrace = window.FBTrace;
             else
                 win.FBTrace = window.FBTrace;
-
-            try
+            function runTestCase(event)
             {
-                win.runTest();
+            	win.removeEventListener('load', runTestCase, true);
+            	try
+            	{
+            		win.runTest();
+            	}
+            	catch (exc)
+            	{
+            		FBTest.sysout("runTest FAILS "+exc, exc);
+            	}
             }
-            catch (exc)
-            {
-                FBTest.sysout("runTest FAILS "+exc, exc);
-            }
+            win.addEventListener('load', runTestCase, true);
         }
-        testCaseIframe.addEventListener("load", triggerTest, true);
+        testCaseIframe.addEventListener("load", loadTestCase, true);
 
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);

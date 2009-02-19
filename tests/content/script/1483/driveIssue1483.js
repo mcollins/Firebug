@@ -1,16 +1,16 @@
-function openNotOpenClose()
+function issue1483()
 {
-    var openNotOpenCloseURL = FBTest.getHTTPURLBase()+"firebug/NeverOpenFirebugOnThisPage.html";
+    var issue1483URL = FBTest.getHTTPURLBase()+"script/1483/issue1483.html";
 
 
-    var openNotOpenClose = new FBTest.Firebug.TestHandlers("openNotOpenClose");
+    var issue1483 = new FBTest.Firebug.TestHandlers("issue1483");
 
     // Actual test operations
-    openNotOpenClose.add( function onNewPage(event)
+    issue1483.add( function onNewPage(event)
     {
         FBTrace.sysout("onNewPage starts", event);
         FBTest.ok(!FBTest.Firebug.isFirebugOpen(), "Firebug should be closed");
-        openNotOpenClose.done();
+        issue1483.done();
     });
 
     var testListener =
@@ -24,7 +24,7 @@ function openNotOpenClose()
 
             hideUI: function(broswer, context)  // called when the Firebug UI comes down
             {
-                FBTest.ok(openNotOpenClose.wasFirebugOpen, "hideUI can be called only if Firebug was open");
+                FBTest.ok(issue1483.wasFirebugOpen, "hideUI can be called only if Firebug was open");
             },
         },
         moduleListener:
@@ -32,12 +32,12 @@ function openNotOpenClose()
             showContext: function(browser, context)
             {
                     FBTest.ok( !(context), "showContext should be called with null context");
-                    FBTrace.sysout("openNotOpenClose showContext "+(!context), context);
+                    FBTrace.sysout("issue1483 showContext "+(!context), context);
             },
         }
     };
-    openNotOpenClose.wasFirebugOpen = FBTest.Firebug.isFirebugOpen();
-    openNotOpenClose.fireOnNewPage("onNewPage", openNotOpenCloseURL, testListener);
+    issue1483.wasFirebugOpen = FBTest.Firebug.isFirebugOpen();
+    issue1483.fireOnNewPage("onNewPage", issue1483URL, testListener);
 }
 
 //------------------------------------------------------------------------
@@ -45,7 +45,7 @@ function openNotOpenClose()
 
 function runTest()
 {
-    initialize();
+	FBTrace.sysout("1483 runTest starts");
 
     if (FBTest.FirebugWindow)
         FBTest.ok(true, "We have the Firebug Window: "+FBTest.FirebugWindow.location);
@@ -53,5 +53,5 @@ function runTest()
         FBTest.ok(false, "No Firebug Window");
 
     // Auto run sequence
-    openNotOpenClose();
+    issue1483();
 }
