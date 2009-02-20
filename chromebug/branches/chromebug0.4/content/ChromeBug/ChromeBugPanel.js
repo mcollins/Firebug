@@ -2008,7 +2008,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         var w = window.screen.availWidth;
         var h = window.screen.availHeight;
         features = "outerWidth="+w+","+"outerHeight="+h;
-        var params = "";
+        var args = 
+        {
+        		Firebug: Firebug,
+        		FBL: FBL,
+        }
         var xpcomExplorerURL = "chrome://chromebug/content/xpcomExplorer.xul";
         var chromeURI = iosvc.newURI(xpcomExplorerURL, null, null);
         try
@@ -2024,7 +2028,8 @@ Firebug.Chromebug = extend(Firebug.Module,
             prefs.addObserver("toolkit",  this.cleanUpXULExplorer, false);
             prefs.addObserver("javascript", this.avoidStrict, false);
             //prefs.clearUserPref("toolkit.defaultChromeURI"); // avoid XULExplorer popups
-            this.xpcomExplorer = openWindow('xpcomExplorer',xpcomExplorerURL, features, params);
+            FBTrace.sysout("opening XPCOMExplers with args ", args);
+            this.xpcomExplorer = openWindow('xpcomExplorer',xpcomExplorerURL, features, args);
         }
         else
             throw new Error("Could not find "+xpcomExplorerURL);
