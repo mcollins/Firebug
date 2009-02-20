@@ -73,19 +73,28 @@ var CategoryList = domplate(
         }
     },
 
-    open: function(row)
+    expandCategory: function(row)
     {
-        if (!hasClass(row, "opened"))
+        if (hasClass(row, "testCategoryRow"))
+            this.toggleRow(row, true);
+    },
+
+    collapseCategory: function(row)
+    {
+        if (hasClass(row, "testCategoryRow", "opened"))
             this.toggleRow(row);
     },
 
-    toggleRow: function(row)
+    toggleRow: function(row, forceOpen)
     {
-        var category = row.repObject;
+        var opened = hasClass(row, "opened");
+        if (opened && forceOpen)
+            return;
 
         toggleClass(row, "opened");
         if (hasClass(row, "opened")) 
         {
+            var category = row.repObject;
             var infoBodyRow = this.categoryBodyTag.insertRows({category: category}, row)[0];
             infoBodyRow.repObject = category;
             this.initBody(infoBodyRow);
@@ -109,6 +118,59 @@ var CategoryList = domplate(
             row = row.nextSibling;
         }
     },
+
+    // Firebug rep support
+    supportsObject: function(category, type)
+    {
+        return category instanceof Category;
+    },
+
+    browseObject: function(category, context)
+    {
+        return false;
+    },
+
+    getRealObject: function(category, context)
+    {
+        return category;
+    },
+
+    // Context menu
+    getContextMenuItems: function(category, target, context)
+    {
+        var items = [];
+
+        items.push({
+          label: $STR("test.cmd.Expand_All"),
+          nol10n: true,
+          command: bindFixed(this.onExpandAll, this, category)
+        });
+
+        items.push({
+          label: $STR("test.cmd.Collapse_All"),
+          nol10n: true,
+          command: bindFixed(this.onCollapseAll, this, category)
+        });
+
+        return items;
+    },
+
+    // Commands
+    onExpandAll: function(category)
+    {
+        var table = getAncestorByClass(category.row, "categoryTable");
+        var rows = cloneArray(table.firstChild.childNodes);
+        for (var i=0; i<rows.length; i++)
+            this.expandCategory(rows[i]);
+    },
+
+    onCollapseAll: function(category)
+    {
+        var table = getAncestorByClass(category.row, "categoryTable");
+        var rows = cloneArray(table.firstChild.childNodes);
+        for (var i=0; i<rows.length; i++)
+            this.collapseCategory(rows[i]);
+    }
 });
 
 //-------------------------------------------------------------------------------------------------
@@ -181,13 +243,28 @@ var TestList = domplate(
         }
     },
 
+    expandTest: function(row)
+    {
+        if (hasClass(row, "testListRow"))
+            this.toggleRow(row, true);
+    },
+
+    collapseTest: function(row)
+    {
+        if (hasClass(row, "testListRow", "opened"))
+            this.toggleRow(row);
+    },
+
     toggleRow: function(row)
     {
-        var test = row.repObject;
+        var opened = hasClass(row, "opened");
+        if (opened && forceOpen)
+            return;
 
         toggleClass(row, "opened");
         if (hasClass(row, "opened")) 
         {
+            var test = row.repObject;
             var infoBodyRow = this.rowBodyTag.insertRows({test: test}, row)[0];
             infoBodyRow.repObject = test;
             this.initBody(infoBodyRow);
@@ -215,6 +292,25 @@ var TestList = domplate(
         }
     },
 });
+
+// ************************************************************************************************
+// Category (list of related tests)
+
+function Category(name)
+{
+    this.name = name;
+    this.tests = [];
+}
+
+// ************************************************************************************************
+// Test
+
+function Test(category, uri, desc)
+{
+    this.category = category;
+    this.uri = uri;
+    this.desc = desc;
+}
 
 // ************************************************************************************************
 }

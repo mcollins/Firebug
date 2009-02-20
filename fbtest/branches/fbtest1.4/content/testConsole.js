@@ -31,7 +31,7 @@ var TestConsole =
 {
     // These are set when a testList.html is loaded.
     baseURI: null,
-    testCategories: null,
+    categories: null,
 
     initialize: function()
     {
@@ -50,6 +50,8 @@ var TestConsole =
             // Register strings so, Firebug's localization APIs can be used.
             if (Firebug.registerStringBundle)
                 Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
+
+            Firebug.registerRep(CategoryList);
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
@@ -133,21 +135,14 @@ var TestConsole =
                 // Create category list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
                 var map = [];
-                self.testCategories = [];
+                self.categories = [];
                 for (var i=0; i<win.testList.length; i++) 
                 {
                     var test = win.testList[i];
                     var category = map[test.category];
                     if (!category)
-                        self.testCategories.push(category = map[test.category] = 
-                            {name: test.category, tests: []});
-
-                    category.tests.push({
-                        parent: category,
-                        category: test.category,
-                        uri: test.uri,
-                        desc: test.desc
-                    });
+                        self.categories.push(category = map[test.category] = new Category(test.category));
+                    category.tests.push(new Test(category, test.uri, test.desc));
                 }
 
                 // Restart server with new home directory using a file: url
@@ -174,7 +169,7 @@ var TestConsole =
 
     refreshTestList: function()
     {
-        if (!this.testCategories)
+        if (!this.categories)
         {
             FBTrace.sysout("fbtest.refreshTestList; ERROR There are no tests.");
             return;
@@ -182,12 +177,12 @@ var TestConsole =
 
         var frame = $("consoleFrame");
         var consoleNode = $("testList", frame.contentDocument);
-        var table = CategoryList.tableTag.replace({categories: this.testCategories}, consoleNode);
+        var table = CategoryList.tableTag.replace({categories: this.categories}, consoleNode);
         var row = table.firstChild.firstChild;
 
-        for (var i=0; i<this.testCategories.length; i++)
+        for (var i=0; i<this.categories.length; i++)
         {
-            var category = this.testCategories[i];
+            var category = this.categories[i];
             category.row = row;
             row = row.nextSibling;
         }
@@ -198,8 +193,8 @@ var TestConsole =
     {
         // Join all tests from all categories.
         var testQueue = [];
-        for (var i=0; i<this.testCategories.length; i++)
-            testQueue.push.apply(testQueue, this.testCategories[i].tests);
+        for (var i=0; i<this.categories.length; i++)
+            testQueue.push.apply(testQueue, this.categories[i].tests);
 
         // ... and execute them as one test suite.
         TestRunner.runTests(testQueue);
@@ -414,7 +409,7 @@ var TestRunner =
 
             // Show the test within the UI (expand parent category)
             var parentCategory = this.currentTest.parent;
-            CategoryList.open(parentCategory.row);
+            CategoryList.expandCategory(parentCategory.row);
             scrollIntoCenterView(this.currentTest.row);
 
             // Remove previous results (if any).
