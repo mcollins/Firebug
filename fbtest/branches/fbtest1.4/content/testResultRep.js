@@ -1,11 +1,12 @@
 /* See license.txt for terms of usage */
 
+FBTestApp.ns(function() { with (FBL) {
+
 // ************************************************************************************************
 // Shorcuts and Services
+
 var Cc = Components.classes;
 var Ci = Components.interfaces;
-
-with (FBL) {
 
 // ************************************************************************************************
 // Localization
@@ -46,7 +47,7 @@ function $FB_STR(name)
  * Trace Console window. Expandable and collapsible logic associated with each
  * result is also implemented by this object.
  */
-var TestResultRep = domplate(
+FBTestApp.TestResultRep = domplate(
 {
     tableTag:
         TABLE({"class": "testResultTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
@@ -262,7 +263,7 @@ var TestResultRep = domplate(
  * be very useful to have a TabView widget defined in Firebug's Domplate
  * repository.
  */
-var TestResultTabView = domplate(
+FBTestApp.TestResultTabView = domplate(
 {
     listeners: [],
 
@@ -553,7 +554,7 @@ var ParseErrorRep = domplate(
 /**
  * This object represents a test-result.
  */
-var TestResult = function(win, pass, msg, expected, result)
+FBTestApp.TestResult = function(win, pass, msg, expected, result)
 {
     var location = win.location.href;
     this.fileName = location.substr(location.lastIndexOf("/") + 1);
@@ -584,5 +585,5 @@ function clean( str )
 }
 
 // ************************************************************************************************
-}
+}});
 

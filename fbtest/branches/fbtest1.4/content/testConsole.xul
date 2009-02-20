@@ -18,9 +18,7 @@
         title="Firebug Test Console XUL Window"
         width="640" height="480"
         screenX="10" screenY="10"
-        persist="screenX screenY width height sizemode"
-        onload="TestConsole.initialize()"
-        onunload="TestConsole.shutdown()">
+        persist="screenX screenY width height sizemode">
 
     <!-- Firefox -->
     <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
@@ -37,6 +35,7 @@
     <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
 
+    <script type="application/x-javascript" src="chrome://fbtest/content/testCore.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
@@ -48,10 +47,10 @@
     </stringbundleset>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_runAll" oncommand="TestConsole.onRunAll()"/>
-        <command id="cmd_stopTest" oncommand="TestConsole.onStop()"/>
+        <command id="cmd_runAll" oncommand="FBTestApp.TestConsole.onRunAll()"/>
+        <command id="cmd_stopTest" oncommand="FBTestApp.TestConsole.onStop()"/>
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
-        <command id="cmd_openTestList" oncommand="TestConsole.onOpenTestList()"/>
+        <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
     </commandset>
 
     <keyset id="mainKeyset">

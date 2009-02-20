@@ -1,5 +1,7 @@
 /* See license.txt for terms of usage */
 
+FBTestApp.ns(function() { with (FBL) {
+
 // ************************************************************************************************
 // Test Console Implementation
 
@@ -22,12 +24,10 @@ var serverPort = 7080;
 
 // ************************************************************************************************
 
-with (FBL) {
-
 /**
  * This object represents main Test Console implementation.
  */
-var TestConsole =
+FBTestApp.TestConsole =
 {
     // These are set when a testList.html is loaded.
     baseURI: null,
@@ -41,17 +41,13 @@ var TestConsole =
                 FBTrace.sysout("fbtest.TestConsole.initializing");
 
             var args = window.arguments[0];
-            var FirebugWindow = args.FirebugWindow;
-            FBTrace = FirebugWindow.FBTrace;
-            Firebug = FirebugWindow.Firebug;
-            FBTest.FirebugWindow = FirebugWindow;
+            FBTest.FirebugWindow = args.FirebugWindow;
+
             gFindBar = document.getElementById("FindToolbar");
 
             // Register strings so, Firebug's localization APIs can be used.
             if (Firebug.registerStringBundle)
                 Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
-
-            Firebug.registerRep(CategoryList);
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
@@ -141,8 +137,12 @@ var TestConsole =
                     var test = win.testList[i];
                     var category = map[test.category];
                     if (!category)
-                        self.categories.push(category = map[test.category] = new Category(test.category));
-                    category.tests.push(new Test(category, test.uri, test.desc));
+                    {
+                        self.categories.push(category = map[test.category] =
+                            new FBTestApp.Category(test.category));
+                    }
+
+                    category.tests.push(new FBTestApp.Test(category, test.uri, test.desc));
                 }
 
                 // Restart server with new home directory using a file: url
@@ -177,7 +177,7 @@ var TestConsole =
 
         var frame = $("consoleFrame");
         var consoleNode = $("testList", frame.contentDocument);
-        var table = CategoryList.tableTag.replace({categories: this.categories}, consoleNode);
+        var table = FBTestApp.CategoryList.tableTag.replace({categories: this.categories}, consoleNode);
         var row = table.firstChild.firstChild;
 
         for (var i=0; i<this.categories.length; i++)
@@ -197,13 +197,13 @@ var TestConsole =
             testQueue.push.apply(testQueue, this.categories[i].tests);
 
         // ... and execute them as one test suite.
-        TestRunner.runTests(testQueue);
+        FBTestApp.TestRunner.runTests(testQueue);
     },
 
     onStop: function()
     {
-        TestRunner.testQueue = null;
-        TestRunner.testDone();
+        FBTestApp.TestRunner.testQueue = null;
+        FBTestApp.TestRunner.testDone();
     },
 
     onOpenTestList: function()
@@ -380,7 +380,7 @@ var TestServer =
 /**
  * Test runner is intended to run single tests or test suites.
  */
-var TestRunner =
+FBTestApp.TestRunner =
 {
     testQueue: null,
 
@@ -403,13 +403,13 @@ var TestRunner =
         try
         {
             this.currentTest = testObj;
-            this.currentTest.path = TestConsole.baseURI + testObj.uri;
+            this.currentTest.path = FBTestApp.TestConsole.baseURI + testObj.uri;
             this.currentTest.results = [];
             this.currentTest.error = false;
 
             // Show the test within the UI (expand parent category)
-            var parentCategory = this.currentTest.parent;
-            CategoryList.expandCategory(parentCategory.row);
+            var parentCategory = this.currentTest.category;
+            FBTestApp.CategoryList.expandCategory(parentCategory.row);
             scrollIntoCenterView(this.currentTest.row);
 
             // Remove previous results (if any).
@@ -490,15 +490,15 @@ var TestRunner =
                 win.FBTrace = window.FBTrace;
             function runTestCase(event)
             {
-            	win.removeEventListener('load', runTestCase, true);
-            	try
-            	{
-            		win.runTest();
-            	}
-            	catch (exc)
-            	{
-            		FBTest.sysout("runTest FAILS "+exc, exc);
-            	}
+                win.removeEventListener('load', runTestCase, true);
+                try
+                {
+                    win.runTest();
+                }
+                catch (exc)
+                {
+                    FBTest.sysout("runTest FAILS "+exc, exc);
+                }
             }
             win.addEventListener('load', runTestCase, true);
         }
@@ -548,10 +548,10 @@ var TestRunner =
             var infoBodyRow = this.currentTest.row.nextSibling;
             var table = FBL.getElementByClass(infoBodyRow, "testResultTable");
             if (!table)
-                table = TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
+                table = FBTestApp.TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
 
             var tbody = table.firstChild;
-            result.row = TestResultRep.resultTag.insertRows(
+            result.row = FBTestApp.TestResultRep.resultTag.insertRows(
                 {results: [result]}, tbody.lastChild ? tbody.lastChild : tbody)[0];
         }
 
@@ -666,33 +666,33 @@ var TestSummary =
 /**
  * Unit Test APIs intended to be used within test-file scope.
  */
-var FBTest =
+window.FBTest = //xxxHonza: the object should not be global.
 {
     progress: function(msg)
     {
-        TestRunner.appendResult(new TestResult(window, true, "progress: "+msg));
+        FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
         TestSummary.setMessage(msg);
     },
 
     ok: function(pass, msg)
     {
-        TestRunner.appendResult(new TestResult(window, pass, msg));
+        FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, pass, msg));
     },
 
     testDone: function()
     {
-        TestRunner.testDone();
+        FBTestApp.TestRunner.testDone();
     },
 
     compare: function(expected, actuall, msg)
     {
-        TestRunner.appendResult(new TestResult(window, expected == actuall,
-            msg, expected, actuall));
+        FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, 
+            expected == actuall, msg, expected, actuall));
     },
 
     sysout: function(text, obj)
     {
-        TestRunner.sysout(text, obj);
+        FBTestApp.TestRunner.sysout(text, obj);
     },
 
     click: function(node)
@@ -719,7 +719,7 @@ var FBTest =
 
     loadScript: function(scriptURI, scope)
     {
-        return loader.loadSubScript(TestConsole.baseURI + scriptURI, scope);
+        return loader.loadSubScript(FBTestApp.TestConsole.baseURI + scriptURI, scope);
     },
 
     getHTTPURLBase: function()
@@ -762,4 +762,4 @@ var FBTest =
 };
 
 // ************************************************************************************************
-}
+}});

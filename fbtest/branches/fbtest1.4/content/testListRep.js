@@ -1,14 +1,14 @@
 /* See license.txt for terms of usage */
 
+FBTestApp.ns(function() { with (FBL) {
+
 // ************************************************************************************************
 // Test List Domplate repository.
-
-with (FBL) {
 
 /**
  * Domplate templates in this file are used to generate list of registered tests.
  */
-var CategoryList = domplate(
+FBTestApp.CategoryList = domplate(Firebug.Rep,
 {
     tableTag:
         TABLE({"class": "categoryTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
@@ -55,7 +55,7 @@ var CategoryList = domplate(
             if (row) 
             {
                 cancelEvent(event);
-                TestRunner.runTests(row.repObject.tests);
+                FBTestApp.TestRunner.runTests(row.repObject.tests);
             }
         }
     },
@@ -109,8 +109,8 @@ var CategoryList = domplate(
     initBody: function(infoBodyRow)
     {
         var category = infoBodyRow.repObject;
-        var table = TestList.tag.replace({}, infoBodyRow.firstChild);
-        var row = TestList.rowTag.insertRows({tests: category.tests}, table.firstChild)[0];
+        var table = FBTestApp.TestList.tag.replace({}, infoBodyRow.firstChild);
+        var row = FBTestApp.TestList.rowTag.insertRows({tests: category.tests}, table.firstChild)[0];
         for (var i=0; i<category.tests.length; i++)
         {
             var test = category.tests[i];
@@ -122,7 +122,7 @@ var CategoryList = domplate(
     // Firebug rep support
     supportsObject: function(category, type)
     {
-        return category instanceof Category;
+        return category instanceof FBTestApp.Category;
     },
 
     browseObject: function(category, context)
@@ -175,7 +175,7 @@ var CategoryList = domplate(
 
 //-------------------------------------------------------------------------------------------------
 
-var TestList = domplate(
+FBTestApp.TestList = domplate(
 {
     tag:
         TABLE({"class": "testListTable", cellpadding: 0, cellspacing: 0},
@@ -225,7 +225,7 @@ var TestList = domplate(
         {
             var row = getAncestorByClass(event.target, "testListRow");
             TestSummary.clear();
-            TestRunner.runTest(row.repObject);
+            FBTestApp.TestRunner.runTest(row.repObject);
             cancelEvent(event);
         }
     },
@@ -296,7 +296,7 @@ var TestList = domplate(
 // ************************************************************************************************
 // Category (list of related tests)
 
-function Category(name)
+FBTestApp.Category = function(name)
 {
     this.name = name;
     this.tests = [];
@@ -305,7 +305,7 @@ function Category(name)
 // ************************************************************************************************
 // Test
 
-function Test(category, uri, desc)
+FBTestApp.Test = function(category, uri, desc)
 {
     this.category = category;
     this.uri = uri;
@@ -313,5 +313,10 @@ function Test(category, uri, desc)
 }
 
 // ************************************************************************************************
-}
+// Registration
+
+Firebug.registerRep(FBTestApp.CategoryList);
+
+// ************************************************************************************************
+}});
 

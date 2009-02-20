@@ -48,6 +48,8 @@
 
 const CC = Components.Constructor;
 const Cr = Components.results;
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
 /** True if debugging output is enabled, false otherwise. */
 var DEBUG = true; // non-const *only* so tweakable in server tests

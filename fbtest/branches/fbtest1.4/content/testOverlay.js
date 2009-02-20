@@ -7,7 +7,7 @@
  * This overlay is only intended to append a context menu into Firebug icon menu.
  * This menu is used to open the Test Console (test runner window).
  */
-var TestConsoleOverlay =
+var FirebugTestConsoleOverlay =
 {
     open: function(windowURL)
     {
