@@ -8,11 +8,12 @@ function runTest()
     openNewTab(localBaseUrl + "firebug/openOnLocalPage.html", function(win)
     {
         // Open Firebug UI and realod the page.
-        openFirebug();
+        openFirebug(); 
+        FBTrace.sysout("openOnLocalPage reloading");
         reload(function(win) 
         {
             FBTest.ok(isFirebugOpen(), "Firebug UI must be opened now.");
-            testDone("openOnLocalPage.DONE");
+            FBTest.testDone("openOnLocalPage.DONE");
         });
     });
 }
