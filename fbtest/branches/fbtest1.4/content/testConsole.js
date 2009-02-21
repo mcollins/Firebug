@@ -388,7 +388,7 @@ FBTestApp.TestRunner =
     {
         tests = cloneArray(tests);
 
-        TestSummary.clear();
+        FBTestApp.TestSummary.clear();
         TestProgress.start(tests.length);
 
         this.testQueue = tests;
@@ -563,7 +563,7 @@ FBTestApp.TestRunner =
         }
 
         // Update summary in the status bar.
-        TestSummary.append(result);
+        FBTestApp.TestSummary.append(result);
     },
 
     sysout: function(msg, obj)
@@ -624,7 +624,7 @@ var TestProgress =
 
 // ************************************************************************************************
 
-var TestSummary = 
+FBTestApp.TestSummary = 
 {
     results: [],
     passing: 0,
@@ -671,7 +671,7 @@ window.FBTest = //xxxHonza: the object should not be global.
     progress: function(msg)
     {
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
-        TestSummary.setMessage(msg);
+        FBTestApp.TestSummary.setMessage(msg);
     },
 
     ok: function(pass, msg)
@@ -725,6 +725,11 @@ window.FBTest = //xxxHonza: the object should not be global.
     getHTTPURLBase: function()
     {
         return TestServer.path;
+    },
+
+    getLocalURLBase: function()
+    {
+        return TestServer.chromeToUrl(FBTestApp.TestConsole.baseURI, true);
     },
 
     registerPathHandler: function(path, handler)

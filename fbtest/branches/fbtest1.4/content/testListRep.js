@@ -224,7 +224,7 @@ FBTestApp.TestList = domplate(
         if (isLeftClick(event))
         {
             var row = getAncestorByClass(event.target, "testListRow");
-            TestSummary.clear();
+            FBTestApp.TestSummary.clear();
             FBTestApp.TestRunner.runTest(row.repObject);
             cancelEvent(event);
         }
