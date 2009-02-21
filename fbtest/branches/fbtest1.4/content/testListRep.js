@@ -279,9 +279,9 @@ FBTestApp.TestList = domplate(
     initBody: function(infoBodyRow)
     {
         var test = infoBodyRow.repObject;
-        var table = TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
+        var table = FBTestApp.TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
         var tbody = table.firstChild;
-        var row = TestResultRep.resultTag.insertRows(
+        var row = FBTestApp.TestResultRep.resultTag.insertRows(
             {results: test.results}, tbody.lastChild ? tbody.lastChild : tbody)[0];
 
         for (var i=0; i<test.results.length; i++)

@@ -153,7 +153,7 @@ FBTestApp.TestResultRep = domplate(
     initInfoBody: function(infoBodyRow)
     {
         var result = infoBodyRow.repObject;
-        var TabView = TestResultTabView;
+        var TabView = FBTestApp.TestResultTabView;
         var tabViewNode = TabView.viewTag.replace({result: result}, infoBodyRow.firstChild, TabView);
 
         // Select default tab.
