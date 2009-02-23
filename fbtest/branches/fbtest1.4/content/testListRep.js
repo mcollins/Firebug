@@ -255,7 +255,7 @@ FBTestApp.TestList = domplate(
             this.toggleRow(row);
     },
 
-    toggleRow: function(row)
+    toggleRow: function(row, forceOpen)
     {
         var opened = hasClass(row, "opened");
         if (opened && forceOpen)
