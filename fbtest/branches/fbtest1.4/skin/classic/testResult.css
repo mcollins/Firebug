@@ -188,6 +188,17 @@
 
 /************************************************************************************************/
 
+.stackFrameLink {
+    color:blue;
+}
+
+.stackFrameLink:hover {
+    cursor:pointer;
+    text-decoration:underline;
+}
+
+/************************************************************************************************/
+
 /* Support for FBTraceConsole */ 
 .DBG_FBTEST {
     color: rgb(255, 165, 0);
