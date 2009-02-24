@@ -105,7 +105,7 @@ function initializeFBTestFirebug()
             throw new Error("TestHanders object requires element firebugTestElement in document "+document.title);
         this.windowLocation = new String(window.location);
 
-        cleanUpTestTabs();
+        cleanUpTestTabs();  // before we start
     };
 
     FBTest.Firebug.TestHandlers.prototype =
@@ -129,45 +129,50 @@ function initializeFBTestFirebug()
             this.progressElement.dispatchEvent(event);
         },
 
+        setFirebugHooks: function(url, extensionCallbacks)
+        {
+            var TabWatcher = FW.TabWatcher;
+            var scopeName = new String(window.location.toString());
+            var hookFirebug =
+            {
+                    dispatchName: "FBTest",
+                    initContext: function(context)
+                    {
+                        var uriString = context.getWindowLocation();
+                        if (uriString == url)
+                        {
+                            FBTrace.sysout("fireOnNewPage register extensionCallbacks in "+url, extensionCallbacks);
+                            if (extensionCallbacks.moduleListener) FW.Firebug.registerModule(extensionCallbacks.moduleListener);
+                            if (extensionCallbacks.uiListener) FW.Firebug.registerUIListener(extensionCallbacks.uiListener);
+                            if (extensionCallbacks.tabWatchListener) FW.TabWatcher.addListener(extensionCallbacks.tabWatchListener);
+                        }
+                        else
+                            FBTrace.sysout("fireOnNewPage initContext skip "+uriString +" != "+url);
+                        return null;
+                    },
+                    destroyContext: function(context)
+                    {
+                        if (window.closed)
+                            throw new Error("destroyContext called in scope of a closed window "+scopeName);
+                    }
+            };
+            FW.TabWatcher.addListener(hookFirebug);
+
+            window.addEventListener("unload", function cleanUp(event)
+            {
+                if (extensionCallbacks.moduleListener) FW.Firebug.unregisterModule(extensionCallbacks.moduleListener);
+                if (extensionCallbacks.uiListener) FW.Firebug.unregisterUIListener(extensionCallbacks.uiListener);
+                if (extensionCallbacks.tabWatchListener) FW.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
+                FW.TabWatcher.removeListener(hookFirebug);
+                FBTrace.sysout("FBTestFirebug unload removing extensionCallbacks event.target.location "+event.target.location);
+            }, true);
+        },
+
         // fooTest.fireOnNewPage("openFirebug", "http://getfirebug.com");
         fireOnNewPage: function(eventName, url, extensionCallbacks)
         {
             if (extensionCallbacks)
-            {
-                var TabWatcher = FW.TabWatcher;
-                var hookFirebug =
-                {
-                        dispatchName: "activationEnv",
-                        initContext: function(context)
-                        {
-                            var uriString = context.getWindowLocation();
-                            if (uriString == url)
-                            {
-                                FBTrace.sysout("fireOnNewPage register extensionCallbacks in "+url, extensionCallbacks);
-                                if (extensionCallbacks.moduleListener) FW.Firebug.registerModule(extensionCallbacks.moduleListener);
-                                if (extensionCallbacks.uiListener) FW.Firebug.registerUIListener(extensionCallbacks.uiListener);
-                                if (extensionCallbacks.tabWatchListener) FW.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
-                            }
-                            else
-                                FBTrace.sysout("fireOnNewPage initContext skip "+uriString +" != "+url);
-                            return null;
-                        },
-                        destroyContext: function(context)
-                        {
-                            if (context)
-                            {
-                                if (context.window.location == url)
-                                {
-                                    // At the point that destroyContext is called for the FirebugWindow window, this window is closed.
-
-                                }
-                                else
-                                    FBTrace.sysout("fireOnNewPage destroyContext skip "+(context?context.getName():"null context"));
-                            }
-                        }
-                };
-                FW.TabWatcher.addListener(hookFirebug);
-            }
+                this.setFirebugHooks(url, extensionCallbacks);
 
             var tabbrowser = FW.getBrowser();
 
@@ -180,7 +185,6 @@ function initializeFBTestFirebug()
             var testHandler = this;
             var onLoadURLInNewTab = function(event)
             {
-
                 var win = event.target;   // actually  tab XUL elt
                 FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
                 FW.getBrowser().selectedTab = win;
@@ -197,26 +201,6 @@ function initializeFBTestFirebug()
             //FBTrace.sysout("fireOnNewPage "+FW, FW);
 
             browser.addEventListener("load", onLoadURLInNewTab, true);
-            window.addEventListener("unload", function cleanUp()
-            {
-                FBTrace.sysout("_______________FBTestFirebug destroyContext, removing extensionCallbacks in "+url);
-                if (extensionCallbacks.moduleListener) FW.Firebug.unregisterModule(extensionCallbacks.moduleListener);
-                if (extensionCallbacks.uiListener) FW.Firebug.unregisterUIListener(extensionCallbacks.uiListener);
-                if (extensionCallbacks.tabWatchListener) FW.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
-                FBTrace.sysout("_____________________________ closing window "+window.location);
-            }, true);
-        },
-
-        cleanUpTestTabs: function()
-        {
-            var tabbrowser = FW.getBrowser();
-            for (var i = 0; i < tabbrowser.mTabs.length; i++)
-            {
-                var tab = tabbrowser.mTabs[i];
-                var firebugAttr = tab.getAttribute("firebug");
-                if (firebugAttr == "test")
-                    tabbrowser.removeTab(tab);
-            }
         },
 
         // function onEnablePanels(event) {...; fooTest.done();}
@@ -304,18 +288,21 @@ function reload(callback)
 
 function cleanUpTestTabs()
 {
-    FBTest.progress("clean up tabs");
- var tabbrowser = FBTest.FirebugWindow.getBrowser();
- for (var i = 0; i < tabbrowser.mTabs.length; i++)
- {
-     var tab = tabbrowser.mTabs[i];
+    if (FBTrace.DBG_FBTest)
+        FBTest.progress("clean up tabs");
 
-     var firebugAttr = tab.getAttribute("firebug");
-     FBTrace.sysout("cleanUpTestTabs on tab "+tab+" firebug: "+firebugAttr);
+    var tabbrowser = FBTest.FirebugWindow.getBrowser();
+    for (var i = 0; i < tabbrowser.mTabs.length; i++)
+    {
+        var tab = tabbrowser.mTabs[i];
 
-     if (firebugAttr == "test")
-         tabbrowser.removeTab(tab);
- }
+        var firebugAttr = tab.getAttribute("firebug");
+        if (FBTrace.DBG_FBTest)
+            FBTrace.sysout("cleanUpTestTabs on tab "+tab+" firebug: "+firebugAttr);
+
+        if (firebugAttr == "test")
+            tabbrowser.removeTab(tab);
+    }
 }
 
 function toggleFirebug()
