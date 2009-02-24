@@ -78,7 +78,6 @@ function openOpenCloseClose()
 function runTest()
 {
     FBTest.sysout("Activation.started");
-    initialize();
     FBTrace.sysout("activation.js FBTest", FBTest);
 
     if (FBTest.FirebugWindow)

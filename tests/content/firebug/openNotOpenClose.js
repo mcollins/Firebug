@@ -45,8 +45,6 @@ function openNotOpenClose()
 
 function runTest()
 {
-    initialize();
-
     if (FBTest.FirebugWindow)
         FBTest.ok(true, "We have the Firebug Window: "+FBTest.FirebugWindow.location);
     else
