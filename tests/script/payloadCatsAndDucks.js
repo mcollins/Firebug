@@ -25,4 +25,3 @@ var cat = function() {
 //
 //
 //@ sourceURL=res:/FireclipseTests/WebContent/payloadCatsAndDucks.js
-
