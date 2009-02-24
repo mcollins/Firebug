@@ -56,7 +56,7 @@ FBTestApp.TestConsole =
             if (!defaultTestList)
                 defaultTestList = "chrome://firebug/content/testList.html";
 
-            // Load default test list. The test list is built according to 
+            // Load default test list. The test list is built according to
             // a 'testList' variable and server started using a 'baseURI' variable.
             // Both variables must be present within the file.
             this.loadTestList(defaultTestList);
@@ -123,7 +123,7 @@ FBTestApp.TestConsole =
             {
                 self.baseURI = win.baseURI;
 
-                // If the baseURI isn't provided use the directory where testList.html 
+                // If the baseURI isn't provided use the directory where testList.html
                 // file is located.
                 if (!self.baseURI)
                     self.baseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
@@ -132,7 +132,7 @@ FBTestApp.TestConsole =
                 // (tests) since they come from untrusted content.
                 var map = [];
                 self.categories = [];
-                for (var i=0; i<win.testList.length; i++) 
+                for (var i=0; i<win.testList.length; i++)
                 {
                     var test = win.testList[i];
                     var category = map[test.category];
@@ -146,7 +146,7 @@ FBTestApp.TestConsole =
                 }
 
                 // Restart server with new home directory using a file: url
-                var serverBaseURI = TestServer.chromeToUrl(self.baseURI, true);  
+                var serverBaseURI = TestServer.chromeToUrl(self.baseURI, true);
                 TestServer.restart(serverBaseURI);
 
                 // Build new test list UI.
@@ -466,7 +466,7 @@ FBTestApp.TestRunner =
             testCaseIframe = frames[i];
             testCaseIframe.parentNode.removeChild(testCaseIframe);
         }
-        
+
         testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
         testCaseIframe.setAttribute("src", "about:blank");
         var body = doc.getElementsByTagName("body")[0];
@@ -540,7 +540,13 @@ FBTestApp.TestRunner =
 
     appendResult: function(result)
     {
-        this.currentTest.results.push(result);
+        if (this.currentTest)
+            this.currentTest.results.push(result);
+        else
+        {
+            FBTrace.sysout("test result came in after testDone!");
+            $("progressMessage").value = "test result came in after testDone!";
+        }
 
         // If the test is currently opened, append the result directly into the UI.
         if (hasClass(this.currentTest.row, "opened"))
@@ -624,7 +630,7 @@ var TestProgress =
 
 // ************************************************************************************************
 
-FBTestApp.TestSummary = 
+FBTestApp.TestSummary =
 {
     results: [],
     passing: 0,
@@ -646,6 +652,8 @@ FBTestApp.TestSummary =
     setMessage: function(message)
     {
         $("progressMessage").value = message;
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("FBTest Progress "+message);
     },
 
     clear: function()
@@ -686,7 +694,7 @@ window.FBTest = //xxxHonza: the object should not be global.
 
     compare: function(expected, actuall, msg)
     {
-        FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, 
+        FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
             expected == actuall, msg, expected, actuall));
     },
 
@@ -701,7 +709,7 @@ window.FBTest = //xxxHonza: the object should not be global.
             return node.click();
 
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
-        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0, 
+        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
             false, false, false, false, 0, null);
         return node.dispatchEvent(event);
     },
@@ -712,7 +720,7 @@ window.FBTest = //xxxHonza: the object should not be global.
             return node.click();
 
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
-        event.initMouseEvent("mousedown", true, true, doc.defaultView, 0, 0, 0, 0, 0, 
+        event.initMouseEvent("mousedown", true, true, doc.defaultView, 0, 0, 0, 0, 0,
             false, false, false, false, 0, null);
         return node.dispatchEvent(event);
     },
@@ -734,13 +742,13 @@ window.FBTest = //xxxHonza: the object should not be global.
 
     registerPathHandler: function(path, handler)
     {
-        return TestServer.getServer().registerPathHandler(path, function(metadata, response) 
+        return TestServer.getServer().registerPathHandler(path, function(metadata, response)
         {
-            try 
+            try
             {
                 handler.apply(null, [metadata, response]);
             }
-            catch (err) 
+            catch (err)
             {
                 FBTrace.sysout("FBTest.registerPathHandler EXCEPTION", err);
             }
