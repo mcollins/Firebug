@@ -9,6 +9,7 @@
  * @param: {String} desc        Short description of the test.
  */
 var testList = [
+    {category: "example", uri: "net/example.html",         desc: "Simple example of Fireunit APIs" },
     {category: "net", uri: "net/netPanel.html",            desc: "Existence of net panel" },
     {category: "net", uri: "net/netEntry.html",            desc: "Existence of a simple entry in net panel" },
     {category: "net", uri: "net/netEntryBody.html",        desc: "Net entry can be expanded and info body is there" }, 
