@@ -186,7 +186,8 @@ function initializeFBTestFirebug()
             var onLoadURLInNewTab = function(event)
             {
                 var win = event.target;   // actually  tab XUL elt
-                FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
+                if(FBTrace.DBG_FBTest)
+                    FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
                 FW.getBrowser().selectedTab = win;
                 //FBTrace.sysout("selectedTab ", FW.getBrowser().selectedTab);
                 var selectedBrowser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
@@ -211,10 +212,11 @@ function initializeFBTestFirebug()
         }
     };
     window.removeEventListener('load', initializeFBTestFirebug, true);
-    FBTrace.sysout("initializeFBTestFirebug complete", FBTest);
+    if(FBTrace.DBG_FBTest)
+        FBTrace.sysout("initializeFBTestFirebug complete", FBTest);
 }
 window.addEventListener("load", initializeFBTestFirebug, true);
-window.dump("FBTestFirebug.js\n");
+
 //-------------------------------------------------------------------------------------------------
 //Helpers
 
@@ -242,48 +244,48 @@ function expandNetTabs(panelNode, tabClass)
 
 function openNewTab(url, callback)
 {
- var tabbrowser = FW.getBrowser();
- var testHandler = this;
- var newTab = tabbrowser.addTab(url);
- newTab.setAttribute("firebug", "test");
- tabbrowser.selectedTab = newTab;
- var browser = tabbrowser.getBrowserForTab(newTab);
- var onLoadURLInNewTab = function(event)
- {
-     browser.removeEventListener('load', onLoadURLInNewTab, true);
-     setTimeout(function() { callback(browser.contentWindow); }, 100);
- }
- browser.addEventListener("load", onLoadURLInNewTab, true);
+    var tabbrowser = FW.getBrowser();
+    var testHandler = this;
+    var newTab = tabbrowser.addTab(url);
+    newTab.setAttribute("firebug", "test");
+    tabbrowser.selectedTab = newTab;
+    var browser = tabbrowser.getBrowserForTab(newTab);
+    var onLoadURLInNewTab = function(event)
+    {
+        browser.removeEventListener('load', onLoadURLInNewTab, true);
+        setTimeout(function() { callback(browser.contentWindow); }, 100);
+        }
+    browser.addEventListener("load", onLoadURLInNewTab, true);
 }
 
 function openURL(url, callback)
 {
- var tabbrowser = FW.getBrowser();
- var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
- var onLoadURL = function(event)
- {
-     browser.removeEventListener("load", onLoadURL, true);
-     callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
- }
- browser.addEventListener("load", onLoadURL, true);
+    var tabbrowser = FW.getBrowser();
+    var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
+    var onLoadURL = function(event)
+    {
+        browser.removeEventListener("load", onLoadURL, true);
+        callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+    }
+    browser.addEventListener("load", onLoadURL, true);
 
- // Reload content of the selected tab.
- tabbrowser.selectedBrowser.contentDocument.defaultView.location.href = url;
+    // Reload content of the selected tab.
+    tabbrowser.selectedBrowser.contentDocument.defaultView.location.href = url;
 }
 
 function reload(callback)
 {
- var tabbrowser = FW.getBrowser();
- var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
- var onLoadURL = function(event)
- {
-     browser.removeEventListener("load", onLoadURL, true);
-     callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
- }
- browser.addEventListener("load", onLoadURL, true);
+    var tabbrowser = FW.getBrowser();
+    var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
+    var onLoadURL = function(event)
+    {
+        browser.removeEventListener("load", onLoadURL, true);
+        callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+    }
+    browser.addEventListener("load", onLoadURL, true);
 
- // Reload content of the selected tab.
- tabbrowser.selectedBrowser.contentDocument.defaultView.location.reload();
+    // Reload content of the selected tab.
+    tabbrowser.selectedBrowser.contentDocument.defaultView.location.reload();
 }
 
 function cleanUpTestTabs()
@@ -307,52 +309,62 @@ function cleanUpTestTabs()
 
 function toggleFirebug()
 {
- FBTest.pressKey(123); // F12
+    FBTest.pressKey(123); // F12
 }
 
 function openFirebug()
 {
- if (!isFirebugOpen())
-     toggleFirebug();
+    if (!isFirebugOpen())
+        toggleFirebug();
 }
 
 function isFirebugOpen()
 {
- var fbContentBox = FW.document.getElementById("fbContentBox");
- var collapsedFirebug = fbContentBox.getAttribute("collapsed");
- return (collapsedFirebug == "true") ? false : true;
+    var fbContentBox = FW.document.getElementById("fbContentBox");
+    var collapsedFirebug = fbContentBox.getAttribute("collapsed");
+    return (collapsedFirebug == "true") ? false : true;
 }
 
 function clearCache()
 {
- var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
- cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
- cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
+    var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
+    cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
+    cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
 }
 
 function enableNetPanel(callback)
 {
- openFirebug();
- FW.Firebug.NetMonitor.setHostPermission(FW.FirebugContext, "enable");
- clearCache();
- if (callback)
-     reload(callback);
+    openFirebug();
+    FW.Firebug.NetMonitor.setHostPermission(FW.FirebugContext, "enable");
+    clearCache();
+    if (callback)
+        reload(callback);
 }
 
 function enableScriptPanel(callback)
 {
- openFirebug();
- FW.Firebug.Debugger.setHostPermission(FW.FirebugContext, "enable");
- clearCache();
- if (callback)
-     reload(callback);
+    openFirebug();
+    FW.Firebug.Debugger.setHostPermission(FW.FirebugContext, "enable");
+    clearCache();
+    if (callback)
+        reload(callback);
 }
 
 function enableConsolePanel(callback)
 {
- openFirebug();
- FW.Firebug.Console.setHostPermission(FW.FirebugContext, "enable");
- clearCache();
- if (callback)
-     reload(callback);
+    openFirebug();
+    FW.Firebug.Console.setHostPermission(FW.FirebugContext, "enable");
+    clearCache();
+    if (callback)
+        reload(callback);
 }
+
+function disableAllPanels()
+{
+    openFirebug();
+    FW.Firebug.Console.setHostPermission(FW.FirebugContext, "disable");
+    FW.Firebug.NetMonitor.setHostPermission(FW.FirebugContext, "disable");
+    FW.Firebug.Debugger.setHostPermission(FW.FirebugContext, "disable");
+    clearCache();
+}
+
