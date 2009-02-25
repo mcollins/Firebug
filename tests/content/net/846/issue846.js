@@ -1,7 +1,6 @@
 function runTest()
 {
     FBTest.sysout("issue846.START");
-    FBTest.loadScript("net/env.js", this);
 
     // Cache with responses
     var responses = [];
@@ -14,10 +13,10 @@ function runTest()
         response.write(responseText);
     });
 
-    openNewTab(basePath + "net/846/issue846.htm", function(win)
+    FBTestFirebug.openNewTab(basePath + "net/846/issue846.htm", function(win)
     {
         // Open Firebug UI and enable Net panel.
-        enableNetPanel(function(win)
+        FBTestFirebug.enableNetPanel(function(win)
         {
             win.wrappedJSObject.runTest(function(request)
             {
@@ -25,8 +24,8 @@ function runTest()
 
                 // Expand all requests and select respnose bodies.
                 var panel = FW.FirebugChrome.selectPanel("net");
-                expandNetRows(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
-                expandNetTabs(panel.panelNode, "netInfoResponseTab");
+                FBTestFirebug.expandElements(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
+                FBTestFirebug.expandElements(panel.panelNode, "netInfoResponseTab");
 
                 var netRows = FW.FBL.getElementsByClass(panel.panelNode, "netRow", "category-xhr",
                     "hasHeaders", "loaded");
@@ -43,9 +42,7 @@ function runTest()
                 }
 
                 // Finish test
-                cleanUpTestTabs();
-                FBTest.sysout("issue846.DONE");
-                FBTest.testDone();
+                FBTestFirebug.testDone("issue846.DONE");
             });
         });
     });

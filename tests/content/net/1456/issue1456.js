@@ -1,8 +1,6 @@
 function runTest()
 {
     FBTest.sysout("issue1456.START");
-    FBTest.loadScript("net/env.js", this);
-
     var responseText = "$('tb').shake();\n$('tb').value='Some Response';\n";
 
     // Server side handler.
@@ -16,10 +14,10 @@ function runTest()
         response.write(responseText);
     });
 
-    openNewTab(basePath + "net/1456/issue1456.htm", function(win)
+    FBTestFirebug.openNewTab(basePath + "net/1456/issue1456.htm", function(win)
     {
         // Open Firebug UI and enable Net panel.
-        enableNetPanel(function(win)
+        FBTestFirebug.enableNetPanel(function(win)
         {
             win.wrappedJSObject.runTest(function(response)
             {
@@ -28,8 +26,8 @@ function runTest()
                 // Expand the test request with params
                 var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
                 FBTest.sysout("fbtest.panelNode", panelNode);
-                expandNetRows(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
-                expandNetTabs(panelNode, "netInfoResponseTab");
+                FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
+                FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 
                 // The response must be displayed.
                 var responseBody = FW.FBL.getElementByClass(panelNode, "netInfoResponseText", 
@@ -40,9 +38,7 @@ function runTest()
                     FBTest.compare(responseText, responseBody.textContent, "Response must match.");
 
                 // Finish test
-                cleanUpTestTabs();
-                FBTest.sysout("issue1456.DONE");
-                FBTest.testDone();
+                FBTestFirebug.testDone("issue1456.DONE");
             })
         });
     })

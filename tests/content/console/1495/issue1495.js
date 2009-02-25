@@ -2,11 +2,9 @@
 function runTest()
 {
     FBTest.sysout("issue1495.START");
-    FBTest.loadScript("net/env.js", this);
-
-    openNewTab(basePath + "console/1495/issue1495.html", function(win)
+    FBTestFirebug.openNewTab(basePath + "console/1495/issue1495.html", function(win)
     {
-        enableConsolePanel(function()
+        FBTestFirebug.enableConsolePanel(function()
         {
             // Run test implemented on the page.
             win.wrappedJSObject.runTest(function(request)
@@ -20,7 +18,7 @@ function runTest()
                     var logRow = rows[i];
                     var clickTarget = FW.FBL.getElementByClass(logRow, "spyTitleCol", "spyCol");
                     FBTest.click(clickTarget);
-                    expandNetTabs(clickTarget, "netInfoResponseTab");
+                    FBTestFirebug.expandElements(clickTarget, "netInfoResponseTab");
 
                     var responseBody = FW.FBL.getElementByClass(logRow, "netInfoResponseText", "netInfoText");
                     FBTest.ok(responseBody, "Response tab must exist in");
@@ -29,9 +27,7 @@ function runTest()
                 }
 
                 // Finish test
-                cleanUpTestTabs();
-                FBTest.sysout("issue1495.DONE");
-                FBTest.testDone();
+                FBTestFirebug.testDone("issue1495.DONE");
             });
         });
     });

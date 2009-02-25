@@ -27,21 +27,21 @@ function openDisableEnableReload()
     openDisableEnableReload.add( function onNewPage(event)
     {
         FBTrace.sysout("onNewPage starts", event);
-        disableAllPanels();  // also opens firebug
+        FBTestFirebug.disableAllPanels();  // also opens firebug
 
         checkIsDisabled("console", FW.Firebug.Console);
         checkIsDisabled("net", FW.Firebug.NetMonitor);
         checkIsDisabled("script", FW.Firebug.Debugger);
 
-        enableScriptPanel();
-        enableNetPanel();
-        enableConsolePanel();
+        FBTestFirebug.enableScriptPanel();
+        FBTestFirebug.enableNetPanel();
+        FBTestFirebug.enableConsolePanel();
 
         checkIsEnabled("console", FW.Firebug.Console);
         checkIsEnabled("net", FW.Firebug.NetMonitor);
         checkIsEnabled("script", FW.Firebug.Debugger);
 
-        reload(function (){openDisableEnableReload.fire("reloaded");});
+        FBTestFirebug.reload(function (){openDisableEnableReload.fire("reloaded");});
     });
 
     openDisableEnableReload.add( function reloaded()

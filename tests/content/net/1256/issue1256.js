@@ -2,12 +2,10 @@
 function runTest()
 {
     FBTest.sysout("issue1256.START");
-    FBTest.loadScript("net/env.js", this);
-
-    openNewTab(basePath + "net/1256/issue1256.html", function(win)
+    FBTestFirebug.openNewTab(basePath + "net/1256/issue1256.html", function(win)
     {
         // Open Firebug UI and enable Net panel.
-        enableNetPanel(function(win) 
+        FBTestFirebug.enableNetPanel(function(win) 
         {
             FBTest.sysout("issue1256.onReload; " + win.location.href);
 
@@ -29,7 +27,7 @@ function runTest()
 
                 // Activate Params tab.
                 var netInfoRow = netRow.nextSibling;
-                expandNetTabs(netInfoRow, "netInfoPostTab");
+                FBTestFirebug.expandElements(netInfoRow, "netInfoPostTab");
 
                 var postTable = FW.FBL.getElementByClass(netInfoRow, "netInfoPostTable");
                 if (postTable)
@@ -41,16 +39,8 @@ function runTest()
                     FBTest.compare("1 + 2", paramValue, "The parameter value must be '1 + 2'");
                 }
 
-                endTest(win);
+                FBTestFirebug.testDone("issue1256.DONE");
             });
         });
     });
-}
-
-function endTest(win)
-{
-    // Finish test
-    cleanUpTestTabs();
-    FBTest.sysout("issue1256.DONE");
-    FBTest.testDone();
 }

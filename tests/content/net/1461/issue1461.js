@@ -2,18 +2,16 @@
 function runTest()
 {
     FBTest.sysout("issue1461.START");
-    FBTest.loadScript("net/env.js", this);
-
-    openNewTab(basePath + "net/1461/issue1461.html", function(win)
+    FBTestFirebug.openNewTab(basePath + "net/1461/issue1461.html", function(win)
     {
         // Open Firebug UI and enable Net panel.
-        enableNetPanel(function(win)
+        FBTestFirebug.enableNetPanel(function(win)
         {
             var panel = FW.FirebugChrome.selectPanel("net");
 
             var panelNode = FW.FirebugContext.getPanel("net").panelNode;
-            expandNetRows(panelNode, "netRow", "category-html", "hasHeaders", "loaded");
-            expandNetTabs(panelNode, "netInfoResponseTab");
+            FBTestFirebug.expandElements(panelNode, "netRow", "category-html", "hasHeaders", "loaded");
+            FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 
             var responseBody = FW.FBL.getElementByClass(panelNode, "netInfoResponseText", 
                 "netInfoText");
@@ -27,15 +25,7 @@ function runTest()
             var index = responseBody.textContent.indexOf(partOfThePageSource);
             FBTest.ok(index != -1, "The proper response is there.");
 
-            testDone(win);
+            FBTestFirebug.testDone("issue1461.DONE");
         });
     });
-}
-
-function testDone(win)
-{
-    // Finish test
-    cleanUpTestTabs();
-    FBTest.sysout("issue1461.DONE");
-    FBTest.testDone();
 }

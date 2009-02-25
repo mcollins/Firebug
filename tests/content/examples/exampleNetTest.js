@@ -1,15 +1,12 @@
 // Test entry point (executed by FBTest) 
 function runTest()
 {
-    // Load helper script for net panel tests.
-    FBTest.loadScript("net/env.js", this);
-
-   
     // Open a manual test page.
-    openNewTab(FBTest.getHTTPURLBase() + "examples/exampleNetTest.html", function(win)
+    var urlBase = FBTest.getHTTPURLBase();
+    FBTestFirebug.openNewTab(urlBase + "examples/exampleNetTest.html", function(win)
     {
         // Open FB UI and enable Net panel.
-        enableNetPanel(function() 
+        FBTestFirebug.enableNetPanel(function() 
         {
             // Run asynchronous test on the page.
             win.wrappedJSObject.runTest(function(request)
@@ -22,7 +19,7 @@ function runTest()
 
                 // Finish test
                 //cleanUpTestTabs();
-                FBTest.testDone();
+                FBTestFirebug.testDone("Example Test DONE");
             })
         });
     })
