@@ -23,7 +23,7 @@ var chrome = window.parent.parent;
  */
 this.pressToggleFirebug = function(forceOpen)
 {
-    FBTest.progress("pressToggleFirebug");
+    //FBTest.progress("pressToggleFirebug");
 
     // Don't close if it's open and should stay open.
     if (forceOpen && this.isFirebugOpen())
@@ -156,8 +156,8 @@ this.reload = function(callback)
  */
 this.cleanUpTestTabs = function()
 {
-    if (FBTrace.DBG_FBTEST)
-        FBTest.progress("clean up tabs");
+    //if (FBTrace.DBG_FBTEST)
+    //    FBTest.progress("clean up tabs");
 
     var tabbrowser = FBTest.FirebugWindow.getBrowser();
     for (var i = 0; i < tabbrowser.mTabs.length; i++)
@@ -244,6 +244,14 @@ this.disableAllPanels = function()
     this.updateModelPermission(FW.Firebug.NetMonitor, null, "disable");
     this.updateModelPermission(FW.Firebug.Debugger, null, "disable");
     this.updateModelPermission(FW.Firebug.Console, null, "disable");
+}
+
+/**
+ * Select specific panel in the UI.
+ */
+this.selectPanel = function(panelName)
+{
+    FW.FirebugChrome.selectPanel(panelName);
 }
 
 // ************************************************************************************************
