@@ -324,12 +324,13 @@ this.TestHandlers.prototype =
                     var uriString = context.getWindowLocation();
                     if (uriString == url)
                     {
-                        FBTrace.sysout("fireOnNewPage register extensionCallbacks in "+url, extensionCallbacks);
+                        if (FBTrace.DBG_FBTEST)
+                            FBTrace.sysout("fireOnNewPage register extensionCallbacks in "+url, extensionCallbacks);
                         if (extensionCallbacks.moduleListener) FW.Firebug.registerModule(extensionCallbacks.moduleListener);
                         if (extensionCallbacks.uiListener) FW.Firebug.registerUIListener(extensionCallbacks.uiListener);
                         if (extensionCallbacks.tabWatchListener) FW.TabWatcher.addListener(extensionCallbacks.tabWatchListener);
                     }
-                    else
+                    else if (FBTrace.DBG_FBTEST)
                         FBTrace.sysout("fireOnNewPage initContext skip "+uriString +" != "+url);
                     return null;
                 },
@@ -347,7 +348,9 @@ this.TestHandlers.prototype =
             if (extensionCallbacks.uiListener) FW.Firebug.unregisterUIListener(extensionCallbacks.uiListener);
             if (extensionCallbacks.tabWatchListener) FW.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
             FW.TabWatcher.removeListener(hookFirebug);
-            FBTrace.sysout("FBTestFirebug unload removing extensionCallbacks event.target.location "+event.target.location);
+
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("FBTestFirebug unload removing extensionCallbacks event.target.location "+event.target.location);
         }, true);
     },
 
@@ -406,7 +409,8 @@ function initializeFBTestFirebug()
     FBTestFirebug = FBTest.Firebug;
     window.removeEventListener("load", initializeFBTestFirebug, true);
 
-    FBTrace.sysout("FBTest.Firebug; Namespace initialized", FBTest.Firebug);
+    if (FBTrace.DBG_FBTEST)
+        FBTrace.sysout("FBTest.Firebug; Namespace initialized", FBTest.Firebug);
 }
 
 // Make sure FBTest.Firebug namespace is initialized at the right time.
