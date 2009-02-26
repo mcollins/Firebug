@@ -446,9 +446,11 @@ FBTestApp.TestRunner =
     {
         if (!this.wrapAJSFile)
             this.wrapAJSFile = getResource("chrome://fbtest/content/wrapAJSFile.html");
-        var testURL = getDataURLForContent(new String(this.wrapAJSFile).replace("__replaceme__", jsURL), jsURL);
 
-        FBTrace.sysout("wrapJS converted "+jsURL, testURL);
+        var testURL = getDataURLForContent(new String(this.wrapAJSFile).replace("__replaceme__", jsURL), jsURL);
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("wrapJS converted "+jsURL, testURL);
+
         return testURL;
     },
 
@@ -507,7 +509,9 @@ FBTestApp.TestRunner =
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
         var docShell = this.getDocShellByDOMWindow(testCaseIframe);
-        FBTrace.sysout("iframe.docShell for "+testURL,  docShell);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("iframe.docShell for "+testURL,  docShell);
     },
 
     testDone: function()
@@ -579,19 +583,21 @@ FBTestApp.TestRunner =
 
     getDocShellByDOMWindow: function(domWindow)
     {
-       if (domWindow instanceof Components.interfaces.nsIInterfaceRequestor)
+        if (domWindow instanceof Ci.nsIInterfaceRequestor)
         {
-            var navi = domWindow.getInterface(Components.interfaces.nsIWebNavigation);
-            if (navi instanceof Components.interfaces.nsIDocShellTreeItem)
+            var navi = domWindow.getInterface(Ci.nsIWebNavigation);
+            if (navi instanceof Ci.nsIDocShellTreeItem)
             {
                 return navi;
             }
-            else
-                FBTrace.dumpStack("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
+            else if (FBTrace.DBG_FBTEST)
+            {
+                FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
+            }
         }
-        else
+        else if (FBTrace.DBG_FBTEST)
         {
-            FBTrace.dumpProperties("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
+            FBTrace.sysout("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
             FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+
                 (domWindow instanceof Ci.nsIDOMWindow));
         }
@@ -700,7 +706,8 @@ window.FBTest = //xxxHonza: the object should not be global.
 
     sysout: function(text, obj)
     {
-        FBTestApp.TestRunner.sysout(text, obj);
+        if (FBTrace.DBG_FBTEST)
+            FBTestApp.TestRunner.sysout(text, obj);
     },
 
     click: function(node)
