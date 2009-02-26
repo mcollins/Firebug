@@ -16,7 +16,7 @@ window.baseLocalPath = FBTest.getLocalURLBase();
 var chrome = window.parent.parent;
 
 // ************************************************************************************************
-// Firebug speicific APIs
+// Firebug specific APIs
 
 /**
  * Open/close Firebug UI. If forceOpen is true, Firebug is only opened if closed.
@@ -241,11 +241,9 @@ this.enableConsolePanel = function(callback)
 
 this.disableAllPanels = function()
 {
-    this.openFirebug(true);
     this.updateModelPermission(FW.Firebug.NetMonitor, null, "disable");
     this.updateModelPermission(FW.Firebug.Debugger, null, "disable");
     this.updateModelPermission(FW.Firebug.Console, null, "disable");
-    this.clearCache();
 }
 
 // ************************************************************************************************
