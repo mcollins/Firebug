@@ -12,7 +12,7 @@ function runTest()
     issue1425.add( function onNewPage(event)
     {
         var isOpen = FBTest.Firebug.isFirebugOpen();
-        FBTrace.sysout("onNewPage starts with isFirebugOpen:"+isOpen, event);
+        FBTest.sysout("onNewPage starts with isFirebugOpen:"+isOpen, event);
         if (!isOpen)
             FBTest.Firebug.pressToggleFirebug();
     });
@@ -82,7 +82,7 @@ function runTest()
                     break;
                 }
                 else
-                    FBTrace.sysout("trying row "+i+" "+line.textContent);
+                    FBTest.sysout("trying row "+i+" "+line.textContent);
             }
 
             // Check 1143
@@ -95,7 +95,7 @@ function runTest()
             }
             else
             {
-                FBTrace.sysout("Where is 1143 rows", rows);
+                FBTest.sysout("Where is 1143 rows", rows);
             }
 
             endTest();

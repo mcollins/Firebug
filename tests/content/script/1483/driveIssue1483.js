@@ -8,7 +8,7 @@ function issue1483()
     // Actual test operations
     issue1483.add( function onNewPage(event)
     {
-        FBTrace.sysout("onNewPage starts", event);
+        FBTest.sysout("onNewPage starts", event);
         FBTest.ok(!FBTest.Firebug.isFirebugOpen(), "Firebug should be closed");
         issue1483.done();
     });
@@ -32,7 +32,7 @@ function issue1483()
             showContext: function(browser, context)
             {
                     FBTest.ok( !(context), "showContext should be called with null context");
-                    FBTrace.sysout("issue1483 showContext "+(!context), context);
+                    FBTest.sysout("issue1483 showContext "+(!context), context);
             },
         }
     };
@@ -45,7 +45,7 @@ function issue1483()
 
 function runTest()
 {
-	FBTrace.sysout("1483 runTest starts");
+	FBTest.sysout("1483 runTest starts");
 
     if (FBTest.FirebugWindow)
         FBTest.ok(true, "We have the Firebug Window: "+FBTest.FirebugWindow.location);

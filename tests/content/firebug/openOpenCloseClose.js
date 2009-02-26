@@ -10,7 +10,7 @@ function openOpenCloseClose()
     // Actual test operations
     openOpenCloseClose.add( function onNewPage(event)
     {
-        FBTrace.sysout("onNewPage starts", event);
+        FBTest.sysout("onNewPage starts", event);
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(!isFirebugOpen, "Firebug starts closed");
 
@@ -77,7 +77,7 @@ function openOpenCloseClose()
 function runTest()
 {
     FBTest.sysout("Activation.started");
-    FBTrace.sysout("activation.js FBTest", FBTest);
+    FBTest.sysout("activation.js FBTest", FBTest);
 
     if (FBTest.FirebugWindow)
         FBTest.ok(true, "We have the Firebug Window: "+FBTest.FirebugWindow.location);

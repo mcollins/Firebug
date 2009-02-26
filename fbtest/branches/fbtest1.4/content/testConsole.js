@@ -540,10 +540,13 @@ FBTestApp.TestRunner =
                 win.wrappedJSObject.FBTest = window.FBTest;
             else
                 win.FBTest = window.FBTest;
-            if (win.wrappedJSObject)
+
+            //xxxHonza: Tracing from test files should be made through FBTest.sysout
+            /*if (win.wrappedJSObject)
                 win.wrappedJSObject.FBTrace = window.FBTrace;
             else
-                win.FBTrace = window.FBTrace;
+                win.FBTrace = window.FBTrace;*/
+
             function runTestCase(event)
             {
                 win.removeEventListener('load', runTestCase, true);

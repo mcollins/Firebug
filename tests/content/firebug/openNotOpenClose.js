@@ -8,7 +8,7 @@ function openNotOpenClose()
     // Actual test operations
     openNotOpenClose.add( function onNewPage(event)
     {
-        FBTrace.sysout("onNewPage starts", event);
+        FBTest.sysout("onNewPage starts", event);
         FBTest.ok(!FBTest.Firebug.isFirebugOpen(), "Firebug should be closed");
         openNotOpenClose.done();
     });
@@ -32,7 +32,7 @@ function openNotOpenClose()
             showContext: function(browser, context)
             {
                     FBTest.ok( !(context), "showContext should be called with null context");
-                    FBTrace.sysout("openNotOpenClose showContext "+(!context), context);
+                    FBTest.sysout("openNotOpenClose showContext "+(!context), context);
             },
         }
     };

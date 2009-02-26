@@ -6,7 +6,7 @@ function runTest()
     {
         // Open Firebug UI and realod the page.
         FBTestFirebug.openFirebug(); 
-        FBTrace.sysout("openOnLocalPage reloading");
+        FBTest.sysout("openOnLocalPage reloading");
         FBTestFirebug.reload(function(win) 
         {
             FBTest.ok(FBTestFirebug.isFirebugOpen(), "Firebug UI must be opened now.");
