@@ -66,7 +66,6 @@ function openOpenCloseClose()
     };
 
     // Now start the test.
-    FBTest.Firebug.setToKnownState();
     openOpenCloseClose.fireOnNewPage("onNewPage", openOpenCloseCloseURL, testListener);
 }
 

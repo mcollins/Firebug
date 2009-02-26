@@ -4,7 +4,7 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-var FBTestFirebug = function() { 
+var FBTestFirebug = function() {
 
 // ************************************************************************************************
 // Constants
@@ -23,7 +23,6 @@ var chrome = window.parent.parent;
  */
 this.pressToggleFirebug = function(forceOpen)
 {
-    FBTrace.sysout("pressToggleFirebug");
     FBTest.progress("pressToggleFirebug");
 
     // Don't close if it's open and should stay open.
@@ -36,6 +35,12 @@ this.pressToggleFirebug = function(forceOpen)
 this.openFirebug = function()
 {
     this.pressToggleFirebug(true);
+}
+
+this.closeFirebug = function()
+{
+    if (this.isFirebugOpen())
+        this.pressToggleFirebug();
 }
 
 /**
@@ -56,13 +61,20 @@ this.isFirebugOpen = function()
  */
 this.clearCache = function()
 {
-    var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
-    cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
-    cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
+    try
+    {
+        var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
+        cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
+        cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
+    }
+    catch(exc)
+    {
+        FBTrace.sysout("clearCache FAILS "+exc, exc);
+    }
 };
 
 /**
- * Finishes current test and prints info message (if any) to the status bar. 
+ * Finishes current test and prints info message (if any) to the status bar.
  * All test tabs are removed from the browser.
  */
 this.testDone = function(message)
@@ -78,7 +90,7 @@ this.testDone = function(message)
  */
 this.setToKnownState = function()
 {
-    // TODO
+    this.closeFirebugOnAllTabs();
 };
 
 // ************************************************************************************************
@@ -140,11 +152,11 @@ this.reload = function(callback)
 }
 
 /**
- * Closes all Firefox tabs that were opened becouse of test purposes.
+ * Closes all Firefox tabs that were opened because of test purposes.
  */
 this.cleanUpTestTabs = function()
 {
-    if (FBTrace.DBG_FBTest)
+    if (FBTrace.DBG_FBTEST)
         FBTest.progress("clean up tabs");
 
     var tabbrowser = FBTest.FirebugWindow.getBrowser();
@@ -153,7 +165,7 @@ this.cleanUpTestTabs = function()
         var tab = tabbrowser.mTabs[i];
 
         var firebugAttr = tab.getAttribute("firebug");
-        if (FBTrace.DBG_FBTest)
+        if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("cleanUpTestTabs on tab "+tab+" firebug: "+firebugAttr);
 
         if (firebugAttr == "test")
@@ -161,6 +173,26 @@ this.cleanUpTestTabs = function()
     }
 }
 
+
+/**
+ * Closes Firebug on all tabs
+ */
+this.closeFirebugOnAllTabs = function()
+{
+    if (FBTrace.DBG_FBTEST)
+        FBTest.progress("closeFirebugOnAllTabs");
+
+    var tabbrowser = FBTest.FirebugWindow.getBrowser();
+    for (var i = 0; i < tabbrowser.mTabs.length; i++)
+    {
+        var tab = tabbrowser.mTabs[i];
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("closeFirebugOnAllTabs on tab "+tab);
+        tabbrowser.selectedTab = tab;
+        this.closeFirebug();
+    }
+}
 // ************************************************************************************************
 // DOM Helpers
 
@@ -178,13 +210,13 @@ this.expandElements = function(panelNode, className) // className, className, ..
 // ************************************************************************************************
 // Firebug Panel Enablement.
 
-this.updateModelPermission = function(model, callback, permsission)
+this.updateModelPermission = function(model, callback, permission)
 {
     // Open Firebug UI
     this.pressToggleFirebug(true);
 
     // Enable specified model.
-    model.setHostPermission(FW.FirebugContext, permsission);
+    model.setHostPermission(FW.FirebugContext, permission);
 
     // Clear cache and reload.
     this.clearCache();
@@ -339,7 +371,7 @@ this.TestHandlers.prototype =
         var onLoadURLInNewTab = function(event)
         {
             var win = event.target;   // actually  tab XUL elt
-            if(FBTrace.DBG_FBTest)
+            if(FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
             FW.getBrowser().selectedTab = win;
             //FBTrace.sysout("selectedTab ", FW.getBrowser().selectedTab);
