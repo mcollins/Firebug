@@ -37,6 +37,8 @@ FBTestApp.TestConsole =
     {
         try
         {
+            this.initializeTracing();
+
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
 
@@ -84,11 +86,27 @@ FBTestApp.TestConsole =
         }
     },
 
+    initializeTracing: function()
+    {
+        Firebug.TraceModule.addListener(this.TraceListener);
+
+        // The tracing console can be already opened so, simulate onLoadConsole event.
+        var self = this;
+        iterateBrowserWindows("FBTraceConsole", function(win)
+        {
+            if (win.TraceConsole.prefDomain == "extensions.firebug")
+            {
+                self.TraceListener.onLoadConsole(win, null);
+                return true;
+            }
+        });
+    },
+
     shutdown: function()
     {
         TestServer.stop();
-
         Firebug.setPref(Firebug.prefDomain, "fbtest.defaultTestSuite", this.testListPath);
+        Firebug.TraceModule.removeListener(this.TraceListener);
     },
 
     loadTestList: function(testListPath)
@@ -225,6 +243,42 @@ FBTestApp.TestConsole =
                 .getURLSpecFromFile(filePicker.file);
 
             this.loadTestList(testListUrl);
+        }
+    }
+};
+
+// ************************************************************************************************
+
+FBTestApp.TestConsole.TraceListener = 
+{
+    // Called when console window is loaded.
+    onLoadConsole: function(win, rootNode)
+    {
+        var consoleFrame = win.document.getElementById("consoleFrame");
+        this.addStyleSheet(consoleFrame.contentDocument,
+            "chrome://fbtest/skin/traceConsole.css",
+            "fbTestStyles");
+    },
+
+    addStyleSheet: function(doc, uri, id)
+    {
+        if ($(id, doc))
+            return;
+
+        var styleSheet = createStyleSheet(doc, uri);
+        styleSheet.setAttribute("id", id);
+        addStyleSheet(doc, styleSheet);
+    },
+
+    // Called when a new message is logged in to the trace-console window.
+    onDump: function(message)
+    {
+        var index = message.text.indexOf("fbtest.");
+        if (index == 0)
+        {
+            message.text = message.text.substr("fbtest.".length);
+            message.text = trimLeft(message.text);
+            message.type = "DBG_FBTEST";
         }
     }
 };
