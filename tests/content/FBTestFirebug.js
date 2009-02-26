@@ -245,7 +245,7 @@ this.disableAllPanels = function()
  */
 this.selectPanel = function(panelName)
 {
-    FW.FirebugChrome.selectPanel(panelName);
+    return FW.FirebugChrome.selectPanel(panelName);
 }
 
 // ************************************************************************************************
