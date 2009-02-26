@@ -107,6 +107,8 @@ FBTestApp.TestConsole =
         TestServer.stop();
         Firebug.setPref(Firebug.prefDomain, "fbtest.defaultTestSuite", this.testListPath);
         Firebug.TraceModule.removeListener(this.TraceListener);
+
+        Firebug.unregisterRep(FBTestApp.CategoryList);
     },
 
     loadTestList: function(testListPath)
