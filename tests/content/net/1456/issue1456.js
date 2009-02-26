@@ -25,7 +25,6 @@ function runTest()
 
                 // Expand the test request with params
                 var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
-                FBTest.sysout("fbtest.panelNode", panelNode);
                 FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
                 FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 
