@@ -745,10 +745,13 @@ window.FBTest = //xxxHonza: the object should not be global.
     {
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
         FBTestApp.TestSummary.setMessage(msg);
+        FBTest.sysout("FBTest progress: "+msg);
     },
 
     ok: function(pass, msg)
     {
+    	if (!pass)
+    		 FBTest.sysout("FBTest FAILS "+msg);
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, pass, msg));
     },
 
@@ -757,16 +760,18 @@ window.FBTest = //xxxHonza: the object should not be global.
         FBTestApp.TestRunner.testDone();
     },
 
-    compare: function(expected, actuall, msg)
+    compare: function(expected, actual, msg)
     {
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
-            expected == actuall, msg, expected, actuall));
+            expected == actual, msg, expected, actual));
+        if (expected != actual)
+        	FBTest.sysout("FBTest FAILS "+msg);
     },
 
     sysout: function(text, obj)
     {
         if (FBTrace.DBG_FBTEST)
-            FBTestApp.TestRunner.sysout(text, obj);
+            FBTrace.sysout(text, obj);
     },
 
     click: function(node)
