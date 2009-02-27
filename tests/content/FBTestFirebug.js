@@ -248,6 +248,11 @@ this.selectPanel = function(panelName)
     return FW.FirebugChrome.selectPanel(panelName);
 }
 
+this.getSelectedPanel = function()
+{
+    return FW.FirebugChrome.getSelectedPanel();
+}
+
 // ************************************************************************************************
 // Panel Navigation
 
