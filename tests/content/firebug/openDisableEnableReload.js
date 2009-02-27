@@ -17,6 +17,8 @@ function runTest()
         checkIsDisabled("net", FW.Firebug.NetMonitor);
         checkIsDisabled("console", FW.Firebug.Console);
 
+        FBTest.progress("enableAndCheck");
+        
         // Enable and verify.
         enableAndCheck("script", FW.Firebug.Debugger);
         enableAndCheck("net", FW.Firebug.NetMonitor);
@@ -24,6 +26,7 @@ function runTest()
 
         FBTestFirebug.reload(function () 
         {
+        	FBTest.progress("reloaded, check isEnabled");
             // All panels must be still enabled.
             checkIsEnabled("script", FW.Firebug.Debugger);
             checkIsEnabled("net", FW.Firebug.NetMonitor);
