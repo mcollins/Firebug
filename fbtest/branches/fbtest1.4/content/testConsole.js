@@ -843,6 +843,16 @@ window.FBTest = //xxxHonza: the object should not be global.
             0);               //  in unsigned long charCodeArg);
         doc.documentElement.dispatchEvent(keyEvent);
     },
+
+    focus: function(node)
+    {
+        if (node.focus)
+            return node.focus();
+
+        var doc = node.ownerDocument, event = doc.createEvent("UIEvents");
+        event.initUIEvent("DOMFocusIn", true, true, doc.defaultView, 1);
+        return node.dispatchEvent(event);
+    },
 };
 
 // ************************************************************************************************
