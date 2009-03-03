@@ -240,6 +240,13 @@ this.disableAllPanels = function()
     this.updateModelState(FW.Firebug.Console, null, false);
 }
 
+this.enableAllPanels = function()
+{
+    this.updateModelState(FW.Firebug.NetMonitor, null, true);
+    this.updateModelState(FW.Firebug.Debugger, null, true);
+    this.updateModelState(FW.Firebug.Console, null, true);
+}
+
 /**
  * Select specific panel in the UI.
  */
