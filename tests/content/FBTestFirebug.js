@@ -158,16 +158,21 @@ this.cleanUpTestTabs = function()
     //FBTest.progress("clean up tabs");
 
     var tabbrowser = FBTest.FirebugWindow.getBrowser();
+    var removeThese = [];
     for (var i = 0; i < tabbrowser.mTabs.length; i++)
     {
         var tab = tabbrowser.mTabs[i];
 
         var firebugAttr = tab.getAttribute("firebug");
-        FBTest.sysout("cleanUpTestTabs on tab "+tab+" firebug: "+firebugAttr);
+
+        FBTest.sysout(i+"/"+tabbrowser.mTabs.length+" cleanUpTestTabs on tab "+tab+" firebug: "+firebugAttr);
 
         if (firebugAttr == "test")
-            tabbrowser.removeTab(tab);
+            removeThese.push(tab);
     }
+
+    for (var i = 0; i < removeThese.length; i++)
+            tabbrowser.removeTab(removeThese[i]);
 }
 
 
