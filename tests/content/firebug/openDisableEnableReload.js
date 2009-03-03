@@ -10,14 +10,17 @@ function runTest()
     FBTestFirebug.disableAllPanels();
     FBTestFirebug.openNewTab(basePath + "firebug/OpenFirebugOnThisPage.html", function(win)
     {
+        FBTest.progress("opened tab for "+win.location);
         FBTestFirebug.openFirebug();
 
+        FBTest.progress("Disable all panels and check them");
         // All panels must be disabled.
+        checkIsDisabled("console", FW.Firebug.Console);  // console must be disabled first
         checkIsDisabled("script", FW.Firebug.Debugger);
         checkIsDisabled("net", FW.Firebug.NetMonitor);
-        checkIsDisabled("console", FW.Firebug.Console);
 
-        FBTest.progress("enableAndCheck");
+
+        FBTest.progress("Enable all panels and check them");
 
         // Enable and verify.
         try
@@ -73,8 +76,11 @@ function checkIsEnabled(panelName, module)
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(enabled, "The "+name+" panel should be enabled");
     var collapsed = null;
+    FBTest.sysout(" module.disabledPanelPage.panelNode ", module.disabledPanelPage.panelNode)
     if (module.disabledPanelPage.panelNode)
         collapsed = module.disabledPanelPage.panelNode.getAttribute("collapsed");  // 'true' means hidden == enabled
+    else
+        collapsed = "true"; // no panelNode is equivalent to collapsed
     FBTest.compare(collapsed, "true", "The "+name+" should not have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare(icon+"", "on", "The "+name+" should be marked on the Firebug Statusbar Icon");
