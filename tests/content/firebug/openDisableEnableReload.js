@@ -18,15 +18,22 @@ function runTest()
         checkIsDisabled("console", FW.Firebug.Console);
 
         FBTest.progress("enableAndCheck");
-        
+
         // Enable and verify.
-        enableAndCheck("script", FW.Firebug.Debugger);
-        enableAndCheck("net", FW.Firebug.NetMonitor);
-        enableAndCheck("console", FW.Firebug.Console);
+        try 
+        {
+            enableAndCheck("script", FW.Firebug.Debugger);
+            enableAndCheck("net", FW.Firebug.NetMonitor);
+            enableAndCheck("console", FW.Firebug.Console);
+        }
+        catch (err)
+        {
+            FBTest.sysout("exception", err);
+        }
 
         FBTestFirebug.reload(function () 
         {
-        	FBTest.progress("reloaded, check isEnabled");
+            FBTest.progress("reloaded, check isEnabled");
             // All panels must be still enabled.
             checkIsEnabled("script", FW.Firebug.Debugger);
             checkIsEnabled("net", FW.Firebug.NetMonitor);
@@ -52,8 +59,8 @@ function checkIsDisabled(panelName, module)
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(!enabled, "The "+name+" panel should be disabled");
     var collapsed = null;
-    if (FW.Firebug.DisabledPanelPage.box)
-    	collapsed = FW.Firebug.DisabledPanelPage.box.getAttribute("collapsed");  // 'true' means hidden == enabled
+    if (module.disabledPanelPage.box)
+        collapsed = module.disabledPanelPage.box.getAttribute("collapsed");  // 'true' means hidden == enabled
     FBTest.ok(collapsed!="true", "The "+name+" should have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+name+" should NOT be marked on the Firebug Statusbar Icon");
@@ -65,7 +72,9 @@ function checkIsEnabled(panelName, module)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(enabled, "The "+name+" panel should be enabled");
-    var collapsed = FW.Firebug.DisabledPanelPage.box.getAttribute("collapsed");  // 'true' means hidden == enabled
+    var collapsed = null;
+    if (module.disabledPanelPage.box)
+        collapsed = module.disabledPanelPage.box.getAttribute("collapsed");  // 'true' means hidden == enabled
     FBTest.compare(collapsed, "true", "The "+name+" should not have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare(icon+"", "on", "The "+name+" should be marked on the Firebug Statusbar Icon");
