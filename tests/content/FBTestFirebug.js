@@ -204,13 +204,13 @@ this.expandElements = function(panelNode, className) // className, className, ..
 // ************************************************************************************************
 // Firebug Panel Enablement.
 
-this.updateModelPermission = function(model, callback, permission)
+this.updateModelState = function(model, callback, enable)
 {
     // Open Firebug UI
     this.pressToggleFirebug(true);
 
     // Enable specified model.
-    model.setHostPermission(FW.FirebugContext, permission);
+    model.setDefaultState(enable);
 
     // Clear cache and reload.
     this.clearCache();
@@ -220,24 +220,24 @@ this.updateModelPermission = function(model, callback, permission)
 
 this.enableNetPanel = function(callback)
 {
-    this.updateModelPermission(FW.Firebug.NetMonitor, callback, "enable");
+    this.updateModelState(FW.Firebug.NetMonitor, callback, true);
 }
 
 this.enableScriptPanel = function(callback)
 {
-    this.updateModelPermission(FW.Firebug.Debugger, callback, "enable");
+    this.updateModelState(FW.Firebug.Debugger, callback, true);
 }
 
 this.enableConsolePanel = function(callback)
 {
-    this.updateModelPermission(FW.Firebug.Console, callback, "enable");
+    this.updateModelState(FW.Firebug.Console, callback, true);
 }
 
 this.disableAllPanels = function()
 {
-    this.updateModelPermission(FW.Firebug.NetMonitor, null, "disable");
-    this.updateModelPermission(FW.Firebug.Debugger, null, "disable");
-    this.updateModelPermission(FW.Firebug.Console, null, "disable");
+    this.updateModelState(FW.Firebug.NetMonitor, null, false);
+    this.updateModelState(FW.Firebug.Debugger, null, false);
+    this.updateModelState(FW.Firebug.Console, null, false);
 }
 
 /**

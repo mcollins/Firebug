@@ -49,7 +49,7 @@ function checkIsDisabled(panelName, module)
 {
     var name = panelName.toUpperCase();
     var panel = FW.FirebugChrome.selectPanel(panelName);
-    var enabled = module.isHostEnabled(FW.FirebugContext);
+    var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(!enabled, "The "+name+" panel should be disabled");
     var collapsed = null;
     if (FW.Firebug.ModuleManagerPage.box)
@@ -63,7 +63,7 @@ function checkIsEnabled(panelName, module)
 {
     var name = panelName.toUpperCase();
     var panel = FW.FirebugChrome.selectPanel(panelName);
-    var enabled = module.isHostEnabled(FW.FirebugContext);
+    var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(enabled, "The "+name+" panel should be enabled");
     var collapsed = FW.Firebug.ModuleManagerPage.box.getAttribute("collapsed");  // 'true' means hidden == enabled
     FBTest.compare(collapsed, "true", "The "+name+" should not have the disabled message");
