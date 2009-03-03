@@ -6,8 +6,8 @@ function runTest()
 
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.openFirebug();
-        FW.Firebug.NetMonitor.setHostPermission(FW.FirebugContext, "enable");
-        FW.Firebug.Console.setHostPermission(FW.FirebugContext, "enable");
+        FBTestFirebug.enableNetPanel();
+        FBTestFirebug.enableConsolePanel();
         FBTestFirebug.clearCache();
 
         // Reload test page.

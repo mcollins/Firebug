@@ -19,7 +19,7 @@ function runTest()
             // The response must be displayed.
             FBTest.ok(responseBody, "Response tab must exist.");
             if (!responseBody)
-                return testDone(win);
+                return FBTestFirebug.testDone(win);
 
             var partOfThePageSource = "<h1>Test for Issue #1461</h1>";
             var index = responseBody.textContent.indexOf(partOfThePageSource);

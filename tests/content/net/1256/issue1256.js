@@ -21,7 +21,7 @@ function runTest()
 
                 FBTest.ok(netRow, "There must be just one xhr request.");
                 if (!netRow)
-                    return endTest(win);
+                    return FBTestFirebug.testDone();
 
                 FBTest.click(netRow);
 
