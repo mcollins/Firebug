@@ -41,7 +41,7 @@ function enableAndCheck(panelName, module)
 {
     var name = panelName.toUpperCase();
     FBTestFirebug.selectPanel(panelName);
-    FBTestFirebug.updateModelPermission(module, null, "enable");
+    FBTestFirebug.updateModelState(module, null, true);
     checkIsEnabled(panelName, module);
 }
 
