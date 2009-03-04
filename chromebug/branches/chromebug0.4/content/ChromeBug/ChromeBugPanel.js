@@ -1173,15 +1173,21 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (context)
             {
                 var pkg = this.restoreFilter(previousState, context);
-                if (pkg)
-                    this.stopRestoration(); // we got it all done
-                // else keep trying
+                 
+                this.stopRestoration();
 
+                var panelName = previousState.panelName;
+                var sourceLink = previousState.sourceLink;
                 // show the restored context, after we let the init finish
-                //setTimeout( function delayShowContext()
-                //{
-                //    Firebug.dispatch("showContext", [context.browser, context])
-                //});
+                setTimeout( function delayShowContext()
+                {
+                	if (sourceLink)
+                		FirebugChrome.select(sourceLink, panelName);
+                	else if (panelName)
+                		FirebugChrome.selectPanel(panelName);
+                	else
+                		FirebugChrome.selectPanel('trace');
+                });
             }
             // else keep trying
 
@@ -1567,6 +1573,11 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 delete hiddenWindow._chromebug.globalTagByScriptTag;
                 delete hiddenWindow._chromebug.jsContexts;
+                
+                // We turned on jsd to get initial values. Maybe we don't want it on
+                if (!Firebug.Debugger.isAlwaysEnabled())
+                	fbs.countContext(false); // connect to firebug-service
+              
             }
             else
                 FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in hiddenWindow, maybe the command line handler is broken\n");
@@ -2130,8 +2141,9 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
             Firebug.Console.log(FirebugContext, FirebugContext);
         Firebug.Console.closeGroup(FirebugContext, true);
-    }
-
+    },
+    
+    
 });
 
 
