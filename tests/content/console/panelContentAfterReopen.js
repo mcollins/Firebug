@@ -24,7 +24,7 @@ function runTest()
             var logRow = FW.FBL.getElementByClass(panelNode, "logRow logRow-log");
             var node = FW.FBL.getElementByClass(panelNode, "objectBox objectBox-text");
             FBTest.compare("Hello From Test!", node.textContent, "The log must be still there.");
-            //FBTestFirebug.testDone("panelContentAfterReopen.DONE");
+            FBTestFirebug.testDone("panelContentAfterReopen.DONE");
         });
     });
 }
