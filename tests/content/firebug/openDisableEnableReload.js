@@ -19,7 +19,6 @@ function runTest()
         checkIsDisabled("script", FW.Firebug.Debugger);
         checkIsDisabled("net", FW.Firebug.NetMonitor);
 
-
         FBTest.progress("Enable all panels and check them");
 
         // Enable and verify.
@@ -61,10 +60,7 @@ function checkIsDisabled(panelName, module)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(!enabled, "The "+name+" panel should be disabled");
-    var collapsed = null;
-    if (module.disabledPanelPage.panelNode)
-        collapsed = module.disabledPanelPage.panelNode.getAttribute("collapsed");  // 'true' means hidden == enabled
-    FBTest.ok(collapsed!="true", "The "+name+" should have the disabled message");
+    FBTest.ok(module.disabledPanelPage.box, "The "+name+" should have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+name+" should NOT be marked on the Firebug Statusbar Icon");
 }
@@ -75,13 +71,7 @@ function checkIsEnabled(panelName, module)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(enabled, "The "+name+" panel should be enabled");
-    var collapsed = null;
-    FBTest.sysout(" module.disabledPanelPage.panelNode ", module.disabledPanelPage.panelNode)
-    if (module.disabledPanelPage.panelNode)
-        collapsed = module.disabledPanelPage.panelNode.getAttribute("collapsed");  // 'true' means hidden == enabled
-    else
-        collapsed = "true"; // no panelNode is equivalent to collapsed
-    FBTest.compare(collapsed, "true", "The "+name+" should not have the disabled message");
+    FBTest.ok(!module.disabledPanelPage.box, "true", "The "+name+" should not have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare(icon+"", "on", "The "+name+" should be marked on the Firebug Statusbar Icon");
 }
