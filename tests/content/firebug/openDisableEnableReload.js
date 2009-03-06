@@ -60,7 +60,7 @@ function checkIsDisabled(panelName, module)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(!enabled, "The "+name+" panel should be disabled");
-    FBTest.ok(module.disabledPanelPage.box, "The "+name+" should have the disabled message");
+    FBTest.ok(panel.disabledBox, "The "+name+" should have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+name+" should NOT be marked on the Firebug Statusbar Icon");
 }
@@ -71,7 +71,7 @@ function checkIsEnabled(panelName, module)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(enabled, "The "+name+" panel should be enabled");
-    FBTest.ok(!module.disabledPanelPage.box, "true", "The "+name+" should not have the disabled message");
+    FBTest.ok(!panel.disabledBox, "true", "The "+name+" should not have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare(icon+"", "on", "The "+name+" should be marked on the Firebug Statusbar Icon");
 }
