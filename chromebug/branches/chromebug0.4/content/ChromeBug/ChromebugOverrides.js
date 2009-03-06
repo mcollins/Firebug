@@ -2,10 +2,11 @@
 
 
 FBL.ns(function chromebug() { with (FBL) {
-	
-const Ci = Components.interfaces;	
-const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;	
-	
+
+const Ci = Components.interfaces;
+const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
+
+var previousContext = {global: null};
 var ChromeBugWindowInfo = Firebug.Chromebug.xulWindowInfo;
 
 var ChromeBugOverrides = {
@@ -28,9 +29,9 @@ var ChromeBugOverrides = {
     getLocationProvider: function()
     {
         // a function that returns an object with .getObjectDescription() and .getLocationList()
-        return function multiContextLocator() 
+        return function multiContextLocator()
         {
-            var locatorDelegator = 
+            var locatorDelegator =
             {
                     getObjectDescription: function(object)
                     {
@@ -48,7 +49,7 @@ var ChromeBugOverrides = {
             return locatorDelegator;
         }
      },
-     
+
 
     // Override Firebug.HTMLPanel.prototype
     getParentObject: function(node)
@@ -217,7 +218,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                     return false;
             }
 
-            if (FBTrace.DBG_LOCATIONS) 
+            if (FBTrace.DBG_LOCATIONS)
                 FBTrace.sysout("ChromeBugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
             this.breakContext = context;
             return !!context;
@@ -230,39 +231,45 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     },
 
     // Override debugger
-    supportsGlobal: function(frameWin, frame)  // (set the breakContext and return true) or return false;  
+    supportsGlobal: function(frameWin, frame)  // (set the breakContext and return true) or return false;
     {
         try {
-        	if (frame)
-        	{	
-        		// To map this frame to a context, we want the outermost scope of the current frame.
-        		// This is unlike Firebug, where we want to be in a Window, not just any scope.
-        		var scope = frame.scope;
-        		if (scope)
-        		{	
-        			while(scope.jsParent) // walk to the oldest scope
-        				scope = scope.jsParent;
-        		
-        			var global = scope.getWrappedValue();
-        			
-        			if (FBTrace.DBG_TOPLEVEL)
-        				FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);
-        		}
-        		var context = Firebug.Chromebug.getContextByGlobal(global); 
-        		if (context)
-        		{
-        			if (FBTrace.DBG_TOPLEVEL)
-        				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
-        		}
-        		else
-        		{
-        			var jsContext = frame.executionContext;  // may be null, mapped to tag zero
-        			context = ChromeBugWindowInfo.addJSContext(scope.jsClassName, global, jsContext);
-            		if (FBTrace.DBG_TOPLEVEL)
-            				FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
-        		}
-        	}
+            if (frame)
+            {
+                // To map this frame to a context, we want the outermost scope of the current frame.
+                // This is unlike Firebug, where we want to be in a Window, not just any scope.
+                var scope = frame.scope;
+                if (scope)
+                {
+                    while(scope.jsParent) // walk to the oldest scope
+                        scope = scope.jsParent;
+
+                    var global = scope.getWrappedValue();
+
+                    if (FBTrace.DBG_TOPLEVEL)
+                        FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);
+                }
+                var context = null;
+
+                if (global == previousContext.global)
+                    context = previousContext;
+                if (!context)
+                    context = Firebug.Chromebug.getContextByGlobal(global);
+                if (context)
+                {
+                    if (FBTrace.DBG_TOPLEVEL)
+                        FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
+                }
+                else
+                {
+                    var jsContext = frame.executionContext;  // may be null, mapped to tag zero
+                    context = ChromeBugWindowInfo.addJSContext(scope.jsClassName, global, jsContext);
+                    if (FBTrace.DBG_TOPLEVEL)
+                            FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
+                }
+            }
             this.breakContext = context;
+            previousContext = context; // private to this function
             return !!context;
         }
         catch (exc)
@@ -272,7 +279,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         }
 
     },
-    
+
     showThisSourceFile: function(sourceFile)
     {
         if (sourceFile.isEval() && !this.showEvals)
@@ -280,13 +287,13 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
 
         if (sourceFile.isEvent() && !this.showEvents)
             return false;
-        
+
         var description = Firebug.Chromebug.parseURI(sourceFile.href);
-        
+
         if (Firebug.Chromebug.AllFilesList.isWantedDescription(description))
-        	return true;
+            return true;
         else
-        	return false;
+            return false;
     },
 
     // Override
@@ -303,7 +310,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     {
         return true; // Chromebug is always enabled for now
     },
-    
+
     isAlwaysEnabled: function(context)
     {
         return true; // Chromebug is always enabled for now
@@ -320,44 +327,44 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         // TODO if possible.
         FBTrace.sysout("ChromebugPanel.resumeFirebug\n");
     },
-    
-    
+
+
 };
 
 ChromeBugOverrides.commandLine = {
-		
-		isAttached: function(context)
-	    {
-	FBTrace.sysout("ChromebugOverride isAttached for "+context.window, context.window);
-	    	return context && context.window && context.window._FirebugCommandLine;
-	    },
-	    
-		evaluate: function(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction)
-		{
-			FBTrace.sysout('ChromebugOverrides.commandLine context.window '+context.window.location+" targetWindow "+targetWindow);
-			
-			var halter = context.window.document.getElementById("chromebugHalter");
-			if (halter)
-				context.window.document.removeElement(halter);
-			
-			halter = addScript(context.window.document, "chromebugHalter", "debugger;");
-			/*
-			Firebug.Debugger.halt(function evaluateInAFrame(frame)
-			{
-				context.currentFrame = frame;
-				FBTrace.sysout("ChromebugOverrides.commandLine halted", frame);
-				
-				Firebug.CommandLine.evaluateInDebugFrame(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction);
-			});
-			*/
-		},
-		onCommandLineFocus: function(event)
-		{
-				if (FBTrace.DBG_CONSOLE)
-					FBTrace.sysout("onCBCommandLineFocus", event);
-				// do nothing.
-				event.stopPropagation();   
-		},
+
+        isAttached: function(context)
+        {
+    FBTrace.sysout("ChromebugOverride isAttached for "+context.window, context.window);
+            return context && context.window && context.window._FirebugCommandLine;
+        },
+
+        evaluate: function(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction)
+        {
+            FBTrace.sysout('ChromebugOverrides.commandLine context.window '+context.window.location+" targetWindow "+targetWindow);
+
+            var halter = context.window.document.getElementById("chromebugHalter");
+            if (halter)
+                context.window.document.removeElement(halter);
+
+            halter = addScript(context.window.document, "chromebugHalter", "debugger;");
+            /*
+            Firebug.Debugger.halt(function evaluateInAFrame(frame)
+            {
+                context.currentFrame = frame;
+                FBTrace.sysout("ChromebugOverrides.commandLine halted", frame);
+
+                Firebug.CommandLine.evaluateInDebugFrame(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction);
+            });
+            */
+        },
+        onCommandLineFocus: function(event)
+        {
+                if (FBTrace.DBG_CONSOLE)
+                    FBTrace.sysout("onCBCommandLineFocus", event);
+                // do nothing.
+                event.stopPropagation();
+        },
 }
 //**************************************************************************
 function overrideFirebugFunctions()
@@ -366,14 +373,14 @@ function overrideFirebugFunctions()
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
         top.FirebugChrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
-         
+
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
         top.Firebug.HTMLPanel.prototype.getAnonymousChildObject = ChromeBugOverrides.getAnonymousChildObject;
         top.Firebug.Debugger.supportsWindow = ChromeBugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromeBugOverrides.supportsGlobal;
         top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromeBugOverrides.showThisSourceFile;
-        
+
         top.Firebug.showBar = function() {
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("ChromeBugPanel.showBar NOOP\n");
@@ -384,7 +391,7 @@ function overrideFirebugFunctions()
         Firebug.ActivableModule.isAlwaysEnabled = ChromeBugOverrides.isAlwaysEnabled;
         Firebug.suspendFirebug = ChromeBugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
-        
+
         //Firebug.CommandLine.evaluate = ChromeBugOverrides.commandLine.evaluate;
         //Firebug.CommandLine.onCommandLineFocus = ChromeBugOverrides.commandLine.onCommandLineFocus;
         Firebug.CommandLine.isAttached = ChromeBugOverrides.commandLine.isAttached;

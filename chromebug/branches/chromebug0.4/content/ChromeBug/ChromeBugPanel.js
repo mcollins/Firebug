@@ -54,7 +54,7 @@ const statusText = $("cbStatusText");
 this.namespaceName = "ChromeBug";
 
 var docShellTypeNames = ["Chrome", "Content", "ContentWrapper", "ChromeWrapper"]; // see nsIDocShellTreeItem
-
+var previousContext = {global: null};
 
 //*******************************************************************************
 
@@ -905,6 +905,9 @@ var ChromeBugWindowInfo = {
 
     createBrowser: function(domWindow)
     {
+        if (domWindow.closed)
+            throw new Error("Chromebug createBrowser sees closed window!");
+
         var browser = document.createElement("browser");  // in chromebug.xul
         // Ok, this looks dubious. Firebug has a context for every browser (tab), we have a tabbrowser but don;t use the browser really.
         browser.persistedState = null;
@@ -1136,7 +1139,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         setTimeout( function stopTrying()
         {
             Firebug.Chromebug.stopRestoration();  // if the window is not up by now give up.
-        }, 15000);
+        }, 5000);
     },
 
     prepareForCloseEvents: function()
@@ -1173,7 +1176,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (context)
             {
                 var pkg = this.restoreFilter(previousState, context);
-                 
+
                 this.stopRestoration();
 
                 var panelName = previousState.panelName;
@@ -1181,12 +1184,12 @@ Firebug.Chromebug = extend(Firebug.Module,
                 // show the restored context, after we let the init finish
                 setTimeout( function delayShowContext()
                 {
-                	if (sourceLink)
-                		FirebugChrome.select(sourceLink, panelName);
-                	else if (panelName)
-                		FirebugChrome.selectPanel(panelName);
-                	else
-                		FirebugChrome.selectPanel('trace');
+                    if (sourceLink)
+                        FirebugChrome.select(sourceLink, panelName);
+                    else if (panelName)
+                        FirebugChrome.selectPanel(panelName);
+                    else
+                        FirebugChrome.selectPanel('trace');
                 });
             }
             // else keep trying
@@ -1357,7 +1360,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         context.setName = function(name)
         {
-            this.name = name;
+            this.name = new String(name);
         }
 
         context.global = global;
@@ -1393,7 +1396,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (!persistedState.enabled)  // for now default all chromebug window to enabled.
             persistedState.enabled = "enable";
 
-        FBTrace.sysout("Chromebug.createContext: "+(context.global?" ":"NULL global ")+context.getName());
+        FBTrace.sysout("Chromebug.createContext: "+(context.global?" ":"NULL global ")+context.getName(), context.getName());
 
         return context;
     },
@@ -1438,6 +1441,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     getOrCreateContext: function(global, jsClassName, jsContext)
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
+        FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"none"));
         if (!context)
             context = Firebug.Chromebug.createContext(global, jsClassName, jsContext);
 
@@ -1449,23 +1453,12 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (!this.contexts)
             this.contexts = TabWatcher.contexts;
 
-        if (global.window)
+
+        for (var i = 0; i < this.contexts.length; ++i)
         {
-            for (var i = 0; i < this.contexts.length; ++i)
-            {
-                var context = this.contexts[i];
-                if (context.global && context.global.window && context.global.window == global.window)
-                    return context;
-            }
-        }
-        else
-        {
-            for (var i = 0; i < this.contexts.length; ++i)
-            {
-                var context = this.contexts[i];
-                if (context.global && (context.global == global)) // will that test work?
-                    return context;
-            }
+            var context = this.contexts[i];
+            if (context.global && (context.global == global)) // will that test work?
+                return context;
         }
 
         return null;
@@ -1523,9 +1516,9 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     destroyContext: function(context)
     {
-    	if (context.browser)
-    		delete context.browser.detached;
-    	
+        if (context.browser)
+            delete context.browser.detached;
+
         this.PackageList.deleteContext(context);
         GlobalScopeInfos.destroy(context);
         if (FBTrace.DBG_CHROMEBUG)
@@ -1573,11 +1566,11 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 delete hiddenWindow._chromebug.globalTagByScriptTag;
                 delete hiddenWindow._chromebug.jsContexts;
-                
+
                 // We turned on jsd to get initial values. Maybe we don't want it on
                 if (!Firebug.Debugger.isAlwaysEnabled())
-                	fbs.countContext(false); // connect to firebug-service
-              
+                    fbs.countContext(false); // connect to firebug-service
+
             }
             else
                 FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in hiddenWindow, maybe the command line handler is broken\n");
@@ -1634,7 +1627,13 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 var global = globals[globalsTag];
                 if (global)
-                    var context = Firebug.Chromebug.getOrCreateContext(global);
+                {
+                    var context = null;
+                    if (previousContext.global == global)
+                        context = previousContext;
+                    else
+                        context = Firebug.Chromebug.getOrCreateContext(global);
+                }
 
                 if (!context)
                 {
@@ -1643,6 +1642,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                         Firebug.Chromebug.unreachablesContext.setName("chrome://unreachable/");
                     context =  Firebug.Chromebug.unreachablesContext;
                 }
+                previousContext = context;
 
                 var sourceFile = context.sourceFileMap[url];
 
@@ -2019,10 +2019,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         var w = window.screen.availWidth;
         var h = window.screen.availHeight;
         features = "outerWidth="+w+","+"outerHeight="+h;
-        var args = 
+        var args =
         {
-        		Firebug: Firebug,
-        		FBL: FBL,
+                Firebug: Firebug,
+                FBL: FBL,
         }
         var xpcomExplorerURL = "chrome://chromebug/content/xpcomExplorer.xul";
         var chromeURI = iosvc.newURI(xpcomExplorerURL, null, null);
@@ -2142,8 +2142,8 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.Console.log(FirebugContext, FirebugContext);
         Firebug.Console.closeGroup(FirebugContext, true);
     },
-    
-    
+
+
 });
 
 
