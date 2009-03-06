@@ -14,20 +14,7 @@ var ChromeBugOpener =
         if (opener)
             return opener.openNow(window);
         else
-            alert("ChromeBugOpener: no wrappedJSObject in command line handler");
-    },
-
-    openAlways: function()
-    {
-        var menuitem = document.getElementById("menu_OpenChromeBugAlways");
-        if (menuitem)
-        {
-            var openAlways = !(menuitem.getAttribute("checked") == "true"); // toggle state seen by user
-            prefs.setBoolPref("extensions.chromebug.openalways", openAlways);
-            prefService.savePrefFile(null);
-        }
-        else
-            alert("ChromeBugOpener: no element with id='menu_OpenChromeBugAlways'");
+            window.dump("ChromeBugOpener: no wrappedJSObject in command line handler\n");
     },
 
     getCommandLineHandler: function()
@@ -51,7 +38,7 @@ var ChromeBugOpener =
             //alert("set menuitem.checked to "+menuitem.getAttribute("checked"));
         }
         else
-            alert("ChromeBugOpener: no element with id='menu_OpenChromeBugAlways'");
+            window.dump("ChromeBugOpener: no element with id='menu_OpenChromeBugAlways'\n");
     },
 
     observe: function(subject, topic, data)
