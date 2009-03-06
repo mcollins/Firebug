@@ -9,7 +9,6 @@
 function runTest()
 {
     FBTest.sysout("activeContextAfterReload.START");
-    var url =
     FBTestFirebug.openNewTab(basePath + "firebug/OpenFirebugOnThisPage.html", function(win)
     {
         FBTest.progress(win.location+"page is open");
