@@ -54,7 +54,7 @@ function runTest()
         }
         else
         {
-            endTest();
+            issue1425.done();
         }
     });
 
@@ -67,7 +67,7 @@ function runTest()
             if (!sourceViewport)
             {
                 FBTest.ok(sourceViewport, "There is a sourceViewport after scrolling");
-                endTest();
+                issue1425.done();
             }
 
             var rows = sourceViewport.childNodes;
@@ -98,7 +98,7 @@ function runTest()
                 FBTest.sysout("Where is 1143 rows", rows);
             }
 
-            endTest();
+            issue1425.done();
     });
 
 
@@ -144,9 +144,3 @@ function runTest()
     issue1425.fireOnNewPage("onNewPage", issue1425URL,  testListener);
 }
 
-function endTest()
-{
-    // Finish test
-    FBTest.sysout("issue1425.DONE");
-    FBTest.testDone();
-}
