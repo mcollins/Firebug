@@ -112,6 +112,7 @@ this.openNewTab = function(url, callback)
         setTimeout(function() { callback(browser.contentWindow); }, 100);
     }
     browser.addEventListener("load", onLoadURLInNewTab, true);
+    return newTab;
 }
 
 /**
@@ -221,6 +222,11 @@ this.updateModelState = function(model, callback, enable)
     this.clearCache();
     if (callback)
         this.reload(callback);
+}
+
+this.disableNetPanel = function(callback)
+{
+    this.updateModelState(FW.Firebug.NetMonitor, callback, false);
 }
 
 this.enableNetPanel = function(callback)
