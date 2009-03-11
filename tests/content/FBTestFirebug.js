@@ -37,6 +37,12 @@ this.openFirebug = function()
     this.pressToggleFirebug(true);
 }
 
+this.detachFirebug = function()
+{
+    this.openFirebug();
+    return FW.Firebug.detachBar(); 
+}
+
 this.closeFirebug = function()
 {
     if (this.isFirebugOpen())
@@ -269,6 +275,19 @@ this.selectPanel = function(panelName)
 this.getSelectedPanel = function()
 {
     return FW.FirebugChrome.getSelectedPanel();
+}
+
+// ************************************************************************************************
+// Firebug preferences
+
+this.setPref = function(pref, value)
+{
+    FW.Firebug.setPref(FW.Firebug.prefDomain, pref, value);
+}
+
+this.getPref = function(pref)
+{
+    return FW.Firebug.getPref(FW.Firebug.prefDomain, pref);
 }
 
 // ************************************************************************************************

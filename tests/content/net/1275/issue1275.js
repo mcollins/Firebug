@@ -11,8 +11,8 @@ function runTest()
         FBTestFirebug.clearCache();
 
         // Enable XHR spy.
-        var prefOrigValue = FW.Firebug.getPref(FW.Firebug.prefDomain, "showXMLHttpRequests");
-        FW.Firebug.setPref(FW.Firebug.prefDomain, "showXMLHttpRequests", true);
+        var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
+        FBTestFirebug.setPref("showXMLHttpRequests", true);
 
         // Reload test page.
         FBTestFirebug.reload(function()
@@ -32,7 +32,7 @@ function runTest()
                 verifyResponse(panel);
 
                 // Finish test
-                FW.Firebug.setPref(FW.Firebug.prefDomain, "showXMLHttpRequests", prefOrigValue);
+                FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue1275.DONE");
             })
         });

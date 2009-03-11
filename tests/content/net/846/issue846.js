@@ -8,6 +8,8 @@ function runTest()
     // Server side handler.
     FBTest.registerPathHandler("/net/846/issue846.php", function (metadata, response)
     {
+        response.setHeader("Content-type", "text/plain", false);
+
         var responseText = "<div>" + (new Date()).getTime() + "</div>";
         responses.push(responseText);
         response.write(responseText);
@@ -15,6 +17,10 @@ function runTest()
 
     FBTestFirebug.openNewTab(basePath + "net/846/issue846.htm", function(win)
     {
+        // Disable XHR spy.
+        var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
+        FBTestFirebug.setPref("showXMLHttpRequests", false);
+
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win)
         {
@@ -42,6 +48,7 @@ function runTest()
                 }
 
                 // Finish test
+                FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue846.DONE");
             });
         });
