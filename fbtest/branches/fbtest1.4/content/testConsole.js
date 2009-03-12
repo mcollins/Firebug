@@ -88,7 +88,9 @@ FBTestApp.TestConsole =
 
     initializeTracing: function()
     {
-        Firebug.TraceModule.addListener(this.TraceListener);
+        // TraceModule isn't part of Firebug end-user version.
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.addListener(this.TraceListener);
 
         // The tracing console can be already opened so, simulate onLoadConsole event.
         var self = this;
@@ -106,7 +108,9 @@ FBTestApp.TestConsole =
     {
         TestServer.stop();
         Firebug.setPref(Firebug.prefDomain, "fbtest.defaultTestSuite", this.testListPath);
-        Firebug.TraceModule.removeListener(this.TraceListener);
+
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.removeListener(this.TraceListener);
 
         Firebug.unregisterRep(FBTestApp.CategoryList);
     },
@@ -167,6 +171,15 @@ FBTestApp.TestConsole =
 
                 // Restart server with new home directory using a file: url
                 var serverBaseURI = TestServer.chromeToUrl(self.baseURI, true);
+                if (!serverBaseURI)
+                {
+                    alert("Wrong base directory for test files. " + 
+                        "Verify 'baseURI' in the config file!\n\n" +
+                        "current config file: " + testListPath + "\n" + 
+                        "baseURI: " + self.baseURI + "\n");
+                    return;
+                }
+
                 TestServer.restart(serverBaseURI);
 
                 // Build new test list UI.
@@ -344,29 +357,37 @@ var TestServer =
 
     chromeToPath: function (aPath)
     {
-       if (!aPath || !(/^chrome:/.test(aPath)))
-          return this.urlToPath( aPath );
+        try
+        {
+            if (!aPath || !(/^chrome:/.test(aPath)))
+                return this.urlToPath( aPath );
 
-       var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
-       var uri = ios.newURI(aPath, "UTF-8", null);
-       var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
-       var rv = cr.convertChromeURL(uri).spec;
+            var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
+            var rv = cr.convertChromeURL(uri).spec;
 
-       if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
-       {
-           var m = /(.*\/content\/)/.exec(rv);
-           if (m)
-           {
-               rv = m[1];
-           }
-       }
+            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+            {
+                var m = /(.*\/content\/)/.exec(rv);
+                if (m)
+                    rv = m[1];
+            }
 
-       if (/^file:/.test(rv))
-          rv = this.urlToPath(rv);
-       else
-          rv = this.urlToPath("file://"+rv);
+            if (/^file:/.test(rv))
+                rv = this.urlToPath(rv);
+            else
+                rv = this.urlToPath("file://"+rv);
 
-       return rv;
+            return rv;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestServer.chromeToPath EXCEPTION", err);
+        }
+
+        return null;
     },
 
     urlToPath: function (aPath)
@@ -388,27 +409,35 @@ var TestServer =
 
     chromeToUrl: function (aPath, aDir)
     {
-        if (!aPath || !(/^chrome:/.test(aPath)))
-            return this.pathToUrl(aPath);
+        try
+        {
+            if (!aPath || !(/^chrome:/.test(aPath)))
+                return this.pathToUrl(aPath);
 
-       var uri = ios.newURI(aPath, "UTF-8", null);
-       var rv = chromeRegistry.convertChromeURL(uri).spec;
-       if (aDir)
-            rv = rv.substr(0, rv.lastIndexOf("/") + 1);
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            var rv = chromeRegistry.convertChromeURL(uri).spec;
+            if (aDir)
+                rv = rv.substr(0, rv.lastIndexOf("/") + 1);
 
-       if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
-       {
-           var m = /(.*\/content\/)/.exec(rv);
-           if (m)
-           {
-               rv = m[1];
-           }
-       }
+            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+            {
+                var m = /(.*\/content\/)/.exec(rv);
+                if (m)
+                    rv = m[1];
+            }
 
-       if (!/^file:/.test(rv))
-          rv = this.pathToUrl(rv);
+            if (!/^file:/.test(rv))
+                rv = this.pathToUrl(rv);
 
-       return rv;
+            return rv;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestServer.chromeToUrl EXCEPTION", err);
+        }
+
+        return null;
     },
 
     pathToUrl: function(aPath)
