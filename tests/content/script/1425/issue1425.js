@@ -43,7 +43,7 @@ function runTest()
             var rows = sourceViewport.childNodes;
 
             FBTest.ok(rows.length > 1, "The script view must not be empty.");
-            if (rows[1]) {
+            if (rows.length > 0) {
                 var source1 = "function MapLoadingIndicator(m){";
                 FBTest.compare(source1, rows[1].firstChild.nextSibling.textContent,
                     "Verify source on line 1");
