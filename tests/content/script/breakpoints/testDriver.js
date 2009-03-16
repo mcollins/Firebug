@@ -92,7 +92,7 @@ function executeTest(breakpointId, nextTest)
     if (nextTest)
         testSuite.fire(nextTest);
     else
-        FBTestFirebug.sysout("breakpoints.DONE");
+        FBTestFirebug.testDone("breakpoints.DONE");
 }
 
 function verifyExeLine(rowId)
