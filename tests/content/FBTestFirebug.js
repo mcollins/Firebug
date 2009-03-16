@@ -277,6 +277,11 @@ this.getSelectedPanel = function()
     return FW.FirebugChrome.getSelectedPanel();
 }
 
+this.getPanel = function(name)
+{
+    return FW.FirebugContext.getPanel(name);
+}
+
 // ************************************************************************************************
 // Firebug preferences
 
@@ -289,6 +294,29 @@ this.getPref = function(pref)
 {
     return FW.Firebug.getPref(FW.Firebug.prefDomain, pref);
 }
+
+// ************************************************************************************************
+// Debugger
+
+this.clickContinueButton = function()
+{
+    var doc = FBTest.FirebugWindow.document;
+    var button = doc.getElementById("fbContinueButton");
+    FBTest.click(button);
+}
+
+// ************************************************************************************************
+// Error handling
+
+/*window.onerror = function(errType, errURL, errLineNum) 
+{
+    var path = window.location.pathname;
+    var fileName = path.substr(path.lastIndexOf("/") + 1);
+    var errorDesc = errType + " (" + errLineNum + ")" + " " + errURL;
+    FBTest.sysout(fileName + " ERROR " + errorDesc);
+    FBTestFirebug.testDone();
+    return false;
+}*/
 
 // ************************************************************************************************
 // Panel Navigation
