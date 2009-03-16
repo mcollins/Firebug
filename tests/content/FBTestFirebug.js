@@ -211,6 +211,8 @@ this.expandElements = function(panelNode, className) // className, className, ..
         if (!chrome.FBL.hasClass(row, "opened") && !chrome.FBL.hasClass(row, "collapsed"))
             FBTest.click(row);
     }
+
+    return rows;
 }
 
 // ************************************************************************************************
