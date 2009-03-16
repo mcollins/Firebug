@@ -173,9 +173,9 @@ FBTestApp.TestConsole =
                 var serverBaseURI = TestServer.chromeToUrl(self.baseURI, true);
                 if (!serverBaseURI)
                 {
-                    alert("Wrong base directory for test files. " + 
-                        "Verify 'baseURI' in the config file!\n\n" +
-                        "current config file: " + testListPath + "\n" + 
+                    alert("Cannot access test files via baseURI conversion to http URL. " +
+                        "Verify 'baseURI' in the config file and that it points to a valid directory!\n\n" +
+                        "current config file: " + testListPath + "\n" +
                         "baseURI: " + self.baseURI + "\n");
                     return;
                 }
@@ -264,7 +264,7 @@ FBTestApp.TestConsole =
 
 // ************************************************************************************************
 
-FBTestApp.TestConsole.TraceListener = 
+FBTestApp.TestConsole.TraceListener =
 {
     // Called when console window is loaded.
     onLoadConsole: function(win, rootNode)
@@ -746,8 +746,6 @@ FBTestApp.TestSummary =
     setMessage: function(message)
     {
         $("progressMessage").value = message;
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("FBTest Progress "+message);
     },
 
     clear: function()
@@ -779,8 +777,8 @@ window.FBTest = //xxxHonza: the object should not be global.
 
     ok: function(pass, msg)
     {
-    	if (!pass)
-    		 FBTest.sysout("FBTest FAILS "+msg);
+        if (!pass)
+             FBTest.sysout("FBTest FAILS "+msg);
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, pass, msg));
     },
 
@@ -794,7 +792,7 @@ window.FBTest = //xxxHonza: the object should not be global.
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
             expected == actual, msg, expected, actual));
         if (expected != actual)
-        	FBTest.sysout("FBTest FAILS "+msg);
+            FBTest.sysout("FBTest FAILS "+msg);
     },
 
     sysout: function(text, obj)
@@ -805,6 +803,8 @@ window.FBTest = //xxxHonza: the object should not be global.
 
     click: function(node)
     {
+        if (!node)
+            FBTrace.sysout("testConsole click node is null");
         if (node.click)
             return node.click();
 
@@ -855,7 +855,7 @@ window.FBTest = //xxxHonza: the object should not be global.
         });
     },
 
-    pressKey: function(keyCode)
+    pressKey: function(keyCode, eltID)
     {
         var doc = FBTest.FirebugWindow.document;
         var keyEvent = doc.createEvent("KeyboardEvent");
@@ -870,7 +870,10 @@ window.FBTest = //xxxHonza: the object should not be global.
             false,            //  in boolean metaKeyArg,
             keyCode,          //  in unsigned long keyCodeArg,
             0);               //  in unsigned long charCodeArg);
-        doc.documentElement.dispatchEvent(keyEvent);
+        if (eltID)
+            doc.getElementById(eltID).dispatchEvent(keyEvent);
+        else
+            doc.documentElement.dispatchEvent(keyEvent);
     },
 
     focus: function(node)
