@@ -14,14 +14,17 @@
 </p>
 
 <ol>
-<li></li>
+    <li>Each button generates a XHR that returns JSON data.</li>
+    <li>Open Firebug, enable Net panel and click a button.</li>
+    <li>Check the response displayed in the Net panel. The JSON tab must display a JSON data.</li>
 </ol>
 
 <button onclick="makeRequest1();">Simple JSON</button>
 <button onclick="makeRequest2();">JSON in a function</button>
 <button onclick="makeRequest3();">Secure JSON</button>
 <button onclick="makeRequest4();">JSON in a loop</button>
-<!-- <button onclick="makeRequest5();">Break in Script</button> -->
+<button onclick="makeRequest5();">Break in Script</button>
+<button onclick="makeRequest6();">JSON in a funtion 2</button>
 
 <br/><br/>
 
@@ -51,11 +54,16 @@ function makeRequest5(callback)
     makeRequest("/net/369/issue369-5.txt", callback);
 }
 
+function makeRequest6(callback)
+{
+    makeRequest("/net/369/issue369-6.txt", callback);
+}
+
 function makeRequest(url, callback) 
 {
     var request = new XMLHttpRequest();
     request.onreadystatechange = function () {
-        if (request.readyState == 4 && request.status == 200)
+        if (request.readyState == 4 && request.status == 200 && callback)
             callback(request);
     };
 

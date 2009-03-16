@@ -6,8 +6,8 @@ function runTest()
     FBTest.registerPathHandler("/net/369/issue369-2.txt", requestHandler2);
     FBTest.registerPathHandler("/net/369/issue369-3.txt", requestHandler3);
     FBTest.registerPathHandler("/net/369/issue369-4.txt", requestHandler4);
-    // xxxHonza: Not implemented yet.
-    //FBTest.registerPathHandler("/net/369/issue369-5.txt", requestHandler5);
+    FBTest.registerPathHandler("/net/369/issue369-5.txt", requestHandler5);
+    FBTest.registerPathHandler("/net/369/issue369-6.txt", requestHandler6);
 
     FBTestFirebug.openNewTab(basePath + "net/369/issue369.htm", function(win)
     {
@@ -20,7 +20,9 @@ function runTest()
             win.wrappedJSObject.makeRequest2(onRequest);
             win.wrappedJSObject.makeRequest3(onRequest);
             win.wrappedJSObject.makeRequest4(onRequest);
+            // xxxHonza: Not implemented yet.
             //win.wrappedJSObject.makeRequest5(onRequest);
+            //win.wrappedJSObject.makeRequest6(onRequest);
         });
     });
 }
@@ -98,5 +100,11 @@ function requestHandler4(metadata, response) {
 // JSON response #5
 function requestHandler5(metadata, response) {
     response.setHeader("Content-Type", "application/json", false);
-    response.write("var myObject = " + jsonString+ ";");
+    response.write("var myObject = " + jsonString + ";");
+}
+
+// JSON response #6
+function requestHandler6(metadata, response) {
+    response.setHeader("Content-Type", "application/json", false);
+    response.write("function getJSON() { return " + jsonString + "};");
 }
