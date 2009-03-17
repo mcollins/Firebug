@@ -15,15 +15,6 @@
 </ul>
 <button id="runTestButton" onclick="onRunTestButton()">Run Test</button>
 <script>
-var times = 0;
-var button = document.getElementById("runTestButton");
-button.addEventListener("ReadyState4x200", function markEffort(event)
-{
-    window.dump("exampleNetTest.html markEffort");
-    times += 1;
-    event.target.innerHTML = "Run Again "+times;
-}, true);
-
 function onRunTestButton()
 {
     var request = new XMLHttpRequest();
@@ -33,12 +24,10 @@ function onRunTestButton()
                 var button = document.getElementById("runTestButton");
                 var event = document.createEvent("Events");
                 event.initEvent("ReadyState4x200", true, false);
-                console.log("now dispatch this event: ", event);
+
                 button.dispatchEvent(event);
             }, 300);
     };
-//    console.log(request.onreadystatechange);
-
     request.open("GET", "exampleNetTest.txt", true);
     request.send(null);
 }

@@ -30,10 +30,10 @@ function logTestResult(event)
     // TODO: verify FB UI
 
     // Log test results.
-    FBTest.ok(true, "Test OK");
+    FBTest.ok(true, "Net Test OK");
     FBTest.progress("Example progress message");
 
     // Finish test
-    //cleanUpTestTabs();
-    FBTestFirebug.testDone("Example Test DONE");
+
+    FBTestFirebug.testDone("Example Net Test DONE");
 }
