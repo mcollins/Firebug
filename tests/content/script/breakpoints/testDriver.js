@@ -46,10 +46,7 @@ function runTest()
             // Execute XHR and eval the response, there is debugger; keyword in it.
             win.wrappedJSObject.loadXHRDebugger(function(request)
             {
-                // Asynchronously run the breakpoint checker.
-                window.setTimeout(function() {
-                    executeTest("@breakXHRRow", "breakInScript");
-                }, 400);
+                FW.Firebug.Debugger.addListener(new DebuggerListener("@breakXHRRow", "breakInScript"));
             });
         }, 1);
     });
@@ -61,10 +58,7 @@ function runTest()
         {
             win.wrappedJSObject.loadScriptDebugger(function()
             {
-                // Asynchronously run the breakpoint checker.
-                window.setTimeout(function() {
-                    executeTest("@breakScriptRow");
-                }, 400);
+                FW.Firebug.Debugger.addListener(new DebuggerListener("@breakScriptRow"));
             });
         }, 1);
     });
@@ -75,24 +69,36 @@ function runTest()
 
 function executeTestAsync(testMethod, breakpointId, nextTest)
 {
+    FW.Firebug.Debugger.addListener(new DebuggerListener(breakpointId, nextTest));
+
     // Execute a method with debuggger; keyword in it. This is done
     // asynchronously since it stops the execution context.
     win.wrappedJSObject.setTimeout(testMethod, 1);
+}
 
-    // Asynchronously check the breakpoint.
-    window.setTimeout(function() { executeTest(breakpointId, nextTest) }, 400);
+function DebuggerListener(breakpointId, nextTest)
+{
+    this.onStop = function(context, frame, type, rv)
+    {
+        FW.Firebug.Debugger.removeListener(this);
+        window.setTimeout(function() {
+            executeTest(breakpointId, nextTest) 
+        }, 400);
+    }
 }
 
 function executeTest(breakpointId, nextTest)
 {
     var panel = FBTestFirebug.selectPanel("script");
     if (!verifyExeLine(breakpointId))
-        return FBTest/*Firebug*/.testDone();
+        return FBTestFirebug.testDone();
 
     if (nextTest)
         testSuite.fire(nextTest);
     else
         FBTestFirebug.testDone("breakpoints.DONE");
+
+    return true;
 }
 
 function verifyExeLine(rowId)
