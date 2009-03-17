@@ -55,7 +55,7 @@ NetListener.prototype =
     onRequest: function(context, file)
     {
         if (FBTrace.DBG_NETLISTENER)
-            FBTrace.sysout("netListener.onResponse; " + file.href);
+            FBTrace.sysout("netListener.onResponse; " + (file ? file.href : ""));
     },
 
     onExamineResponse: function(context, request)
@@ -67,7 +67,7 @@ NetListener.prototype =
     onResponse: function(context, file)
     {
         if (FBTrace.DBG_NETLISTENER)
-            FBTrace.sysout("netListener.onResponse; " + file.href);
+            FBTrace.sysout("netListener.onResponse; " + (file ? file.href : ""));
 
         try
         {
@@ -85,7 +85,7 @@ NetListener.prototype =
     onResponseBody: function(context, file)
     {
         if (FBTrace.DBG_NETLISTENER)
-            FBTrace.sysout("netListener.onResponseBody; " + file.href, file);
+            FBTrace.sysout("netListener.onResponseBody; " + (file ? file.href : ""), file);
     }
 };
 
