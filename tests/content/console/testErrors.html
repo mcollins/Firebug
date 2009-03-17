@@ -1,0 +1,49 @@
+<html>
+<head>
+    <title>Breakpoints Test Page</title>
+</head>
+<body>
+<h1>Errors Tests</h1>
+
+<ol>
+    <li>Open Firebug and enable Console panel</li>
+    <li>Step by step click on each button.</li>
+    <li>Every button generates an error that must be displayed within the Console panel.</li>
+</ol>
+
+<button id="syntaxError" onclick="2BeOrNot2Be(40)">Syntax Error</button>
+<button id="shallowError" onclick="foops()">Shallow Error</button>
+<button id="deepError" onclick="deepError()">Deep Error</button>
+<button id="throw" onclick="throwit()">Throw</button>
+<button id="thousandErrors" onclick="explode()">A Thousand Errors</button>
+
+<br/><br/>
+
+<script type="application/x-javascript">
+function deepError()
+{
+    badStuff();
+}
+
+function badStuff()
+{
+/*foo*/                    B3();
+}
+
+function throwit()
+{
+    try {
+        throw "hi";
+    } catch (exc) {}
+
+    throw "hi";
+}
+
+function explode()
+{
+    for (var i = 0; i < 1000; ++i)
+        setTimeout(new Function("b" + i + "();"), 0);
+}
+</script>
+</body>
+</html>

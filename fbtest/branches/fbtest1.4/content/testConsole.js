@@ -785,8 +785,10 @@ window.FBTest = //xxxHonza: the object should not be global.
     {
         if (!node)
             FBTrace.sysout("testConsole click node is null");
-        if (node.click)
-            return node.click();
+
+        // xxxHonza: Do we really need this?
+        //if (node.click)
+        //    return node.click();
 
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
         event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
