@@ -152,6 +152,14 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
           command: bindFixed(this.onCollapseAll, this, category)
         });
 
+        items.push("-");
+
+        items.push({
+          label: $STR("test.cmd.Copy All Errors"),
+          nol10n: true,
+          command: bindFixed(this.onCopyAllErrors, this, category)
+        });
+
         return items;
     },
 
@@ -170,6 +178,16 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
         var rows = cloneArray(table.firstChild.childNodes);
         for (var i=0; i<rows.length; i++)
             this.collapseCategory(rows[i]);
+    },
+
+    onCopyAllErrors: function(category)
+    {
+        var text = "";
+        var categories = FBTestApp.TestConsole.categories;
+        for (category in categories)
+            text += categories[category].getErrors();
+
+        copyToClipboard(text);
     }
 });
 
@@ -291,6 +309,45 @@ FBTestApp.TestList = domplate(
             row = row.nextSibling;
         }
     },
+
+    // Firebug rep support
+    supportsObject: function(test, type)
+    {
+        return test instanceof FBTestApp.Test;
+    },
+
+    browseObject: function(test, context)
+    {
+        return false;
+    },
+
+    getRealObject: function(test, context)
+    {
+        return test;
+    },
+
+    // Context menu
+    getContextMenuItems: function(test, target, context)
+    {
+        var items = [];
+
+        if (test.error)
+        {
+            items.push({
+              label: $STR("test.cmd.Copy Erorrs"),
+              nol10n: true,
+              command: bindFixed(this.onCopyAllErrors, this, test)
+            });
+        }
+
+        return items;
+    },
+
+    // Commands
+    onCopyAllErrors: function(test)
+    {
+        copyToClipboard(test.getErrors());
+    },
 });
 
 // ************************************************************************************************
@@ -302,6 +359,22 @@ FBTestApp.Category = function(name)
     this.tests = [];
 }
 
+FBTestApp.Category.prototype =
+{
+    getErrors: function()
+    {
+        var text = "";
+        for (var i=0; i<this.tests.length; i++)
+        {
+            var test = this.tests[i];
+            var errors = test.getErrors();
+            if (errors)
+                text += errors + "\n";
+        }
+        return text;
+    }
+}
+
 // ************************************************************************************************
 // Test
 
@@ -310,13 +383,74 @@ FBTestApp.Test = function(category, uri, desc)
     this.category = category;
     this.uri = uri;
     this.desc = desc;
+    this.results = [];
+    this.error = false;
+    this.row = null;
+    this.path = null;
 }
+
+FBTestApp.Test.prototype =
+{
+    appendResult: function(testResult)
+    {
+        this.results.push(testResult);
+
+        // If it's an error update test so, it's reflecting an error state.
+        if (!testResult.pass)
+        {
+            setClass(this.row, "error");
+            this.error = true;
+        }
+    },
+
+    onStartTest: function(baseURI)
+    {
+        this.path = baseURI + this.uri;
+        this.results = [];
+        this.error = false;
+
+        setClass(this.row, "running");
+        removeClass(this.row, "results");
+        removeClass(this.row, "error");
+
+        // Remove previous results from the UI.
+        if (hasClass(this.row, "opened"))
+        {
+            var infoBody = this.row.nextSibling;
+            clearNode(FBL.getElementByClass(infoBody, "testBodyCol"));
+        }
+    },
+
+    onTestDone: function()
+    {
+        removeClass(this.row, "running");
+        if (this.results.length > 0)
+            setClass(this.row, "results");
+    },
+
+    getErrors: function()
+    {
+        if (!this.error)
+            return "";
+
+        var text = this.uri + ": " + this.desc + "\n";
+        for (var i=0; i<this.results.length; i++)
+        {
+            var testResult = this.results[i];
+            if (testResult.pass)
+                continue;
+
+            text += "- " + testResult.msg + " (ERROR)\n";
+        }
+        return text;
+    }
+};
 
 // ************************************************************************************************
 // Registration
 
 Firebug.registerRep(FBTestApp.CategoryList);
+Firebug.registerRep(FBTestApp.TestList);
 
 // ************************************************************************************************
 }});
-

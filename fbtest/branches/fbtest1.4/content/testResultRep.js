@@ -163,7 +163,7 @@ FBTestApp.TestResultRep = domplate(
     // Firebug rep support
     supportsObject: function(testResult)
     {
-        return testResult instanceof TestResult;
+        return testResult instanceof FBTestApp.TestResult;
     },
 
     browseObject: function(testResult, context)
@@ -583,6 +583,11 @@ function clean( str )
 {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+
+// ************************************************************************************************
+// Registration
+
+Firebug.registerRep(FBTestApp.TestResultRep);
 
 // ************************************************************************************************
 }});

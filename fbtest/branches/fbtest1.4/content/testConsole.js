@@ -112,7 +112,10 @@ FBTestApp.TestConsole =
         if (Firebug.TraceModule)
             Firebug.TraceModule.removeListener(this.TraceListener);
 
+        // Unregister registered repositories.
         Firebug.unregisterRep(FBTestApp.CategoryList);
+        Firebug.unregisterRep(FBTestApp.TestList);
+        Firebug.unregisterRep(FBTestApp.TestResultRep);
     },
 
     loadTestList: function(testListPath)
@@ -488,30 +491,16 @@ FBTestApp.TestRunner =
         try
         {
             this.currentTest = testObj;
-            this.currentTest.path = FBTestApp.TestConsole.baseURI + testObj.uri;
-            this.currentTest.results = [];
-            this.currentTest.error = false;
+            this.currentTest.onStartTest(FBTestApp.TestConsole.baseURI);
 
             // Show the test within the UI (expand parent category)
             var parentCategory = this.currentTest.category;
             FBTestApp.CategoryList.expandCategory(parentCategory.row);
             scrollIntoCenterView(this.currentTest.row);
 
-            // Remove previous results (if any).
-            if (hasClass(this.currentTest.row, "opened"))
-            {
-                var infoBody = this.currentTest.row.nextSibling;
-                var resultsBody = FBL.getElementByClass(infoBody, "testBodyCol");
-                clearNode(resultsBody);
-            }
-
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
                     this.currentTest);
-
-            setClass(this.currentTest.row, "running");
-            removeClass(this.currentTest.row, "results");
-            removeClass(this.currentTest.row, "error");
 
             var testURL = this.currentTest.path;
             if (/\.js$/.test(testURL))
@@ -607,15 +596,11 @@ FBTestApp.TestRunner =
         if (!this.currentTest)
             return;
 
-        removeClass(this.currentTest.row, "running");
-
-        if (this.currentTest.results.length > 0)
-            setClass(this.currentTest.row, "results");
-
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
                 this.currentTest);
 
+        this.currentTest.onTestDone();
         this.currentTest = null;
 
         // If there are tests in the queue, execute them.
@@ -632,13 +617,15 @@ FBTestApp.TestRunner =
 
     appendResult: function(result)
     {
-        if (this.currentTest)
-            this.currentTest.results.push(result);
-        else
+        if (!this.currentTest)
         {
             FBTrace.sysout("test result came in after testDone!");
             $("progressMessage").value = "test result came in after testDone!";
+            return;
         }
+
+        // Append result into the test object.
+        this.currentTest.appendResult(result);
 
         // If the test is currently opened, append the result directly into the UI.
         if (hasClass(this.currentTest.row, "opened"))
@@ -651,13 +638,6 @@ FBTestApp.TestRunner =
             var tbody = table.firstChild;
             result.row = FBTestApp.TestResultRep.resultTag.insertRows(
                 {results: [result]}, tbody.lastChild ? tbody.lastChild : tbody)[0];
-        }
-
-        // If it's an error update test so, it's reflecting an error state.
-        if (!result.pass)
-        {
-            setClass(this.currentTest.row, "error");
-            this.currentTest.error = true;
         }
 
         // Update summary in the status bar.
