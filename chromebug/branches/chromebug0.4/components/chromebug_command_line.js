@@ -84,7 +84,7 @@ const  chromebugCommandLineHandler = {
 
         if (jsd.isOn)
             return;
-        
+
         window.dump("chromebug_command_line version: "+appInfo.version+" gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
         prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
         prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
@@ -94,8 +94,8 @@ const  chromebugCommandLineHandler = {
 
         jsd.on();
         jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
-        jsd.initAtStartup = true;
-        
+        jsd.initAtStartup = false;
+
         this.setJSDFilters(jsd);
         this.hookJSDContexts(jsd, window);
 
@@ -111,7 +111,7 @@ const  chromebugCommandLineHandler = {
                 startLine: 0,
                 endLine: 0
             };
-        var filterChromebug = 
+        var filterChromebug =
         {
              globalObject: null,
                 flags: jsdIFilter.FLAG_ENABLED,
@@ -127,12 +127,12 @@ const  chromebugCommandLineHandler = {
                 endLine: 0
             };
         var filterTrace = {
-        		 globalObject: null,
+                 globalObject: null,
                  flags: jsdIFilter.FLAG_ENABLED,
                  urlPattern: "chrome://firebug/content/trace*",
                  startLine: 0,
                  endLine: 0
-             };	
+             };
         jsd.appendFilter(passDebuggerHalter); // first in, first compared
         jsd.appendFilter(filterChromebug);
         jsd.appendFilter(filterfb4cb);
@@ -143,8 +143,8 @@ const  chromebugCommandLineHandler = {
                 window.dump("chromebug_command_line filter "+filter.urlPattern+" "+filter.flags+"\n");
             }});
     },
-    
-    
+
+
     hookJSDContexts: function(jsd, hiddenWindow)
     {
         // This is a minature version of the double hook in firebug-service.js
@@ -162,11 +162,11 @@ const  chromebugCommandLineHandler = {
             {
                 if (fbs.trackFiles.avoidSelf(script.fileName))
                     return;
-        		 fbs.trackFiles.add(script);
-        		 
-        		 var cb = hiddenWindow._chromebug;
+                 fbs.trackFiles.add(script);
+
+                 var cb = hiddenWindow._chromebug;
                  if (!cb)
-                 { 
+                 {
                       // Somehow the hook can be called before the hiddenWindow object is updated?
                       //if (trace) hiddenWindow.dump("onScriptCreated No hiddenWindow._chromebug for script:"+script.fileName+"\n");
                       return;
@@ -193,8 +193,8 @@ const  chromebugCommandLineHandler = {
             {
                 if (fbs.trackFiles.avoidSelf(script.fileName))
                     return;
-            	var cb = hiddenWindow._chromebug;
-                
+                var cb = hiddenWindow._chromebug;
+
                 if (!script.functionName) // top or eval-level
                 {
                     var cb = hiddenWindow._chromebug;
@@ -213,8 +213,8 @@ const  chromebugCommandLineHandler = {
                  }
                  if (cb)
                  {
-                	 var i = cb.innerScripts.indexOf(script);
-                	 if (i) delete cb.innerScripts[i];
+                     var i = cb.innerScripts.indexOf(script);
+                     if (i) delete cb.innerScripts[i];
                  }
             },
         };
@@ -223,8 +223,8 @@ const  chromebugCommandLineHandler = {
         {
             onExecute: function(frame, type, val)
             {
-        		fbs.trackFiles.def(frame);
-            
+                fbs.trackFiles.def(frame);
+
                 frame.script.clearBreakpoint(0);
                 var script = frame.script;
                 //if (trace) hiddenWindow.dump("breakpointHook script "+script.tag+"\n");
@@ -238,22 +238,22 @@ const  chromebugCommandLineHandler = {
                 if (!frame.callingFrame) // then top-level
                 {
                     var scope = frame.scope;
-                	if (scope)
-                	{	
-                		while(scope.jsParent) // walk to the oldest scope
-                			scope = scope.jsParent;
-                		
-                		var frameGlobal = scope.getWrappedValue();
-                		var tag = cb.globals.indexOf(frameGlobal);
-                		if (tag < 0)
-                			tag = cb.globals.push(frameGlobal) - 1;
-                		
-                		var scopeName = fbs.getLocationSafe(frameGlobal);
-                		if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
+                    if (scope)
+                    {
+                        while(scope.jsParent) // walk to the oldest scope
+                            scope = scope.jsParent;
+
+                        var frameGlobal = scope.getWrappedValue();
+                        var tag = cb.globals.indexOf(frameGlobal);
+                        if (tag < 0)
+                            tag = cb.globals.push(frameGlobal) - 1;
+
+                        var scopeName = fbs.getLocationSafe(frameGlobal);
+                        if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
                         {
                             if (trace) hiddenWindow.dump("assigning "+tag+" to "+frame.script.fileName+"\n");
                             cb.globalTagByScriptTag[frame.script.tag] = tag;
-                        
+
                             // add the unassigned innerscripts
                             for (var i = 0; i < cb.innerScripts.length; i++)
                             {
@@ -270,10 +270,10 @@ const  chromebugCommandLineHandler = {
                         cb.innerScripts = [];
                     }
                     else // looks like this is where command line handlers end up
-                    	if (trace) hiddenWindow.dump("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
+                        if (trace) hiddenWindow.dump("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
                 }
                 else // looks like .xml/.xul ends up here.
-                	if (trace) hiddenWindow.dump("callingFrame for "+frame.script.fileName+"\n");
+                    if (trace) hiddenWindow.dump("callingFrame for "+frame.script.fileName+"\n");
                 return jsdIExecutionHook.RETURN_CONTINUE;
             }
         };
@@ -290,18 +290,18 @@ const  chromebugCommandLineHandler = {
     },
     getLocationSafe: function(global)
     {
-		try
-		{
-			if (global && global.location)  // then we have a window, it will be an nsIDOMWindow, right?
-				return global.location.toString();
-			else if (global && global.tag)
-				return "global_tag_"+global.tag;
-		}
-		catch (exc)
-    	{
+        try
+        {
+            if (global && global.location)  // then we have a window, it will be an nsIDOMWindow, right?
+                return global.location.toString();
+            else if (global && global.tag)
+                return "global_tag_"+global.tag;
+        }
+        catch (exc)
+        {
             // FF3 gives (NS_ERROR_INVALID_POINTER) [nsIDOMLocation.toString]
-    	}
-		return null;
+        }
+        return null;
     },
     openChromebug: function(window)
     {
@@ -371,7 +371,7 @@ const  chromebugCommandLineHandler = {
             }
             else  // New chromebug that may launch FF
             {
-                try 
+                try
                 {
                     var launchChromebug = cmdLine.handleFlag("chromebug", false);
                     if (launchChromebug)
@@ -399,16 +399,16 @@ const  chromebugCommandLineHandler = {
                     this.appURL = cmdLine.handleFlagWithParam("app", false);
                     if (this.appURL)
                     {
-                    	this.firefox = true;
-                    	this.firefoxURL = this.appURL; // same api anyway
+                        this.firefox = true;
+                        this.firefoxURL = this.appURL; // same api anyway
                     }
                 }
                 catch (e)
                 {
                 }
-                
+
                 if (this.firefox)
-                	window.dump("Chromebug Command line sees firefox with url:"+this.firefoxURL+"\n");
+                    window.dump("Chromebug Command line sees firefox with url:"+this.firefoxURL+"\n");
             }
         }
         catch (e)
@@ -537,94 +537,94 @@ function NSGetModule(comMgr, fileSpec)
   return chromebugCommandLineHandlerModule;
 }
 
-function getTmpFile() 
+function getTmpFile()
 {
-	var file = Components.classes["@mozilla.org/file/directory_service;1"].
-    	getService(Components.interfaces.nsIProperties).
-    	get("TmpD", Components.interfaces.nsIFile);
-	file.append("fbs.tmp");
-	file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
-	appShellService.hiddenDOMWindow.dump("cbcl opened tmp file "+file.path+"\n");
-	return file;
+    var file = Components.classes["@mozilla.org/file/directory_service;1"].
+        getService(Components.interfaces.nsIProperties).
+        get("TmpD", Components.interfaces.nsIFile);
+    file.append("fbs.tmp");
+    file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
+    appShellService.hiddenDOMWindow.dump("cbcl opened tmp file "+file.path+"\n");
+    return file;
 }
 
 function getTmpStream(file)
 {
-	// file is nsIFile, data is a string
-	var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].
-	                         createInstance(Components.interfaces.nsIFileOutputStream);
+    // file is nsIFile, data is a string
+    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].
+                             createInstance(Components.interfaces.nsIFileOutputStream);
 
-	// use 0x02 | 0x10 to open file for appending.
-	foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); 
-	// write, create, truncate
-	// In a c file operation, we have no need to set file mode with or operation,
-	// directly using "r" or "w" usually.
-	
-	return foStream;
+    // use 0x02 | 0x10 to open file for appending.
+    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
+    // write, create, truncate
+    // In a c file operation, we have no need to set file mode with or operation,
+    // directly using "r" or "w" usually.
+
+    return foStream;
 }
- 
+
 var fbs = chromebugCommandLineHandler;
-	
+
 function tmpout(text)
 {
-	if (!fbs.foStream)
-		fbs.foStream = getTmpStream(getTmpFile());
+    if (!fbs.foStream)
+        fbs.foStream = getTmpStream(getTmpFile());
 
-	fbs.foStream.write(text, text.length);
+    fbs.foStream.write(text, text.length);
 }
 
 fbs.trackFiles  = {
-	allFiles: {},
+    allFiles: {},
     avoidSelf: function(URI)
     {
-        return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);   
+        return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);
     },
-	add: function(script)
-	{
-		var name = new String(script.fileName);
-		this.allFiles[name] = [script.functionName];
-	},
-	drop: function(fileName)
-	{
-		var name = new String(fileName);
-		this.allFiles[name].push("dropped");
-	},
-	def: function(frame)
-	{
-		var scopeName = "noJSContext";
-		var jscontext = frame.executionContext;
-    	if (jscontext)
-    	{
-    		frameGlobal = jscontext.globalObject.getWrappedValue();
-			scopeName = fbs.getLocationSafe(frameGlobal);
-			if (!scopeName)
-				scopeName = "noGlobalObjectLocationInJSContext:"+(jscontext?jscontext.tag:"none");
-    	}
-		
-		var name = new String(frame.script.fileName);
-		if (! (name in this.allFiles))
-			this.allFiles[name]=["not added"];
-		
-		this.allFiles[name].push(scopeName+" (from cbcl)");
-	},
-	dump: function()
-	{
-		var n = 0;
-		for (var p in this.allFiles)
-		{
-			tmpout( (++n) + ") "+p);
-			var where = this.allFiles[p];
-			if (where.length > 0)
-			{
-				for (var i = 0; i < where.length; i++)
-				{
-					tmpout(", "+where[i]);
-				}
-				tmpout("\n");
-			}
-			else
-				tmpout("     bp did not hit\n");
-			
-		}
-	},
+    add: function(script)
+    {
+        var name = new String(script.fileName);
+        this.allFiles[name] = [script.functionName];
+    },
+    drop: function(fileName)
+    {
+        var name = new String(fileName);
+        this.allFiles[name].push("dropped");
+    },
+    def: function(frame)
+    {
+        var scopeName = "noJSContext";
+        var jscontext = frame.executionContext;
+        if (jscontext)
+        {
+            frameGlobal = jscontext.globalObject.getWrappedValue();
+            scopeName = fbs.getLocationSafe(frameGlobal);
+            if (!scopeName)
+                scopeName = "noGlobalObjectLocationInJSContext:"+(jscontext?jscontext.tag:"none");
+        }
+
+        var name = new String(frame.script.fileName);
+        if (! (name in this.allFiles))
+            this.allFiles[name]=["not added"];
+
+        this.allFiles[name].push(scopeName+" (from cbcl)");
+    },
+    dump: function()
+    {
+        var n = 0;
+        for (var p in this.allFiles)
+        {
+            tmpout( (++n) + ") "+p);
+            var where = this.allFiles[p];
+            if (where.length > 0)
+            {
+                for (var i = 0; i < where.length; i++)
+                {
+                    tmpout(", "+where[i]);
+                }
+                tmpout("\n");
+            }
+            else
+                tmpout("     bp did not hit\n");
+
+        }
+    },
 }
