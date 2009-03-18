@@ -7,7 +7,7 @@ const Ci = Components.interfaces;
 const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
 
 var previousContext = {global: null};
-var ChromeBugWindowInfo = Firebug.Chromebug.xulWindowInfo;
+var ChromebugWindowInfo = Firebug.Chromebug.xulWindowInfo;
 
 var ChromeBugOverrides = {
 
@@ -209,7 +209,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     supportsWindow: function(win)
     {
         try {
-            var xulWindowInfo = ChromeBugWindowInfo;
+            var xulWindowInfo = ChromebugWindowInfo;
             var context = (win ? Firebug.Chromebug.getContextByGlobal(win) : null);
 
             if (context && context.globalScope instanceof ContainedDocument)
@@ -263,7 +263,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                 else
                 {
                     var jsContext = frame.executionContext;  // may be null, mapped to tag zero
-                    context = ChromeBugWindowInfo.addJSContext(scope.jsClassName, global, jsContext);
+                    context = ChromebugWindowInfo.addJSContext(scope.jsClassName, global, jsContext);
                     if (FBTrace.DBG_TOPLEVEL)
                             FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
                 }

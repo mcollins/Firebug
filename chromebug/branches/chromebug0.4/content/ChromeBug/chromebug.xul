@@ -80,8 +80,8 @@
 
     <!-- END -->
  <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugOverrides.js"/>
+ <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/scandocuments.js"/>
-    <script type="application/x-javascript" src="chrome://chromebug/content/categoryBrowser.js"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
@@ -136,6 +136,7 @@
         <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.TraceModule.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
         <command id="cmd_cbDumpFileTrack" oncommand="Firebug.Chromebug.dumpFileTrack()"/>
         <command id="cmd_cbUnitTest" oncommand="Firebug.Chromebug.unitTest()"/>
+        <command id="cmd_platformCc" oncommand="Firebug.Platform.Cc()"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -184,6 +185,7 @@
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
                     <menuitem id="menu_chromebugUnitTest" command="cmd_cbUnitTest"
                             key="key_cbUnitTest" label="Start Firebug Unit Test"/>
+                    <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
                 </menupopup>
             </menu>
             <menu id="view-menu" label="&firebug.View;">

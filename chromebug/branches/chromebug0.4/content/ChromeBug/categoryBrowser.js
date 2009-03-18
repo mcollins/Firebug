@@ -1,7 +1,7 @@
 /* See license.txt for terms of usage */
-
+window.dump("categoryBrowser.js loading \n");
 FBL.ns(function() { with (FBL) {
-
+	window.dump("categoryBrowser.js running \n");
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const nsISupportsCString = Ci.nsISupportsCString;
@@ -34,7 +34,7 @@ Firebug.Chromebug.CategoryBrowser = extend(Firebug.Module,
 
         if (!this.categoryBox)
             this.categoryBox = browserElt.contentDocument.getElementById('categoryBox');
-
+FBTrace.sysout("startXPCOMBrowser browserElt", browserElt);
         this.refresh();
     },
 
@@ -89,7 +89,7 @@ Firebug.Chromebug.CategoryBrowser = extend(Firebug.Module,
     refresh: function()
     {
         var categories = Firebug.Chromebug.CategoryBrowser.getCategories();
-        FBTrace.dumpProperties("BEFORE this.categoryBox.innerHTML", this.categoryBox.innerHTML);
+        FBTrace.dumpProperties("BEFORE this.categoryBox", this.categoryBox);
         this.CategoryRep.tag.replace({categories: categories}, this.categoryBox);
 
         this.categoryBox.addEventListener('click', this.showProperties, true); // capturing

@@ -30,7 +30,12 @@
     var FBTrace = Components.classes["@joehewitt.com/firebug-trace-service;1"]
                  .getService(Components.interfaces.nsISupports).wrappedJSObject.getTracer("extensions.chromebug");
     FBTrace.setScope(window);
-    window.addEventListener('load', function (){top.FirebugChrome.initialize();}, true); 
+    window.addEventListener('load', function ()
+    {
+        top.FirebugChrome.initialize();
+        window.dump("FirebugChrome initialize\n");
+        Firebug.Chromebug.CategoryBrowser.startupXPCOMBrowser();
+    }, true); 
     </script>
     <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
