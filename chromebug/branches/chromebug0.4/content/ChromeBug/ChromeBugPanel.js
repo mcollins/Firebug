@@ -116,8 +116,7 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
     getObjectDescription: function()
     {
         var xul_window = this.getContainingXULWindow();
-        var index = 
-.getXULWindowIndex(xul_window) + 1;
+        var index = ChromebugWindowInfo.getXULWindowIndex(xul_window) + 1;
         var win = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
         var title = index +". "+this.getDocumentType()+" in "+" ("+(win?win.document.title:"?no window?")+")";
         return {path: title, name: this.getDocumentLocation() }

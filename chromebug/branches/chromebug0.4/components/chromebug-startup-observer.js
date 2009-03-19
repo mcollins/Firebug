@@ -17,7 +17,7 @@ var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObs
 var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 
 const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
-const trace = true;
+const trace = false;
 // ************************************************************************************************
 // Startup Request Observer implementation
 
@@ -50,7 +50,7 @@ StartupObserver.prototype =
 
    startJSD: function()
    {
-       Components.utils.reportError("chromebug starting jsd");
+       if (trace) Components.utils.reportError("chromebug starting jsd");
        var DebuggerService = Cc["@mozilla.org/js/jsd/debugger-service;1"];
        var jsdIDebuggerService = Ci["jsdIDebuggerService"];
        jsd = DebuggerService.getService(jsdIDebuggerService);
@@ -100,10 +100,13 @@ StartupObserver.prototype =
        jsd.appendFilter(filterfb4cb);
        jsd.appendFilter(filterTrace);
 
-       jsd.enumerateFilters({ enumerateFilter: function(filter)
+       if (trace)
+       {
+    	   jsd.enumerateFilters({ enumerateFilter: function(filter)
            {
                Components.utils.reportError("gStartupObserverSingleton filter "+filter.urlPattern+" "+filter.flags+"\n");
            }});
+       }
    },
 
    hookJSDContexts: function(jsd, jsdState)
@@ -299,9 +302,8 @@ StartupObserver.prototype =
     observe: function(subject, topic, data)
     {
         if (topic == STARTUP_TOPIC) {
-            Components.utils.reportError("StartupObserver "+topic);
+            if (trace) Components.utils.reportError("StartupObserver "+topic);
             this.initialize();
-            Components.utils.reportError("StartupObserver done");
             return;
         }
         else if (topic == "quit-application") {
@@ -517,7 +519,7 @@ function getTmpFile()
         get("TmpD", Components.interfaces.nsIFile);
     file.append("gstartup.tmp");
     file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
-    Components.utils.reportError("chromebug-startup-observer opened tmp file "+file.path+"\n");
+    if (trace) Components.utils.reportError("chromebug-startup-observer opened tmp file "+file.path+"\n");
     return file;
 }
 
