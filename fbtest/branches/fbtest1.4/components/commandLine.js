@@ -20,7 +20,7 @@ const CMDLINE_FLAG = "runFBTests";
 // ************************************************************************************************
 // Command Line Handler
 
-var CommandLineHandler = 
+var CommandLineHandler =
 {
     runFBTests: false,
     testListURI: null,
@@ -47,15 +47,15 @@ var CommandLineHandler =
         try
         {
             // Handle flag with test URI specified. This throws an exception
-            // if the parameter isn't specified. 
+            // if the parameter isn't specified.
             var testListURI = cmdLine.handleFlagWithParam(CMDLINE_FLAG, false);
             this.startOnStartup(testListURI);
         }
         catch (e)
         {
             // So, the parameter isn't probably there. Try to handle at least the flag.
-            // The default test list URI will be used. 
-            if (cmdLine.handleFlag(CMDLINE_FLAG, false)) 
+            // The default test list URI will be used.
+            if (cmdLine.handleFlag(CMDLINE_FLAG, false))
                  this.startOnStartup(null);
         }
     },
@@ -76,9 +76,9 @@ var CommandLineHandler =
         window.dump("FBTest; Test List URI: " + testListURI + "\n");
     },
 
-    // The text should have embedded newlines which wrap at 76 columns, and should include 
-    // a newline at the end. By convention, the right column which contains flag descriptions 
-    // begins at the 24th character. 
+    // The text should have embedded newlines which wrap at 76 columns, and should include
+    // a newline at the end. By convention, the right column which contains flag descriptions
+    // begins at the 24th character.
     // xxxHonza: weird is that if I run Firefox with -help parameter the second column
     // begins on 33th character.
     helpInfo: "  -" + CMDLINE_FLAG + " <test-list-uri>   Automatically run all Firebug tests \n" +
@@ -108,8 +108,8 @@ var CommandLineModule =
 {
     QueryInterface: function(iid)
     {
-        if (iid.equals(nsIModule) || 
-            iid.equals(nsISupports))
+        if (iid.equals(Ci.nsIModule) ||
+            iid.equals(Ci.nsISupports))
             return this;
 
         throw Cr.NS_ERROR_NO_INTERFACE;
@@ -130,7 +130,7 @@ var CommandLineModule =
         compMgr.registerFactoryLocation(CLASS_ID, CLASS_NAME,
             CONTRACT_ID, fileSpec, location, type);
 
-        categoryManager.addCategoryEntry("command-line-handler", 
+        categoryManager.addCategoryEntry("command-line-handler",
             CLD_CATEGORY, CONTRACT_ID, true, true);
       },
 
