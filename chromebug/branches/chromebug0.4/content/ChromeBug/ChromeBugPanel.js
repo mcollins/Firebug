@@ -1546,40 +1546,42 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         if (Firebug.Chromebug.activated)
             return;
-        // When are called the window mediator has been examined and contexts for the currently open windows have been created.
-        // We may or may not know how the jsContexts are mapped to the windows.
-        // We don't know how the scripts created up to this point are connected to the jsContexts.
+
         //if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            //Firebug.Chromebug.syncContextsToJSContexts(); // Update our contexts based on current jsContexts
-
-            var appShellService = this.getAppShellService();
-            var hiddenWindow = appShellService.hiddenDOMWindow;
+            var startupObserver = Firebug.Chromebug.getStartupObserver();
+            var jsdState = startupObserver.jsdState;
+            if (!jsdState || !jsdState._chromebug)
+            {
+                setTimeout(function waitForFBTrace()
+                {
+                    var startupObserver = Firebug.Chromebug.getStartupObserver();
+                    FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
+                }, 1500);
+                return;
+            }
             //https://developer.mozilla.org/En/Working_with_windows_in_chrome_code TODO after FF2 is history, us Application.storage
-            if (hiddenWindow._chromebug)
+            if (jsdState._chromebug)
             {
                 // For now just clear the breakpoints, could try to put these into fbs .onX
-                var bps = hiddenWindow._chromebug.breakpointedScripts;
+                var bps = jsdState._chromebug.breakpointedScripts;
                 for (tag in bps)
                 {
                    var script = bps[tag];
                    if (script.isValid)
                        script.clearBreakpoint(0);
                 }
-                delete 	hiddenWindow._chromebug.breakpointedScripts;
+                delete 	jsdState._chromebug.breakpointedScripts;
 
-                //hiddenWindow.dump('adding hiddenWindow\n');
-                //var context = GlobalScopeInfos.addHiddenWindow(hiddenWindow);
-
-                var globals = hiddenWindow._chromebug.globals; // []
-                var globalTagByScriptTag = hiddenWindow._chromebug.globalTagByScriptTag; // globals index by script tag
-                var xulScriptsByURL = hiddenWindow._chromebug.xulScriptsByURL;
+                var globals = jsdState._chromebug.globals; // []
+                var globalTagByScriptTag = jsdState._chromebug.globalTagByScriptTag; // globals index by script tag
+                var xulScriptsByURL = jsdState._chromebug.xulScriptsByURL;
                 Firebug.Chromebug.buildInitialContextList(globals, globalTagByScriptTag, xulScriptsByURL);
 
-                delete hiddenWindow._chromebug.globalTagByScriptTag;
-                delete hiddenWindow._chromebug.jsContexts;
+                delete jsdState._chromebug.globalTagByScriptTag;
+                delete jsdState._chromebug.jsContexts;
 
                 // We turned on jsd to get initial values. Maybe we don't want it on
                 if (!Firebug.Debugger.isAlwaysEnabled())
@@ -1587,7 +1589,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
             }
             else
-                FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in hiddenWindow, maybe the command line handler is broken\n");
+                FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in startupObserver, maybe the command line handler is broken\n");
 
         }
         catch(exc)
@@ -3427,13 +3429,20 @@ Firebug.Chromebug.PathListLocator = function(xul_element)
     }
     return Firebug.Chromebug.PathList;
 }
+
+Firebug.Chromebug.getStartupObserver = function()
+{
+    var chromebugAppStartClass = Components.classes["@getfirebug.com/chromebug-startup-observer;1"];
+    var startupObserver = chromebugAppStartClass.getService(Ci.nsISupports);
+    return startupObserver.wrappedJSObject;
+}
+
 Firebug.Chromebug.dumpFileTrack = function()
 {
-    var appShellService = this.getAppShellService();
-    var hiddenWindow = appShellService.hiddenDOMWindow;
-
-    fbs.dumpFileTrack(hiddenWindow.getTrackFiles());
+    var startupObserver = Firebug.Chromebug.getStartupObserver();
+    fbs.dumpFileTrack(startupObserver.getAllTrackedFiles());
 }
+
 Firebug.Chromebug.unitTest = function()
 {
     this.toggleIntroduction();

@@ -43,17 +43,21 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
         else
             this.tracePanel = this.createTracePanel(context);
     },
-    
+
     destroyContext: function(context)
     {
-    	// unpoint from this context to our panel so its not destroyed.
-    	if (this.tracePanel)
-    		context.setPanel(this.tracePanel.name, null);
+        // unpoint from this context to our panel so its not destroyed.
+        if (this.tracePanel)
+            context.setPanel(this.tracePanel.name, null);
     },
 
     createTracePanel: function(context)
     {
         var panel = context.getPanel("trace", false); // create if need be.
+        var panelType = Firebug.getPanelType("trace");
+        var doc = FirebugChrome.getPanelDocument(panelType);
+        var stylesheet = createStyleSheet(doc, "chrome://firebug/skin/traceConsole.css");
+        addStyleSheet(doc, stylesheet);
         return panel;
     },
 
@@ -123,13 +127,13 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         Firebug.TraceModule.onLoadConsole(window, myPanelNode);
         this.unwrapper = bind(this.unWrapMessage, this);
         if (FBTrace.DBG_CB_CONSOLE)
-        	FBTrace.sysout("TraceConsolePanel initializeNode");
+            FBTrace.sysout("TraceConsolePanel initializeNode");
     },
 
     destroyNode: function()
     {
         if (FBTrace.DBG_CB_CONSOLE)
-        	FBTrace.sysout("TraceConsolePanel destroyNode");
+            FBTrace.sysout("TraceConsolePanel destroyNode");
     },
 
     show: function(state)
@@ -249,11 +253,11 @@ FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
 
         var index = message.text.indexOf("ERROR");
         if (index != -1)
-            message.type = "DBG_ERROR";
+            message.type = "DBG_ERRORS";
 
         index = message.text.indexOf("EXCEPTION");
         if (index != -1)
-            message.type = "DBG_ERROR";
+            message.type = "DBG_ERRORS";
 
         // The wrapper could a domplate but then the domplate expansion would be in the domplate and confuse me.
         var wrapper = this.logs.ownerDocument.createElement("tr");

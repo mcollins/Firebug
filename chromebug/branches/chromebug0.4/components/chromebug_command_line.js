@@ -19,16 +19,21 @@ const prefs = PrefService.getService(nsIPrefBranch2);
 const iosvc = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
 const chromeReg = Components.classes["@mozilla.org/chrome/chrome-registry;1"].getService(Components.interfaces.nsIToolkitChromeRegistry);
 const appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].getService(Components.interfaces.nsIAppShellService);
-const  clh_contractID = "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug";
+
 const appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
 
 const  clh_CID = Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}");
+const  clh_contractID = "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug";
+
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+const Cr = Components.results;
 
 // category names are sorted alphabetically. Typical command-line handlers use a
 // category that begins with the letter "m".
 const  clh_category = "b-chromebug";
 
-const  nsIWindowMediator = Components.interfaces.nsIWindowMediator;
+const nsIWindowMediator = Components.interfaces.nsIWindowMediator;
 const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
 
 const trace = false;
@@ -56,7 +61,6 @@ const  chromebugCommandLineHandler = {
         }
         else
         {
-
             if (!w)
                 w = opener.screen.availWidth;
             if (!h)
@@ -74,235 +78,6 @@ const  chromebugCommandLineHandler = {
         return win;
     },
 
-    startJSD: function(window)
-    {
-        var DebuggerService = Components.classes["@mozilla.org/js/jsd/debugger-service;1"];
-        var jsdIDebuggerService = Components.interfaces["jsdIDebuggerService"]
-        jsd = DebuggerService.getService(jsdIDebuggerService);
-
-        prefs.setBoolPref("extensions.firebug-service.filterSystemURLs", false);  // See firebug-service.js
-
-        if (jsd.isOn)
-            return;
-
-        window.dump("chromebug_command_line version: "+appInfo.version+" gets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
-        prefs.setBoolPref("browser.dom.window.dump.enabled", true);  // Allows window.dump()
-        prefs.setBoolPref("nglayout.debug.disable_xul_cache", true);
-        prefs.setBoolPref("nglayout.debug.disable_xul_fastload", true);
-        prefs.setBoolPref("javascript.options.showInConsole", true);  // chrome errors show
-        window.dump("WARNING: set nglayout.debug.disable_xul_fastload  and nglayout.debug.disable_xul_cache javascript.options.showInConsole true\n");
-
-        jsd.on();
-        jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
-        jsd.initAtStartup = false;
-
-        this.setJSDFilters(jsd);
-        this.hookJSDContexts(jsd, window);
-
-        window.dump("chromebug_command_line sets jsd service, isOn:"+jsd.isOn+" initAtStartup:"+jsd.initAtStartup+"\n");		/*@explore*/
-    },
-
-    setJSDFilters: function(jsd)
-    {
-        var passDebuggerHalter = {
-                globalObject: null,
-                flags: jsdIFilter.FLAG_ENABLED | jsdIFilter.FLAG_PASS,
-                urlPattern: "*/debuggerHalter.js",
-                startLine: 0,
-                endLine: 0
-            };
-        var filterChromebug =
-        {
-             globalObject: null,
-                flags: jsdIFilter.FLAG_ENABLED,
-                urlPattern: "chrome://chromebug/*",
-                startLine: 0,
-                endLine: 0
-            };
-        var filterfb4cb = {
-                globalObject: null,
-                flags: jsdIFilter.FLAG_ENABLED,
-                urlPattern: "chrome://fb4cb/*",
-                startLine: 0,
-                endLine: 0
-            };
-        var filterTrace = {
-                 globalObject: null,
-                 flags: jsdIFilter.FLAG_ENABLED,
-                 urlPattern: "chrome://firebug/content/trace*",
-                 startLine: 0,
-                 endLine: 0
-             };
-        jsd.appendFilter(passDebuggerHalter); // first in, first compared
-        jsd.appendFilter(filterChromebug);
-        jsd.appendFilter(filterfb4cb);
-        jsd.appendFilter(filterTrace);
-
-        jsd.enumerateFilters({ enumerateFilter: function(filter)
-            {
-                window.dump("chromebug_command_line filter "+filter.urlPattern+" "+filter.flags+"\n");
-            }});
-    },
-
-
-    hookJSDContexts: function(jsd, hiddenWindow)
-    {
-        // This is a minature version of the double hook in firebug-service.js
-        hiddenWindow._chromebug = {};
-        hiddenWindow._chromebug.globalTagByScriptTag = {};
-        hiddenWindow._chromebug.globals = [];
-        hiddenWindow._chromebug.breakpointedScripts = {};
-        hiddenWindow._chromebug.innerScripts = [];
-        hiddenWindow._chromebug.xulScriptsByURL = {};
-        hiddenWindow.getTrackFiles = function() { return fbs.trackFiles.allFiles; }
-
-        jsd.scriptHook =
-        {
-            onScriptCreated: function(script)
-            {
-                if (fbs.trackFiles.avoidSelf(script.fileName))
-                    return;
-                 fbs.trackFiles.add(script);
-
-                 var cb = hiddenWindow._chromebug;
-                 if (!cb)
-                 {
-                      // Somehow the hook can be called before the hiddenWindow object is updated?
-                      //if (trace) hiddenWindow.dump("onScriptCreated No hiddenWindow._chromebug for script:"+script.fileName+"\n");
-                      return;
-                 }
-                 if (!script.functionName) // top or eval-level
-                 {
-                     if (cb.breakpointedScripts)  // should never be false but is once
-                     {
-                         cb.breakpointedScripts[script.tag] = script;
-                         script.setBreakpoint(0);
-                         return;
-                     }
-                 }
-                 else if ( reXUL.test(script.fileName) )
-                 {
-                     if (!(script.fileName in cb.xulScriptsByURL))
-                         cb.xulScriptsByURL[script.fileName] = [];
-                     cb.xulScriptsByURL[script.fileName].push(script); // test for valid when removed
-                     return;
-                 }
-                 cb.innerScripts.push(script);
-            },
-            onScriptDestroyed: function(script)
-            {
-                if (fbs.trackFiles.avoidSelf(script.fileName))
-                    return;
-                var cb = hiddenWindow._chromebug;
-
-                if (!script.functionName) // top or eval-level
-                {
-                    var cb = hiddenWindow._chromebug;
-                    if (!cb || !cb.breakpointedScripts)
-                    {
-                        // about 4 of these can come out, some timing bug in mozilla.
-                        //if (trace) hiddenWindow.dump("onScriptDestroyed No hiddenWindow._chromebug for script:"+script.fileName+"\n");
-                        return;
-                    }
-                    var broken = cb.breakpointedScripts[script.tag];
-                    if(broken)
-                    {
-                        delete cb.breakpointedScripts[script.tag];
-                        return;
-                    }
-                 }
-                 if (cb)
-                 {
-                     var i = cb.innerScripts.indexOf(script);
-                     if (i) delete cb.innerScripts[i];
-                 }
-            },
-        };
-
-        jsd.breakpointHook =
-        {
-            onExecute: function(frame, type, val)
-            {
-                fbs.trackFiles.def(frame);
-
-                frame.script.clearBreakpoint(0);
-                var script = frame.script;
-                //if (trace) hiddenWindow.dump("breakpointHook script "+script.tag+"\n");
-                var cb = hiddenWindow._chromebug;
-                var broken = cb.breakpointedScripts[script.tag];
-                if (broken)
-                {
-                    delete cb.breakpointedScripts[script.tag];
-                }
-
-                if (!frame.callingFrame) // then top-level
-                {
-                    var scope = frame.scope;
-                    if (scope)
-                    {
-                        while(scope.jsParent) // walk to the oldest scope
-                            scope = scope.jsParent;
-
-                        var frameGlobal = scope.getWrappedValue();
-                        var tag = cb.globals.indexOf(frameGlobal);
-                        if (tag < 0)
-                            tag = cb.globals.push(frameGlobal) - 1;
-
-                        var scopeName = fbs.getLocationSafe(frameGlobal);
-                        if (!scopeName || !fbs.trackFiles.avoidSelf(scopeName))
-                        {
-                            if (trace) hiddenWindow.dump("assigning "+tag+" to "+frame.script.fileName+"\n");
-                            cb.globalTagByScriptTag[frame.script.tag] = tag;
-
-                            // add the unassigned innerscripts
-                            for (var i = 0; i < cb.innerScripts.length; i++)
-                            {
-                                var script = cb.innerScripts[i];
-                                if (script.fileName != frame.script.fileName)  // so what tag then?
-                                    if (trace) hiddenWindow.dump("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
-                                cb.globalTagByScriptTag[script.tag] = tag;
-                            }
-                        }
-                        else
-                        {
-                            if (trace) hiddenWindow.dump("dropping "+tag+" with location "+scopeName+"\n");
-                        }
-                        cb.innerScripts = [];
-                    }
-                    else // looks like this is where command line handlers end up
-                        if (trace) hiddenWindow.dump("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
-                }
-                else // looks like .xml/.xul ends up here.
-                    if (trace) hiddenWindow.dump("callingFrame for "+frame.script.fileName+"\n");
-                return jsdIExecutionHook.RETURN_CONTINUE;
-            }
-        };
-
-        jsd.errorHook =
-        {
-            onError: function(message, fileName, lineNo, pos, flags, errnum, exc)
-            {
-                hiddenWindow.dump("errorHook: "+message+"@"+ fileName +"."+lineNo+"\n");
-                return true;
-            }
-        };
-
-    },
-    getLocationSafe: function(global)
-    {
-        try
-        {
-            if (global && global.location)  // then we have a window, it will be an nsIDOMWindow, right?
-                return global.location.toString();
-            else if (global && global.tag)
-                return "global_tag_"+global.tag;
-        }
-        catch (exc)
-        {
-            // FF3 gives (NS_ERROR_INVALID_POINTER) [nsIDOMLocation.toString]
-        }
-        return null;
-    },
     openChromebug: function(window)
     {
         var inType = "chromebug:ui"; // MUST BE windowType on chromebug.xul
@@ -327,11 +102,6 @@ const  chromebugCommandLineHandler = {
         return chromeBugWindow;
     },
 
-    openNow: function(window)
-    {
-        this.useExistingWindows = true;
-        return this.openChromebug(window);
-    },
 
   /* nsISupports */
   QueryInterface : function clh_QI(iid)
@@ -352,21 +122,17 @@ const  chromebugCommandLineHandler = {
 
     handle : function clh_handle(cmdLine)
     {
+        window = appShellService.hiddenDOMWindow;
         try
         {
-            window = appShellService.hiddenDOMWindow;
-
-            chromebugCommandLineHandler.startJSD(window);
-
             window.dump("Chromebug Command Line Handler taking arguments from state:"+cmdLine.state+"\n");
             for (var i = 0; i < cmdLine.length; i++)
                 window.dump("Chromebug Command Line Handler arguments on cmdLine: "+cmdLine.length+"."+i+")"+cmdLine.getArgument(i)+"\n");
 
             if (cmdLine.state == cmdLine.STATE_REMOTE_AUTO) // FF is already running
             {
-                var skipChrome = cmdLine.handleFlagWithParam("chrome", false); // take ourselves out
+                var skipChrome = cmdLine.handleFlagWithParam("chromebug", false); // take ourselves out
                 window.dump("Chromebug Command Line Handler removing chrome arguments from command line:"+skipChrome+"\n");
-                var noFF = cmdLine.handleFlag("firefox", false); // take out the flag but not the URL if any
                 var noProfile = cmdLine.handleFlagWithParam("p", false); // remove annoying messages about -p
             }
             else  // New chromebug that may launch FF
@@ -375,40 +141,19 @@ const  chromebugCommandLineHandler = {
                 {
                     var launchChromebug = cmdLine.handleFlag("chromebug", false);
                     if (launchChromebug)
-                        chromebugCommandLineHandler.openChromebug(window);
-                }
-                catch (e)
-                {
-                }
-                try
-                {
-                    this.firefoxURL = cmdLine.handleFlagWithParam("firefox", false);
-                }
-                catch (e)
-                {
-                    // either there was no url or we had a exception, we'll never know which
-                }
-
-                if (this.firefoxURL)
-                    this.firefox = true;
-                else  // try form without URL
-                    this.firefox = cmdLine.handleFlag("firefox", false);
-
-                try
-                {
-                    this.appURL = cmdLine.handleFlagWithParam("app", false);
-                    if (this.appURL)
                     {
-                        this.firefox = true;
-                        this.firefoxURL = this.appURL; // same api anyway
+                        getStartupObserver().startOnStartupNextTime();
+                        chromebugCommandLineHandler.openChromebug(window);
+                    }
+                    else
+                    {
+                        getStartupObserver().dontStartOnStartupNextTime();
                     }
                 }
                 catch (e)
                 {
+                    Components.utils.reportError("Failed to process command line because of: "+e);
                 }
-
-                if (this.firefox)
-                    window.dump("Chromebug Command line sees firefox with url:"+this.firefoxURL+"\n");
             }
         }
         catch (e)
@@ -418,32 +163,6 @@ const  chromebugCommandLineHandler = {
         }
     },
 
-    getFFURL: function(cmdLine)
-    {
-           if (cmdLine.length > 0)
-           {
-               var requestedSpec = cmdLine.getArgument(cmdLine.length - 1); // last arg may be URL
-               if (requestedSpec.indexOf("-") != 0 && requestedSpec.indexOf(":") != -1)
-               {
-                   try
-                   {
-                       var url = iosvc.newURI(requestedSpec, null, null);
-                       // if we got here then we have a URL
-
-                       var spec = url.spec;
-
-                       window.dump("Chromebug Command Line Handler taking argument: "+spec+"\n");
-                       cmdLine.removeArguments(cmdLine.length - 1, cmdLine.length - 1);
-                       return spec;
-                   }
-                   catch (exc)
-                   {
-                       window.dump("Chromebug Command Line Handler did not find a URL from requestedSpec:"+requestedSpec+"\n");
-                       return false;
-                   }
-               }
-           }
-    },
 
   // CHANGEME: change the help info as appropriate, but
   // follow the guidelines in nsICommandLineHandler.idl
@@ -452,9 +171,7 @@ const  chromebugCommandLineHandler = {
   // 72 characters with embedded newlines,
   // and finally, the string should end with a newline
   //          01234567890123456789001234
-  helpInfo : "  -chrome                 chrome://chromebug/content/chromebug.xul   Launch chromebug \n"+
-             "  -firefox                <url> chromebug should start Firefox with <url>\n"+
-             "  -chromebug              start chromebug then continue as normal\n",
+  helpInfo :  "  -chromebug              start chromebug then continue as normal\n",
 
   /* nsIFactory */
 
@@ -472,19 +189,30 @@ const  chromebugCommandLineHandler = {
   }
 };
 
+function getStartupObserver()
+{
+    var chromebugAppStartClass =  Components.classes["@getfirebug.com/chromebug-startup-observer;1"];
+    var chromebugAppStartService = chromebugAppStartClass.getService(nsISupports);
+    if (chromebugAppStartService)
+        return chromebugAppStartService.wrappedJSObject;
+    else
+        return null;
+}
+
 /**
  * The XPCOM glue that implements nsIModule
  */
-const  chromebugCommandLineHandlerModule = {
-  /* nsISupports */
-  QueryInterface : function mod_QI(iid)
-  {
-    if (iid.equals(nsIModule) ||
-        iid.equals(nsISupports))
-      return this;
+const  chromebugCommandLineHandlerModule =
+{
+      /* nsISupports */
+      QueryInterface : function mod_QI(iid)
+    {
+        if (iid.equals(nsIModule) ||
+            iid.equals(nsISupports))
+          return this;
 
-    throw Components.results.NS_ERROR_NO_INTERFACE;
-  },
+        throw Components.results.NS_ERROR_NO_INTERFACE;
+    },
 
   /* nsIModule */
   getClassObject : function mod_gch(compMgr, cid, iid)
@@ -507,7 +235,7 @@ const  chromebugCommandLineHandlerModule = {
                                     type);
 
     var catMan = Components.classes["@mozilla.org/categorymanager;1"].
-      getService(nsICategoryManager);
+      getService(Ci.nsICategoryManager);
     catMan.addCategoryEntry("command-line-handler",
                             clh_category,
                             clh_contractID, true, true);
