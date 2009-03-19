@@ -302,15 +302,19 @@ this.getPref = function(pref)
 
 this.clickContinueButton = function()
 {
-    var doc = FBTest.FirebugWindow.document;
-    var button = doc.getElementById("fbContinueButton");
-    FBTest.click(button);
+    // xxxHonza: why the click doesn't work? Is is because the execution context 
+    // is stopped at a breakpoint?
+    //var doc = FBTest.FirebugWindow.document;
+    //var button = doc.getElementById("fbContinueButton");
+    //FBTest.click(button);
+
+    FW.Firebug.Debugger.resume(FW.FirebugContext);
 }
 
 // ************************************************************************************************
 // Error handling
 
-/*window.onerror = function(errType, errURL, errLineNum) 
+window.onerror = function(errType, errURL, errLineNum) 
 {
     var path = window.location.pathname;
     var fileName = path.substr(path.lastIndexOf("/") + 1);
@@ -318,7 +322,7 @@ this.clickContinueButton = function()
     FBTest.sysout(fileName + " ERROR " + errorDesc);
     FBTestFirebug.testDone();
     return false;
-}*/
+}
 
 // ************************************************************************************************
 // Panel Navigation
@@ -359,7 +363,7 @@ this.TestHandlers = function(testName)
     this.testName = testName;
     this.progressElement = document.getElementById("firebugTestElement");
     if (!this.progressElement)
-        throw new Error("TestHanders object requires element firebugTestElement in document "+document.title);
+        throw new Error("TestHandlers object requires element firebugTestElement in document "+document.title);
     this.windowLocation = new String(window.location);
 
     FBTest.Firebug.cleanUpTestTabs();  // before we start

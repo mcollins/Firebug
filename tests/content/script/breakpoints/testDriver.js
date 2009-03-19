@@ -80,6 +80,8 @@ function DebuggerListener(breakpointId, nextTest)
 {
     this.onStop = function(context, frame, type, rv)
     {
+        FBTest.sysout("breakpoints.DebuggerListener.onStop " + breakpointId);
+
         FW.Firebug.Debugger.removeListener(this);
         window.setTimeout(function() {
             executeTest(breakpointId, nextTest) 
@@ -89,7 +91,6 @@ function DebuggerListener(breakpointId, nextTest)
 
 function executeTest(breakpointId, nextTest)
 {
-    var panel = FBTestFirebug.selectPanel("script");
     if (!verifyExeLine(breakpointId))
         return FBTestFirebug.testDone();
 
