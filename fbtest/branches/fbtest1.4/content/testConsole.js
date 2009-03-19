@@ -39,7 +39,8 @@ FBTestApp.TestConsole =
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
 
-            gFindBar = document.getElementById("FindToolbar");
+            // Get time for test timeout from preferences.
+            FBTest.testTimeout = Firebug.getPref(Firebug.prefDomain, "fbtest.testTimeout");
 
             // Register strings so, Firebug's localization APIs can be used.
             if (Firebug.registerStringBundle)
@@ -58,6 +59,8 @@ FBTestApp.TestConsole =
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
+
+            gFindBar = document.getElementById("FindToolbar");
         }
         catch (e)
         {
@@ -203,8 +206,7 @@ FBTestApp.TestConsole =
 
                 // Finally run all tests if the browser has been launched with 
                 // -runFBTests argument on the command line.
-                if (cmdLineHandler.wrappedJSObject.runFBTests)
-                    self.autoRun();
+                self.autoRun();
             }
         }
 
@@ -240,12 +242,16 @@ FBTestApp.TestConsole =
 
     autoRun: function()
     {
+        if (!cmdLineHandler.wrappedJSObject.runFBTests)
+            return;
+
+        cmdLineHandler.wrappedJSObject.runFBTests = false;
+
         // Run the test suite asynchronously so, the tests callstack is correct.
         setTimeout(function() 
         {
-            FBTestApp.TestConsole.onRunAll(function(canceled) 
+            FBTestApp.TestConsole.onRunAll(function(canceled)
             {
-                // If the test suite has been stopped manualy, don't quit Firefox. 
                 if (!canceled)
                     goQuitApplication();
             });
