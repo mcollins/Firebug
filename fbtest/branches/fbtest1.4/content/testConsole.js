@@ -14,6 +14,7 @@ var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
 var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
+var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
 
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
@@ -42,9 +43,6 @@ FBTestApp.TestConsole =
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
 
-            var args = window.arguments[0];
-            FBTest.FirebugWindow = args.FirebugWindow;
-
             gFindBar = document.getElementById("FindToolbar");
 
             // Register strings so, Firebug's localization APIs can be used.
@@ -54,14 +52,13 @@ FBTestApp.TestConsole =
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 
-            var defaultTestList = Firebug.getPref(Firebug.prefDomain, "fbtest.defaultTestSuite");
-            if (!defaultTestList)
-                defaultTestList = "chrome://firebug/content/testList.html";
-
-            // Load default test list. The test list is built according to
-            // a 'testList' variable and server started using a 'baseURI' variable.
-            // Both variables must be present within the file.
-            this.loadTestList(defaultTestList);
+            // Load all tests from the default test list file (testList.html).
+            // The file usually defines two variables:
+            // testList: array with individual test objects.
+            // baseURI: base directory for the test server (http://localhost:7080)
+            //          if this variable isn't specified, the parent directory of the
+            //          test list file is used.
+            this.loadTestList(this.getDefaultTestList());
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
@@ -73,6 +70,22 @@ FBTestApp.TestConsole =
 
             alert("There may be a useful message on the Error Console: "+e);
         }
+    },
+
+    getDefaultTestList: function()
+    {
+        // 1) The default test list (suite) can be specified on the command line.
+        var defaultTestList = FBTestApp.defaultTestList;
+
+        // 2) The list from the last time (stored in preferences) can be also used.
+        if (!defaultTestList)
+            defaultTestList = Firebug.getPref(Firebug.prefDomain, "fbtest.defaultTestSuite");
+
+        // 3) If no list is specified, use the default from currently installed Firebug.
+        if (!defaultTestList)
+            defaultTestList = "chrome://firebug/content/testList.html";
+
+        return defaultTestList;
     },
 
     internationalizeUI: function()
@@ -191,6 +204,11 @@ FBTestApp.TestConsole =
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
                         testListPath, doc);
+
+                // Finally run all tests if the browser has been launched with 
+                // -runFBTests argument on the command line.
+                if (cmdLineHandler.wrappedJSObject.runFBTests)
+                    self.autoRun();
             }
         }
 
@@ -224,8 +242,22 @@ FBTestApp.TestConsole =
         }
     },
 
+    autoRun: function()
+    {
+        // Run the test suite asynchronously so, the tests callstack is correct.
+        setTimeout(function() 
+        {
+            FBTestApp.TestConsole.onRunAll(function(canceled) 
+            {
+                // If the test suite has been stopped manualy, don't quit Firefox. 
+                if (!canceled)
+                    goQuitApplication();
+            });
+        }, 100);
+    },
+
     // UI Commands
-    onRunAll: function()
+    onRunAll: function(onFinishCallback)
     {
         // Join all tests from all categories.
         var testQueue = [];
@@ -233,13 +265,13 @@ FBTestApp.TestConsole =
             testQueue.push.apply(testQueue, this.categories[i].tests);
 
         // ... and execute them as one test suite.
-        FBTestApp.TestRunner.runTests(testQueue);
+        FBTestApp.TestRunner.runTests(testQueue, onFinishCallback);
     },
 
     onStop: function()
     {
         FBTestApp.TestRunner.testQueue = null;
-        FBTestApp.TestRunner.testDone();
+        FBTestApp.TestRunner.testDone(true);
     },
 
     onOpenTestList: function()
@@ -471,14 +503,16 @@ var TestServer =
 FBTestApp.TestRunner =
 {
     testQueue: null,
+    onFinishCallback: null,
 
-    runTests: function(tests)
+    runTests: function(tests, onFinishCallback)
     {
         tests = cloneArray(tests);
 
         FBTestApp.TestSummary.clear();
         TestProgress.start(tests.length);
 
+        this.onFinishCallback = onFinishCallback;
         this.testQueue = tests;
         this.runTest(this.testQueue.shift());
     },
@@ -557,9 +591,9 @@ FBTestApp.TestRunner =
             var win = testDoc.defaultView;
 
             if (win.wrappedJSObject)
-                win.wrappedJSObject.FBTest = window.FBTest;
+                win.wrappedJSObject.FBTest = FBTest;
             else
-                win.FBTest = window.FBTest;
+                win.FBTest = FBTest;
 
             //xxxHonza: Tracing from test files should be made through FBTest.sysout
             /*if (win.wrappedJSObject)
@@ -591,14 +625,19 @@ FBTestApp.TestRunner =
             FBTrace.sysout("iframe.docShell for "+testURL,  docShell);
     },
 
-    testDone: function()
+    testDone: function(canceled)
     {
         if (!this.currentTest)
             return;
 
         if (FBTrace.DBG_FBTEST)
+        {
             FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
                 this.currentTest);
+
+            if (canceled)
+                FBTrace.sysout("fbtest.TestRunner.CANCELED");
+        }
 
         this.currentTest.onTestDone();
         this.currentTest = null;
@@ -612,6 +651,8 @@ FBTestApp.TestRunner =
         else
         {
             TestProgress.stop();
+            if (this.onFinishCallback)
+                this.onFinishCallback(canceled);
         }
     },
 
@@ -746,7 +787,7 @@ FBTestApp.TestSummary =
 /**
  * Unit Test APIs intended to be used within test-file scope.
  */
-window.FBTest = //xxxHonza: the object should not be global.
+var FBTest = FBTestApp.FBTest =
 {
     progress: function(msg)
     {
@@ -764,7 +805,7 @@ window.FBTest = //xxxHonza: the object should not be global.
 
     testDone: function()
     {
-        FBTestApp.TestRunner.testDone();
+        FBTestApp.TestRunner.testDone(false);
     },
 
     compare: function(expected, actual, msg)

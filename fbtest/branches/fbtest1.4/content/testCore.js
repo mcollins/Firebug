@@ -21,8 +21,7 @@ this.initialize = function()
 {
     // Initialize global variables before all the namespaces are initialized.
     var args = window.arguments[0];
-    FBTrace = args.FirebugWindow.FBTrace;
-    Firebug = args.FirebugWindow.Firebug;
+    window.initWithParams(args);
 
     for (var i=0; i<namespaces.length; i+=2) 
     {
@@ -31,6 +30,11 @@ this.initialize = function()
         fn.apply(ns);
     }
 
+    // Set the Firebug window now. In case of a new window we have to wait
+    // till all nemespaces are initialized.
+    FBTestApp.FBTest.FirebugWindow = args.firebugWindow;
+
+    // Now we can initialize entire console.
     FBTestApp.TestConsole.initialize();
 };
 
@@ -46,6 +50,19 @@ this.shutdown = function()
 // Register handlers to maintain extension life cycle.
 window.addEventListener("load", FBTestApp.initialize, false);
 window.addEventListener("unload", FBTestApp.shutdown, false);
+
+// Helper method for passing arguments into an existing window.
+window.initWithParams = function(args)
+{
+    FBTrace = args.firebugWindow.FBTrace;
+    Firebug = args.firebugWindow.Firebug;
+    FBTestApp.defaultTestList = args.testListURI;
+
+    // The FBTest object might exist if an existing window is initializing 
+    // with new parameters.
+    if (FBTestApp.FBTest)
+        FBTestApp.FBTest.FirebugWindow = args.firebugWindow;
+}
 
 }).apply(FBTestApp);
 

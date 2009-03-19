@@ -4,42 +4,62 @@
 // Test Console Overlay Implementation
 
 /**
- * This overlay is only intended to append a context menu into Firebug icon menu.
+ * This overlay is intended to append a new menu-item into the Firebug's icon menu.
  * This menu is used to open the Test Console (test runner window).
  */
-var FirebugTestConsoleOverlay =
+var FBTestFirebugOverlay = {};
+
+(function() {
+
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+
+var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
+
+this.initialize = function()
 {
-    open: function(windowURL)
-    {
-        var consoleWindow = null;
-        FBL.iterateBrowserWindows("FBTestConsole", function(win) {
-            consoleWindow = win;
-            return true;
-        });
+    window.removeEventListener("load", FBTestFirebugOverlay.initialize, false);
 
-        // Try to connect an existing trace-console window first.
-        if (consoleWindow) {
-            consoleWindow.focus();
-            return;
-        }
-
-        if (!windowURL)
-            windowURL = "chrome://fbtest/content/testConsole.xul";
-
-        var self = this;
-        var args = {
-            FirebugWindow: window
-        };
-
-        consoleWindow = window.openDialog(
-            windowURL,
-            "FBTestConsole",
-            "chrome,resizable,scrollbars=auto,minimizable,dialog=no",
-            args);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestConsoleOverlay.open", consoleWindow);
-    }
+    var cmd = cmdLineHandler.wrappedJSObject;
+    if (cmd.runFBTests)
+        FBTestFirebugOverlay.open(cmd.testListURI);
 };
+
+this.open = function(testListURI)
+{
+    var consoleWindow = null;
+    FBL.iterateBrowserWindows("FBTestConsole", function(win) {
+        consoleWindow = win;
+        return true;
+    });
+
+    var args = {
+        firebugWindow: window,
+        testListURI: testListURI
+    };
+
+    // Try to connect an existing trace-console window first.
+    if (consoleWindow) 
+    {
+        if ("initWithParams" in consoleWindow)
+            consoleWindow.initWithParams(args);
+        consoleWindow.focus();
+        return;
+    }
+
+    consoleWindow = window.openDialog(
+        "chrome://fbtest/content/testConsole.xul",
+        "FBTestConsole",
+        "chrome,resizable,scrollbars=auto,minimizable,dialog=no",
+        args);
+
+    if (FBTrace.DBG_FBTEST)
+        FBTrace.sysout("fbtest.TestConsoleOverlay.open", consoleWindow);
+};
+
+// Register load listener for command line arguments handling.
+window.addEventListener("load", FBTestFirebugOverlay.initialize, false);
+
+}).apply(FBTestFirebugOverlay);
 
 // ************************************************************************************************

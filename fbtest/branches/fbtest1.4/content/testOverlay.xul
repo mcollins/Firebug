@@ -10,7 +10,7 @@
     </stringbundleset>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_openTestConsole" oncommand="FirebugTestConsoleOverlay.open()"/>
+        <command id="cmd_openTestConsole" oncommand="FBTestFirebugOverlay.open()"/>
     </commandset>
 
     <!-- Overlay for Firebug icon menu -->
