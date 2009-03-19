@@ -62,6 +62,7 @@ StartupObserver.prototype =
        this.setJSDFilters(jsd);
 
        this.hookJSDContexts(jsd,  gStartupObserverSingleton.jsdState);
+       Components.utils.reportError("FYI: Chromebug started jsd engine; run twice without -chromebug to disable");
    },
 
    setJSDFilters: function(jsd)
@@ -267,18 +268,16 @@ StartupObserver.prototype =
    /* API */
    startOnStartupNextTime: function()
    {
-       return;
-       var catMan = Components.classes["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
-       catMan.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
+	   return; // these fail, I don't know why
+       categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
                "service," + CONTRACT_ID, true, true);
        Components.utils.reportError("chromebug registered to listen for "+STARTUP_TOPIC+" components next time this program runs");
    },
 
    dontStartOnStartupNextTime: function()
    {
-       return;
-       var catMan = Components.classes["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
-       catMan.deleteCategoryEntry(STARTUP_TOPIC, CLASS_NAME, true);
+	   return; // these fail, I don't know why
+       categoryManager.deleteCategoryEntry(STARTUP_TOPIC, CLASS_NAME, true);
        Components.utils.reportError("chromebug deregistered to listen for "+STARTUP_TOPIC+" components next time this program runs");
    },
 
