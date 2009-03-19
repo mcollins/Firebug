@@ -11,9 +11,6 @@ var Ci = Components.interfaces;
 // Services
 var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
 var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
-var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
-var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
-var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
 var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
 
 // Interfaces
@@ -21,7 +18,6 @@ var nsIFilePicker = Ci.nsIFilePicker;
 
 // Global variables
 var gFindBar;
-var serverPort = 7080;
 
 // ************************************************************************************************
 
@@ -119,7 +115,7 @@ FBTestApp.TestConsole =
 
     shutdown: function()
     {
-        TestServer.stop();
+        FBTestApp.TestServer.stop();
         Firebug.setPref(Firebug.prefDomain, "fbtest.defaultTestSuite", this.testListPath);
 
         if (Firebug.TraceModule)
@@ -186,7 +182,7 @@ FBTestApp.TestConsole =
                 }
 
                 // Restart server with new home directory using a file: url
-                var serverBaseURI = TestServer.chromeToUrl(self.baseURI, true);
+                var serverBaseURI = FBTestApp.TestServer.chromeToUrl(self.baseURI, true);
                 if (!serverBaseURI)
                 {
                     alert("Cannot access test files via baseURI conversion to http URL. " +
@@ -196,7 +192,7 @@ FBTestApp.TestConsole =
                     return;
                 }
 
-                TestServer.restart(serverBaseURI);
+                FBTestApp.TestServer.restart(serverBaseURI);
 
                 // Build new test list UI.
                 self.refreshTestList();
@@ -334,454 +330,6 @@ FBTestApp.TestConsole.TraceListener =
 };
 
 // ************************************************************************************************
-
-/**
- * HTTP Server helper
- */
-var TestServer =
-{
-    // Start the HTTP server mapping the server URL http://localhost:port/tests to the files at chromeRoot.
-    // chromeRoot cannot end at /content, it has to have something after that.
-    // (if you end in /content/, use parent to undo the convertToChromeURL file portion shorthand .parent;)
-    start: function(chromeRoot)
-    {
-        cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
-        cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
-
-        this.localDir = this.chromeToPath(chromeRoot);
-        this.path = "http://localhost:" + serverPort + "/";
-
-        this.getServer().registerDirectory("/", this.localDir);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestServer.registerDirectory: " + this.path + " => " +
-                this.localDir.path);
-
-        return true;
-    },
-
-    stop: function()
-    {
-        if (this.server)
-            this.server.stop();
-    },
-
-    restart: function(chromeRoot)
-    {
-        TestServer.stop();
-        TestServer.start(chromeRoot);
-    },
-
-    getTestCaseRootPath: function()
-    {
-        return this.path;
-    },
-
-    getServer: function()
-    {
-        if (!this.server)
-        {
-            this.server = new nsHttpServer();
-            this.server.start(serverPort);
-
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestServer.getServer HTTP server started");
-        }
-        return this.server;
-    },
-
-    chromeToPath: function (aPath)
-    {
-        try
-        {
-            if (!aPath || !(/^chrome:/.test(aPath)))
-                return this.urlToPath( aPath );
-
-            var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
-            var uri = ios.newURI(aPath, "UTF-8", null);
-            var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
-            var rv = cr.convertChromeURL(uri).spec;
-
-            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
-            {
-                var m = /(.*\/content\/)/.exec(rv);
-                if (m)
-                    rv = m[1];
-            }
-
-            if (/^file:/.test(rv))
-                rv = this.urlToPath(rv);
-            else
-                rv = this.urlToPath("file://"+rv);
-
-            return rv;
-        }
-        catch (err)
-        {
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestServer.chromeToPath EXCEPTION", err);
-        }
-
-        return null;
-    },
-
-    urlToPath: function (aPath)
-    {
-        try
-        {
-            if (!aPath || !/^file:/.test(aPath))
-                return;
-
-            return Cc["@mozilla.org/network/protocol;1?name=file"]
-                      .createInstance(Ci.nsIFileProtocolHandler)
-                      .getFileFromURLSpec(aPath);
-        }
-        catch (e)
-        {
-            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
-        }
-    },
-
-    chromeToUrl: function (aPath, aDir)
-    {
-        try
-        {
-            if (!aPath || !(/^chrome:/.test(aPath)))
-                return this.pathToUrl(aPath);
-
-            var uri = ios.newURI(aPath, "UTF-8", null);
-            var rv = chromeRegistry.convertChromeURL(uri).spec;
-            if (aDir)
-                rv = rv.substr(0, rv.lastIndexOf("/") + 1);
-
-            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
-            {
-                var m = /(.*\/content\/)/.exec(rv);
-                if (m)
-                    rv = m[1];
-            }
-
-            if (!/^file:/.test(rv))
-                rv = this.pathToUrl(rv);
-
-            return rv;
-        }
-        catch (err)
-        {
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestServer.chromeToUrl EXCEPTION", err);
-        }
-
-        return null;
-    },
-
-    pathToUrl: function(aPath)
-    {
-        try
-        {
-            if (!aPath || /^file:/.test(aPath))
-                return aPath;
-
-            var uri = ios.newURI(aPath, "UTF-8", null);
-            return Cc["@mozilla.org/network/protocol;1?name=file"]
-                .createInstance(Ci.nsIFileProtocolHandler)
-                .getURLSpecFromFile(uri).spec;
-        }
-        catch (e)
-        {
-            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
-        }
-    }
-};
-
-// ************************************************************************************************
-// TestRunner
-
-/**
- * Test runner is intended to run single tests or test suites.
- */
-FBTestApp.TestRunner =
-{
-    testQueue: null,
-    onFinishCallback: null,
-
-    runTests: function(tests, onFinishCallback)
-    {
-        tests = cloneArray(tests);
-
-        FBTestApp.TestSummary.clear();
-        TestProgress.start(tests.length);
-
-        this.onFinishCallback = onFinishCallback;
-        this.testQueue = tests;
-        this.runTest(this.testQueue.shift());
-    },
-
-    runTest: function(testObj)
-    {
-        if (this.currentTest)
-            return;
-
-        try
-        {
-            this.currentTest = testObj;
-            this.currentTest.onStartTest(FBTestApp.TestConsole.baseURI);
-
-            // Show the test within the UI (expand parent category)
-            var parentCategory = this.currentTest.category;
-            FBTestApp.CategoryList.expandCategory(parentCategory.row);
-            scrollIntoCenterView(this.currentTest.row);
-
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
-                    this.currentTest);
-
-            var testURL = this.currentTest.path;
-            if (/\.js$/.test(testURL))
-                testURL = this.wrapJS(testURL);
-
-            this.loadTestFrame(testURL);
-        }
-        catch (e)
-        {
-            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("fbtest.TestRunner.runTest EXCEPTION", e);
-            FBTest.ok(false, "TestRunner.runTest FAILS: "+e);
-        }
-    },
-
-    wrapJS: function(jsURL)
-    {
-        if (!this.wrapAJSFile)
-            this.wrapAJSFile = getResource("chrome://fbtest/content/wrapAJSFile.html");
-
-        var testURL = getDataURLForContent(new String(this.wrapAJSFile).replace("__replaceme__", jsURL), jsURL);
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("wrapJS converted "+jsURL, testURL);
-
-        return testURL;
-    },
-
-    loadTestFrame: function(testURL)
-    {
-        var testFrame = $("testFrame");
-        var outerWindow =  testFrame.contentWindow;
-        var doc = outerWindow.document;
-
-        // clean up previous test if any
-        var testCaseIframe = null;
-        var frames = doc.getElementsByTagName("iframe");
-        for (var i = 0; i < frames.length; i++)
-        {
-            testCaseIframe = frames[i];
-            testCaseIframe.parentNode.removeChild(testCaseIframe);
-        }
-
-        testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
-        testCaseIframe.setAttribute("src", "about:blank");
-        var body = doc.getElementsByTagName("body")[0];
-        body.appendChild(testCaseIframe);
-        // now hook the load event, so the next src= will trigger it.
-        var loadTestCase = function(event)
-        {
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("load event "+event.target, event.target);
-            testCaseIframe.removeEventListener("load", loadTestCase, true);
-            var testDoc = event.target;
-            var win = testDoc.defaultView;
-
-            if (win.wrappedJSObject)
-                win.wrappedJSObject.FBTest = FBTest;
-            else
-                win.FBTest = FBTest;
-
-            //xxxHonza: Tracing from test files should be made through FBTest.sysout
-            /*if (win.wrappedJSObject)
-                win.wrappedJSObject.FBTrace = window.FBTrace;
-            else
-                win.FBTrace = window.FBTrace;*/
-
-            function runTestCase(event)
-            {
-                win.removeEventListener('load', runTestCase, true);
-                try
-                {
-                    win.runTest();
-                }
-                catch (exc)
-                {
-                    FBTest.sysout("runTest FAILS "+exc, exc);
-                }
-            }
-            win.addEventListener('load', runTestCase, true);
-        }
-        testCaseIframe.addEventListener("load", loadTestCase, true);
-
-        // Load or reload the test page
-        testCaseIframe.setAttribute("src", testURL);
-        var docShell = this.getDocShellByDOMWindow(testCaseIframe);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("iframe.docShell for "+testURL,  docShell);
-    },
-
-    testDone: function(canceled)
-    {
-        if (!this.currentTest)
-            return;
-
-        if (FBTrace.DBG_FBTEST)
-        {
-            FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
-                this.currentTest);
-
-            if (canceled)
-                FBTrace.sysout("fbtest.TestRunner.CANCELED");
-        }
-
-        this.currentTest.onTestDone();
-        this.currentTest = null;
-
-        // If there are tests in the queue, execute them.
-        if (this.testQueue && this.testQueue.length)
-        {
-            TestProgress.update(this.testQueue.length);
-            this.runTest(this.testQueue.shift());
-        }
-        else
-        {
-            TestProgress.stop();
-            if (this.onFinishCallback)
-                this.onFinishCallback(canceled);
-        }
-    },
-
-    appendResult: function(result)
-    {
-        if (!this.currentTest)
-        {
-            FBTrace.sysout("test result came in after testDone!");
-            $("progressMessage").value = "test result came in after testDone!";
-            return;
-        }
-
-        // Append result into the test object.
-        this.currentTest.appendResult(result);
-
-        // If the test is currently opened, append the result directly into the UI.
-        if (hasClass(this.currentTest.row, "opened"))
-        {
-            var infoBodyRow = this.currentTest.row.nextSibling;
-            var table = FBL.getElementByClass(infoBodyRow, "testResultTable");
-            if (!table)
-                table = FBTestApp.TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
-
-            var tbody = table.firstChild;
-            result.row = FBTestApp.TestResultRep.resultTag.insertRows(
-                {results: [result]}, tbody.lastChild ? tbody.lastChild : tbody)[0];
-        }
-
-        // Update summary in the status bar.
-        FBTestApp.TestSummary.append(result);
-    },
-
-    sysout: function(msg, obj)
-    {
-        FBTrace.sysout(msg, obj);
-    },
-
-    getDocShellByDOMWindow: function(domWindow)
-    {
-        if (domWindow instanceof Ci.nsIInterfaceRequestor)
-        {
-            var navi = domWindow.getInterface(Ci.nsIWebNavigation);
-            if (navi instanceof Ci.nsIDocShellTreeItem)
-            {
-                return navi;
-            }
-            else if (FBTrace.DBG_FBTEST)
-            {
-                FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
-            }
-        }
-        else if (FBTrace.DBG_FBTEST)
-        {
-            FBTrace.sysout("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
-            FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+
-                (domWindow instanceof Ci.nsIDOMWindow));
-        }
-    },
-};
-
-// ************************************************************************************************
-
-var TestProgress =
-{
-    start: function(max)
-    {
-        this.max = max;
-        var meter = this.getMeter();
-        meter.style.display = "block";
-    },
-
-    stop: function()
-    {
-        var meter = this.getMeter();
-        meter.style.display = "none";
-    },
-
-    update: function(value)
-    {
-        var current = this.max - value;
-        var meter = this.getMeter();
-        meter.value = current ? current / (this.max / 100) : 0;
-    },
-
-    getMeter: function()
-    {
-        return $("progressMeter");
-    }
-}
-
-// ************************************************************************************************
-
-FBTestApp.TestSummary =
-{
-    results: [],
-    passing: 0,
-    failing: 0,
-
-    append: function(result)
-    {
-        this.results.push(result);
-
-        result.pass ? this.passing++ : this.failing++;
-
-        if (this.passing)
-            $("passingTests").value = "Passing Tests: " + this.passing;       //xxxHonza: localization
-
-        if (this.failing)
-            $("failingTests").value = "Failing Tests: " + this.failing;      //xxxHonza: localization
-    },
-
-    setMessage: function(message)
-    {
-        $("progressMessage").value = message;
-    },
-
-    clear: function()
-    {
-        this.results = [];
-        this.passing = 0;
-        this.failing = 0;
-
-        $("passingTests").value = "";
-        $("failingTests").value = "";
-        $("progressMessage").value = "";
-    }
-}
-
-// ************************************************************************************************
 // FBTest
 
 /**
@@ -855,17 +403,18 @@ var FBTest = FBTestApp.FBTest =
 
     getHTTPURLBase: function()
     {
-        return TestServer.path;
+        return FBTestApp.TestServer.path;
     },
 
     getLocalURLBase: function()
     {
-        return TestServer.chromeToUrl(FBTestApp.TestConsole.baseURI, true);
+        return FBTestApp.TestServer.chromeToUrl(FBTestApp.TestConsole.baseURI, true);
     },
 
     registerPathHandler: function(path, handler)
     {
-        return TestServer.getServer().registerPathHandler(path, function(metadata, response)
+        var server = FBTestApp.TestServer.getServer();
+        return server.registerPathHandler(path, function(metadata, response)
         {
             try
             {
