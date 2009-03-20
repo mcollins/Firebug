@@ -84,6 +84,7 @@ this.clearCache = function()
  */
 this.testDone = function(message)
 {
+    this.closeFirebug();
     this.cleanUpTestTabs();
     if (message)
         FBTest.progress(message);

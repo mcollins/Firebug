@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+    <title>Test Case for Issue #1591</title>
+    <script type="application/x-javascript" src="chrome://firebugTests/content/FBTestFirebug.js"></script>
+    <script type="text/javascript">
+    // Test entry point.
+    function runTest()
+    {
+        FBTestFirebug.openNewTab(basePath + "console/issue1591.html", function(win)
+        {
+            if (!FBTestFirebug.isFirebugOpen())
+                FBTestFirebug.openFirebug();
+            FBTestFirebug.enableConsolePanel(testCommandLineForError());
+        });
+    }
+    
+    function isEmpty(obj) {
+        if (obj)
+            return obj.length == 0;
+        return true;
+    }
+
+    function testCommandLineForError()
+    {
+        var panel = FW.FirebugChrome.selectPanel("console");
+        // FBTest.progress("looking up command line in " + panel);
+        
+        var clickTarget = FW.document.getElementById("fbCommandLine");
+
+        // FBTest.progress("command line: " + clickTarget);
+        FBTest.focus(clickTarget);
+        
+        // gather rows from panel
+        var rows = FW.FBL.getElementsByClass(panel.panelNode,
+            "logRow-error");
+        FBTest.ok(isEmpty(rows), "Checking for Errors");
+        // Finish test
+        FBTestFirebug.testDone("issue1591.DONE");
+    }
+    </script>
+</head>
+<body>
+
+<h1>Issue #1591</h1>
+
+<p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=1591">Issue #1591</a>
+- <span class="h3">Firebug cannot find _firebugConsole element</span>.
+<br/>
+<i>Rob Campbell, rcampbell@mozilla.com</i>
+</p>
+
+<ol>
+<li>Open Firebug and select the Console panel.</li>
+<li>Clear the console</li>
+<li>Select the command-line</li>
+<li>Check that there is no error on the console</li>
+</ol>
+</body>
+</html>
