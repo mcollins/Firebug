@@ -42,9 +42,9 @@ FBTestApp.TestRunner =
             this.currentTest = testObj;
             this.currentTest.onStartTest(FBTestApp.TestConsole.baseURI);
 
-            // Show the test within the UI (expand parent category)
-            var parentCategory = this.currentTest.category;
-            FBTestApp.CategoryList.expandCategory(parentCategory.row);
+            // Show the test within the UI (expand parent group)
+            var parentGroup = this.currentTest.group;
+            FBTestApp.GroupList.expandGroup(parentGroup.row);
             scrollIntoCenterView(this.currentTest.row);
 
             if (FBTrace.DBG_FBTEST)

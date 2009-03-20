@@ -28,7 +28,7 @@ FBTestApp.TestConsole =
 {
     // These are set when a testList.html is loaded.
     baseURI: null,
-    categories: null,
+    groups: null,
 
     initialize: function()
     {
@@ -125,7 +125,7 @@ FBTestApp.TestConsole =
             Firebug.TraceModule.removeListener(this.TraceListener);
 
         // Unregister registered repositories.
-        Firebug.unregisterRep(FBTestApp.CategoryList);
+        Firebug.unregisterRep(FBTestApp.GroupList);
         Firebug.unregisterRep(FBTestApp.TestList);
         Firebug.unregisterRep(FBTestApp.TestResultRep);
     },
@@ -167,21 +167,21 @@ FBTestApp.TestConsole =
                 if (!self.baseURI)
                     self.baseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
 
-                // Create category list from the provided test list. Also clone all JS objects
+                // Create group list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
                 var map = [];
-                self.categories = [];
+                self.groups = [];
                 for (var i=0; i<win.testList.length; i++)
                 {
                     var test = win.testList[i];
-                    var category = map[test.category];
-                    if (!category)
+                    var group = map[test.group];
+                    if (!group)
                     {
-                        self.categories.push(category = map[test.category] =
-                            new FBTestApp.Category(test.category));
+                        self.groups.push(group = map[test.group] =
+                            new FBTestApp.TestGroup(test.group));
                     }
 
-                    category.tests.push(new FBTestApp.Test(category, test.uri, test.desc));
+                    group.tests.push(new FBTestApp.Test(group, test.uri, test.desc));
                 }
 
                 // Restart server with new home directory using a file: url
@@ -221,7 +221,7 @@ FBTestApp.TestConsole =
 
     refreshTestList: function()
     {
-        if (!this.categories)
+        if (!this.groups)
         {
             FBTrace.sysout("fbtest.refreshTestList; ERROR There are no tests.");
             return;
@@ -229,13 +229,13 @@ FBTestApp.TestConsole =
 
         var frame = $("consoleFrame");
         var consoleNode = $("testList", frame.contentDocument);
-        var table = FBTestApp.CategoryList.tableTag.replace({categories: this.categories}, consoleNode);
+        var table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, consoleNode);
         var row = table.firstChild.firstChild;
 
-        for (var i=0; i<this.categories.length; i++)
+        for (var i=0; i<this.groups.length; i++)
         {
-            var category = this.categories[i];
-            category.row = row;
+            var group = this.groups[i];
+            group.row = row;
             row = row.nextSibling;
         }
     },
@@ -261,10 +261,10 @@ FBTestApp.TestConsole =
     // UI Commands
     onRunAll: function(onFinishCallback)
     {
-        // Join all tests from all categories.
+        // Join all tests from all groups.
         var testQueue = [];
-        for (var i=0; i<this.categories.length; i++)
-            testQueue.push.apply(testQueue, this.categories[i].tests);
+        for (var i=0; i<this.groups.length; i++)
+            testQueue.push.apply(testQueue, this.groups[i].tests);
 
         // ... and execute them as one test suite.
         FBTestApp.TestRunner.runTests(testQueue, onFinishCallback);

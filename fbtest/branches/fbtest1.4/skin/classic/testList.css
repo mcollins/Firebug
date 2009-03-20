@@ -110,26 +110,26 @@
 
 /************************************************************************************************/
 
-.categoryTable {
+.groupTable {
     width: 100%;
     overflow: hidden;
     font-family: Lucida Grande, Tahoma, sans-serif;
     font-size: 11px;
 }
 
-.testCategoryCol {
+.testGroupCol {
 }
 
-.testCategoryRow {
+.testGroupRow {
     background: white;
     height:17px;
 }
 
-.opened > .testCategoryCol > .testCategoryName {
+.opened > .testGroupCol > .testGroupName {
     background-image: url(chrome://firebug/skin/win/twistyOpen.png);
 }
 
-.testCategoryName {
+.testGroupName {
     background-image: url(chrome://firebug/skin/win/twistyClosed.png);
     background-repeat: no-repeat;
     background-position: 2px 1px;
@@ -138,16 +138,16 @@
     cursor:pointer;
 }
 
-.testCategoryCount {
+.testGroupCount {
     color: gray;
     padding-left: 3px;
 }
 
-.categoryBodyCol {
+.groupBodyCol {
     padding-left: 18px;
 }
 
-.categoryAction {
+.groupAction {
     white-space:nowrap;
     padding-left: 15px;
     padding-right: 5px;

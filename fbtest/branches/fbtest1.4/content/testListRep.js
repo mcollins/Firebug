@@ -8,21 +8,21 @@ FBTestApp.ns(function() { with (FBL) {
 /**
  * Domplate templates in this file are used to generate list of registered tests.
  */
-FBTestApp.CategoryList = domplate(Firebug.Rep,
+FBTestApp.GroupList = domplate(Firebug.Rep,
 {
     tableTag:
-        TABLE({"class": "categoryTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
+        TABLE({"class": "groupTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
             TBODY(
-                FOR("category", "$categories",
-                    TR({"class": "testCategoryRow", _repObject: "$category"},
-                        TD({"class": "categoryName testCategoryCol"},
-                            SPAN({"class": "testCategoryName"},
-                                "$category|getCategoryName"
+                FOR("group", "$groups",
+                    TR({"class": "testGroupRow", _repObject: "$group"},
+                        TD({"class": "groupName testGroupCol"},
+                            SPAN({"class": "testGroupName"},
+                                "$group|getGroupName"
                             ),
-                            SPAN({"class": "testCategoryCount"},
-                                "$category|getCategoryCount"
+                            SPAN({"class": "testGroupCount"},
+                                "$group|getGroupCount"
                             ),
-                            SPAN({"class": "categoryAction testLink", onclick: "$onCategoryClick"},
+                            SPAN({"class": "groupAction testLink", onclick: "$onGroupClick"},
                                 SPAN("Run")
                             )
                         )
@@ -31,27 +31,27 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
             )
         ),
 
-    categoryBodyTag:
-        TR({"class": "categoryBodyRow", _repObject: "$category"},
-            TD({"class": "categoryBodyCol", colspan: 1})
+    groupBodyTag:
+        TR({"class": "groupBodyRow", _repObject: "$group"},
+            TD({"class": "groupBodyCol", colspan: 1})
         ),
 
-    getCategoryName: function(category) 
+    getGroupName: function(group) 
     {
-        var n = category.name;
+        var n = group.name;
         return n.charAt(0).toUpperCase() + n.substr(1).toLowerCase();
     },
 
-    getCategoryCount: function(category) 
+    getGroupCount: function(group) 
     {
-        return "(" + category.tests.length + ")";
+        return "(" + group.tests.length + ")";
     },
 
-    onCategoryClick: function(event) 
+    onGroupClick: function(event) 
     {
         if (isLeftClick(event)) 
         {
-            var row = getAncestorByClass(event.target, "testCategoryRow");
+            var row = getAncestorByClass(event.target, "testGroupRow");
             if (row) 
             {
                 cancelEvent(event);
@@ -64,7 +64,7 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
     {
         if (isLeftClick(event)) 
         {
-            var row = getAncestorByClass(event.target, "testCategoryRow");
+            var row = getAncestorByClass(event.target, "testGroupRow");
             if (row) 
             {
                 this.toggleRow(row);
@@ -73,15 +73,15 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
         }
     },
 
-    expandCategory: function(row)
+    expandGroup: function(row)
     {
-        if (hasClass(row, "testCategoryRow"))
+        if (hasClass(row, "testGroupRow"))
             this.toggleRow(row, true);
     },
 
-    collapseCategory: function(row)
+    collapseGroup: function(row)
     {
-        if (hasClass(row, "testCategoryRow", "opened"))
+        if (hasClass(row, "testGroupRow", "opened"))
             this.toggleRow(row);
     },
 
@@ -94,9 +94,9 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
         toggleClass(row, "opened");
         if (hasClass(row, "opened")) 
         {
-            var category = row.repObject;
-            var infoBodyRow = this.categoryBodyTag.insertRows({category: category}, row)[0];
-            infoBodyRow.repObject = category;
+            var group = row.repObject;
+            var infoBodyRow = this.groupBodyTag.insertRows({group: group}, row)[0];
+            infoBodyRow.repObject = group;
             this.initBody(infoBodyRow);
         }
         else
@@ -108,48 +108,48 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
 
     initBody: function(infoBodyRow)
     {
-        var category = infoBodyRow.repObject;
+        var group = infoBodyRow.repObject;
         var table = FBTestApp.TestList.tag.replace({}, infoBodyRow.firstChild);
-        var row = FBTestApp.TestList.rowTag.insertRows({tests: category.tests}, table.firstChild)[0];
-        for (var i=0; i<category.tests.length; i++)
+        var row = FBTestApp.TestList.rowTag.insertRows({tests: group.tests}, table.firstChild)[0];
+        for (var i=0; i<group.tests.length; i++)
         {
-            var test = category.tests[i];
+            var test = group.tests[i];
             test.row = row;
             row = row.nextSibling;
         }
     },
 
     // Firebug rep support
-    supportsObject: function(category, type)
+    supportsObject: function(group, type)
     {
-        return category instanceof FBTestApp.Category;
+        return group instanceof FBTestApp.TestGroup;
     },
 
-    browseObject: function(category, context)
+    browseObject: function(group, context)
     {
         return false;
     },
 
-    getRealObject: function(category, context)
+    getRealObject: function(group, context)
     {
-        return category;
+        return group;
     },
 
     // Context menu
-    getContextMenuItems: function(category, target, context)
+    getContextMenuItems: function(group, target, context)
     {
         var items = [];
 
         items.push({
           label: $STR("test.cmd.Expand_All"),
           nol10n: true,
-          command: bindFixed(this.onExpandAll, this, category)
+          command: bindFixed(this.onExpandAll, this, group)
         });
 
         items.push({
           label: $STR("test.cmd.Collapse_All"),
           nol10n: true,
-          command: bindFixed(this.onCollapseAll, this, category)
+          command: bindFixed(this.onCollapseAll, this, group)
         });
 
         items.push("-");
@@ -157,35 +157,35 @@ FBTestApp.CategoryList = domplate(Firebug.Rep,
         items.push({
           label: $STR("test.cmd.Copy All Errors"),
           nol10n: true,
-          command: bindFixed(this.onCopyAllErrors, this, category)
+          command: bindFixed(this.onCopyAllErrors, this, group)
         });
 
         return items;
     },
 
     // Commands
-    onExpandAll: function(category)
+    onExpandAll: function(group)
     {
-        var table = getAncestorByClass(category.row, "categoryTable");
+        var table = getAncestorByClass(group.row, "groupTable");
         var rows = cloneArray(table.firstChild.childNodes);
         for (var i=0; i<rows.length; i++)
-            this.expandCategory(rows[i]);
+            this.expandGroup(rows[i]);
     },
 
-    onCollapseAll: function(category)
+    onCollapseAll: function(group)
     {
-        var table = getAncestorByClass(category.row, "categoryTable");
+        var table = getAncestorByClass(group.row, "groupTable");
         var rows = cloneArray(table.firstChild.childNodes);
         for (var i=0; i<rows.length; i++)
-            this.collapseCategory(rows[i]);
+            this.collapseGroup(rows[i]);
     },
 
-    onCopyAllErrors: function(category)
+    onCopyAllErrors: function(group)
     {
         var text = "";
-        var categories = FBTestApp.TestConsole.categories;
-        for (category in categories)
-            text += categories[category].getErrors();
+        var categories = FBTestApp.TestConsole.groups;
+        for (group in groups)
+            text += groups[group].getErrors();
 
         copyToClipboard(text);
     }
@@ -351,15 +351,15 @@ FBTestApp.TestList = domplate(
 });
 
 // ************************************************************************************************
-// Category (list of related tests)
+// TestGroup (list of related tests)
 
-FBTestApp.Category = function(name)
+FBTestApp.TestGroup = function(name)
 {
     this.name = name;
     this.tests = [];
 }
 
-FBTestApp.Category.prototype =
+FBTestApp.TestGroup.prototype =
 {
     getErrors: function()
     {
@@ -378,9 +378,9 @@ FBTestApp.Category.prototype =
 // ************************************************************************************************
 // Test
 
-FBTestApp.Test = function(category, uri, desc)
+FBTestApp.Test = function(group, uri, desc)
 {
-    this.category = category;
+    this.group = group;
     this.uri = uri;
     this.desc = desc;
     this.results = [];
@@ -449,7 +449,7 @@ FBTestApp.Test.prototype =
 // ************************************************************************************************
 // Registration
 
-Firebug.registerRep(FBTestApp.CategoryList);
+Firebug.registerRep(FBTestApp.GroupList);
 Firebug.registerRep(FBTestApp.TestList);
 
 // ************************************************************************************************
