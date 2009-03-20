@@ -42,10 +42,6 @@ FBTestApp.TestConsole =
             // Get time for test timeout from preferences.
             FBTest.testTimeout = Firebug.getPref(Firebug.prefDomain, "fbtest.testTimeout");
 
-            // Register strings so, Firebug's localization APIs can be used.
-            if (Firebug.registerStringBundle)
-                Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
-
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 

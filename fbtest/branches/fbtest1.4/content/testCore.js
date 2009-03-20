@@ -23,6 +23,11 @@ this.initialize = function()
     var args = window.arguments[0];
     window.initWithParams(args);
 
+    // Register strings so, Firebug's localization APIs can be used. This also
+    // must be done before namespaces are initialized.
+    if (Firebug.registerStringBundle)
+        Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
+
     for (var i=0; i<namespaces.length; i+=2) 
     {
         var fn = namespaces[i];

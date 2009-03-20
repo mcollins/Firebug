@@ -326,10 +326,10 @@ FBTestApp.TestSummary =
         result.pass ? this.passing++ : this.failing++;
 
         if (this.passing)
-            $("passingTests").value = "Passing Tests: " + this.passing;       //xxxHonza: localization
+            $("passingTests").value = $STR("fbtest.option.Passing") + ": " + this.passing;
 
         if (this.failing)
-            $("failingTests").value = "Failing Tests: " + this.failing;      //xxxHonza: localization
+            $("failingTests").value = $STR("fbtest.option.Failing") + ": " + this.failing;
     },
 
     setMessage: function(message)

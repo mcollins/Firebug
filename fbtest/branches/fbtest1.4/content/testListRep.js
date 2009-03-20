@@ -141,13 +141,13 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         var items = [];
 
         items.push({
-          label: $STR("test.cmd.Expand_All"),
+          label: $STR("fbtest.cmd.Expand_All"),
           nol10n: true,
           command: bindFixed(this.onExpandAll, this, group)
         });
 
         items.push({
-          label: $STR("test.cmd.Collapse_All"),
+          label: $STR("fbtest.cmd.Collapse_All"),
           nol10n: true,
           command: bindFixed(this.onCollapseAll, this, group)
         });
@@ -334,7 +334,7 @@ FBTestApp.TestList = domplate(
         if (test.error)
         {
             items.push({
-              label: $STR("test.cmd.Copy Erorrs"),
+              label: $STR("fbtest.cmd.Copy Erorrs"),
               nol10n: true,
               command: bindFixed(this.onCopyAllErrors, this, test)
             });
@@ -380,9 +380,12 @@ FBTestApp.TestGroup.prototype =
 
 FBTestApp.Test = function(group, uri, desc)
 {
+    // Test definition.
     this.group = group;
     this.uri = uri;
     this.desc = desc;
+
+    // Used by the test runner.
     this.results = [];
     this.error = false;
     this.row = null;

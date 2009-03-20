@@ -9,37 +9,6 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 
 // ************************************************************************************************
-// Localization
-
-function $FB_STR(name)
-{
-    try
-    {
-        var localeService = Cc["@mozilla.org/intl/nslocaleservice;1"].getService(Ci.nsILocaleService);
-        var appLocale = localeService.getApplicationLocale();
-        var stringBundleService = Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService);
-        var bundle = stringBundleService.createBundle("chrome://fbtest/locale/fbtest.properties", appLocale);
-        return bundle.GetStringFromName(name.replace(' ', '_', "g"));
-        //return window.document.getElementById("strings_fireUnit").getString(name.replace(' ', '_', "g"));
-    }
-    catch (err)
-    {
-        if (FBTrace.DBG_FBTEST)
-        {
-            FBTrace.sysout("fbtest.Missing translation for: " + name);
-            FBTrace.sysout("fbtest.getString FAILS ", err);
-        }
-    }
-
-    // Use only the label after last dot.
-    var index = name.lastIndexOf(".");
-    if (index > 0)
-        name = name.substr(index + 1);
-
-    return name;
-}
-
-// ************************************************************************************************
 // Domplate for tests results
 
 /**
@@ -79,23 +48,6 @@ FBTestApp.TestResultRep = domplate(
         TR({"class": "testResultInfoRow", _repObject: "$result",
             $testError: "$result|isError"},
             TD({"class": "testResultInfoCol", colspan: 2})
-        ),
-
-    summaryTag:
-        TR({"class": "testResultSummaryRow testResultRow"},
-            TD({"class": "testResultCol", colspan: 2},
-                SPAN({"class": "testResultSummaryLabel",
-                    $summaryPass: "$summary|summaryPassed"},
-                    $FB_STR("fireunit.option.Passing_Tests"),
-                    ": $summary.passing"
-                ),
-                SPAN({"class": "testResultSummaryLabel",
-                    $collapsed: "$summary|summaryPassed",
-                    $testError: "$summary.failing"},
-                    $FB_STR("fireunit.option.Failing_Tests"),
-                    ": $summary.failing"
-                )
-            )
         ),
 
     getMessage: function(result)
@@ -187,13 +139,13 @@ FBTestApp.TestResultRep = domplate(
         if (testResult.stack)
         {
             items.push({
-              label: $STR("fireunit.item.Copy"),
+              label: $STR("fbtest.item.Copy"),
               nol10n: true,
               command: bindFixed(this.onCopy, this, testResult)
             });
 
             items.push({
-              label: $STR("fireunit.item.Copy_All"),
+              label: $STR("fbtest.item.Copy_All"),
               nol10n: true,
               command: bindFixed(this.onCopyAll, this, testResult)
             });
@@ -201,7 +153,7 @@ FBTestApp.TestResultRep = domplate(
             items.push("-");
 
             items.push({
-              label: $STR("fireunit.item.View_Source"),
+              label: $STR("fbtest.item.View_Source"),
               nol10n: true,
               command: bindFixed(this.onViewSource, this, testResult)
             });
@@ -230,8 +182,8 @@ FBTestApp.TestResultRep = domplate(
     onCopyAll: function(testResult)
     {
         var tbody = getAncestorByClass(testResult.row, "testTable").firstChild;
-        var passLabel = $STR("fireunit.label.Pass");
-        var failLabel = $STR("fireunit.label.Fail");
+        var passLabel = $STR("fbtest.label.Pass");
+        var failLabel = $STR("fbtest.label.Fail");
 
         var text = "";
         for (var row = tbody.firstChild; row; row = row.nextSibling) {
@@ -289,11 +241,11 @@ FBTestApp.TestResultTabView = domplate(
         DIV({"class": "tabBar"},
             A({"class": "StackTab tab", onclick: "$onClickTab",
                 view: "Stack", $collapsed: "$result|hideStackTab"},
-                    $FB_STR("fireunit.tab.Stack")
+                    $STR("fbtest.tab.Stack")
             ),
             A({"class": "CompareTab tab", onclick: "$onClickTab",
                 view: "Compare", $collapsed: "$result|hideCompareTab"},
-                    $FB_STR("fireunit.tab.Compare")
+                    $STR("fbtest.tab.Compare")
             )
         ),
 
@@ -315,7 +267,7 @@ FBTestApp.TestResultTabView = domplate(
                                 lineNumber: "$stack.lineNumber"},
                                 "$stack.fileName"),
                             SPAN("&nbsp;"),
-                            SPAN("(", $FB_STR("fireunit.test.Line"), " $stack.lineNumber", ")")
+                            SPAN("(", $STR("fbtest.test.Line"), " $stack.lineNumber", ")")
                         )
                     )
                 )
@@ -328,11 +280,11 @@ FBTestApp.TestResultTabView = domplate(
             TBODY(
                 TR({"class": "testResultCompareTitle expected"},
                     TD(
-                        $FB_STR("fireunit.title.Expected")
+                        $STR("fbtest.title.Expected")
                     ),
                     TD({"class": "testResultCompareSwitch expected",
                         onclick: "$onSwitchView"},
-                        $FB_STR("fireunit.switch.view_source")
+                        $STR("fbtest.switch.view_source")
                     )
                 ),
                 TR(
@@ -340,11 +292,11 @@ FBTestApp.TestResultTabView = domplate(
                 ),
                 TR({"class": "testResultCompareTitle result"},
                     TD(
-                        $FB_STR("fireunit.title.Result")
+                        $STR("fbtest.title.Result")
                     ),
                     TD({"class": "testResultCompareSwitch result",
                         onclick: "$onSwitchView"},
-                        $FB_STR("fireunit.switch.view_source")
+                        $STR("fbtest.switch.view_source")
                     )
                 ),
                 TR(
@@ -353,7 +305,7 @@ FBTestApp.TestResultTabView = domplate(
                 TR({"class": "testResultCompareTitle diff",
                     $collapsed: "$result|hideDiffGroup"},
                     TD({colspan: 2},
-                        $FB_STR("fireunit.title.Difference")
+                        $STR("fbtest.title.Difference")
                     )
                 ),
                 TR(
@@ -420,7 +372,7 @@ FBTestApp.TestResultTabView = domplate(
     updateTabBody: function(viewBody, tabName)
     {
         if (FBTrace.DBG_FBTRACE)
-            FBTrace.sysout("fireunit.TestResultRep.onUpdateTabBody: " + tabName);
+            FBTrace.sysout("test.TestResultRep.onUpdateTabBody: " + tabName);
 
         var tab = viewBody.selectedTab;
         var infoRow = getAncestorByClass(viewBody, "testResultInfoRow");
@@ -468,7 +420,7 @@ FBTestApp.TestResultTabView = domplate(
         else
             insertWrappedText(expected ? result.expected : result.result, sourceBody);
 
-        target.innerHTML = $STR("fireunit.switch." + (target.sourceView ? "view_source" : "pretty_print"));
+        target.innerHTML = $STR("fbtest.switch." + (target.sourceView ? "view_source" : "pretty_print"));
         target.sourceView = !target.sourceView;
     },
 

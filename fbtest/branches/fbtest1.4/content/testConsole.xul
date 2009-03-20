@@ -62,12 +62,12 @@
     <toolbox id="consoleToolbox">
         <toolbar id="consoleToolbar" align="center">
             <toolbarbutton id="runAll"
-                label="test.cmd.Run All" class="toolbar-image-button"
-                tooltiptext="test.cmd.tip.Run All Tests"
+                label="fbtest.cmd.Run All" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Run All Tests"
                 command="cmd_runAll"/>
             <toolbarbutton id="stopTest"
-                label="test.cmd.Stop" class="toolbar-image-button"
-                tooltiptext="test.cmd.tip.Stop"
+                label="fbtest.cmd.Stop" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Stop"
                 command="cmd_stopTest"/>
         </toolbar>
         <toolbar id="testListUrlBar" align="center" mode="text">
