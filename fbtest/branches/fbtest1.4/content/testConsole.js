@@ -85,7 +85,7 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest"];
+        var buttons = ["runAll", "stopTest", "refreshList"];
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);
@@ -297,6 +297,12 @@ FBTestApp.TestConsole =
 
             this.loadTestList(testListUrl);
         }
+    },
+
+    onRefreshTestList: function()
+    {
+        $("consoleFrame").setAttribute("src", "about:blank");
+        this.loadTestList(this.testListPath);
     }
 };
 
