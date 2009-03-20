@@ -204,7 +204,8 @@ FBTestApp.TestList = domplate(
         FOR("test", "$tests",
             TR({"class": "testListRow", _repObject: "$test", 
                 $results: "$test|hasResults",
-                $error: "$test|hasError"},
+                $error: "$test|hasError",
+                $todo: "$test|isTodo"},
                 TD({"class": "testListCol testName", onclick: "$onExpandTest"},
                     SPAN("&nbsp;")
                 ),
@@ -235,6 +236,11 @@ FBTestApp.TestList = domplate(
     hasError: function(test)
     {
         return test.error;
+    },
+
+    isTodo: function(test)
+    {
+        return test.category == "fails";
     },
 
     onRunTest: function(event)
@@ -378,12 +384,20 @@ FBTestApp.TestGroup.prototype =
 // ************************************************************************************************
 // Test
 
-FBTestApp.Test = function(group, uri, desc)
+FBTestApp.Test = function(group, uri, desc, category)
 {
+    if (category != "passes" && category != "fails")
+    {
+        if (FBTrace.DBG_ERRORS || FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbrace.FTestApp.Test; Wrong category for a test: " + 
+                category + ", " + uri);
+    }
+
     // Test definition.
     this.group = group;
     this.uri = uri;
     this.desc = desc;
+    this.category = category;
 
     // Used by the test runner.
     this.results = [];

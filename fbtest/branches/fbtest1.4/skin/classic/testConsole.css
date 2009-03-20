@@ -46,7 +46,12 @@ body {
     padding-top: 3px;
 }
 
-#progressMessage {
+#todoTests {
     color: gray;
+    padding-top: 3px;
+}
+
+#progressMessage {
+    color: black;
     padding-top: 3px;
 }

@@ -177,7 +177,12 @@ FBTestApp.TestConsole =
                             new FBTestApp.TestGroup(test.group));
                     }
 
-                    group.tests.push(new FBTestApp.Test(group, test.uri, test.desc));
+                    // Default value for category attribute is "passes".
+                    if (!test.category)
+                        test.category = "passes";
+
+                    group.tests.push(new FBTestApp.Test(group, test.uri,
+                        test.desc, test.category));
                 }
 
                 // Restart server with new home directory using a file: url

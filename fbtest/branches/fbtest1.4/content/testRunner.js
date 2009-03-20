@@ -39,13 +39,17 @@ FBTestApp.TestRunner =
 
         try
         {
+            // Remember the current test.
             this.currentTest = testObj;
-            this.currentTest.onStartTest(FBTestApp.TestConsole.baseURI);
 
             // Show the test within the UI (expand parent group)
             var parentGroup = this.currentTest.group;
             FBTestApp.GroupList.expandGroup(parentGroup.row);
             scrollIntoCenterView(this.currentTest.row);
+
+            // Start the test after the parent group is expanded so the row
+            // exists and can reflect the UI state.
+            this.currentTest.onStartTest(FBTestApp.TestConsole.baseURI);
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
@@ -250,7 +254,7 @@ FBTestApp.TestRunner =
         }
 
         // Update summary in the status bar.
-        FBTestApp.TestSummary.append(result);
+        FBTestApp.TestSummary.append(this.currentTest, result);
     },
 
     sysout: function(msg, obj)
@@ -316,20 +320,33 @@ FBTestApp.TestProgress =
 FBTestApp.TestSummary =
 {
     results: [],
-    passing: 0,
-    failing: 0,
 
-    append: function(result)
+    passingTests: {passing: 0, failing: 0},
+    failingTests: {passing: 0, failing: 0},
+
+    append: function(test, result)
     {
         this.results.push(result);
 
-        result.pass ? this.passing++ : this.failing++;
+        if (test.category == "fails")
+        {
+            result.pass ? this.failingTests.passing++ : this.failingTests.failing++;
 
-        if (this.passing)
-            $("passingTests").value = $STR("fbtest.option.Passing") + ": " + this.passing;
+            $("todoTests").value = $STR("fbtest.label.Todo") + ": " +
+                this.failingTests.failing + "/" + this.failingTests.passing;
+        }
+        else
+        {
+            result.pass ? this.passingTests.passing++ : this.passingTests.failing++;
 
-        if (this.failing)
-            $("failingTests").value = $STR("fbtest.option.Failing") + ": " + this.failing;
+            if (this.passingTests.passing)
+                $("passingTests").value = $STR("fbtest.label.Passing") + ": " + 
+                    this.passingTests.passing;
+
+            if (this.passingTests.failing)
+                $("failingTests").value = $STR("fbtest.label.Failing") + ": " + 
+                    this.passingTests.failing;
+        }
     },
 
     setMessage: function(message)
@@ -337,11 +354,18 @@ FBTestApp.TestSummary =
         $("progressMessage").value = message;
     },
 
+    onTodoShowTooltip: function(tooltip)
+    {
+        // xxxHonza: localization
+        tooltip.label = "There is " + this.failingTests.failing + " TODO test(s) that failed " + 
+            "and " + this.failingTests.passing + " TODO test(s) that passed.";
+    },
+
     clear: function()
     {
         this.results = [];
-        this.passing = 0;
-        this.failing = 0;
+        this.passingTests = {passing: 0, failing: 0};
+        this.failingTests = {passing: 0, failing: 0};
 
         $("passingTests").value = "";
         $("failingTests").value = "";

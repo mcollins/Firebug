@@ -57,6 +57,10 @@
     color: red !important;
 }
 
+.testListRow.todo .testLink {
+    color: gray !important;
+}
+
 .testUri {
     overflow: hidden;
     min-width: 70px;
