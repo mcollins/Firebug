@@ -85,8 +85,8 @@
                     onkeydown="FBTestApp.TestListURLBar.onKeyDown(event)"/>
             </toolbaritem>
             <toolbarbutton id="testListPicker"
-                label="..."
-                command="cmd_openTestList" />
+                command="cmd_openTestList" 
+                tooltiptext="fbtest.cmd.tip.Browser For Test List"/>
         </toolbar>
     </toolbox>
 

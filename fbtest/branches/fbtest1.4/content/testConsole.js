@@ -85,7 +85,7 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "refreshList"];
+        var buttons = ["runAll", "stopTest", "refreshList", "testListPicker"];
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);

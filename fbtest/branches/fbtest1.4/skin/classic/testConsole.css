@@ -33,6 +33,14 @@ body {
     -moz-image-region: rect(0px 64px 16px 48px);
 }
 
+#testListPicker {
+    list-style-image: url(chrome://browser/skin/Search-glass.png);
+    -moz-image-region: rect(0px, 16px, 16px, 0px);
+}
+
+#testListPicker:hover {
+  -moz-image-region: rect(0px 32px 16px 16px);
+}
 /************************************************************************************************/
 /* Statusbar */ 
  
