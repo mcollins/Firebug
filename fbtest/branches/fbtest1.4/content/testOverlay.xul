@@ -24,6 +24,15 @@
                             <menuseparator/>
                             <menuitem id="menu_openTestConsole" label="Open Test Console"
                                 command="cmd_openTestConsole"/>
+
+                            <menu id="FirebugMenu_Options">
+                                <menupopup id="FirebugMenu_OptionsPopup">
+                                    <menuitem id="FirebugMenu_Options_alwaysOpenTestConsole" 
+                                        type="checkbox" label="Always Open Test Console"
+                                        oncommand="FirebugChrome.onToggleOption(this)"
+                                        option="alwaysOpenTestConsole"/>
+                                </menupopup>
+                            </menu>
                         </menupopup>
                     </toolbarbutton>
                 </toolbar>

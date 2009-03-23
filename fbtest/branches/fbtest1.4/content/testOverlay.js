@@ -20,9 +20,14 @@ this.initialize = function()
 {
     window.removeEventListener("load", FBTestFirebugOverlay.initialize, false);
 
+    // Open console if the command line says so.
     var cmd = cmdLineHandler.wrappedJSObject;
     if (cmd.runFBTests)
         FBTestFirebugOverlay.open(cmd.testListURI);
+
+    // Open console if the pref says so.
+    if (Firebug.getPref(Firebug.prefDomain, "alwaysOpenTestConsole"))
+        FBTestFirebugOverlay.open();
 };
 
 this.open = function(testListURI)
