@@ -73,7 +73,7 @@
             <toolbarseparator flex="1"/>
             <toolbarbutton id="refreshList"
                 label="fbtest.cmd.Refresh" class="toolbar-image-button"
-                tooltiptext="fbtest.cmd.refresh"
+                tooltiptext="fbtest.cmd.Refresh"
                 command="cmd_refreshTestList"/>
         </toolbar>
         <toolbar id="testListUrlBar" align="center" mode="text">
