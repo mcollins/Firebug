@@ -343,6 +343,23 @@ FBTestApp.TestConsole.TraceListener =
 };
 
 // ************************************************************************************************
+// Test List URL Bar
+
+FBTestApp.TestListURLBar = 
+{
+    onKeyDown: function(event)
+    {
+        //FBTrace.sysout("FBTestApp.TestListURLBar.onKeyDown", event);
+
+        if (event.keyCode == 13) // Return
+        {
+            var testListURLBox = $("testListURL");
+            FBTestApp.TestConsole.loadTestList(testListURLBox.value);
+        }
+    }
+};
+
+// ************************************************************************************************
 // FBTest
 
 /**

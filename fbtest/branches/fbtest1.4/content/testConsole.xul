@@ -81,7 +81,8 @@
                 <label value="Test Suite:" />
             </toolbaritem>
             <toolbaritem flex="1">
-                <textbox id="testListURL" flex="1" />
+                <textbox id="testListURL" flex="1" 
+                    onkeydown="FBTestApp.TestListURLBar.onKeyDown(event)"/>
             </toolbaritem>
             <toolbarbutton id="testListPicker"
                 label="..."

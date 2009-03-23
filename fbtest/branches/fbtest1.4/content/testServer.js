@@ -47,10 +47,15 @@ FBTestApp.TestServer =
     {
         if (this.server)
             this.server.stop();
+
+        this.server = null;
     },
 
     restart: function(chromeRoot)
     {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestServer.restart; " + chromeRoot);
+
         FBTestApp.TestServer.stop();
         FBTestApp.TestServer.start(chromeRoot);
     },
