@@ -61,7 +61,19 @@ window.initWithParams = function(args)
 {
     FBTrace = args.firebugWindow.FBTrace;
     Firebug = args.firebugWindow.Firebug;
-    FBTestApp.defaultTestList = args.testListURI;
+
+    // Get default test list and optional test to be executed from the command line.
+    var testListURI = args.testListURI;
+    if (testListURI && testListURI.indexOf("#") > 0)
+    {
+        var params = testListURI.split("#");
+        FBTestApp.defaultTestList = params[0];
+        FBTestApp.defaultTest = params[1];
+    }
+    else
+    {
+        FBTestApp.defaultTestList = testListURI;
+    }
 
     // The FBTest object might exist if an existing window is initializing 
     // with new parameters.

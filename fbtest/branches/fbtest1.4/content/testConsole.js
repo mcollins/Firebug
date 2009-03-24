@@ -246,17 +246,51 @@ FBTestApp.TestConsole =
         if (!cmdLineHandler.wrappedJSObject.runFBTests)
             return;
 
+        // The auto run is done just the first time the test-console is opened.
         cmdLineHandler.wrappedJSObject.runFBTests = false;
 
-        // Run the test suite asynchronously so, the tests callstack is correct.
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.autoRun; defaultTestList: " + FBTestApp.defaultTestList + 
+                ", defaultTest: " + FBTestApp.defaultTest);
+
+        // Run all asynchronously so, callstack is correct.
         setTimeout(function() 
         {
-            FBTestApp.TestConsole.onRunAll(function(canceled)
+            // If a test is specified on the command line, run it. Otherwise
+            // run entire test suite. 
+            if (FBTestApp.defaultTest)
             {
-                if (!canceled)
-                    goQuitApplication();
-            });
+                var test = FBTestApp.TestConsole.getTest(FBTestApp.defaultTest);
+                if (FBTrace.DBG_FBTEST && !test)
+                    FBTrace.sysout("fbtest.autoRun; Test from command line doesn't exist: " +
+                        FBTestApp.defaultTest);
+
+                if (test)
+                    FBTestApp.TestRunner.runTests([test]);
+            }
+            else
+            {
+                FBTestApp.TestConsole.onRunAll(function(canceled)
+                {
+                    if (!canceled)
+                        goQuitApplication();
+                });
+            }
         }, 100);
+    },
+
+    getTest: function(uri)
+    {
+        for (var i=0; i<this.groups.length; i++)
+        {
+            var group = this.groups[i];
+            for (var j=0; j<group.tests.length; j++)
+            {
+                if (group.tests[j].uri == uri)
+                    return group.tests[j];
+            }
+        }
+        return null;
     },
 
     // UI Commands
