@@ -14,6 +14,7 @@ function runTest()
         // Open Firebug UI, enable Script panel, reload and start first test.
         FBTestFirebug.openFirebug();
         FBTestFirebug.clearCache();
+        FBTestFirebug.selectPanel("script");
         FBTestFirebug.enableScriptPanel(function(testWindow) {
             win = testWindow;
             testSuite.fire("breakSimple");
