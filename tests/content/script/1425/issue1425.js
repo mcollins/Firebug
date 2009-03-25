@@ -43,11 +43,12 @@ function runTest()
             var rows = sourceViewport.childNodes;
 
             FBTest.ok(rows.length > 1, "The script view must not be empty.");
-            if (rows.length > 0) {
-                var source1 = "function MapLoadingIndicator(m){";
-                FBTest.compare(source1, rows[1].firstChild.nextSibling.textContent,
+            if (rows.length < 1)
+                issue1425.done();
+            var source1 = "function MapLoadingIndicator(m){";
+            FBTest.compare(source1, rows[1].firstChild.nextSibling.textContent,
                     "Verify source on line 1");
-            }
+
             // Scroll to 1143
             issue1425.userHasScrolled = true;
             FBTest.Firebug.selectSourceLine(panel.location.href, 1143, "js");
@@ -95,7 +96,8 @@ function runTest()
             }
             else
             {
-                FBTest.sysout("Where is 1143 rows", rows);
+
+                FBTest.sysout("Where is 1143 row in "+panel.location.href, rows);
             }
 
             issue1425.done();
@@ -126,9 +128,9 @@ function runTest()
                 showUI: function(browser, context)
                 {
                     issue1425.userIsActive = true;
+                    FBTest.progress("showUI userIsActive "+issue1425.userIsActive+" context.loaded "+context.loaded);
                     if (context.loaded)
                         issue1425.fire("navigateToSource");
-                    FBTest.progress("showUI userIsActive "+issue1425.userIsActive+" context.loaded "+context.loaded);
                 },
                 onViewportChange: function()
                 {
