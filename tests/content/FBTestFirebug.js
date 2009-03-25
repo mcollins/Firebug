@@ -40,7 +40,7 @@ this.openFirebug = function()
 this.detachFirebug = function()
 {
     this.openFirebug();
-    return FW.Firebug.detachBar(); 
+    return FW.Firebug.detachBar();
 }
 
 this.closeFirebug = function()
@@ -303,7 +303,7 @@ this.getPref = function(pref)
 
 this.clickContinueButton = function()
 {
-    // xxxHonza: why the click doesn't work? Is is because the execution context 
+    // xxxHonza: why the click doesn't work? Is is because the execution context
     // is stopped at a breakpoint?
     //var doc = FBTest.FirebugWindow.document;
     //var button = doc.getElementById("fbContinueButton");
@@ -315,7 +315,7 @@ this.clickContinueButton = function()
 // ************************************************************************************************
 // Error handling
 
-window.onerror = function(errType, errURL, errLineNum) 
+window.onerror = function(errType, errURL, errLineNum)
 {
     var path = window.location.pathname;
     var fileName = path.substr(path.lastIndexOf("/") + 1);
@@ -441,15 +441,19 @@ this.TestHandlers.prototype =
 
         var tabbrowser = FW.getBrowser();
 
+        FBTest.sysout("fireOnNewPage adding tab for "+url);
         // Add tab, then make active (https://developer.mozilla.org/en/Code_snippets/Tabbed_browser)
         var newTab = tabbrowser.addTab(url);
         newTab.setAttribute("firebug", "test");
+        FBTest.sysout("fireOnNewPage selectedTab = newTab for "+url);
         tabbrowser.selectedTab = newTab;
         var browser = tabbrowser.getBrowserForTab(newTab);
+        FBTest.sysout("fireOnNewPage getBrowserForTab "+url);
 
         var testHandler = this;
         var onLoadURLInNewTab = function(event)
         {
+            // This event come late compared with most of Firebug's work.
             var win = event.target;   // actually  tab XUL elt
             FBTest.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
             FW.getBrowser().selectedTab = win;
@@ -463,9 +467,10 @@ this.TestHandlers.prototype =
             if (eventName)
                 testHandler.fire(eventName);
         }
-        //FBTest.sysout("fireOnNewPage "+FW, FW);
+
 
         browser.addEventListener("load", onLoadURLInNewTab, true);
+        FBTest.sysout("fireOnNewPage added load event listener to browser for "+url, browser);
     },
 
     // function onEnablePanels(event) {...; fooTest.done();}
