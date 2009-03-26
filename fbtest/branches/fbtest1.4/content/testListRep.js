@@ -155,7 +155,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         items.push("-");
 
         items.push({
-          label: $STR("test.cmd.Copy All Errors"),
+          label: $STR("fbtest.cmd.Copy All Errors"),
           nol10n: true,
           command: bindFixed(this.onCopyAllErrors, this, group)
         });
