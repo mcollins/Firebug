@@ -10,6 +10,7 @@ function runTest()
     {
         FBTestFirebug.openFirebug();
         FBTestFirebug.selectPanel("console");
+        FW.Firebug.Console.setDefaultState(true);
         FW.Firebug.Console.setDefaultState(false);
 
         var cmdBox = FW.document.getElementById("fbCommandBox");
