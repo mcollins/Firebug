@@ -183,7 +183,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
     onCopyAllErrors: function(group)
     {
         var text = "";
-        var categories = FBTestApp.TestConsole.groups;
+        var groups = FBTestApp.TestConsole.groups;
         for (group in groups)
             text += groups[group].getErrors();
 
