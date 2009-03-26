@@ -36,7 +36,7 @@ this.initialize = function()
     }
 
     // Set the Firebug window now. In case of a new window we have to wait
-    // till all nemespaces are initialized.
+    // till all namespaces are initialized.
     FBTestApp.FBTest.FirebugWindow = args.firebugWindow;
 
     // Now we can initialize entire console.

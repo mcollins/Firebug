@@ -39,9 +39,6 @@ FBTestApp.TestConsole =
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
 
-            // Get time for test timeout from preferences.
-            FBTest.testTimeout = Firebug.getPref(Firebug.prefDomain, "fbtest.testTimeout");
-
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 

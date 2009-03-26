@@ -128,6 +128,9 @@ FBTestApp.TestRunner =
         var body = doc.getElementsByTagName("body")[0];
         body.appendChild(testCaseIframe);
 
+        // Set default timeout for the test.
+        FBTestApp.FBTest.testTimeout = this.getDefaultTestTimeout();
+
         // Now hook the load event, so the next src= will trigger it.
         testCaseIframe.addEventListener("load", this.onLoadTestFrame, true);
 
@@ -141,6 +144,11 @@ FBTestApp.TestRunner =
         }
     },
 
+    getDefaultTestTimeout: function()
+    {
+        return Firebug.getPref(Firebug.prefDomain, "fbtest.testTimeout");
+    },
+
     onLoadTestFrame: function(event)
     {
         var doc = $("testFrame").contentWindow.document;
@@ -148,7 +156,7 @@ FBTestApp.TestRunner =
         testCaseIframe.removeEventListener("load", FBTestApp.TestRunner.onLoadTestFrame, true);
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("load event "+event.target, event.target);
+            FBTrace.sysout("FBTest.onLoadTestFrame; " + event.target, event.target);
 
         var testDoc = event.target;
         var win = testDoc.defaultView;
@@ -159,7 +167,7 @@ FBTestApp.TestRunner =
         else
             win.FBTest = FBTestApp.FBTest;
 
-        // As soon as the window is loaded, execute a "runTest" method, that must be 
+        // As soon as the window is loaded, execute a "runTest" method, that must be
         // implemented within the test file.
         win.addEventListener('load', FBTestApp.TestRunner.runTestCase, true);
     },
@@ -172,7 +180,7 @@ FBTestApp.TestRunner =
         win.removeEventListener('load', FBTestApp.TestRunner.runTestCase, true);
 
         // Start timeout that breaks stucked tests.
-        FBTestApp.TestRunner.setTestTimeout();
+        FBTestApp.TestRunner.setTestTimeout(win);
 
         try
         {
@@ -186,13 +194,15 @@ FBTestApp.TestRunner =
         }
     },
 
-    setTestTimeout: function()
+    setTestTimeout: function(win)
     {
         if (this.testTimeoutID)
             this.resetTestTimeout();
 
-        if (!FBTestApp.FBTest.testTimeout)
-            return;
+        // Use test timeout from the test driver window if any. This is how
+        // a test can override the default value.
+        if (typeof(win.FBTestTimeout) != "undefined")
+            FBTestApp.FBTest.testTimeout = win.FBTestTimeout;
 
         this.testTimeoutID = window.setTimeout(function()
         {
