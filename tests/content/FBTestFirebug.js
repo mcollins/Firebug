@@ -243,9 +243,19 @@ this.enableNetPanel = function(callback)
     this.updateModelState(FW.Firebug.NetMonitor, callback, true);
 }
 
+this.disableScriptPanel = function(callback)
+{
+    this.updateModelState(FW.Firebug.Debugger, callback, false);
+}
+
 this.enableScriptPanel = function(callback)
 {
     this.updateModelState(FW.Firebug.Debugger, callback, true);
+}
+
+this.disableConsolePanel = function(callback)
+{
+    this.updateModelState(FW.Firebug.Console, callback, false);
 }
 
 this.enableConsolePanel = function(callback)
