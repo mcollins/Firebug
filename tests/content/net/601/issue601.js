@@ -16,7 +16,6 @@ function runTest()
 
     FBTestFirebug.openNewTab(basePath + "net/601/issue601.html", function(win)
     {
-        FBTestFirebug.selectPanel("net");
         FBTestFirebug.enableNetPanel(function(win)
         {
             var date = (new Date()).toUTCString();
@@ -25,7 +24,7 @@ function runTest()
             win.wrappedJSObject.postRequest(postData, function(request)
             {
                 // Expand Net's panel UI so, it's populated with data.
-                var panelNode = FBTestFirebug.getPanel("net").panelNode;
+                var panelNode = FBTestFirebug.selectPanel("net").panelNode;
                 FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr");
                 FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 
