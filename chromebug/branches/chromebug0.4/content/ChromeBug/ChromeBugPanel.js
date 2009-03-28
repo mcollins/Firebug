@@ -937,10 +937,10 @@ var ChromebugWindowInfo = {
     {
         this.fakeTabBrowser.selectedBrowser = browser;
     },
-    
-    selectContext: function(context)  
+
+    selectContext: function(context)
     {
-    	ChromebugWindowInfo.selectBrowser(context.browser);
+        ChromebugWindowInfo.selectBrowser(context.browser);
         Firebug.showContext(context.browser, context);
     },
 };
@@ -1177,7 +1177,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (context)
             {
                 var pkg = this.restoreFilter(previousState, context);
-                
+
                 FirebugContext = context;
                 this.stopRestoration();
 
@@ -1274,6 +1274,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     stopRestoration: function()
     {
+        FBTrace.sysout("stopRestoration retryRestoreID: "+this.retryRestoreID);
         if (this.retryRestoreID)
         {
             clearTimeout(this.retryRestoreID);
@@ -1282,13 +1283,13 @@ Firebug.Chromebug = extend(Firebug.Module,
             return true;
         }
         else
-        	return false;
+            return false;
     },
-    
+
     setDefaultContext: function()
     {
         if (!FirebugContext)
-        	FirebugContext = Firebug.Chromebug.contexts[0];
+            FirebugContext = Firebug.Chromebug.contexts[0];
         ChromebugWindowInfo.selectContext(FirebugContext);
     },
 
@@ -1774,28 +1775,35 @@ Firebug.Chromebug = extend(Firebug.Module,
                         message = info.wrappedJSObject.repObject;
                     if (message)
                     {
-                        if (message.scope)
+                        var filename = event.target.text;
+
+                        var found = Firebug.Chromebug.AllFilesList.eachSourceFileDescription(function findMatching(d)
                         {
-                            context = Firebug.Chromebug.getContextByGlobal(message.scope);
-                            if (context)
+                            var testName = d.href;
+                            window.dump(filename +"=?="+testName+"\n");
+                            if (testName == filename)
                             {
-                                Firebug.Chromebug.syncToolBarToContext(context);
-                                FBTrace.sysout("onLoadConsole.eventListener found message.scope: "+message.scope.location+" context set to "+context.getName(), message);
+                                var context = d.context;
+                                if (context)
+                                {
+                                    Firebug.Chromebug.syncToolBarToContext(context);
+                                    FBTrace.sysout("onLoadConsole.eventListener found matching description: "+d+" context set to "+context.getName(), message);
+                                    var line = event.target.getAttribute("lineNumber");
+                                    var link = new SourceLink(filename, line, "js" );
+                                    FBTrace.sysout("Chromebug click on traceConsole isAStackFrame SourceLink:"+(link instanceof SourceLink), {target: event.target, href: filename, lineNo:line, link:link});
+                                    context.chrome.select(link);
+                                    return true;
+                                }
+                                else
+                                    FBTrace.sysout("onLoadConsole.eventListener no context in matching description", d);
                             }
-                            else
-                                FBTrace.sysout("onLoadConsole.eventListener no context", message.scope);
-                        }
-                        else
-                            FBTrace.sysout("onLoadConsole.eventListener found message, no scope", message);
+                            return false;
+                        });
+                        if (!found)
+                            FBTrace.sysout("onLoadConsole.eventListener no match for filename "+filename);
                     }
                     else
                         FBTrace.sysout("onLoadConsole.eventListener no message found on info", info);
-
-                    var line = event.target.getAttribute("lineNumber");
-                    var filename = event.target.text;
-                    var link = new SourceLink(filename, line, "js" );
-                    FBTrace.sysout("Chromebug click on traceConsole isAStackFrame SourceLink:"+(link instanceof SourceLink), {target: event.target, href: filename, lineNo:line, link:link});
-                    context.chrome.select(link);
 
                     event.stopPropagation();
                 }
@@ -2545,7 +2553,13 @@ Firebug.Chromebug.ContextList = {
      var title = (context.window ? context.getTitle() : null);
      var d = Firebug.Chromebug.parseURI(context.getName());
 
-       d =  {path: d?d.path:"parseURI fails", name: context.getName() +(title?"   "+title:""), label: context.getName() };
+     d = {
+        path: d?d.path:"parseURI fails",
+        name: context.getName() +(title?"   "+title:""),
+        label: context.getName(),
+        href: context.getName()
+        };
+
      if (FBTrace.DBG_LOCATIONS)
          FBTrace.sysout("getObjectDescription for context "+context.uid+" path:"+d.path+" name:"+d.name, d);
      return d;
@@ -2748,7 +2762,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
     getPackageNames: function()
     {
         var slots = {};
-        eachSourceFileDescription(function extractPackageNames(d)
+        this.eachSourceFileDescription(function extractPackageNames(d)
         {
             slots[d.pkgName] = 1;
         });
