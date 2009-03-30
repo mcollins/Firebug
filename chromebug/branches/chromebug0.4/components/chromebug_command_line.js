@@ -143,6 +143,7 @@ const  chromebugCommandLineHandler = {
                     if (launchChromebug)
                     {
                         getStartupObserver().startOnStartupNextTime();
+                        prefs.setBoolPref("extensions.firebug-service.filterSystemURLs", false);  // See firebug-service.js
                         chromebugCommandLineHandler.openChromebug(window);
                     }
                     else
