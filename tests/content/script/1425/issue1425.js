@@ -1,7 +1,6 @@
 // Test entry point.
 function runTest()
 {
-    FBTest.loadScript("FBTestFirebug.js", this);
     FBTest.sysout("issue1425.START");
 
     FBTest.Firebug.clearCache();
@@ -62,29 +61,8 @@ function runTest()
     issue1425.add( function checkScrolling()
     {
             FBTest.progress("check scrolling");
-            var panel = FW.FirebugContext.chrome.getSelectedPanel();
-            var sourceBox = panel.getSourceBoxByURL(panel.location.href);
-            var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
-            if (!sourceViewport)
-            {
-                FBTest.ok(sourceViewport, "There is a sourceViewport after scrolling");
-                issue1425.done();
-            }
-
-            var rows = sourceViewport.childNodes;
-
             // Look for line 1143
-            var row1143 = null;
-            for (var i=0; i<rows.length; i++)
-            {
-                var line = FW.FBL.getChildByClass(rows[i], 'sourceLine');
-                if (line.textContent == "1143") {
-                    row1143 = rows[i];
-                    break;
-                }
-                else
-                    FBTest.sysout("trying row "+i+" "+line.textContent);
-            }
+            var row1143 = FBTestFirebug.getSourceLineNode(1143);
 
             // Check 1143
             FBTest.ok(row1143, "The row 1143 must exist");
