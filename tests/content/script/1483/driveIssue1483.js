@@ -1,9 +1,6 @@
-function issue1483()
+function defineIssue1483()
 {
-    var issue1483URL = FBTest.getHTTPURLBase()+"script/1483/issue1483.html";
-
-
-    var issue1483 = new FBTest.Firebug.TestHandlers("issue1483");
+    window.issue1483 = new FBTest.Firebug.TestHandlers("issue1483");
 
     // Actual test operations
     issue1483.add( function onNewPage(event)
@@ -14,14 +11,14 @@ function issue1483()
         FBTestFirebug.selectPanel("script");
         FBTestFirebug.enableScriptPanel(function callbackOnReload(testWindow) {
             win = testWindow;
-            issue1483.fire("selectFile");
+            issue1483.selectFile();
         });
     });
 
     issue1483.fileName = "index.js";
     issue1483.lineNo = 5;
 
-    issue1483.add( function selectFile(event)
+    issue1483.selectFile = function()
     {
      // Select proper JS file.
         var panel = FW.FirebugContext.chrome.getSelectedPanel();
@@ -31,13 +28,13 @@ function issue1483()
         if (found)
         {
             FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
-            issue1483.fire("setBreakpoint");
+            issue1483.setBreakpoint();
         }
         else
             issue1483.done();
-    });
+    };
 
-    issue1483.add( function setBreakpoint(event)
+    issue1483.setBreakpoint = function(event)
     {
         var panel = FW.FirebugContext.chrome.getSelectedPanel();
         panel.toggleBreakpoint(issue1483.lineNo);
@@ -46,25 +43,36 @@ function issue1483()
         var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
         FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
 
-        nowSecondReload();
-    });
+        issue1483.secondReload(panel);
+    };
 
 
-    issue1483.wasFirebugOpen = FBTest.Firebug.isFirebugOpen();
-    issue1483.fireOnNewPage("onNewPage", issue1483URL, null);
-}
+    issue1483.secondReload = function(panel)
+    {
+        FBTest.progress("Listen for exeline true, meaning the breakpoint hit");
 
-function nowSecondReload(event)
-{
-    FBTest.progress("Second reload event fired");
-
-    FBTestFirebug.reload(function secondReloadHandler(window)
+        var doc = panel.panelNode.ownerDocument; // panel.html
+        function waitForBreakpoint(event)
+        {
+            if (event.attrName == "exeline" && event.newValue == "true")
             {
-                FBTest.progress("second reload complete, check breakpoint");
-                var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
-                FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
+                doc.removeEventListener("DOMAttrModified", waitForBreakpoint, waitForBreakpoint.capturing);
+                FBTest.progress("Hit BP, exeline set, check breakpoint");
+                var panel = FW.FirebugContext.chrome.getSelectedPanel();
+                FBTest.compare("script", panel.name, "The script panel should be selected");
 
-                FBTest.progress("remove breakpoint");
+
+                var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
+                if (!row)
+                {
+                    FBTest.ok(false, "Row "+issue1483.lineNo+" must be found");
+                    return;
+                }
+
+                var bp = row.getAttribute('breakpoint');
+                FBTest.compare("true", bp, "Line "+issue1483.lineNo+" should have a breakpoint set");
+
+                FBTest.progress("Remove breakpoint");
                 var panel = FW.FirebugContext.chrome.getSelectedPanel();
                 panel.toggleBreakpoint(issue1483.lineNo);
 
@@ -75,7 +83,13 @@ function nowSecondReload(event)
                 FBTest.ok(canContinue, "The continue button is pushable");
 
                 FBTestFirebug.testDone("issue1483.DONE");
-            });
+            }
+        }
+        waitForBreakpoint.capturing = false;
+        doc.addEventListener("DOMAttrModified", waitForBreakpoint, waitForBreakpoint.capturing);
+
+        FBTestFirebug.reload( function noOP() {});
+    }
 }
 
 //------------------------------------------------------------------------
@@ -91,5 +105,7 @@ function runTest()
         FBTest.ok(false, "No Firebug Window");
 
     // Auto run sequence
-    issue1483();
+    defineIssue1483();
+    var issue1483URL = FBTest.getHTTPURLBase()+"script/1483/issue1483.html";
+    issue1483.fireOnNewPage("onNewPage", issue1483URL, null);
 }
