@@ -42,6 +42,9 @@ FBTestApp.TestConsole =
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 
+            this.haltOnFailedTest = Firebug.getPref(Firebug.prefDomain, "fbtest.haltOnFailedTest");
+            this.setHaltOnFailedTestButton();
+
             // Load all tests from the default test list file (testList.html).
             // The file usually defines two variables:
             // testList: array with individual test objects.
@@ -82,7 +85,7 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "refreshList", "testListPicker"];
+        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList", "testListPicker"];
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);
@@ -334,7 +337,22 @@ FBTestApp.TestConsole =
     {
         $("consoleFrame").setAttribute("src", "about:blank");
         this.loadTestList(this.testListPath);
-    }
+    },
+
+    onToggleHaltOnFailedTest: function()
+    {
+        window.dump("onToggleHaltOnFailedTest incoming "+this.haltOnFailedTest);
+        this.haltOnFailedTest = !this.haltOnFailedTest;
+        Firebug.setPref(Firebug.prefDomain, "fbtest.haltOnFailedTest", this.haltOnFailedTest);
+        this.setHaltOnFailedTestButton();
+        window.dump("onToggleHaltOnFailedTest outcoming "+this.haltOnFailedTest);
+    },
+
+    setHaltOnFailedTestButton: function()
+    {
+        $('haltOnFailedTest').setAttribute('checked', this.haltOnFailedTest?'true':'false');
+    },
+
 };
 
 // ************************************************************************************************
@@ -409,7 +427,15 @@ var FBTest = FBTestApp.FBTest =
     {
         if (!pass)
              FBTest.sysout("FBTest FAILS "+msg);
+
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, pass, msg));
+
+        if (!pass && FBTestApp.TestConsole.haltOnFailedTest)
+        {
+            FBTestApp.TestRunner.resetTestTimeout();
+            FBTest.sysout("Test failed, dropping into debugger "+msg);
+            debugger;
+        }
     },
 
     testDone: function()

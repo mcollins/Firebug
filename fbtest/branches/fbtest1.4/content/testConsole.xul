@@ -51,6 +51,7 @@
     <commandset id="mainCommandSet">
         <command id="cmd_runAll" oncommand="FBTestApp.TestConsole.onRunAll()"/>
         <command id="cmd_stopTest" oncommand="FBTestApp.TestConsole.onStop()"/>
+        <command id="cmd_haltOnFailedTest" oncommand="FBTestApp.TestConsole.onToggleHaltOnFailedTest()"/>
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
         <command id="cmd_refreshTestList" oncommand="FBTestApp.TestConsole.onRefreshTestList()"/>
@@ -70,6 +71,10 @@
                 label="fbtest.cmd.Stop" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.tip.Stop"
                 command="cmd_stopTest"/>
+            <toolbarbutton id="haltOnFailedTest"
+                label="fbtest.cmd.haltOnFailedTest" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.haltOnFailedTest"
+                command="cmd_haltOnFailedTest"/>
             <toolbarseparator flex="1"/>
             <toolbarbutton id="refreshList"
                 label="fbtest.cmd.Refresh" class="toolbar-image-button"
@@ -81,11 +86,11 @@
                 <label value="Test Suite:" />
             </toolbaritem>
             <toolbaritem flex="1">
-                <textbox id="testListURL" flex="1" 
+                <textbox id="testListURL" flex="1"
                     onkeydown="FBTestApp.TestListURLBar.onKeyDown(event)"/>
             </toolbaritem>
             <toolbarbutton id="testListPicker"
-                command="cmd_openTestList" 
+                command="cmd_openTestList"
                 tooltiptext="fbtest.cmd.tip.Browser For Test List"/>
         </toolbar>
     </toolbox>
@@ -102,7 +107,7 @@
         <findbar id="FindToolbar" browserid="consoleFrame"/>
     </vbox>
 
-    <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest" 
+    <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest"
         resizeAfter="closest" persist="state substate"/>
 
     <!-- Test frame, all tests are launched as frames within this frame -->
