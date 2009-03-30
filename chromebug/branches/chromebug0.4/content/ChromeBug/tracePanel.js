@@ -194,7 +194,8 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         return {label: "AllOptionsOff",  nol10n: true, type: "checkbox", checked: false,
             command: function allOff()
         {
-            FBTrace.sysout("getAllOffOptionMenuItem ", self.controller)
+            if(FBTrace.DBG_OPTOINS)
+                FBTrace.sysout("getAllOffOptionMenuItem ", self.controller);
             self.controller.clearOptions();
         }};
     },

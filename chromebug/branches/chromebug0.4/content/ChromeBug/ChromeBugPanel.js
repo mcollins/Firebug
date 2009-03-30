@@ -2420,7 +2420,8 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
     setCurrentLocation: function(filteredContext)
     {
           cbPackageList.location = filteredContext;
-          FBTrace.sysout("PackageList.setCurrentLocation sent onSetLocation to "+this.fbListeners.length)
+          if (FBTrace.DBG_LOCATIONS)
+              FBTrace.sysout("PackageList.setCurrentLocation sent onSetLocation to "+this.fbListeners.length);
           dispatch(this.fbListeners, "onSetLocation", [this, filteredContext]);
     },
 
@@ -2870,7 +2871,9 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
 
     setCurrentLocation: function(description)
     {
-        FBTrace.sysout("setCurrentLocation ", description)
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("setCurrentLocation ", description);
+
         this.elementBoundTo.location = description;
         dispatch(this.fbListeners, "onSetLocation", [this, description]);
     },
@@ -3390,7 +3393,8 @@ Firebug.Chromebug.PathListLocator = function(xul_element)
             getLocationList: function()
             {
                 if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("PathListLocator getLocationLst FirebugContext",FirebugContext.getName())
+                    FBTrace.sysout("PathListLocator getLocationLst FirebugContext",FirebugContext.getName());
+
                 var list = [];
                 for (var i = 0; i < this.strings.length; i++)
                 {
