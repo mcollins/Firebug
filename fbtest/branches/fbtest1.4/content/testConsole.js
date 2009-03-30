@@ -202,7 +202,7 @@ FBTestApp.TestConsole =
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
                         testListPath, doc);
 
-                // Finally run all tests if the browser has been launched with 
+                // Finally run all tests if the browser has been launched with
                 // -runFBTests argument on the command line.
                 self.autoRun();
             }
@@ -247,14 +247,14 @@ FBTestApp.TestConsole =
         cmdLineHandler.wrappedJSObject.runFBTests = false;
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.autoRun; defaultTestList: " + FBTestApp.defaultTestList + 
+            FBTrace.sysout("fbtest.autoRun; defaultTestList: " + FBTestApp.defaultTestList +
                 ", defaultTest: " + FBTestApp.defaultTest);
 
         // Run all asynchronously so, callstack is correct.
-        setTimeout(function() 
+        setTimeout(function()
         {
             // If a test is specified on the command line, run it. Otherwise
-            // run entire test suite. 
+            // run entire test suite.
             if (FBTestApp.defaultTest)
             {
                 var test = FBTestApp.TestConsole.getTest(FBTestApp.defaultTest);
@@ -376,7 +376,7 @@ FBTestApp.TestConsole.TraceListener =
 // ************************************************************************************************
 // Test List URL Bar
 
-FBTestApp.TestListURLBar = 
+FBTestApp.TestListURLBar =
 {
     onKeyDown: function(event)
     {
@@ -402,7 +402,7 @@ var FBTest = FBTestApp.FBTest =
     {
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
         FBTestApp.TestSummary.setMessage(msg);
-        FBTest.sysout("FBTest progress: "+msg);
+        FBTest.sysout("FBTest progress: ------------- "+msg+" -------------");
     },
 
     ok: function(pass, msg)

@@ -209,7 +209,7 @@ FBTestApp.TestRunner =
             var time = formatTime(FBTestApp.FBTest.testTimeout);
             FBTestApp.FBTest.ok(false, "TIMEOUT: " + time );
 
-            if (FBTrace.DBG_FBTEST) 
+            if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.testTimeout TEST FAILED (timeout: " + time + "): " +
                     FBTestApp.TestRunner.currentTest.path);
 
@@ -219,7 +219,7 @@ FBTestApp.TestRunner =
 
     resetTestTimeout: function()
     {
-        if (this.testTimeoutID) 
+        if (this.testTimeoutID)
         {
             clearTimeout(this.testTimeoutID);
             this.testTimeoutID = 0;
@@ -242,7 +242,7 @@ FBTestApp.TestRunner =
     {
         if (!this.currentTest)
         {
-            FBTrace.sysout("test result came in after testDone!");
+            FBTrace.sysout("test result came in after testDone!", result);
             $("progressMessage").value = "test result came in after testDone!";
             return;
         }
@@ -350,11 +350,11 @@ FBTestApp.TestSummary =
             result.pass ? this.passingTests.passing++ : this.passingTests.failing++;
 
             if (this.passingTests.passing)
-                $("passingTests").value = $STR("fbtest.label.Passing") + ": " + 
+                $("passingTests").value = $STR("fbtest.label.Passing") + ": " +
                     this.passingTests.passing;
 
             if (this.passingTests.failing)
-                $("failingTests").value = $STR("fbtest.label.Failing") + ": " + 
+                $("failingTests").value = $STR("fbtest.label.Failing") + ": " +
                     this.passingTests.failing;
         }
     },
@@ -367,7 +367,7 @@ FBTestApp.TestSummary =
     onTodoShowTooltip: function(tooltip)
     {
         // xxxHonza: localization
-        tooltip.label = "There is " + this.failingTests.failing + " TODO test(s) that failed " + 
+        tooltip.label = "There is " + this.failingTests.failing + " TODO test(s) that failed " +
             "and " + this.failingTests.passing + " TODO test(s) that passed.";
     },
 
