@@ -8,36 +8,74 @@ function issue1483()
     // Actual test operations
     issue1483.add( function onNewPage(event)
     {
-        FBTest.sysout("onNewPage starts", event);
-        FBTest.ok(!FBTest.Firebug.isFirebugOpen(), "Firebug should be closed");
-        issue1483.done();
+        // Open Firebug UI, enable Script panel, reload and start first test.
+        FBTestFirebug.openFirebug();
+        FBTestFirebug.clearCache();
+        FBTestFirebug.selectPanel("script");
+        FBTestFirebug.enableScriptPanel(function callbackOnReload(testWindow) {
+            win = testWindow;
+            issue1483.fire("selectFile");
+        });
     });
 
-    var testListener =
-    {
-        uiListener:
-        {
-            showUI: function(browser, context) // called when the Firebug UI comes up in browser or detached
-            {
-                FBTest.ok(false, "showUI should not be called on this page");
-            },
+    issue1483.fileName = "index.js";
+    issue1483.lineNo = 5;
 
-            hideUI: function(broswer, context)  // called when the Firebug UI comes down
-            {
-                FBTest.ok(issue1483.wasFirebugOpen, "hideUI can be called only if Firebug was open");
-            },
-        },
-        moduleListener:
+    issue1483.add( function selectFile(event)
+    {
+     // Select proper JS file.
+        var panel = FW.FirebugContext.chrome.getSelectedPanel();
+
+        var found = FBTest.Firebug.selectPanelLocationByName(panel, issue1483.fileName);
+        FBTest.compare(found, true, "The "+issue1483.fileName+" should be found");
+        if (found)
         {
-            showContext: function(browser, context)
-            {
-                    FBTest.ok( !(context), "showContext should be called with null context");
-                    FBTest.sysout("issue1483 showContext "+(!context), context);
-            },
+            FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
+            issue1483.fire("setBreakpoint");
         }
-    };
+        else
+            issue1483.done();
+    });
+
+    issue1483.add( function setBreakpoint(event)
+    {
+        var panel = FW.FirebugContext.chrome.getSelectedPanel();
+        panel.toggleBreakpoint(issue1483.lineNo);
+
+        // use chromebug to see the elements that make up the row
+        var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
+        FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
+
+        nowSecondReload();
+    });
+
+
     issue1483.wasFirebugOpen = FBTest.Firebug.isFirebugOpen();
-    issue1483.fireOnNewPage("onNewPage", issue1483URL, testListener);
+    issue1483.fireOnNewPage("onNewPage", issue1483URL, null);
+}
+
+function nowSecondReload(event)
+{
+    FBTest.progress("Second reload event fired");
+
+    FBTestFirebug.reload(function secondReloadHandler(window)
+            {
+                FBTest.progress("second reload complete, check breakpoint");
+                var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
+                FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
+
+                FBTest.progress("remove breakpoint");
+                var panel = FW.FirebugContext.chrome.getSelectedPanel();
+                panel.toggleBreakpoint(issue1483.lineNo);
+
+                var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
+                FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should NOT have a breakpoint set");
+
+                var canContinue = FBTestFirebug.clickContinueButton();
+                FBTest.ok(canContinue, "The continue button is pushable");
+
+                FBTestFirebug.testDone("issue1483.DONE");
+            });
 }
 
 //------------------------------------------------------------------------
@@ -45,7 +83,7 @@ function issue1483()
 
 function runTest()
 {
-	FBTest.sysout("1483 runTest starts");
+    FBTest.sysout("1483 runTest starts");
 
     if (FBTest.FirebugWindow)
         FBTest.ok(true, "We have the Firebug Window: "+FBTest.FirebugWindow.location);
