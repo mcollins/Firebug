@@ -149,12 +149,14 @@ this.reload = function(callback)
     var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
     var onLoadURL = function(event)
     {
+        FBTest.progress("FBTestFirebug reload onLoadURL fired");  // maybe we need this to slow down things?
         browser.removeEventListener("load", onLoadURL, true);
         callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
     }
     browser.addEventListener("load", onLoadURL, true);
 
     // Reload content of the selected tab.
+    FBTest.progress("FBTestFirebug Reload content of the selected tab "+tabbrowser.selectedBrowser.contentDocument.defaultView.location);
     tabbrowser.selectedBrowser.contentDocument.defaultView.location.reload();
 }
 
@@ -219,7 +221,7 @@ this.expandElements = function(panelNode, className) // className, className, ..
 // ************************************************************************************************
 // Firebug Panel Enablement.
 
-this.updateModelState = function(model, callback, enable)
+this.updateModelState = function(model, callbackTriggersReload, enable)
 {
     // Open Firebug UI
     this.pressToggleFirebug(true);
@@ -229,8 +231,8 @@ this.updateModelState = function(model, callback, enable)
 
     // Clear cache and reload.
     this.clearCache();
-    if (callback)
-        this.reload(callback);
+    if (callbackTriggersReload)
+        this.reload(callbackTriggersReload);
 }
 
 this.disableNetPanel = function(callback)
@@ -265,16 +267,12 @@ this.enableConsolePanel = function(callback)
 
 this.disableAllPanels = function()
 {
-    this.updateModelState(FW.Firebug.NetMonitor, null, false);
-    this.updateModelState(FW.Firebug.Debugger, null, false);
-    this.updateModelState(FW.Firebug.Console, null, false);
+    FW.Firebug.ModuleManager.disableModules()
 }
 
 this.enableAllPanels = function()
 {
-    this.updateModelState(FW.Firebug.NetMonitor, null, true);
-    this.updateModelState(FW.Firebug.Debugger, null, true);
-    this.updateModelState(FW.Firebug.Console, null, true);
+    FW.Firebug.ModuleManager.enableModules();
 }
 
 /**
@@ -311,15 +309,53 @@ this.getPref = function(pref)
 // ************************************************************************************************
 // Debugger
 
-this.clickContinueButton = function()
+this.clickContinueButton = function( )
 {
     // xxxHonza: why the click doesn't work? Is is because the execution context
     // is stopped at a breakpoint?
-    //var doc = FBTest.FirebugWindow.document;
-    //var button = doc.getElementById("fbContinueButton");
-    //FBTest.click(button);
+    // xxxJJB: I guess because the continue button is active that the time of the call.
+    var doc = FBTest.FirebugWindow.document;
+    var button = doc.getElementById("fbContinueButton");
 
-    FW.Firebug.Debugger.resume(FW.FirebugContext);
+    if (button.getAttribute("breakable") == "off")
+    {
+        FBTest.sysout("FBTestFirebug breakable off, resuming debugger");
+        FW.Firebug.Debugger.resume(FW.FirebugContext);
+        FBTest.sysout("FBTestFirebug breakable off, resumed debugger");
+        return true;
+    }
+    FBTest.sysout("FBTestFirebug clickContinueButton not armed for continue breakable:"+button.getAttribute("breakable"), button);
+    return false; // not breakable
+
+}
+
+this.getSourceLineNode = function(lineNo)
+{
+    var panel = FW.FirebugContext.chrome.getSelectedPanel();
+    var sourceBox = panel.getSourceBoxByURL(panel.location.href);
+    var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
+    if (!sourceViewport)
+    {
+        FBTest.ok(sourceViewport, "There is a sourceViewport after scrolling");
+        return false;
+    }
+
+    var rows = sourceViewport.childNodes;
+
+    // Look for line
+    var lineNoName = lineNo +"";
+    var row = null;
+    for (var i=0; i < rows.length; i++)
+    {
+        var line = FW.FBL.getChildByClass(rows[i], 'sourceLine');
+        if (line.textContent == lineNoName) {
+            row = rows[i];
+            break;
+        }
+        else
+            FBTest.sysout("trying row "+i+" "+line.textContent);
+    }
+    return row;
 }
 
 // ************************************************************************************************
