@@ -7,7 +7,6 @@ function runTest()
 
     FBTestFirebug.openNewTab(pageURI, function(win)
     {
-        FBTestFirebug.selectPanel("net");
         FBTestFirebug.enableNetPanel(function(win)
         {
             win.wrappedJSObject.runTest(checkCopyLocationWithParametersAction);
@@ -18,12 +17,15 @@ function runTest()
 function checkCopyLocationWithParametersAction(request)
 {
     // Expand the test request with params
-    var panel = FBTestFirebug.getPanel("net");
+    var panel = FBTestFirebug.selectPanel("net");
     var netRow = FW.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr", 
         "hasHeaders", "loaded");
 
     if (!netRow)
+    {
+        FBTest.ok(false, "There must be a XHR entry within the Net panel.");
         return FBTestFirebug.testDone();
+    }
 
     // Test the "Copy Location With Parameters action" available in the context menu
     // for specific Net panel entry.
