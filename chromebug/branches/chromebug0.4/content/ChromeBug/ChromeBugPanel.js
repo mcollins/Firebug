@@ -1594,7 +1594,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         catch(exc)
         {
-            FBTrace.sysout("onJSDActivate fails "+exc);
+            FBTrace.sysout("onJSDActivate fails "+exc, exc);
         }
         finally
         {
