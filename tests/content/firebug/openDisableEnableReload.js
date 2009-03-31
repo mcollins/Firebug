@@ -54,15 +54,30 @@ function enableAndCheck(panelName, module)
     checkIsEnabled(panelName, module);
 }
 
+function selectPanelTab(name)
+{
+    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    for (var child = panelBar1.firstChild; child; child = child.nextSibling)
+    {
+        if (child.role && child.role == 'tab' && child.label == name)
+        {
+            panelBar1.selectTab(child);
+            return true;
+        }
+    }
+    return false;
+}
+
 function checkIsDisabled(panelName, module)
 {
+    selectPanelTab(panelName);
     var name = panelName.toUpperCase();
-    var panel = FW.FirebugChrome.selectPanel(panelName);
+    var panel = FW.FirebugChrome.getSelectedPanel();
     var enabled = module.isEnabled(FW.FirebugContext);
-    FBTest.ok(!enabled, "The "+name+" panel should be disabled");
-    FBTest.ok(panel.disabledBox, "The "+name+" should have the disabled message");
+    FBTest.ok(!enabled, "The "+name+" panel's module should be disabled");
+    FBTest.ok(panel.disabledBox, "The "+panelName+" should have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
-    FBTest.ok(!icon || (icon != "on"), "The "+name+" should NOT be marked on the Firebug Statusbar Icon");
+    FBTest.ok(!icon || (icon != "on"), "The "+panelName+" should NOT be marked on the Firebug Statusbar Icon");
 }
 
 function checkIsEnabled(panelName, module)
@@ -71,7 +86,7 @@ function checkIsEnabled(panelName, module)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var enabled = module.isEnabled(FW.FirebugContext);
     FBTest.ok(enabled, "The "+name+" panel should be enabled");
-    FBTest.ok(!panel.disabledBox, "true", "The "+name+" should not have the disabled message");
+    FBTest.ok(!panel.disabledBox, "The "+name+" should not have the disabled message");
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare(icon+"", "on", "The "+name+" should be marked on the Firebug Statusbar Icon");
 }
