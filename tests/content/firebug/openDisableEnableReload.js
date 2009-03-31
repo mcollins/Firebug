@@ -13,7 +13,7 @@ function runTest()
         FBTest.progress("opened tab for "+win.location);
         FBTestFirebug.openFirebug();
 
-        FBTest.progress("Disable all panels and check them");
+        FBTest.progress("All panels should be disabled: check them");
         // All panels must be disabled.
         checkIsDisabled("console", FW.Firebug.Console);  // console must be disabled first
         checkIsDisabled("script", FW.Firebug.Debugger);
@@ -48,45 +48,36 @@ function runTest()
 
 function enableAndCheck(panelName, module)
 {
-    var name = panelName.toUpperCase();
-    FBTestFirebug.selectPanel(panelName);
+    FBTestFirebug.selectPanelTab(panelName);
     FBTestFirebug.updateModelState(module, null, true);
     checkIsEnabled(panelName, module);
 }
 
-function selectPanelTab(name)
-{
-    var panelBar1 = FW.document.getElementById("fbPanelBar1");
-    for (var child = panelBar1.firstChild; child; child = child.nextSibling)
-    {
-        if (child.role && child.role == 'tab' && child.label == name)
-        {
-            panelBar1.selectTab(child);
-            return true;
-        }
-    }
-    return false;
-}
-
 function checkIsDisabled(panelName, module)
 {
-    selectPanelTab(panelName);
-    var name = panelName.toUpperCase();
-    var panel = FW.FirebugChrome.getSelectedPanel();
-    var enabled = module.isEnabled(FW.FirebugContext);
-    FBTest.ok(!enabled, "The "+name+" panel's module should be disabled");
-    FBTest.ok(panel.disabledBox, "The "+panelName+" should have the disabled message");
+    FBTestFirebug.selectPanelTab(panelName);
+
+    FBTest.compare("true", FBTestFirebug.isPanelTabDisabled(panelName), "The "+panelName+" panel's module should be disabled");
+    var selectedPanel = FBTestFirebug.getSelectedPanel();
+
+    FBTest.compare(panelName, selectedPanel.name, "The selected panel should be "+panelName);
+    FBTest.compare("false", selectedPanel.disabledBox.getAttribute('collapsed'), "The "+panelName+" should have the disabled message");
+
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+panelName+" should NOT be marked on the Firebug Statusbar Icon");
 }
 
 function checkIsEnabled(panelName, module)
 {
-    var name = panelName.toUpperCase();
-    var panel = FW.FirebugChrome.selectPanel(panelName);
-    var enabled = module.isEnabled(FW.FirebugContext);
-    FBTest.ok(enabled, "The "+name+" panel should be enabled");
-    FBTest.ok(!panel.disabledBox, "The "+name+" should not have the disabled message");
+    FBTestFirebug.selectPanelTab(panelName);
+
+    FBTest.compare("false", FBTestFirebug.isPanelTabDisabled(panelName), "The "+panelName+" panel should be enabled");
+
+    var selectedPanel = FBTestFirebug.getSelectedPanel();
+    FBTest.compare(panelName, selectedPanel.name, "The selected panel should be "+panelName);
+    if (selectedPanel.disabledBox)
+        FBTest.compare("true", selectedPanel.disabledBox.getAttribute('collapsed'), "The "+panelName+" should not have the disabled message");
+
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
-    FBTest.compare(icon+"", "on", "The "+name+" should be marked on the Firebug Statusbar Icon");
+    FBTest.compare(icon+"", "on", "The "+panelName+" should be marked on the Firebug Statusbar Icon");
 }
