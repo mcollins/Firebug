@@ -430,12 +430,8 @@ var FBTest = FBTestApp.FBTest =
 
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, pass, msg));
 
-        if (!pass && FBTestApp.TestConsole.haltOnFailedTest)
-        {
-            FBTestApp.TestRunner.resetTestTimeout();
-            FBTest.sysout("Test failed, dropping into debugger "+msg);
-            debugger;
-        }
+        if (!pass)
+            this.onFailure(msg);
     },
 
     testDone: function()
@@ -448,7 +444,17 @@ var FBTest = FBTestApp.FBTest =
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
             expected == actual, msg, expected, actual));
         if (expected != actual)
-            FBTest.sysout("FBTest FAILS "+msg);
+            FBTest.onFailure(msg);
+    },
+
+    onFailure: function(msg)
+    {
+        if (FBTestApp.TestConsole.haltOnFailedTest)
+        {
+            FBTestApp.TestRunner.resetTestTimeout();
+            FBTest.sysout("Test failed, dropping into debugger "+msg);
+            debugger;
+        }
     },
 
     sysout: function(text, obj)
