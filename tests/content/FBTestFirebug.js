@@ -283,6 +283,50 @@ this.selectPanel = function(panelName)
     return FW.FirebugChrome.selectPanel(panelName);
 }
 
+/* select a panel tab */
+this.selectPanelTab = function(name)
+{
+    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    for (var child = panelBar1.firstChild; child; child = child.nextSibling)
+    {
+        var label = child.getAttribute("label").toLowerCase();
+        FBTest.sysout("selectPanelTab trying "+label);
+        var role = child.getAttribute("role");
+        if (role == 'tab' && label == name)
+        {
+            panelBar1.selectTab(child);
+            return true;
+        }
+    }
+    return false;
+}
+
+/* selected panel on UI (not via context) */
+this.getSelectedPanel = function()
+{
+    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    return panelBar1.selectedPanel; // may be null
+}
+
+/* user sees panel tab disabled? */
+this.isPanelTabDisabled = function(name)
+{
+    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    for (var child = panelBar1.firstChild; child; child = child.nextSibling)
+    {
+        var label = child.getAttribute("label").toLowerCase();
+        FBTest.sysout("isPanelTabDisabled trying "+label);
+        var role = child.getAttribute("role");
+        if (role == 'tab' && label == name)
+        {
+            FBTest.sysout("isPanelTablDisabled found "+child.getAttribute('aria-disabled'));
+            return child.getAttribute('aria-disabled'); // "true" or "false"
+        }
+    }
+    return null;
+}
+
+
 this.getSelectedPanel = function()
 {
     return FW.FirebugChrome.getSelectedPanel();
