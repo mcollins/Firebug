@@ -353,7 +353,7 @@ this.getSourceLineNode = function(lineNo)
             break;
         }
         else
-            FBTest.sysout("trying row "+i+" "+line.textContent);
+            FBTest.sysout("tried row "+i+" "+line.textContent+"=?="+lineNoName);
     }
     return row;
 }
