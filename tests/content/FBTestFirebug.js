@@ -308,6 +308,12 @@ this.getSelectedPanel = function()
     return panelBar1.selectedPanel; // may be null
 }
 
+this.getPanelDocument = function()
+{
+    var panel = this.getSelectedPanel();
+    return panel.panelNode.ownerDocument; // panel.html
+}
+
 /* user sees panel tab disabled? */
 this.isPanelTabDisabled = function(name)
 {
@@ -326,11 +332,12 @@ this.isPanelTabDisabled = function(name)
     return null;
 }
 
-
+/*
 this.getSelectedPanel = function()
 {
     return FW.FirebugChrome.getSelectedPanel();
 }
+*/
 
 this.getPanel = function(name)
 {
