@@ -1,55 +1,55 @@
 <html>
 <head>
-    <title>Breakpoints Test Page</title>
+    <title>debuggerKeywords Test Page</title>
 </head>
 <body>
-<h1>Breakpoints Tests</h1>
+<h1>debuggerKeywords Tests</h1>
 
 <ol>
     <li>Step by step click on each button.</li>
-    <li>Every time you click a button the debugger should stop at a <b>debugger</b> 
+    <li>Every time you click a button the debugger should stop at a <b>debugger</b>
         keyword in the Script panel.</li>
     <li>Before you click the next button click on <b>Continue</b> (F8) debugger button.</li>
 </ol>
 
-<button onclick="breakSimple();">Break Simple</button>
-<button onclick="breakShallow();">Break Shallow</button>
-<button onclick="breakDeep();">Break Deep</button>
-<button onclick="loadXHRDebugger();">Break in XHR</button>
-<button onclick="loadScriptDebugger();">Break in Script</button>
+<button onclick="debuggerSimple();">debugger Simple</button>
+<button onclick="debuggerShallow();">debugger Shallow</button>
+<button onclick="debuggerDeep();">debugger Deep</button>
+<button onclick="loadXHRDebugger();">debugger in XHR</button>
+<button onclick="loadScriptDebugger();">debugger in Script</button>
 
 <br/><br/>
 
-<i>The execution context (yellow arrow on the left side) should be displyaed directly 
+<i>The execution context (yellow arrow on the left side) should be displyaed directly
 at the row with the debugger keyword.</i>
 
 <script type="application/x-javascript" >
-function breakSimple()
+function debuggerSimple()
 {
-    debugger;   //@breakSimpleRow - don't remove this comment 
+    debugger;   //@debuggerSimpleRow - don't remove this comment
 }
 
-function breakShallow()
+function debuggerShallow()
 {
     var foo = "poo";
-    debugger;   //@breakShallowRow - don't remove this comment
+    debugger;   //@debuggerShallowRow - don't remove this comment
 }
 
-function breakDeep()
+function debuggerDeep()
 {
     var foo = 42;
-    breakdeep2();
+    debuggerdeep2();
 }
 
-function breakdeep2()
+function debuggerdeep2()
 {
     var fun = "no";
-    breakdeep3();
+    debuggerdeep3();
     fun = "yes";
     var stuff = 88;
 }
 
-function breakdeep3()
+function debuggerdeep3()
 {
     var bar = "hello";
     var baz = document.body;
@@ -58,7 +58,7 @@ function breakdeep3()
         touch:
         function()
         {
-            debugger;   //@breakDeepRow - don't remove this comment
+            debugger;   //@debuggerDeepRow - don't remove this comment
             this.touched = true;
         }
     };
@@ -81,7 +81,7 @@ function loadXHRDebugger(callback)
         }
     }
 
-    req.open("GET", "breakpoint1.js", true);
+    req.open("GET", "debuggerKeyword1.js", true);
     req.send(null);
 }
 
@@ -95,7 +95,7 @@ function loadScriptDebugger(callback)
     }
 
     var script = document.createElement("script");
-    script.setAttribute("src", "breakpoint2.js");
+    script.setAttribute("src", "debuggerKeyword2.js");
     document.body.appendChild(script);
 }
 
