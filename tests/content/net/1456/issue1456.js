@@ -36,7 +36,15 @@ function runTest()
 
                 FBTest.ok(responseBody, "Response tab must exist.");
                 if (responseBody)
-                    FBTest.compare(responseText, responseBody.textContent, "Response must match.");
+                {
+                    // Get response text properly formatted from the response tab.
+                    var lines = [];
+                    var children = responseBody.firstChild.childNodes;
+                    for (var i=0; i<children.length; i++)
+                        lines.push(children[i].textContent);
+
+                    FBTest.compare(responseText, lines.join("\n"), "Response must match.");
+                }
 
                 // Finish test
                 FBTestFirebug.testDone("issue1456.DONE");
