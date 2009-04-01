@@ -341,11 +341,9 @@ FBTestApp.TestConsole =
 
     onToggleHaltOnFailedTest: function()
     {
-        window.dump("onToggleHaltOnFailedTest incoming "+this.haltOnFailedTest);
         this.haltOnFailedTest = !this.haltOnFailedTest;
         Firebug.setPref(Firebug.prefDomain, "fbtest.haltOnFailedTest", this.haltOnFailedTest);
         this.setHaltOnFailedTestButton();
-        window.dump("onToggleHaltOnFailedTest outcoming "+this.haltOnFailedTest);
     },
 
     setHaltOnFailedTestButton: function()
