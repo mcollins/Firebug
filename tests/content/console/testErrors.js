@@ -4,59 +4,69 @@ function runTest()
     FBTestFirebug.openNewTab(basePath + "console/testErrors.html", function(win)
     {
         FBTestFirebug.selectPanel("console");
-        FBTestFirebug.enableConsolePanel(function(win) 
+        FBTestFirebug.enableConsolePanel(function(win) // causes reload
         {
-            FW.Firebug.Console.addListener(consoleListener);
-
-            // Click on buttons.
-            var buttons = ["syntaxError", "shallowError", "deepError", "throw"];
-            for (var i=0; i<buttons.length; i++)
-            {
-                var button = win.document.getElementById(buttons[i]);
-                function click(button) {
-                    setTimeout(function() { FBTest.click(button); }, 10);
-                }
-                click(button);
-            }
+           fireTest(win, 0);
         });
     });
 }
 
-var counter = 0;
-var consoleListener = 
+
+function fireTest(win, ith)
 {
-    log: function(object, context, className, rep, noThrottle, sourceLink)
+    var buttons = ["syntaxError", "shallowError", "deepError", "throw"];
+    var titles = ["missing ; before statement", "foops is not defined",
+                  "B3 is not defined", "uncaught exception: hi"];
+    var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();", ""];
+
+    if (ith >= buttons.length)
     {
-        if (++counter < 4)
-            return;
-
-        var panelNode = FBTestFirebug.getPanel("console").panelNode;
-        FW.Firebug.Console.removeListener(consoleListener);
-
-        // Check console panel.
-        setTimeout(function()
-        {
-            var titles = ["missing ; before statement", "foops is not defined", 
-                "B3 is not defined", "uncaught exception: hi"];
-            var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();", ""];
-
-            var logs = FW.FBL.getElementsByClass(panelNode, "logRow", "logRow-errorMessage");
-            FBTest.compare(4, logs.length, "There must be four error logs in the Console panel.");
-            if (logs.length != 4)
-                return FBTestFirebug.testDone();
-
-            for (var i=0; i<logs.length; i++)
-            {
-                var log = logs[i];
-                var title = FW.FBL.getElementByClass(log, "errorTitle");
-                var source = FW.FBL.getElementByClass(log, "errorSource");
-
-                FBTest.compare(titles[i], title.textContent, "The error message must be correct.");
-                if (sources[i])
-                    FBTest.compare(sources[i], source.textContent, "The error source must be correct.");
-            }
-
-            FBTestFirebug.testDone("testErrors.DONE");
-        }, 400);
+        FBTest.testDone("testErrors.done");
+        return;
     }
+
+    window.currentLogHandler = getLogHandler(win, ith, titles[ith], sources[ith]);
+    window.currentLogHandler.eventName = "DOMNodeInserted";
+    window.currentLogHandler.capturing = false;
+
+    var panelDoc = FBTestFirebug.getPanelDocument();
+    panelDoc.addEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
+
+    window.addEventListener("unload", function cleanUp()
+    {
+        panelDoc.removeEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
+    }, true);
+
+    FBTest.progress("testing "+buttons[ith]);
+    var button = win.document.getElementById(buttons[ith]);
+    FBTest.click(button);
+}
+
+function getLogHandler(win, ith, expectedTitle, expectedSource)
+{
+    FBTest.sysout("getLogHandler "+ith+" on window "+win.location+" "+expectedTitle+" source: "+expectedSource);
+    return function waitForLogEvent(event)
+    {
+        if (window.closed)
+            throw "Window is closed!!!";
+
+        FBTest.sysout("waitForLogEvent got event, new child is: "+event.target.tagName, event);
+        var elt = event.target;
+        if (FW.FBL.hasClass(elt, 'logRow'))
+        {
+            elt.ownerDocument.removeEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
+            checkConsoleLogMessage(elt, expectedTitle, expectedSource);
+            fireTest(win, ith+1);
+        }
+    }
+}
+
+function checkConsoleLogMessage(log, expectedTitle, expectedSource)
+{
+    var title = FW.FBL.getElementByClass(log, "errorTitle");
+    var source = FW.FBL.getElementByClass(log, "errorSource");
+
+    FBTest.compare(expectedTitle, title.textContent, "The error message must be correct.");
+    if (expectedSource)
+        FBTest.compare(expectedSource, source.textContent, "The error source must be correct.");
 }
