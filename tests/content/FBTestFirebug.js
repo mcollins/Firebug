@@ -360,13 +360,26 @@ this.getPref = function(pref)
 // ************************************************************************************************
 // Debugger
 
-this.clickContinueButton = function( )
+this.clickContinueButton = function(breakOnNext)
 {
     // xxxHonza: why the click doesn't work? Is is because the execution context
     // is stopped at a breakpoint?
     // xxxJJB: I guess because the continue button is active that the time of the call.
     var doc = FBTest.FirebugWindow.document;
     var button = doc.getElementById("fbContinueButton");
+
+    if (breakOnNext)
+    {
+        if (button.getAttribute("breakable") == "true")
+        {
+            FBTest.sysout("FBTestFirebug breakable true, resuming should arm break on next");
+            FW.Firebug.Debugger.resume(FW.FirebugContext);
+            FBTest.sysout("FBTestFirebug breakable true, armed break on next");
+            return true;
+        }
+        FBTest.sysout("FBTestFirebug clickContinueButton not armed for breakOnNext breakable:"+button.getAttribute("breakable"), button);
+        return false; // not breakable
+    }
 
     if (button.getAttribute("breakable") == "off")
     {
