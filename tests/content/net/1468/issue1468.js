@@ -1,3 +1,5 @@
+window.testTimeout = 15000;
+
 function runTest()
 {
     FBTest.sysout("issue1468.START");
