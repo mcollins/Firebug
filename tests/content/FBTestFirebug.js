@@ -286,7 +286,7 @@ this.selectPanel = function(panelName)
 /* select a panel tab */
 this.selectPanelTab = function(name)
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    var panelBar1 = FW.document.getElementById("fbPanelBar1-panelTabs");
     for (var child = panelBar1.firstChild; child; child = child.nextSibling)
     {
         var label = child.getAttribute("label").toLowerCase();
