@@ -422,6 +422,46 @@ this.getSourceLineNode = function(lineNo)
     return row;
 }
 
+this.waitForBreakInDebugger = function(callback)
+{
+    var panel = FBTestFirebug.getSelectedPanel();
+    var doc = panel.panelNode.ownerDocument; // panel.html
+
+    window.addEventListener("unload", function squeal()
+    {
+        FBTest.sysout("xoxoxoxoxoxo test driver window unloaded oxoxoxoxoxox");
+    }, true);
+
+    FBTestFirebug.handleDOMAttrModified = function(event)
+    {
+        if (event.attrName == "exeline" && event.newValue == "true")
+        {
+            window.dump("window is "+(window.closed?"closed":window.location)+ "\n");
+
+            if (window.closed)
+                return;
+
+            doc.removeEventListener("DOMAttrModified", FBTestFirebug.handleDOMAttrModified, FBTestFirebug.handleDOMAttrModified.capturing);
+            window.FBTest.progress("Hit BP, exeline set, check exeline");
+            var panel = FBTestFirebug.getSelectedPanel();
+            FBTest.compare("script", panel.name, "The script panel should be selected");
+
+            callback();
+        }
+    }
+    FBTestFirebug.handleDOMAttrModified.capturing = false;
+    doc.addEventListener("DOMAttrModified", FBTestFirebug.handleDOMAttrModified, FBTestFirebug.handleDOMAttrModified.capturing);
+
+    doc.defaultView.addEventListener("unload", function cleanUp()
+    {
+        window.dump("clean up "+window.location+"\n");
+        doc.removeEventListener("DOMAttrModified", FBTestFirebug.handleDOMAttrModified, FBTestFirebug.handleDOMAttrModified.capturing);
+    }
+    , true);
+}
+
+
+
 // ************************************************************************************************
 // Error handling
 
