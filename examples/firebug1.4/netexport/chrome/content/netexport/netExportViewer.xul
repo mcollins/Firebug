@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+<?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://netexport/skin/netExport.css" type="text/css"?>
+
+<!DOCTYPE window [
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
+%browserDTD;
+<!ENTITY % findBarDTD SYSTEM "chrome://global/locale/findbar.dtd" >
+%findBarDTD;
+]>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml">
+
+    <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
+    <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
+    <script type="application/x-javascript" src="chrome://netexport/content/netExportViewer.js"/>
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
+    </stringbundleset>
+
+    <commandset id="mainCommandSet">
+    </commandset>
+
+    <vbox flex="1">
+        <browser id="viewer" type="content-primary" src="" flex="1" disablehistory="true"/>
+        <findbar id="FindToolbar" browserid="consoleFrame"/>
+    </vbox>
+</window>
