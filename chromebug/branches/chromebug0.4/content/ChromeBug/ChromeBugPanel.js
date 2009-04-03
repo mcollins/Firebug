@@ -582,6 +582,13 @@ var ChromebugWindowInfo = {
         this.fullVersion = Firebug.loadVersion(versionURL);
         if (this.fullVersion)
             document.title = "Chromebug "+this.fullVersion;
+
+        if (Firebug.Fireclipse)
+        {
+            FBTrace.sysout("Chromebug running with Fireclipse "+Firebug.Fireclipse.observerURL);
+        }
+        else
+            FBTrace.sysout("Chromebug running WITHOUT Fireclipse");
     },
 
     watchXULWindows: function()
@@ -1153,7 +1160,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     restructureUI: function()
     {
-        $('fbInspectButton').setAttribute('collapsed', true);
+        //$('fbInspectButton').setAttribute('collapsed', true);
     },
 
     restoreState: function()  // TODO context+file
@@ -1764,7 +1771,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             rootNode.addEventListener("click", function anyClick(event)
             {
-                FBTrace.sysout("Chromebug click on traceConsole ", event);
+                //FBTrace.sysout("Chromebug click on traceConsole ", event);
                 var isAStackFrame = hasClass(event.target, "stackFrameLink");
                 if (isAStackFrame)
                 {
@@ -1780,7 +1787,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                         var found = Firebug.Chromebug.AllFilesList.eachSourceFileDescription(function findMatching(d)
                         {
                             var testName = d.href;
-                            window.dump(filename +"=?="+testName+"\n");
+                            //window.dump(filename +"=?="+testName+"\n");
                             if (testName == filename)
                             {
                                 var context = d.context;

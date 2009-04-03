@@ -5,6 +5,9 @@ content fb4cb fb4cb/content/firebug/
 
 # Add Firebug command set to ChromeBug
 overlay chrome://chromebug/content/chromebug.xul        chrome://firebug/content/firebugOverlay.xul
+# Add Modify Firebug UI
+overlay  chrome://chromebug/content/chromebug.xul        chrome://chromebug/content/firebugOverlayOverlay.xul
+
 # Add ChromeBug menu items to Firebug Menu in FF Tools
 overlay chrome://firebug/content/browserOverlay.xul 	chrome://chromebug/content/ChromeBugMenuOverlay.xul
 

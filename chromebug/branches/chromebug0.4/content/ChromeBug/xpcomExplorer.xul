@@ -35,7 +35,7 @@
         top.FirebugChrome.initialize();
         window.dump("FirebugChrome initialize\n");
         Firebug.Chromebug.CategoryBrowser.startupXPCOMBrowser();
-    }, true); 
+    }, true);
     </script>
     <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
@@ -189,12 +189,15 @@
          </vbox>
      </vbox> <!-- cbExplorer -->
              <splitter id="fbContentSplitter"/>
+
+                        <toolbarbutton id="fbInspectButton" label="&firebug.Inspect;" class="toolbar-text-button"
+                           tooltiptext="&firebug.InspectTooltip;" command="cmd_toggleScanningDocuments" />
+
         <vbox id="fbContentBox" flex="1" collapsed="true">
             <toolbox id="fbToolBox">
                 <toolbar id="fbToolbar" >
                      <hbox id="fbToolbarInner">
-                        <toolbarbutton id="cbInspectButton" label="&firebug.Inspect;" class="toolbar-text-button"
-                           tooltiptext="&firebug.InspectTooltip;" command="cmd_toggleScanningDocuments" />
+
                            <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="true">
                                    <toolbarbutton label="Clear" class="toolbar-text-button"
                                        tooltiptext="&firebug.ClearTooltip;" command="cmd_clearTracePanel"/>

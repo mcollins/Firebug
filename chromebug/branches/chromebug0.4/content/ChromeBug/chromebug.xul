@@ -81,7 +81,7 @@
     <!-- END -->
  <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugOverrides.js"/>
  <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
-    <script type="application/x-javascript" src="chrome://chromebug/content/scandocuments.js"/>
+
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
@@ -129,7 +129,6 @@
         <command id="cmd_toggleChromeList" oncommand="Firebug.Chromebug.toggleChromeList()"
                  checked="false"/>
         <command id="cmd_search" oncommand="Firebug.Search.focus(FirebugContext)" />
-        <command id="cmd_toggleScanningDocuments" oncommand="Firebug.Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
         <command id="cmd_toggleIntroduction" oncommand="Firebug.Chromebug.toggleIntroduction()" />
         <command id="cmd_imAnExpert" oncommand="Firebug.Chromebug.toggleIntroductionTrue()" />
         <command id="cmd_clearTracePanel" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)"/>
@@ -293,25 +292,23 @@
 
         </hbox> <!-- cbCommandToolbox-->
 
+
         <browser id="content" flex="2" disablehistory="true" src="chrome://chromebug/content/introduction.html" />
         <splitter id="fbContentSplitter"/>
-        <vbox id="fbContentBox" flex="1" collapsed="true">
-            <toolbox id="fbToolBox">
-                <toolbar id="fbToolbar" >
-                     <hbox id="fbToolbarInner">
-                        <toolbarbutton id="cbInspectButton" label="&firebug.Inspect;" class="toolbar-text-button"
-                           tooltiptext="&firebug.InspectTooltip;" command="cmd_toggleScanningDocuments" />
-                           <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="true">
-                                   <toolbarbutton label="Clear" class="toolbar-text-button"
-                                       tooltiptext="&firebug.ClearTooltip;" command="cmd_clearTracePanel"/>
-                           </hbox>
-                      </hbox>
+        <vbox id="fbContentBox" flex="1">
+          <box id="fbPanelBox" flex="1">
+            <panelBar id="fbPanelBar1">
+                <hbox id="fbPanelBar1-tabBox">
+                    <!-- Some of the buttons don't make sense in the stand-alone window - hide them. -->
+                    <toolbarbutton id="fbFirebugMenu" collapsed="true"/>
+                    <toolbarbutton id="fbDetachButton" collapsed="true"/>
+                    <toolbarbutton id="fbCloseButton" collapsed="true"/>
+                </hbox>
+            </panelBar>
+        </box>
+        <hbox id="fbCommandBox"/>
+        </vbox>
 
-                </toolbar>
-            </toolbox>
-            <box id="fbPanelBox" flex="1"/>
-            <hbox id="fbCommandBox"/>
-        </vbox> <!-- fbContentBox -->
 
     <vbox id="cbExplorer" flex="1" collapsed="true">
         <toolbox id="cbExplorerToolBox">
@@ -380,5 +377,9 @@
             <menuitem id="menu_toggleSuspendFirebug" label="Suspend Firebug" command="cmd_toggleSuspendFirebug"/>
         </menupopup>
     </statusbar>
-
+    <script  type="application/x-javascript">
+    var inspect = document.getElementById("fbInspectButton");
+    window.dump("firebugOverlayOverlay in window:"+window.location+"\n");
+    window.dump("firebugOverlayOverlay "+inspect.getAttribute('tooltiptext')+"\n");
+    </script>
 </window>
