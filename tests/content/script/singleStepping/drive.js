@@ -1,3 +1,4 @@
+
 function defineSingleStepping()
 {
     window.singleStepping = new FBTest.Firebug.TestHandlers("singleStepping");
@@ -44,29 +45,99 @@ function defineSingleStepping()
 
         FBTest.progress("Listen for exeline true, meaning the breakOnNext hit");
 
-        var doc = panel.panelNode.ownerDocument; // panel.html
-        function waitForBreakpoint(event)
-        {
-            if (event.attrName == "exeline" && event.newValue == "true")
-            {
-                doc.removeEventListener("DOMAttrModified", waitForBreakpoint, waitForBreakpoint.capturing);
-                FBTest.progress("Hit BP, exeline set, check exeline");
-                var panel = FW.FirebugContext.chrome.getSelectedPanel();
-                FBTest.compare("script", panel.name, "The script panel should be selected");
-
-
-                var row = FBTestFirebug.getSourceLineNode(singleStepping.breakOnNextLineNo);
-                FBTest.ok(row, "Row "+singleStepping.breakOnNextLineNo+" must be found");
-
-                FBTestFirebug.testDone("singleStepping.DONE");
-            }
-        }
-        waitForBreakpoint.capturing = false;
-        doc.addEventListener("DOMAttrModified", waitForBreakpoint, waitForBreakpoint.capturing);
+        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkBreakOnNext);
 
         var testPageButton = singleStepping.window.document.getElementById("clicker");
         FBTest.click(testPageButton);
     }
+
+    singleStepping.checkBreakOnNext = function()
+    {
+        var row = FBTestFirebug.getSourceLineNode(singleStepping.breakOnNextLineNo);
+        FBTest.ok(row, "Row "+singleStepping.breakOnNextLineNo+" must be found");
+
+        singleStepping.stepInto();
+    };
+
+    singleStepping.stepInto = function()
+    {
+        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkStepInto);
+
+        FBTest.progress("Press single step button");
+        var singleStepButton = FW.document.getElementById("fbStepIntoButton");
+        FBTest.click(singleStepButton);  // WHY doesn't this work???
+
+        FW.Firebug.Debugger.stepInto(FW.FirebugContext);
+    };
+
+    singleStepping.stepIntoLineNo = 14;
+    singleStepping.stepIntoFileName = "index.html";
+    singleStepping.checkStepInto = function()
+    {
+        var panel = FBTestFirebug.getSelectedPanel();
+        var name = panel.location.getObjectDescription().name;
+        FBTest.compare(singleStepping.stepIntoFileName, name, "Step into should land in "+singleStepping.stepIntoFileName);
+
+        var row = FBTestFirebug.getSourceLineNode(singleStepping.stepIntoLineNo);
+        FBTest.ok(row, "Row "+singleStepping.stepIntoLineNo+" must be found");
+
+        singleStepping.stepOver();
+    };
+
+    singleStepping.stepOver = function()
+    {
+        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkStepOver);
+
+        FBTest.progress("Press single over button");
+        var singleStepButton = FW.document.getElementById("fbStepOverButton");
+        FBTest.click(singleStepButton);  // WHY doesn't this work???
+
+        FW.Firebug.Debugger.stepOver(FW.FirebugContext);
+    };
+
+    singleStepping.stepOverLineNo = 15;
+    singleStepping.stepOverFileName = "index.html";
+    singleStepping.checkStepOver = function()
+    {
+        var panel = FBTestFirebug.getSelectedPanel();
+        var name = panel.location.getObjectDescription().name;
+        FBTest.compare(singleStepping.stepOverFileName, name, "Step into should land in "+singleStepping.stepOverFileName);
+
+        var row = FBTestFirebug.getSourceLineNode(singleStepping.stepOverLineNo);
+        FBTest.ok(row, "Row "+singleStepping.stepOverLineNo+" must be found");
+
+        singleStepping.stepOut();
+    };
+
+    singleStepping.stepOut = function()
+    {
+        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkstepOut);
+
+        FBTest.progress("Press single over button");
+        var singleStepButton = FW.document.getElementById("fbStepOutButton");
+        FBTest.click(singleStepButton);  // WHY doesn't this work???
+
+        FW.Firebug.Debugger.stepOut(FW.FirebugContext);
+    };
+
+    singleStepping.stepOutLineNo = 2;
+    singleStepping.stepOutFileName = "index.html";
+    singleStepping.checkstepOut = function()
+    {
+        var panel = FBTestFirebug.getSelectedPanel();
+        var name = panel.location.getObjectDescription().name.split('/')[0];
+
+        FBTest.compare(singleStepping.stepOutFileName, name, "Step into should land in "+singleStepping.stepOutFileName);
+
+        var row = FBTestFirebug.getSourceLineNode(singleStepping.stepOutLineNo);
+        FBTest.ok(row, "Row "+singleStepping.stepOutLineNo+" must be found");
+
+        var canContinue = FBTestFirebug.clickContinueButton(false);
+        FBTest.ok(canContinue, "The continue button was pushable");
+
+        FBTestFirebug.testDone("singleStepping.DONE");
+    };
+
 }
 
 //------------------------------------------------------------------------
