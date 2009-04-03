@@ -294,6 +294,8 @@
 
 
         <browser id="content" flex="2" disablehistory="true" src="chrome://chromebug/content/introduction.html" />
+
+        <!-- this should be identical with the browserOverlay.xul -->
         <splitter id="fbContentSplitter"/>
         <vbox id="fbContentBox" flex="1">
           <box id="fbPanelBox" flex="1">
@@ -377,9 +379,5 @@
             <menuitem id="menu_toggleSuspendFirebug" label="Suspend Firebug" command="cmd_toggleSuspendFirebug"/>
         </menupopup>
     </statusbar>
-    <script  type="application/x-javascript">
-    var inspect = document.getElementById("fbInspectButton");
-    window.dump("firebugOverlayOverlay in window:"+window.location+"\n");
-    window.dump("firebugOverlayOverlay "+inspect.getAttribute('tooltiptext')+"\n");
-    </script>
+
 </window>
