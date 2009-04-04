@@ -20,6 +20,7 @@ const traceService = Cc["@joehewitt.com/firebug-trace-service;1"].getService(Ci.
 Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 {
     dispatchName: "traceConsole",
+
     initialize: function(prefDomain, prefNames)  // the prefDomain is from the app, eg chromebug
     {
         if (FBTrace.DBG_CB_CONSOLE)
@@ -142,13 +143,15 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
             FBTrace.sysout("cb.TraceConsolePanel.show", state);
 
         this.showToolbarButtons("cbTraceButtons", true);
-        this.showToolbarButtons("fbConsoleButtons", false); // this fails!
-
-        var consoleButtons = this.context.browser.chrome.$("fbConsoleButtons");
-        collapse(consoleButtons, true);
-
-        if (FBTrace.DBG_OPTIONS)
-            FBTrace.sysout("TraceFirebug.panel show consoleButtons", consoleButtons);
+        var buttons = this.context.browser.chrome.$("cbTraceButtons");
+        if (!buttons)
+        {
+            buttons = document.getElementById("cbTraceButtons");
+            if (buttons)
+                FBTrace.sysout("tracePanel fails with this.context.browser.chrome.$ but succeeds with document.getElementById");
+            else
+                FBTrace.sysout("tracePanel fails with document.getElementById "+window.location);
+        }
 
         if (this.lastScrollTop && this.logs)
             this.logs.scrollTop = this.lastScrollTop;
@@ -160,12 +163,6 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
 
         if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("TraceFirebug.panel hide", this);
-
-        if (this.context && this.context.browser)
-        {
-            var consoleButtons = this.context.browser.chrome.$("fbConsoleButtons");
-            collapse(consoleButtons, false);
-        }
 
         this.lastScrollTop = this.logs.scrollTop;
     },

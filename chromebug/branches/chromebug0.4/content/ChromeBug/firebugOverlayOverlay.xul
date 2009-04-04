@@ -15,11 +15,18 @@
         <command id="cmd_toggleScanningDocuments" oncommand="Firebug.Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
     </commandset>
 
+    <hbox id="fbToolbarInner">
 
       <!-- overlay the Firebug inspect button -->
       <toolbarbutton id="fbInspectButton" label="Inspect" class="toolbar-text-button"
                            tooltiptext="Mouse over a window to inspect its XUL" command="cmd_toggleScanningDocuments" />
 
 
+      <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="false">
+          <toolbarbutton label="Clear" class="toolbar-text-button"
+                                       tooltiptext="&firebug.ClearTooltip;" command="cmd_clearTracePanel"/>
+      </hbox>
+
+    </hbox>
 
 </overlay>
