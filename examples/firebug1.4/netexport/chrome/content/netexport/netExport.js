@@ -157,7 +157,7 @@ JSONBuilder.prototype =
     buildRequest: function(file)
     {
         var request = {};
-        request.requestMethod = file.method;
+        request.requestMethod = file.method + " " + file.request.URI.path;
         request.cookies = this.buildCookies(file);
         request.headers = this.buildHeaders(file.requestHeaders);
         return request;
@@ -190,18 +190,41 @@ JSONBuilder.prototype =
     buildContent: function(file)
     {
         var content = {};
+        content.contentLength = file.responseText ? file.responseText.length : 0;
+        content.compression = ""; //xxxHonza
+        content.mimeType = file.request.contentType;
+        content.encodingScheme = ""; //xxxHonza
+        content.text = file.responseText;
         return content;
     },
 
     buildCache: function(file)
     {
         var cache = {};
+        var ar = cache.afterRequest = {};
+        ar.URLInCache = file.fromCache;
+        if (!file.fromCache)
+            return cache;
+
+        ar.expires = file.cacheEntry["Expires"];
+        ar.lastCacheUpdate = file.cacheEntry["Last Modified"];
+        ar.lastAccess = file.cacheEntry["Last Fetched"];
+        ar.eTag = "";
+        ar.hitCount = file.cacheEntry["Fetch Count"];
+        ar.size = file.cacheEntry["Data Size"];
+
         return cache;
     },
 
     buildTimings: function(file)
     {
         var timings = {};
+        timings.dns = file.resolvingTime - file.startTime;
+        timings.connect = file.connectingTime - file.startTime;
+        timings.blocked = file.waitingForTime - file.connectingTime;
+        timings.send = ""; //xxxHonza;
+        timings.wait = file.respondedTime - file.waitingForTime;
+        timings.receive = file.endTime - file.respondedTime;
         return timings;
     }
 }
