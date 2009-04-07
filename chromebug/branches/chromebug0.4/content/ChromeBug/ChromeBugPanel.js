@@ -116,8 +116,8 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
     getObjectDescription: function()
     {
         var xul_window = this.getContainingXULWindow();
-        var index = ChromebugWindowInfo.getXULWindowIndex(xul_window) + 1;
-        var win = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
+        var index = Firebug.Chromebug.xulWindowInfo.getXULWindowIndex(xul_window) + 1;
+        var win = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
         var title = index +". "+this.getDocumentType()+" in "+" ("+(win?win.document.title:"?no window?")+")";
         return {path: title, name: this.getDocumentLocation() }
     },
@@ -158,7 +158,7 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
     {
         if (!this.docShell)
         {
-            this.docShell = ChromebugWindowInfo.getDocShellByDOMWindow(this.getDOMWindow());
+            this.docShell = Firebug.Chromebug.xulWindowInfo.getDocShellByDOMWindow(this.getDOMWindow());
         }
         return this.docShell;
     },
@@ -175,7 +175,7 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
 
     getRootDOMWindow: function()  // maybe a container hierarchy?
     {
-        return  ChromebugWindowInfo.getDOMWindowByDocShell(this.xul_window.docShell);
+        return  Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(this.xul_window.docShell);
     },
 
 });
@@ -308,16 +308,16 @@ var GlobalScopeInfos =
         if (!docShell)  // Too early??
             return;
 
-        var parentDOMWindow = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);  // its context also?
+        var parentDOMWindow = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(xul_window.docShell);  // its context also?
 
-        ChromebugWindowInfo.eachDocShell(docShell, (typeOfDocument=="Chrome"), function(childDocShell)
+        Firebug.Chromebug.xulWindowInfo.eachDocShell(docShell, (typeOfDocument=="Chrome"), function(childDocShell)
             {
                 if (childDocShell.contentViewer)  // nsiDocShell.nsIContentViewer
                 {
                     var childDoc = childDocShell.contentViewer.DOMDocument;
                     if (childDoc instanceof nsIDOMDocument)
                     {
-                        var domWindow = ChromebugWindowInfo.getDOMWindowByDocShell(childDocShell);
+                        var domWindow = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(childDocShell);
 
                         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
                         if (context)
@@ -380,7 +380,7 @@ var GlobalScopeInfos =
 //************************************************************************
 //  XUL Window list, visible global scopes containing
 
-var ChromebugWindowInfo = {
+var XULWindowInfo = {
 
     xulWindows: [],  // all xul_windows
     xulWindowTags: [], // co-indexed strings for xulWindows
@@ -433,7 +433,7 @@ var ChromebugWindowInfo = {
 
     destroyByDocShell: function(childDocShell)
     {
-        var domWindow = ChromebugWindowInfo.getDOMWindowByDocShell(childDocShell);
+        var domWindow = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(childDocShell);
         this.destroyContextByDOMWindow(domWindow);
     },
 
@@ -551,7 +551,7 @@ var ChromebugWindowInfo = {
         for(var i = 0; i < this.xulWindows.length; i++)
         {
             var xul_window = this.xulWindows[i];
-            ChromebugWindowInfo.eachDocShell
+            Firebug.Chromebug.xulWindowInfo.eachDocShell
             (
                 xul_window.docShell, true, function(childDocShell)
                 {
@@ -573,7 +573,7 @@ var ChromebugWindowInfo = {
         FBTrace.DBG_CB_CONSOLE = Firebug.getPref("extensions.chromebug", "DBG_CB_CONSOLE");
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("cb.ChromebugWindowInfo.initialize");
+            FBTrace.sysout("cb.Firebug.Chromebug.xulWindowInfo.initialize");
 
         this.xulWindowTagSeed = FBL.getUniqueId();
         this.fakeTabBrowser = $("content");
@@ -608,7 +608,7 @@ var ChromebugWindowInfo = {
         }
         catch(exc)
         {
-            FBTrace.dumpProperties("ChromebugWindowInfo initialize fails", exc);
+            FBTrace.dumpProperties("Firebug.Chromebug.xulWindowInfo initialize fails", exc);
         }
     },
 
@@ -620,7 +620,7 @@ var ChromebugWindowInfo = {
         }
         catch (exc)
         {
-            FBTrace.dumpProperties("ChromebugWindowInfo shutdown fails", exc);
+            FBTrace.dumpProperties("Firebug.Chromebug.xulWindowInfo shutdown fails", exc);
         }
     },
 
@@ -674,8 +674,8 @@ var ChromebugWindowInfo = {
         var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
         GlobalScopeInfos.add(context, gs);
 
-        if (ChromebugWindowInfo.stateReloader)  // TODO this should be per xul_window
-            outerDOMWindow.addEventListener("DOMContentLoaded", ChromebugWindowInfo.stateReloader, true);
+        if (Firebug.Chromebug.xulWindowInfo.stateReloader)  // TODO this should be per xul_window
+            outerDOMWindow.addEventListener("DOMContentLoaded", Firebug.Chromebug.xulWindowInfo.stateReloader, true);
 
         context.domWindowWatcher = function(event)
         {
@@ -767,7 +767,7 @@ var ChromebugWindowInfo = {
             xul_window.docShell.addProgressListener(progressListener, Components.interfaces.nsIWebProgress.NOTIFY_ALL );
         }
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromebugWindowInfo.addXULWindow complete length="+this.xulWindows.length, " index="+this.getXULWindowIndex(xul_window));
+            FBTrace.sysout("Firebug.Chromebug.xulWindowInfo.addXULWindow complete length="+this.xulWindows.length, " index="+this.getXULWindowIndex(xul_window));
 
         return newTag;
     },
@@ -868,7 +868,7 @@ var ChromebugWindowInfo = {
 
     reloadWindow: function(xul_window)
     {
-        var outerDOMWindow = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
+        var outerDOMWindow = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
         if (outerDOMWindow && outerDOMWindow instanceof nsIDOMWindow)
         {
             try
@@ -885,9 +885,9 @@ var ChromebugWindowInfo = {
                 {
                     var windowToBeRestored = event.currentTarget;
                     windowToBeRestored.dump("setWindowState for "+windowToBeRestored.location+" to "+storedState+"\n");
-                    windowToBeRestored.removeEventListener("DOMContentLoaded", ChromebugWindowInfo.stateReloader, "true");
+                    windowToBeRestored.removeEventListener("DOMContentLoaded", Firebug.Chromebug.xulWindowInfo.stateReloader, "true");
                     sessionStore.setWindowState(windowToBeRestored, storedState, true);
-                    delete ChromebugWindowInfo.stateReloader;
+                    delete Firebug.Chromebug.xulWindowInfo.stateReloader;
                 }
             }
             catch (exc)
@@ -947,7 +947,7 @@ var ChromebugWindowInfo = {
 
     selectContext: function(context)
     {
-        ChromebugWindowInfo.selectBrowser(context.browser);
+        Firebug.Chromebug.xulWindowInfo.selectBrowser(context.browser);
         Firebug.showContext(context.browser, context);
     },
 };
@@ -1073,7 +1073,7 @@ var ChromeBugGlobalObserver = {
 Firebug.Chromebug = extend(Firebug.Module,
 {
     dispatchName: "chromebug",
-    xulWindowInfo: ChromebugWindowInfo,
+    xulWindowInfo: XULWindowInfo,
     globalScopeInfos: GlobalScopeInfos,
 
     onOptionsShowing: function(menu)
@@ -1107,7 +1107,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.disabledAlways = true; // The Chromebug will enable Firebug for specific windows
 
-        ChromebugWindowInfo.initialize();
+        XULWindowInfo.initialize();
 
         Firebug.Debugger.addListener(this);
 
@@ -1136,7 +1136,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
-        ChromebugWindowInfo.watchXULWindows(); // Start creating contexts
+        Firebug.Chromebug.xulWindowInfo.watchXULWindows(); // Start creating contexts
 
         // cause onJSDActivate to be triggered.
         this.initializeDebugger();
@@ -1160,7 +1160,6 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     restructureUI: function()
     {
-        //$('fbInspectButton').setAttribute('collapsed', true);
     },
 
     restoreState: function()  // TODO context+file
@@ -1297,7 +1296,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         if (!FirebugContext)
             FirebugContext = Firebug.Chromebug.contexts[0];
-        ChromebugWindowInfo.selectContext(FirebugContext);
+        Firebug.Chromebug.xulWindowInfo.selectContext(FirebugContext);
     },
 
     initializeDebugger: function()
@@ -1341,7 +1340,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_CHROMEBUG)
              FBTrace.sysout("Firebug.Chromebug.shutdown set prefs w,h="+window.outerWidth+","+window.outerHeight+")\n");
 
-        ChromebugWindowInfo.shutdown();
+        Firebug.Chromebug.xulWindowInfo.shutdown();
         if(FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("ChromeBugPanel.shutdown EXIT\n");
     },
@@ -1367,7 +1366,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
 
-        var browser = ChromebugWindowInfo.createBrowser(global);
+        var browser = Firebug.Chromebug.xulWindowInfo.createBrowser(global);
 
         if (!FirebugChrome)
             FBTrace.dumpStack("FirebugChrome is null??");
@@ -1696,7 +1695,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.showContext(context.browser, context);
 
         var stopName = getExecutionStopNameFromType(type);
-        FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName, "context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+        FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName+ "context.getName():"+context.getName() + " context.stopped:"+context.stopped );
         try
         {
             var src = frame.script.isValid ? frame.script.functionSource : "<invalid script>";
@@ -1986,7 +1985,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             var xul_window = current_location.getContainingXULWindow();
             if (xul_window && xul_window instanceof nsIXULWindow)
             {
-                var reloadedWindow = ChromebugWindowInfo.reloadWindow(xul_window);
+                var reloadedWindow = Firebug.Chromebug.xulWindowInfo.reloadWindow(xul_window);
                 if (reloadedWindow)
                     return;
             }
@@ -2241,7 +2240,7 @@ window.timeOut = function(title)
                     FBTrace.sysout("Firebug.Chromebug.GlobalScopeList.onSelectLocation FirebugContext:", Firebugcontext.getName());
                 }
 
-                ChromebugWindowInfo.selectContext(context);
+                Firebug.Chromebug.xulWindowInfo.selectContext(context);
 
                 event.currentTarget.location = globalScope;
            }
@@ -2499,7 +2498,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
             //if (FBTrace.DBG_LOCATIONS)
                 FBTrace.sysout("Firebug.Chromebug.PackageList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
 
-            ChromebugWindowInfo.selectContext(context);
+            Firebug.Chromebug.xulWindowInfo.selectContext(context);
 
             Firebug.Chromebug.PackageList.setCurrentLocation(filteredContext);
        }
@@ -2584,7 +2583,7 @@ Firebug.Chromebug.ContextList = {
          if (FBTrace.DBG_LOCATIONS)
              FBTrace.sysout("Firebug.Chromebug.ContextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
 
-         ChromebugWindowInfo.selectContext(context);
+         Firebug.Chromebug.xulWindowInfo.selectContext(context);
 
          event.currentTarget.location = context;
      }
@@ -2610,7 +2609,7 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
 
             getLocationList: function()  // a list of tags
             {
-                var xul_windows = ChromebugWindowInfo.getXULWindowTags();
+                var xul_windows = Firebug.Chromebug.xulWindowInfo.getXULWindowTags();
                 if (FBTrace.DBG_CHROMEBUG)
                     FBTrace.dumpProperties("WindowList getLocationList ", xul_windows);
                 return xul_windows;
@@ -2624,8 +2623,8 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
 
             getObjectLocation: function(xul_window_tag)  // a title for the tag
             {
-                var xul_window = ChromebugWindowInfo.getXULWindowByTag(xul_window_tag);
-                var win = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
+                var xul_window = Firebug.Chromebug.xulWindowInfo.getXULWindowByTag(xul_window_tag);
+                var win = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
                 var title = win.location.href+" ("+win.document.title+")";
                 if (FBTrace.DBG_CHROMEBUG)
                     FBTrace.sysout("WindowList  getObjectLocation arg="+xul_window+" title="+title+"\n");
@@ -2634,11 +2633,11 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
 
             getObjectDescription: function(xul_window_tag) // path and name for the tag
             {
-                var xulWindowInfo = ChromebugWindowInfo;
+                var xulWindowInfo = Firebug.Chromebug.xulWindowInfo;
                 var xul_window = xulWindowInfo.getXULWindowByTag(xul_window_tag);
 
                 var index = xulWindowInfo.getXULWindowIndex(xul_window) + 1;
-                var win = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
+                var win = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
                 if (FBTrace.DBG_CHROMEBUG)
                     FBTrace.sysout("WindowList  getObjectDescription tag="+xul_window_tag+" title="+win.document.title+"\n");
                 if (win)
@@ -2655,9 +2654,9 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
                 var xul_window_tag = event.currentTarget.repObject;
                 if (xul_window_tag)
                 {
-                    var xul_window = ChromebugWindowInfo.getXULWindowByTag(xul_window_tag);
-                    var context = ChromebugWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
-                    ChromebugWindowInfo.selectContext(context);
+                    var xul_window = Firebug.Chromebug.xulWindowInfo.getXULWindowByTag(xul_window_tag);
+                    var context = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(xul_window.docShell);
+                    Firebug.Chromebug.xulWindowInfo.selectContext(context);
 
                     if (FBTrace.DBG_CHROMEBUG)
                         FBTrace.sysout("Firebug.Chromebug.WindowList.onSelectLocation context:", context.getName());
@@ -2901,7 +2900,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
         {
              var sourceFile= context.sourceFileMap[description.href];
             FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+description.href, description);
-            ChromebugWindowInfo.selectContext(context);
+            Firebug.Chromebug.xulWindowInfo.selectContext(context);
 
             Firebug.Chromebug.syncToolBarToContext(context);
             FirebugChrome.select(sourceFile, "script", "watch", true);  // SourceFile
@@ -3334,9 +3333,9 @@ Firebug.Chromebug.JSContextList = {
 
     getContextByLocation: function(location)  // TODO MOVE to context list
     {
-        for (var i = 0; i < ChromebugWindowInfo.contexts.length; ++i)
+        for (var i = 0; i < Firebug.Chromebug.xulWindowInfo.contexts.length; ++i)
         {
-            var context = ChromebugWindowInfo.contexts[i];
+            var context = Firebug.Chromebug.xulWindowInfo.contexts[i];
             try
             {
                 if (context.window.location == location)
@@ -3362,7 +3361,7 @@ Firebug.Chromebug.JSContextList = {
                 var context = Firebug.Chromebug.getContextByGlobal(global)
                 if (context)
                 {
-                    ChromebugWindowInfo.selectContext(context);
+                    Firebug.Chromebug.xulWindowInfo.selectContext(context);
                 }
                 else
                 {
@@ -3546,14 +3545,14 @@ function onUnloadDOMWindow(event)
     if (domWindow)
         domWindow.removeEventListener("unload", onUnloadDOMWindow, false);
 
-    var xulWindow = ChromebugWindowInfo.getXULWindowByRootDOMWindow(domWindow);
+    var xulWindow = Firebug.Chromebug.xulWindowInfo.getXULWindowByRootDOMWindow(domWindow);
     if (xulWindow)
     {
         if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("onUnloadDOMWindow ignoring for outerDOMWindow\n");
         return;
     }
 
-    ChromebugWindowInfo.destroyContextByDOMWindow(domWindow);
+    Firebug.Chromebug.xulWindowInfo.destroyContextByDOMWindow(domWindow);
 }
 
 Firebug.registerModule(Firebug.Chromebug);
