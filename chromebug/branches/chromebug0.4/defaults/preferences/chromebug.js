@@ -7,7 +7,7 @@ pref("extensions.chromebug.DBG_CB_CONSOLE", true);      // /*@explore*/
 pref("extensions.chromebug.defaultScriptPanelLocation", "");
 pref("extensions.chromebug.previousContext", "");
 
-pref("extensions.chromebug.enableTraceConsole", true); 
+pref("extensions.chromebug.enableTraceConsole", true);
 // Global
 pref("extensions.chromebug.disabledAlways", false);
 pref("extensions.chromebug.allowSystemPages", false);
@@ -78,6 +78,15 @@ pref("extensions.chromebug.collectHttpHeaders", true);
 pref("extensions.chromebug.net.enableLocalFiles", "enable");
 pref("extensions.chromebug.net.enableSystemPages", "enable");
 pref("extensions.chromebug.net.enableSites", true);
+
+//Search
+pref("extensions.chromebug.searchCaseSensitive", false);
+pref("extensions.chromebug.searchGlobal", true);
+
+pref("extensions.chromebug.net.searchHeaders", false);
+pref("extensions.chromebug.net.searchParameters", false);
+pref("extensions.chromebug.net.searchResponseBody", false);
+
 
 // External Editors
 pref("extensions.chromebug.externalEditors", "");
