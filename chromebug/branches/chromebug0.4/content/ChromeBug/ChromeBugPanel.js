@@ -1369,7 +1369,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         context.isChromeBug = true;
         context.loaded = true;
-        context.detached = true;
+        context.detached = window;  // the window containing firebug for the context is chromebug window
         context.originalChrome = null;
 
         context.setName = function(name)
