@@ -457,7 +457,7 @@ var FBTest = FBTestApp.FBTest =
 
     sysout: function(text, obj)
     {
-        if (FBTrace.DBG_FBTEST)
+        if (FBTrace.DBG_FBTESTCASE)
             FBTrace.sysout(text, obj);
     },
 
