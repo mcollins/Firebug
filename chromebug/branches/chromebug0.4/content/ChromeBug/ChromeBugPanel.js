@@ -423,26 +423,14 @@ var XULWindowInfo = {
         }
     },
 
-    destroyContexts: function(xul_window)
-    {
-        var docShell = xul_window.docShell;
-
-        this.eachDocShell(docShell, true, bind(this.destroyByDocShell, this));
-        this.eachDocShell(docShell, false, bind(this.destroyByDocShell, this));
-    },
-
-    destroyByDocShell: function(childDocShell)
-    {
-        var domWindow = Firebug.Chromebug.xulWindowInfo.getDOMWindowByDocShell(childDocShell);
-        this.destroyContextByDOMWindow(domWindow);
-    },
-
     destroyContextByDOMWindow: function(domWindow)
     {
         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (context)
         {
-            FBTrace.sysout("TODO Firebug.Chromebug.deleteContext(context);");
+            if (FBTrace.DBG_WINDOWS)
+                FBTrace.sysout("Firebug.Chromebug.deleteContextByDOMWindow for context "+context.getName()+" for domWindow "+domWindow.location);
+            TabWatcher.unwatchContext(domWindow, context);
         }
         else
         {
@@ -828,8 +816,6 @@ var XULWindowInfo = {
                     var tag = this.xulWindowTags[mark];
                     this.xulWindows.splice(mark,1);
                     this.xulWindowTags.splice(mark,1);
-
-                    this.destroyContexts(xul_win);
                 }
                 else
                     FBTrace.sysout("Chromebugpanel.onclose: timeless nsISupportsInterfacePointer FAILED??\n");
@@ -1055,14 +1041,22 @@ var ChromeBugGlobalObserver = {
                 FBTrace.dumpProperties("ChromeBugGlobalObserver notify console opener FAILED ", exc);
             }
         }
-        else if (topic == 'domwindowclosed')
+        else if (topic == 'domwindowclosed') // Apparently this event comes before the unload event on the DOMWindow
         {
             if (subject instanceof nsIDOMWindow)
             {
+                if (FBTrace.DBG_WINDOWS)
+                    FBTrace.sysout("ChromeBugGlobalObserver found domwindowclosed "+subject.location+"\n");
+            }
+        }
+        else if (topic == 'dom-window-destroyed')  // subject appears to be the nsIDOMWindow with a location that is invalid and closed == true; data null
+        {
+            if (FBTrace.DBG_WINDOWS)
+                FBTrace.sysout("ChromeBugGlobalObserver found dom-window-destroyed subject:"+((subject instanceof nsIDOMWindow)?subject.location:subject), subject);
 
-                if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS) FBTrace.sysout("ChromeBugGlobalObserver found domwindowclosed "+subject.location+"\n");
-                // Apparently this event comes before the unload event on the DOMWindow
-
+            if (subject instanceof nsIDOMWindow)
+            {
+                Firebug.Chromebug.xulWindowInfo.destroyContextByDOMWindow(subject);
             }
         }
     },
@@ -1461,7 +1455,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     getOrCreateContext: function(global, jsClassName, jsContext)
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
-        FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"none"));
+        FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created"));
         if (!context)
             context = Firebug.Chromebug.createContext(global, jsClassName, jsContext);
 
@@ -3523,10 +3517,9 @@ function remove(list, item)
         list.splice(index, 1);
 }
 
-
-
 observerService.addObserver(ChromeBugGlobalObserver, "domwindowopened", false);
 observerService.addObserver(ChromeBugGlobalObserver, "domwindowclosed", false);
+observerService.addObserver(ChromeBugGlobalObserver, "dom-window-destroyed", false);
 
 function ChromeBugOnLoad(event)
 {
@@ -3537,23 +3530,7 @@ function ChromeBugOnDOMContentLoaded(event)
     FBTrace.sysout("ChromeBugOnDOMContentLoaded "+event.originalTarget.documentURI+"\n");
 }
 
-function onUnloadDOMWindow(event)
-{
-    if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("onUnloadDOMWindow event.currentTarget.location:"+ event.currentTarget.location+"\n");
-    var domWindow = event.currentTarget;
 
-    if (domWindow)
-        domWindow.removeEventListener("unload", onUnloadDOMWindow, false);
-
-    var xulWindow = Firebug.Chromebug.xulWindowInfo.getXULWindowByRootDOMWindow(domWindow);
-    if (xulWindow)
-    {
-        if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("onUnloadDOMWindow ignoring for outerDOMWindow\n");
-        return;
-    }
-
-    Firebug.Chromebug.xulWindowInfo.destroyContextByDOMWindow(domWindow);
-}
 
 Firebug.registerModule(Firebug.Chromebug);
 }});
