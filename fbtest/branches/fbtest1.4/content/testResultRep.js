@@ -531,9 +531,9 @@ FBTestApp.TestResult = function(win, pass, msg, expected, result)
 
 // ************************************************************************************************
 
-function clean( str )
+function clean(str)
 {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
 }
 
 // ************************************************************************************************
