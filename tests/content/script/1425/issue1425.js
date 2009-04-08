@@ -24,7 +24,7 @@ function runTest()
             issue1425.userHasNavigated = true;
 
             // Select proper JS file.
-            var found = FBTest.Firebug.selectPanelLocationByName(panel, "main.js");
+            var found = FBTestFirebug.selectPanelLocationByName(panel, "main.js");
             FBTest.compare(found, true, "The main.js should be found");
 
     });

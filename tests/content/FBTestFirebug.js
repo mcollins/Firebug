@@ -480,7 +480,7 @@ window.onerror = function(errType, errURL, errLineNum)
 
 // Select a location, eg a sourcefile in the Script panel, using the string the user sees
 // var panel = FW.FirebugChrome.selectPanel("script");
-// FBTest.Firebug.selectPanelLocationByName(panel, "foo.js");
+// FBTestFirebug.selectPanelLocationByName(panel, "foo.js");
 this.selectPanelLocationByName = function(panel, name)
 {
     var locations = panel.getLocationList();

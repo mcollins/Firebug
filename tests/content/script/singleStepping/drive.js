@@ -24,7 +24,7 @@ function defineSingleStepping()
      // Select proper JS file.
         var panel = FBTestFirebug.getSelectedPanel();
 
-        var found = FBTest.Firebug.selectPanelLocationByName(panel, singleStepping.fileName);
+        var found = FBTestFirebug.selectPanelLocationByName(panel, singleStepping.fileName);
         FBTest.compare(found, true, "The "+singleStepping.fileName+" should be found");
         if (found)
         {

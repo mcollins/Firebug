@@ -23,7 +23,7 @@ function defineIssue1483()
      // Select proper JS file.
         var panel = FW.FirebugContext.chrome.getSelectedPanel();
 
-        var found = FBTest.Firebug.selectPanelLocationByName(panel, issue1483.fileName);
+        var found = FBTestFirebug.selectPanelLocationByName(panel, issue1483.fileName);
         FBTest.compare(found, true, "The "+issue1483.fileName+" should be found");
         if (found)
         {
