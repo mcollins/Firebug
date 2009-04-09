@@ -23,54 +23,80 @@ function runTest()
         FBTest.progress("Enable all panels");
         FBTestFirebug.enableAllPanels();
 
-        FBTest.progress("Kill the window if it is detached");
+        FBTest.sysout("FW.FirebugChrome.window.location: "+FW.FirebugChrome.window.location);
+
         var browser = FW.FirebugChrome.getCurrentBrowser();
         if (browser.detached)
+        {
+            FBTest.progress("Kill the detached window for browser "+browser.currentURI.spec);
+            FBTest.sysout("browser.chrome.window.location: "+browser.chrome.window.location);
+            window.alert("wait");
             FW.Firebug.toggleDetachBar();
+        }
+
+        FBTest.sysout("ready to detach, browser "+browser.currentURI.spec+" browser.chrome:"+browser.chrome.window.location);
 
         FBTest.progress("Detach");
         var detachedFW = FW.Firebug.detachBar();
 
         FBTest.ok(detachedFW, "We created a detached window");
 
-        detachedFW.addEventListener('load', checkOpenInNewWindow, 'true');
+        var oneLoad = new FBTestFirebug.OneShotHandler(detachedFW, 'load',function onLoadWindow(event)
+        {
+            var doc = event.target;
+            FBTest.compare("chrome://firebug/content/firebug.xul", doc.location.toString(), "The detached window should be firebug.xul");
 
+            FBTest.sysout("after to detach, browser "+browser.currentURI.spec+" browser.chrome:"+browser.chrome.window.location);
+
+            var mainBrowser = doc.getElementById('fbPanelBar1-browser');
+            var panelDocument = mainBrowser.contentDocument;
+            FBTest.sysout("onLoadWindow panelDocument "+panelDocument.location+":", panelDocument);
+
+            setTimeout( function onLoadBrowser(event)
+            {
+                FBTest.progress("panel document "+panelDocument.location+" load event handler")
+                FBTestFirebug.selectPanelTab('script', doc);
+                var panel = detachedFW.FirebugChrome.getSelectedPanel();
+                FBTest.compare(panel.name, 'script', "The script panel should be selected");
+
+                //var firstPanelNodeHandler = new FBTestFirebug.UntilHandler(panelDocument, 'DOMNodeInserted', isPanelNode,function onPanelNode(detachedFW)
+                //{
+                var found = FBTestFirebug.selectPanelLocationByName(panel, issue1483.fileName);
+                FBTest.compare(found, true, "The "+issue1483.fileName+" should be found");
+                    // Select proper JS file.
+                    FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
+                    //setBreakpoint(detachedFW);
+                    FBTest.progress("Now reload");
+
+                    FBTestFirebug.reload(function ()
+                    {
+                        FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
+
+                        FBTest.progress("close detached window");
+                        detachedFW.close();
+
+                        FBTestFirebug.testDone("openInNewWindow.DONE");
+                    });
+                //});
+
+
+            }, true);
+        } , true);
+        FBTest.progress("Waiting for onPanelNode event");
     });
 }
 
-function checkOpenInNewWindow(event)
+function isPanelNode(event)
 {
-    var doc = event.target;
-    var detachedFW = doc.defaultView;
-
-    // Select proper JS file.
-    var panel = detachedFW.FirebugChrome.getSelectedPanel();
-
-    var found = FBTestFirebug.selectPanelLocationByName(panel, issue1483.fileName);
-    FBTest.compare(found, true, "The "+issue1483.fileName+" should be found");
-    if (found)
+    FBTest.sysout("______________________ isPanelNode event.target: "+event.target, event.target);
+    if (event.target instanceof HTMLDivElement)
     {
-        FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
-        setBreakpoint(detachedFW);
+        var targetClass = event.target.getAttribute('class');
+        return (targetClass.indexOf('panelNode') != -1);
     }
     else
-        FBTestFirebug.testDone("openInNewWindow.DONE");
-
-    FBTest.progress("Now reload");
-
-    FBTestFirebug.reload(function ()
-    {
-        FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
-
-        FBTest.progress("close detached window");
-        detachedFW.close();
-
-        FBTestFirebug.testDone("openInNewWindow.DONE");
-    });
-
-
-
-};
+        return false;
+}
 
 
 function setBreakpoint(detachedFW)
