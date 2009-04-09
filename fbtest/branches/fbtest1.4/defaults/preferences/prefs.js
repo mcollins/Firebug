@@ -7,4 +7,4 @@ pref("extensions.firebug.alwaysOpenTestConsole", false);
 
 // Support for tracing console
 pref("extensions.firebug.DBG_FBTEST", false);              // Tracing from FBTest internal framework.
-pref("extensions.firebug.DBG_FBTESTCASE", false);          // Tracing from actual unit-test files.
+pref("extensions.firebug.DBG_TESTCASE", false);          // Tracing from actual unit-test files.
