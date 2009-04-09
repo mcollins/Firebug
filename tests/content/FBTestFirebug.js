@@ -284,17 +284,24 @@ this.selectPanel = function(panelName)
 }
 
 /* select a panel tab */
-this.selectPanelTab = function(name)
+this.selectPanelTab = function(name, doc)
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar1-panelTabs");
-    for (var child = panelBar1.firstChild; child; child = child.nextSibling)
+    if (!doc)
+        doc = FW.document;
+
+    var panelTabs = doc.getElementById("fbPanelBar1-panelTabs");
+    for (var child = panelTabs.firstChild; child; child = child.nextSibling)
     {
         var label = child.getAttribute("label").toLowerCase();
         FBTest.sysout("selectPanelTab trying "+label);
         var role = child.getAttribute("role");
         if (role == 'tab' && label == name)
         {
-            panelBar1.selectTab(child);
+            var panelBar = panelTabs;
+            while (panelBar && (panelBar.tagName != 'panelBar') )
+                panelBar = panelBar.parentNode;
+
+            panelBar.selectTab(child);
             return true;
         }
     }
@@ -343,6 +350,34 @@ this.getPanel = function(name)
 {
     return FW.FirebugContext.getPanel(name);
 }
+
+this.OneShotHandler = function(eventTarget, eventName, onEvent, capturing)
+{
+    function fn (event)
+    {
+        eventTarget.removeEventListener(eventName, fn, capturing);
+        FBTest.sysout("OnShotHandler activated for event "+eventName);
+        onEvent(event);
+    }
+    eventTarget.addEventListener(eventName, fn, capturing);
+}
+
+this.UntilHandler = function(eventTarget, eventName, isMyEvent, onEvent, capturing)
+{
+    function fn (event)
+    {
+        if (isMyEvent(event))
+        {
+            eventTarget.removeEventListener(eventName, fn, capturing);
+            FBTest.sysout("UntilHandler activated for event "+eventName);
+            onEvent(event);
+        }
+        else
+            FBTest.sysout("UntilHandler skipping event "+eventName, event);
+    }
+    eventTarget.addEventListener(eventName, fn, capturing);
+}
+
 
 // ************************************************************************************************
 // Firebug preferences
