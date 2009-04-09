@@ -91,19 +91,22 @@
 
 .testListCol.testIcon {
     width: 100%;
+    color: gray;
+    padding-top: 1px;
 }
 
 .testListCol .statusIcon {
     margin-right: 4px;
     margin-left: 4px;
-    width: 17px;
-    height: 17px;
+    width: 37px;
+    height: 16px;
     vertical-align: middle;
     background: transparent no-repeat 0 0;
 }
 
 .testListRow.running .statusIcon {
     background-image: url(chrome://firebug/skin/loading_16.gif);
+    background-position: 10px 0px;
 }
 
 /************************************************************************************************/

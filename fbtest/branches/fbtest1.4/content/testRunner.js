@@ -85,6 +85,7 @@ FBTestApp.TestRunner =
                 FBTrace.sysout("fbtest.TestRunner.CANCELED");
         }
 
+        this.currentTest.end = (new Date()).getTime();
         this.currentTest.onTestDone();
         this.currentTest = null;
 
@@ -204,6 +205,7 @@ FBTestApp.TestRunner =
         if (typeof(win.FBTestTimeout) != "undefined")
             FBTestApp.FBTest.testTimeout = win.FBTestTimeout;
 
+        this.currentTest.start = (new Date()).getTime();
         this.testTimeoutID = window.setTimeout(function()
         {
             var time = formatTime(FBTestApp.FBTest.testTimeout);

@@ -404,6 +404,10 @@ FBTestApp.Test = function(group, uri, desc, category)
     this.error = false;
     this.row = null;
     this.path = null;
+
+    // Timing
+    this.start = 0;
+    this.end = 0;
 }
 
 FBTestApp.Test.prototype =
@@ -436,6 +440,9 @@ FBTestApp.Test.prototype =
             var infoBody = this.row.nextSibling;
             clearNode(FBL.getElementByClass(infoBody, "testBodyCol"));
         }
+
+        // Clear time info
+        clearNode(FBL.getElementByClass(this.row, "statusIcon"));
     },
 
     onTestDone: function()
@@ -443,6 +450,10 @@ FBTestApp.Test.prototype =
         removeClass(this.row, "running");
         if (this.results.length > 0)
             setClass(this.row, "results");
+
+        // Show ellapsed time.
+        var timeNode = FBL.getElementByClass(this.row, "statusIcon");
+        timeNode.innerHTML = "(" + formatTime(this.end - this.start) + ")";
     },
 
     getErrors: function()
