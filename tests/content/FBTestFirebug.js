@@ -167,6 +167,8 @@ this.cleanUpTestTabs = function()
 {
     //FBTest.progress("clean up tabs");
 
+    FBTestFirebug.cleanUpListeners();
+
     var tabbrowser = FBTest.FirebugWindow.getBrowser();
     var removeThese = [];
     for (var i = 0; i < tabbrowser.mTabs.length; i++)
@@ -278,9 +280,9 @@ this.enableAllPanels = function()
 /**
  * Select specific panel in the UI.
  */
-this.selectPanel = function(panelName)
+this.selectPanel = function(panelName, chrome)
 {
-    return FW.FirebugChrome.selectPanel(panelName);
+    return chrome?chrome.selectPanel(panelName):FW.FirebugChrome.selectPanel(panelName);
 }
 
 /* select a panel tab */
@@ -324,7 +326,7 @@ this.getPanelDocument = function()
 /* user sees panel tab disabled? */
 this.isPanelTabDisabled = function(name)
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    var panelBar1 = FW.document.getElementById("fbPanelBar1-panelTabs");
     for (var child = panelBar1.firstChild; child; child = child.nextSibling)
     {
         var label = child.getAttribute("label").toLowerCase();
@@ -339,36 +341,29 @@ this.isPanelTabDisabled = function(name)
     return null;
 }
 
-/*
-this.getSelectedPanel = function()
-{
-    return FW.FirebugChrome.getSelectedPanel();
-}
-*/
 
 this.getPanel = function(name)
 {
     return FW.FirebugContext.getPanel(name);
 }
 
-this.OneShotHandler = function(eventTarget, eventName, onEvent, capturing)
+this.listenerCleanups = [];
+this.cleanUpListeners = function()
 {
-    function fn (event)
-    {
-        eventTarget.removeEventListener(eventName, fn, capturing);
-        FBTest.sysout("OnShotHandler activated for event "+eventName);
-        onEvent(event);
-    }
-    eventTarget.addEventListener(eventName, fn, capturing);
+    var c = FBTestFirebug.listenerCleanups;
+    for (var i = i; i < c.length; i++)
+        c[i]();
 }
 
 this.UntilHandler = function(eventTarget, eventName, isMyEvent, onEvent, capturing)
 {
+    var removed = false;
     function fn (event)
     {
         if (isMyEvent(event))
         {
             eventTarget.removeEventListener(eventName, fn, capturing);
+            removed = true;
             FBTest.sysout("UntilHandler activated for event "+eventName);
             onEvent(event);
         }
@@ -376,8 +371,19 @@ this.UntilHandler = function(eventTarget, eventName, isMyEvent, onEvent, capturi
             FBTest.sysout("UntilHandler skipping event "+eventName, event);
     }
     eventTarget.addEventListener(eventName, fn, capturing);
+
+    FBTestFirebug.listenerCleanups.push( function cleanUpListener()
+    {
+        if (!removed)
+            eventTarget.removeEventListener(eventName, fn, capturing);
+    });
 }
 
+this.OneShotHandler = function(eventTarget, eventName, onEvent, capturing)
+{
+    function isTrue(event) {return true;}
+    FBTestFirebug.UntilHandler(eventTarget, eventName, isTrue, onEvent, capturing);
+}
 
 // ************************************************************************************************
 // Firebug preferences
@@ -395,12 +401,15 @@ this.getPref = function(pref)
 // ************************************************************************************************
 // Debugger
 
-this.clickContinueButton = function(breakOnNext)
+this.clickContinueButton = function(breakOnNext, chrome)
 {
     // xxxHonza: why the click doesn't work? Is is because the execution context
     // is stopped at a breakpoint?
     // xxxJJB: I guess because the continue button is active that the time of the call.
-    var doc = FBTest.FirebugWindow.document;
+    if (!chrome)
+        chrome = FW.FirebugChrome;
+
+    var doc = chrome.window.document;
     var button = doc.getElementById("fbContinueButton");
 
     if (breakOnNext)
@@ -408,7 +417,7 @@ this.clickContinueButton = function(breakOnNext)
         if (button.getAttribute("breakable") == "true")
         {
             FBTest.sysout("FBTestFirebug breakable true, resuming should arm break on next");
-            FW.Firebug.Debugger.resume(FW.FirebugContext);
+            FW.Firebug.Debugger.resume(chrome.window.FirebugContext);
             FBTest.sysout("FBTestFirebug breakable true, armed break on next");
             return true;
         }
@@ -418,19 +427,20 @@ this.clickContinueButton = function(breakOnNext)
 
     if (button.getAttribute("breakable") == "off")
     {
-        FBTest.sysout("FBTestFirebug breakable off, resuming debugger");
-        FW.Firebug.Debugger.resume(FW.FirebugContext);
+        FBTest.sysout("FBTestFirebug breakable off, resuming debugger in "+chrome.window.location+" for context "+chrome.window.FirebugContext);
+        FW.Firebug.Debugger.resume(chrome.window.FirebugContext);
         FBTest.sysout("FBTestFirebug breakable off, resumed debugger");
         return true;
     }
     FBTest.sysout("FBTestFirebug clickContinueButton not armed for continue breakable:"+button.getAttribute("breakable"), button);
     return false; // not breakable
-
 }
 
-this.getSourceLineNode = function(lineNo)
+this.getSourceLineNode = function(lineNo, chrome)
 {
-    var panel = FW.FirebugContext.chrome.getSelectedPanel();
+    if (!chrome)
+        chrome = FW.FirebugContext.chrome;
+    var panel = chrome.getSelectedPanel();
     var sourceBox = panel.getSourceBoxByURL(panel.location.href);
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
     if (!sourceViewport)
@@ -457,7 +467,7 @@ this.getSourceLineNode = function(lineNo)
     return row;
 }
 
-this.waitForBreakInDebugger = function(callback)
+this.waitForBreakInDebugger = function(callback) // TODO replace with listenForBreakpoint below
 {
     var panel = FBTestFirebug.getSelectedPanel();
     var doc = panel.panelNode.ownerDocument; // panel.html
@@ -495,11 +505,54 @@ this.waitForBreakInDebugger = function(callback)
     , true);
 }
 
+this.listenForBreakpoint = function(chrome, lineNo, callback)
+{
+    FBTest.progress("Listen for exeline true, meaning the breakpoint hit in "+chrome.window.location);
+
+    var panel = chrome.getSelectedPanel();
+    var doc = panel.panelNode.ownerDocument; // panel.html
+    function isBreakpointAttr(event)
+    {
+        return (event.attrName == "exeline" && event.newValue == "true");
+    }
+
+    function onBreakPoint(event)
+    {
+        FBTest.progress("Hit BP, exeline set, check breakpoint");
+        var panel = chrome.getSelectedPanel();
+        FBTest.compare("script", panel.name, "The script panel should be selected");
+
+        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+        if (!row)
+        {
+            FBTest.ok(false, "Row "+ lineNo+" must be found");
+            return;
+        }
+
+        var bp = row.getAttribute('breakpoint');
+        FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set");
+
+        FBTest.progress("Remove breakpoint");
+        var panel = chrome.getSelectedPanel();
+        panel.toggleBreakpoint(lineNo);
+
+        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+        FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set");
+
+        var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
+        FBTest.ok(canContinue, "The continue button is pushable");
+
+        callback();
+    }
+
+    new FBTestFirebug.UntilHandler(doc, "DOMAttrModified", isBreakpointAttr, onBreakPoint, false);
+
+}
 
 
 // ************************************************************************************************
 // Error handling
-
+/*
 window.onerror = function(errType, errURL, errLineNum)
 {
     var path = window.location.pathname;
@@ -509,7 +562,7 @@ window.onerror = function(errType, errURL, errLineNum)
     FBTestFirebug.testDone();
     return false;
 }
-
+*/
 // ************************************************************************************************
 // Panel Navigation
 
@@ -534,10 +587,13 @@ this.selectPanelLocationByName = function(panel, name)
 
 // jump to a file@line
 // FBTest.Firebug.selectSourceLine(sourceFile.href, 1143, "js")
-this.selectSourceLine = function(url, lineNo, category)
+this.selectSourceLine = function(url, lineNo, category, chrome)
 {
     var sourceLink = new FBTest.FirebugWindow.FBL.SourceLink(url, lineNo, category);
-    FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
+    if (chrome)
+        chrome.select(sourceLink);
+    else
+        FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
 }
 
 // ************************************************************************************************
