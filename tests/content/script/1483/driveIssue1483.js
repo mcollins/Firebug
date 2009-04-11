@@ -43,50 +43,16 @@ function defineIssue1483()
         var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
         FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
 
-        issue1483.secondReload(panel);
+        issue1483.secondReload(FW.FirebugContext.chrome);
     };
 
 
-    issue1483.secondReload = function(panel)
+    issue1483.secondReload = function(chrome)
     {
-        FBTest.progress("Listen for exeline true, meaning the breakpoint hit");
-
-        var doc = panel.panelNode.ownerDocument; // panel.html
-        function waitForBreakpoint(event)
+        FBTestFirebug.listenForBreakpoint(chrome, issue1483.lineNo, function wereDone()
         {
-            if (event.attrName == "exeline" && event.newValue == "true")
-            {
-                doc.removeEventListener("DOMAttrModified", waitForBreakpoint, waitForBreakpoint.capturing);
-                FBTest.progress("Hit BP, exeline set, check breakpoint");
-                var panel = FW.FirebugContext.chrome.getSelectedPanel();
-                FBTest.compare("script", panel.name, "The script panel should be selected");
-
-
-                var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
-                if (!row)
-                {
-                    FBTest.ok(false, "Row "+issue1483.lineNo+" must be found");
-                    return;
-                }
-
-                var bp = row.getAttribute('breakpoint');
-                FBTest.compare("true", bp, "Line "+issue1483.lineNo+" should have a breakpoint set");
-
-                FBTest.progress("Remove breakpoint");
-                var panel = FW.FirebugContext.chrome.getSelectedPanel();
-                panel.toggleBreakpoint(issue1483.lineNo);
-
-                var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
-                FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should NOT have a breakpoint set");
-
-                var canContinue = FBTestFirebug.clickContinueButton();
-                FBTest.ok(canContinue, "The continue button is pushable");
-
-                FBTestFirebug.testDone("issue1483.DONE");
-            }
-        }
-        waitForBreakpoint.capturing = false;
-        doc.addEventListener("DOMAttrModified", waitForBreakpoint, waitForBreakpoint.capturing);
+            FBTestFirebug.testDone("issue1483.DONE");
+        });
 
         FBTestFirebug.reload( function noOP() {});
     }
