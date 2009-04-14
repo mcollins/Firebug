@@ -5,27 +5,17 @@ function openOpenCloseClose()
 {
     var openOpenCloseCloseURL = FBTest.getHTTPURLBase()+"firebug/OpenFirebugOnThisPage.html";
 
-    var openOpenCloseClose = new FBTest.Firebug.TestHandlers("openOpenCloseClose");
-
-    // Actual test operations
-    openOpenCloseClose.add( function onNewPage(event)
+    FBTestFirebug.openNewTab(openOpenCloseCloseURL, function openFirebug(win)
     {
-        FBTest.sysout("onNewPage starts", event);
+        FBTest.progress("opened tab for "+win.location);
+
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(!isFirebugOpen, "Firebug starts closed");
 
-        this.next = "onShowUI";
-        FBTest.Firebug.pressToggleFirebug();
+        FBTestFirebug.openFirebug();
 
-    });
-
-    openOpenCloseClose.add( function onShowUI()
-    {
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
         FBTest.ok(isFirebugOpen, "Firebug now open");
-
-        // This need not be true if the test page was previous open with firebug.
-        // FBTest.ok(this.next == "onShowUI", "showUI followed toggleFirebug");
 
         if (FBTest.FirebugWindow.FirebugContext)
         {
@@ -35,39 +25,14 @@ function openOpenCloseClose()
         }
         else
             FBTest.ok(false, "no FirebugContext");
-        // now close it
-        this.next = "onHideUI";
+
         FBTest.Firebug.pressToggleFirebug();
 
-    });
-
-    openOpenCloseClose.add( function onHideUI()
-    {
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(!isFirebugOpen, "Firebug now closed");
+        FBTest.ok(!isFirebugOpen, "Firebug ends closed");
 
-        FBTest.ok(this.next == "onHideUI", "hideUI followed toggleFirebug");
-        openOpenCloseClose.done();
+        FBTestFirebug.testDone("openInNewWindow.DONE");
     });
-
-    var testListener =
-    {
-        uiListener:
-        {
-            showUI: function(browser, context) // called when the Firebug UI comes up in browser or detached
-            {
-                openOpenCloseClose.fire("onShowUI");
-            },
-
-            hideUI: function(brower, context)  // called when the Firebug UI comes down
-            {
-                openOpenCloseClose.fire("onHideUI");
-            },
-        }
-    };
-
-    // Now start the test.
-    openOpenCloseClose.fireOnNewPage("onNewPage", openOpenCloseCloseURL, testListener);
 }
 
 
