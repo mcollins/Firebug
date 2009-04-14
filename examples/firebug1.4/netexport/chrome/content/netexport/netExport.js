@@ -157,7 +157,8 @@ JSONBuilder.prototype =
     buildRequest: function(file)
     {
         var request = {};
-        request.requestMethod = file.method + " " + file.request.URI.path;
+        request.requestMethod = file.method + " " + file.request.URI.path + " " +
+            this.getHttpVersion(file.request, true);
         request.cookies = this.buildCookies(file);
         request.headers = this.buildHeaders(file.requestHeaders);
         return request;
@@ -180,7 +181,8 @@ JSONBuilder.prototype =
     buildResponse: function(file)
     {
         var response = {};
-        response.responseStatus = file.responseStatus + " " + file.responseStatusText;
+        response.responseStatus = file.responseStatus + " " + file.responseStatusText + " " +
+            this.getHttpVersion(file.request, false);
         response.cookies = this.buildCookies(file);
         response.headers = this.buildHeaders(file.requestHeaders);
         response.content = this.buildContent(file);
@@ -226,7 +228,24 @@ JSONBuilder.prototype =
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
         return timings;
-    }
+    },
+
+    getHttpVersion: function(request, forRequest)
+    {
+        if (request instanceof Ci.nsIHttpChannelInternal)
+        {
+            var major = {}, minor = {};
+
+            if (forRequest)
+                request.getRequestVersion(major, minor);
+            else
+                request.getResponseVersion(major, minor);
+
+            return "HTTP/" + major.value + "." + minor.value;
+        }
+
+        return "";
+    },
 }
 
 // ************************************************************************************************
