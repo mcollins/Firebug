@@ -513,8 +513,10 @@ FBTestApp.TestResult = function(win, pass, msg, expected, result)
 
     this.pass = pass ? true : false;
     this.msg = clean(msg);
-    this.expected = expected;
-    this.result = result;
+
+    // Make sure the following values are strings.
+    this.expected = expected + "";
+    this.result = result + "";
 
     // xxxHonza: there should be perhaps simple API in lib.js to get the stack trace.
     this.stack = [];
@@ -533,7 +535,16 @@ FBTestApp.TestResult = function(win, pass, msg, expected, result)
 
 function clean(str)
 {
-    return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+    try
+    {
+        return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : "";
+    }
+    catch (err)
+    {
+        FBTrace.sysout("fbtest.clean; EXCEPTION " + str, err);
+    }
+
+    return str;
 }
 
 // ************************************************************************************************
