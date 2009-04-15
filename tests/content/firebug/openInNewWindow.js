@@ -41,7 +41,7 @@ function runTest()
             FBTest.sysout("ready to detach, browser "+browser.currentURI.spec+" browser.chrome:"+browser.chrome.window.location);
 
             FBTest.progress("Detach");
-            var detachedFW = FW.Firebug.detachBar();
+            var detachedFW = FW.Firebug.detachBar(FW.FirebugContext);
 
             FBTest.ok(detachedFW, "We created a detached window");
 
@@ -85,10 +85,6 @@ function runTest()
                         FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
                         FBTest.progress("close detached window");
                         detachedFW.close();
-                        setTimeout(function revertToBrowserBar()
-                        {
-                            FBTestFirebug.openFirebug();
-                        });
                         FBTestFirebug.testDone("openInNewWindow.DONE");
                     });
 
