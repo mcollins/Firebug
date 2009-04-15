@@ -83,9 +83,9 @@ pref("extensions.chromebug.net.enableSites", true);
 pref("extensions.chromebug.searchCaseSensitive", false);
 pref("extensions.chromebug.searchGlobal", true);
 
-pref("extensions.chromebug.net.searchHeaders", false);
-pref("extensions.chromebug.net.searchParameters", false);
-pref("extensions.chromebug.net.searchResponseBody", false);
+pref("extensions.chromebug.netSearchHeaders", false);
+pref("extensions.chromebug.netSearchParameters", false);
+pref("extensions.chromebug.netSearchResponseBody", false);
 
 
 // External Editors
