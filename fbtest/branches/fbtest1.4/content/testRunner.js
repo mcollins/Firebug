@@ -162,11 +162,14 @@ FBTestApp.TestRunner =
         var testDoc = event.target;
         var win = testDoc.defaultView;
 
+        // Helper wrapper for all FBTest APIs so, every function call can be monitored.
+        var fbTestWrapper = new FBTestApp.FBTestWrapper(win);
+
         // Inject FBTest object into the test page.
         if (win.wrappedJSObject)
-            win.wrappedJSObject.FBTest = FBTestApp.FBTest;
+            win.wrappedJSObject.FBTest = fbTestWrapper;
         else
-            win.FBTest = FBTestApp.FBTest;
+            win.FBTest = fbTestWrapper;
 
         // As soon as the window is loaded, execute a "runTest" method, that must be
         // implemented within the test file.
@@ -182,6 +185,9 @@ FBTestApp.TestRunner =
 
         // Start timeout that breaks stucked tests.
         FBTestApp.TestRunner.setTestTimeout(win);
+
+        // Initialize start time.
+        FBTestApp.TestRunner.currentTest.start = (new Date()).getTime();
 
         try
         {
@@ -205,7 +211,6 @@ FBTestApp.TestRunner =
         if (typeof(win.FBTestTimeout) != "undefined")
             FBTestApp.FBTest.testTimeout = win.FBTestTimeout;
 
-        this.currentTest.start = (new Date()).getTime();
         this.testTimeoutID = window.setTimeout(function()
         {
             var time = formatTime(FBTestApp.FBTest.testTimeout);

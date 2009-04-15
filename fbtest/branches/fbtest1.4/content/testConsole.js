@@ -555,4 +555,35 @@ var FBTest = FBTestApp.FBTest =
 };
 
 // ************************************************************************************************
+
+/**
+ * Helper wrapper for FBTest API object. When a test calls any of the FBTest
+ * APIs the test timout is re-executed since we know that the test is still alive.
+ * This wrapper is passed into the test scope as a proxy to the original object.
+ */
+FBTestApp.FBTestWrapper = function(win)
+{
+    var original = FBTestApp.FBTest;
+    for (prop in original)
+    {
+        var obj = original[prop];
+        if (obj instanceof Function)
+        {
+            // Make sure the scope is correct (double function)
+            var wrapper = function(funcName) {
+                return function() {
+                    FBTestApp.TestRunner.setTestTimeout(win);
+                    return original[funcName].apply(original, arguments);
+                }
+            };
+            this[prop] = wrapper(prop);
+        }
+        else
+        {
+            this[prop] = obj;
+        }
+    }
+}
+
+// ************************************************************************************************
 }});
