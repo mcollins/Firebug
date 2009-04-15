@@ -37,6 +37,7 @@
     background-position: 2px 2px;
     padding-left: 18px;
     position: absolute;
+    background-color: white;
 }
 
 .testError .testResultMessage,
