@@ -13,33 +13,50 @@ function runTest()
     {
         FBTest.progress("Opened reference window that will not have Firebug");
 
-        FBTestFirebug.openNewTab(basePath + "firebug/OpenFirebugOnThisPage.html", function(win)
-                {
-                    FBTest.progress("Open Firebug UI in this new tab");
-                    FBTestFirebug.openFirebug();
+        var openedPage = basePath + "firebug/OpenFirebugOnThisPage.html";
 
-                    var theFirebuggedTab = tabbrowser.selectedTab;
+        FBTestFirebug.openNewTab(openedPage, function(win)
+        {
+            FBTest.progress("Open Firebug UI in this new tab");
+            FBTestFirebug.openFirebug();
 
-                    FBTest.progress("Switch back to the first tab.");
-                    tabbrowser.selectedTab = noFirebugTab;
+            var theFirebuggedTab = tabbrowser.selectedTab;
 
-                    FBTest.ok(!FBTestFirebug.isFirebugOpen(), "Firebug UI must be closed.");
+            FBTest.progress("Switch back to the first tab.");
+            tabbrowser.selectedTab = noFirebugTab;
 
-                    checkIconOff('console');
-                    checkIconOff('script');
-                    checkIconOff('net');
+            FBTest.ok(!FBTestFirebug.isFirebugOpen(), "Firebug UI must be closed.");
 
-                    FBTest.progress("Switch again, to the Firebugged tab");
+            checkIconOff('console');
+            checkIconOff('script');
+            checkIconOff('net');
 
-                    tabbrowser.selectedTab = theFirebuggedTab;
-                    FBTest.ok(FBTestFirebug.isFirebugOpen(), "Firebug UI must be opened now.");
+            FBTest.progress("Switch again, to the Firebugged tab");
 
-                    checkIconOn('console');
-                    checkIconOn('script');
-                    checkIconOn('net');
+            tabbrowser.selectedTab = theFirebuggedTab;
+            FBTest.ok(FBTestFirebug.isFirebugOpen(), "Firebug UI must be opened now.");
 
-                    FBTestFirebug.testDone("closeOpenOpenSwitchTabsTwice.DONE");
-                });
+            checkIconOn('console');
+            checkIconOn('script');
+            checkIconOn('net');
+
+            FBTest.compare(openedPage, FW.FirebugContext.getName(), "The context should be "+openedPage);
+
+            var alsoOpened = basePath+"firebug/AlsoOpenFirebugOnThisPage.html";
+            FBTestFirebug.openNewTab(alsoOpened, function(win)
+            {
+                FBTest.progress("Also open Firebug on "+alsoOpened);
+                FBTestFirebug.openFirebug();
+                FBTest.compare(alsoOpened, FW.FirebugContext.getName(), "The context should be "+alsoOpened);
+
+                FBTest.progress("Switch Back to a tab that had Firebug open");
+                tabbrowser.selectedTab = theFirebuggedTab;
+                FBTest.ok(FBTestFirebug.isFirebugOpen(), "Firebug UI must be opened now.");
+                FBTest.compare(openedPage, FW.FirebugContext.getName(), "The context should be "+openedPage);
+
+                FBTestFirebug.testDone("closeOpenOpenSwitchTabsTwice.DONE");
+            });
+        });
     });
 }
 
