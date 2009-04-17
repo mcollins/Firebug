@@ -238,8 +238,16 @@ Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
 
         Firebug.Chromebug.xulWindowInfo.iterateXULWindows( bind(function(subWin)
         {
-            subWin.document.removeEventListener("mouseover", this.onScanningDocumentsMouseOver, true);
-            subWin.document.removeEventListener("mousedown", this.onScanningDocumentsMouseDown, true);
+            try
+            {
+                subWin.document.removeEventListener("mouseover", this.onScanningDocumentsMouseOver, true);
+                subWin.document.removeEventListener("mousedown", this.onScanningDocumentsMouseDown, true);
+            }
+            catch (exc)
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("scandocuments detachInspectListeners fails "+exc, exc);
+            }
         }, this));
     },
 
