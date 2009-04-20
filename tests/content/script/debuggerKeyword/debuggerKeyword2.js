@@ -13,7 +13,7 @@ function foo2()
 
 function bar2()
 {
-    debugger;   //@breakScriptRow - don't remove this comment
+    debugger;   //@debuggerScriptRow - don't remove this comment
 }
 
 

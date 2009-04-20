@@ -1,4 +1,4 @@
-
+/* test source for xhr then eval() with debugger keyword */
 var a = 44;
 var b = 33;
 
@@ -11,7 +11,7 @@ function foo()
 
 function bar()
 {
-    debugger;   //@breakXHRRow - don't remove this comment
+    debugger;   //@debuggerXHRRow - don't remove this comment
 }
 
 
