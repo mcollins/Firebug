@@ -44,11 +44,16 @@ function runTest()
             // Scroll to 1143
             FBTest.progress("Scroll to line 1143")
             FBTest.Firebug.selectSourceLine(panel.location.href, 1143, "js");
-            setTimeout( function checkScrolling()
+
+            var tries = 5;
+            var checking = setInterval( function checkScrolling()
             {
-                    FBTest.progress("check scrolling");
+                    FBTest.progress("check scrolling, remaining tries: "+tries);
                     // Look for line 1143
                     var row1143 = FBTestFirebug.getSourceLineNode(1143);
+
+                    if (!row1143 && --tries)
+                        return;
 
                     // Check 1143
                     FBTest.ok(row1143, "The row 1143 must exist");
@@ -63,9 +68,9 @@ function runTest()
 
                         FBTest.sysout("Where is 1143 row in "+panel.location.href, rows);
                     }
-
+                    clearInterval(checking);
                     issue1425.done();
-            });
+            }, 50);
         }
         else
         {
