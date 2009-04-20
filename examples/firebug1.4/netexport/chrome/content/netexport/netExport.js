@@ -33,9 +33,13 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         var builder = new JSONBuilder();
         var jsonData = builder.build(context);
         var jsonString = JSON.stringify(jsonData, null, '\t');
+        jsonString = "(" + jsonString + ")";
+
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.data", jsonData);
 
         // Get unique file within user profile directory. 
-        /*var file = dirService.get("ProfD", Ci.nsIFile);
+        var file = dirService.get("ProfD", Ci.nsIFile);
         file.append("netExport");
         file.append("netData.json");
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
@@ -47,7 +51,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         // write, create, truncate
         this.outputStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
         this.outputStream.write(jsonString, jsonString.length);
-        this.outputStream.close();*/
+        this.outputStream.close();
 
         openNewTab("chrome://netexport/content/netExportViewer.xul?json=" + 
             encodeURIComponent(jsonString));
@@ -108,7 +112,7 @@ JSONBuilder.prototype =
             log.entries.push(self.buildEntry(log.page, file));
         })
 
-        return log;
+        return {log:log};
     },
 
     buildLog: function(context)
@@ -123,7 +127,7 @@ JSONBuilder.prototype =
     {
         var page = {};
         //?page.started = {};
-        page.startedDateTime = (new Date()).toGMTString();;
+        page.startedDateTime = (new Date()).toUTCString();
         page.id = "page_0";
         page.title = context.getTitle();
         page.dynamic = false;
@@ -135,9 +139,8 @@ JSONBuilder.prototype =
     {
         var entry = {};
         entry.pageref = page.id;
-        //?page.started = {};
-        entry.startedDateTime = (new Date(file.startTime)).toGMTString();
-        entry.time = file.endTime - file.startTime;
+        entry.startTime = file.startTime;
+        entry.elapsedTime = file.endTime - file.startTime;
         entry.sent = 0;
         entry.received = 0;
         entry.overview = this.buildOverview(file);
@@ -157,11 +160,41 @@ JSONBuilder.prototype =
     buildRequest: function(file)
     {
         var request = {};
-        request.requestMethod = file.method + " " + file.request.URI.path + " " +
-            this.getHttpVersion(file.request, true);
+
+        request.method = file.method;
+        request.path = file.request.URI.path;
+        request.prePath = file.request.URI.prePath;
+        request.port = file.request.URI.port;
+        request.httpVersion = this.getHttpVersion(file.request, true);
+
         request.cookies = this.buildCookies(file);
         request.headers = this.buildHeaders(file.requestHeaders);
+
+        request.queryString = file.urlParams;
+        request.postData = this.buildPostData(file);
+
         return request;
+    },
+
+    buildPostData: function(file)
+    {
+        var postData = {mimeType: "", text: "", params: {}};
+        if (!file.postText)
+            return postData;
+
+        var text = file.postText;
+        if (isURLEncodedFile(file, text))
+        {
+            var lines = text.split("\n");
+            postData.mimeType = "application/x-www-form-urlencoded";
+            postData.params = parseURLEncodedText(lines[lines.length-1]);
+        }
+        else
+        {
+            postData.text = text;
+        }
+        
+        return postData;
     },
 
     buildCookies: function(cookies)
@@ -181,11 +214,15 @@ JSONBuilder.prototype =
     buildResponse: function(file)
     {
         var response = {};
-        response.responseStatus = file.responseStatus + " " + file.responseStatusText + " " +
-            this.getHttpVersion(file.request, false);
+
+        response.status = file.responseStatus;
+        response.statusText = file.responseStatusText;
+        response.httpVersion = this.getHttpVersion(file.request, false);
+
         response.cookies = this.buildCookies(file);
         response.headers = this.buildHeaders(file.requestHeaders);
         response.content = this.buildContent(file);
+
         return response;
     },
 
@@ -196,24 +233,23 @@ JSONBuilder.prototype =
         content.compression = ""; //xxxHonza
         content.mimeType = file.request.contentType;
         content.encodingScheme = ""; //xxxHonza
-        content.text = file.responseText;
+        content.text = file.responseText ? file.responseText : "";
         return content;
     },
 
     buildCache: function(file)
     {
         var cache = {};
-        var ar = cache.afterRequest = {};
-        ar.URLInCache = file.fromCache;
+        cache.beforeRequest = {};
+        cache.afterRequest = {};
+
         if (!file.fromCache)
             return cache;
 
-        ar.expires = file.cacheEntry["Expires"];
-        ar.lastCacheUpdate = file.cacheEntry["Last Modified"];
-        ar.lastAccess = file.cacheEntry["Last Fetched"];
-        ar.eTag = "";
-        ar.hitCount = file.cacheEntry["Fetch Count"];
-        ar.size = file.cacheEntry["Data Size"];
+        cache.beforeRequest.cacheEntry = file.cacheEntry;
+
+        //xxxHonza: get URL from the cache
+        cache.afterRequest.cacheEntry = [];
 
         return cache;
     },
@@ -227,6 +263,13 @@ JSONBuilder.prototype =
         timings.send = ""; //xxxHonza;
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
+
+        //xxxHonza;
+        timings.resolvingTime = file.resolvingTime;
+        timings.connectingTime = file.connectingTime;
+        timings.waitingForTime = file.waitingForTime;
+        timings.respondedTime = file.respondedTime;
+
         return timings;
     },
 
@@ -246,6 +289,30 @@ JSONBuilder.prototype =
 
         return "";
     },
+}
+
+// xxxHonza: duplicated in net.js
+function isURLEncodedFile(file, text)
+{
+    if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1)
+        return true;
+
+    // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
+    // there can be even charset specified. So, use indexOf rather than just "==".
+    var headerValue = findHeader(file.requestHeaders, "Content-Type");
+    if (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0)
+        return true;
+
+    return false;
+}
+
+function findHeader(headers, name)
+{
+    for (var i = 0; i < headers.length; ++i)
+    {
+        if (headers[i].name == name)
+            return headers[i].value;
+    }
 }
 
 // ************************************************************************************************
