@@ -1,0 +1,11 @@
+The following are items that need further work:
+- Data Model:
+ - Handle diffs for the Firebug free edit modes
+- CSS Changes merged with editor changes due to "race" condition
+- Diff Monitor
+ - Search
+ - CSS Rep Links
+- Snapshot Panel
+- Unified Diff Panel
+- Testing
+ - Automated Tests to replace manual
