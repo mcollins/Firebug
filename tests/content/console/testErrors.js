@@ -37,8 +37,9 @@ function fireTest(win, ith)
         panelDoc.removeEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
     }, true);
 
-    FBTest.progress("testing "+buttons[ith]);
+
     var button = win.document.getElementById(buttons[ith]);
+    FBTest.progress("testing "+button.getAttribute('id'));
     FBTest.click(button);
 }
 
