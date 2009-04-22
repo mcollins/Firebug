@@ -434,7 +434,10 @@ var XULWindowInfo = {
         }
         else
         {
-            FBTrace.sysout("destroyContextByDOMWindow did not find context for domWindow:"+ domWindow.location+"\n");
+            if (domWindow.closed)
+                FBTrace.sysout("destroyContextByDOMWindow did not find context for closed window");
+            else
+                FBTrace.sysout("destroyContextByDOMWindow did not find context for domWindow:"+ domWindow.location+"\n");
         }
     },
 
@@ -3022,7 +3025,7 @@ Firebug.Chromebug.AllFilesList = extend(new SourceFileListBase(), {
             var targetName = current.pkg.name;
             Firebug.Chromebug.AllFilesList.setFilter( function byPackageName(description)
             {
-                return (targetName == description.pkgName)
+                return (description && (targetName == description.pkgName) );
             });
         }
     },
