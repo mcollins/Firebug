@@ -2,52 +2,44 @@ function runTest()
 {
     FBTestFirebug.openNewTab(basePath + "script/1575/issue1575.htm", function(win)
     {
-        FBTest.sysout("issue1575.START", win);
+        FBTest.progress("issue1575 opens "+win.location);
+        FBTestFirebug.selectPanel("script");
         FBTestFirebug.enableScriptPanel(function()
         {
-            var sourceRow = null;
-            var DebuggerListener =
+            FBTest.progress("reloaded, now set breakpoint");
+            var panel = FW.FirebugContext.chrome.getSelectedPanel();
+
+            FBTest.compare("script", panel.name, "Got selected panel "+panel.name);
+
+            var lineNo = 3;
+            panel.toggleBreakpoint(lineNo);
+
+            FBTest.progress("toggled breakpoint on line "+lineNo);
+
+            // use chromebug to see the elements that make up the row
+            var sourceRow = FBTestFirebug.getSourceLineNode(lineNo);
+            FBTest.compare("true", sourceRow.getAttribute('breakpoint'), "Line "+lineNo+" should have a breakpoint set");
+
+
+            var chrome = FW.FirebugContext.chrome;
+            FBTestFirebug.listenForBreakpoint(chrome, lineNo, function hitBP()
             {
-                onStop: function(context, frame, type, rv)
-                {
-                    FBTest.sysout("issue1575.DebuggerListener.onStop");
-                    FW.Firebug.Debugger.removeListener(this);
+                var exeline = sourceRow.getAttribute("exeline");
+                FBTest.compare("true", exeline, "The row must be marked as the execution line.");
+                checkWatchPanel();
+                var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
+                FBTest.ok(canContinue, "The continue button is pushable");
 
-                    // Wait for the execution line to be marked.
-                    //xxxHonza: Registering a "DOMAttrModified" listener would be perhaps better.
-                    setTimeout(function()
-                    {
-                        var exeline = sourceRow.getAttribute("exeline");
-                        FBTest.compare("true", exeline, "The row must be marked as the execution line.");
-                        checkWatchPanel();
-                        FBTestFirebug.testDone("issue1575.DONE");
-                    }, 400);
-                }
-            }
+            });
 
-            FW.Firebug.Debugger.addListener(DebuggerListener);
-            sourceRow = setBreakpoint("issue1575.js", 3);
-
+            FBTest.progress("Breakpoint Listener set, run the function");
             // Execute test method and hit the breakpoint.
-            win.wrappedJSObject.setTimeout(win.wrappedJSObject.runTest, 100);
+            win.wrappedJSObject.setTimeout(win.wrappedJSObject.issue1575GlobalFunction);
         });
     })
 }
 
-function setBreakpoint(scriptFile, lineNo)
-{
-    var panel = FW.FirebugChrome.selectPanel("script");
-    var found = FBTestFirebug.selectPanelLocationByName(panel, scriptFile);
-    FBTest.compare(found, true, "The " + scriptFile + " should be found");
 
-    var lineNode = FBTestFirebug.getSourceLineNode(lineNo);
-    var sourceLine = lineNode.firstChild;
-
-    if (!FW.FBL.hasClass(lineNode, "breakpoint"))
-        FBTest.mouseDown(sourceLine);
-
-    return lineNode;
-}
 
 function checkWatchPanel()
 {
@@ -55,8 +47,15 @@ function checkWatchPanel()
     var panelNode = panel.panelNode;
     var watchNewRow = FW.FBL.getElementByClass(panelNode, "watchEditBox");
 
+    FBTest.progress("now click on the box "+watchNewRow.innerHTML);
     // Click on the "New watch expression..." edit box to start editing.
     FBTest.mouseDown(watchNewRow);
 
-    FBTest.ok(panel.editing, "The Watch panel must be in an 'editing' mode now.");
+    setTimeout(function checkEditing()
+    {
+        FBTest.ok(panel.editing, "The Watch panel must be in an 'editing' mode now.");
+        FBTestFirebug.testDone("issue1575.DONE");
+    }, 100);
+
+
 }
