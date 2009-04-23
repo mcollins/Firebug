@@ -51,6 +51,10 @@ function defineIssue1483()
     {
         FBTestFirebug.listenForBreakpoint(chrome, issue1483.lineNo, function wereDone()
         {
+            var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
+
+            FBTest.ok(canContinue, "The continue button is pused");
+
             FBTestFirebug.testDone("issue1483.DONE");
         });
 
