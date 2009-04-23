@@ -71,6 +71,9 @@ function runTest()
 
                     FBTestFirebug.listenForBreakpoint(detachedFW.FirebugChrome, issue1483.lineNo, function closeOut()
                     {
+                        var canContinue = FBTestFirebug.clickContinueButton(false, detachedFW.FirebugChrome);
+                        FBTest.ok(canContinue, "The continue button is pushed");
+
                         FBTest.progress("breakpoint checks complete");
                     });
 
