@@ -1,0 +1,58 @@
+/* See license.txt for terms of usage */
+
+.addedClass, .addedClass * {
+    background: green;
+    color: white;
+}
+.removedClass, .removedClass * {
+    background: red;
+    color: black;
+}
+
+.logEntry {
+    padding-left: 10px;
+}
+
+.diffMonitorElement {
+    display: none;
+    
+    position: relative;
+    margin: 0;
+    border-bottom: 1px solid #D7D7D7;
+    padding: 2px 4px 1px 6px;
+    background-color: #FFFFFF;
+}
+
+.showFirebugChanges .firebugDiff,
+.showAppChanges .appDiff {
+    display: block;
+}
+
+
+.diffSep {
+    margin: 0 .5em;
+}
+.diffDate {
+    position: absolute;
+    right: 0px;
+}
+.diffSummary {
+    font-weight: bold;
+}
+.diffSource, .diffDate, .diffXPath {
+    color: gray;
+}
+.diffXPath {
+    padding-bottom: 1em;
+}
+
+
+/* Customized Rules for CSS Display. All others reuse the standard CSS styles */
+.cssRuleDiff {
+    position: relative;
+    font-family: Monaco, monospace;
+    color: #000000;
+}
+.cssPropDiff {
+    padding-left: 2em;
+}
