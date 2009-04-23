@@ -470,10 +470,6 @@ var FBTest = FBTestApp.FBTest =
         if (!node)
             FBTrace.sysout("testConsole click node is null");
 
-        // xxxHonza: Do we really need this?
-        //if (node.click)
-        //    return node.click();
-
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
         event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
             false, false, false, false, 0, null);
@@ -482,9 +478,6 @@ var FBTest = FBTestApp.FBTest =
 
     mouseDown: function(node)
     {
-        if (node.click)
-            return node.click();
-
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
         event.initMouseEvent("mousedown", true, true, doc.defaultView, 0, 0, 0, 0, 0,
             false, false, false, false, 0, null);
