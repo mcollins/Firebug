@@ -450,20 +450,25 @@ this.getSourceLineNode = function(lineNo, chrome)
     }
 
     var rows = sourceViewport.childNodes;
+    FBTest.sysout("getSourceLineNode has sourceViewport with "+rows.length+" childNodes");
 
     // Look for line
-    var lineNoName = lineNo +"";
+    var lineNumberAsString = lineNo +"";
     var row = null;
     for (var i=0; i < rows.length; i++)
     {
         var line = FW.FBL.getChildByClass(rows[i], 'sourceLine');
-        if (line.textContent == lineNoName) {
+        if (line.textContent == lineNumberAsString) {
             row = rows[i];
             break;
         }
         else
-            FBTest.sysout("tried row "+i+" "+line.textContent+"=?="+lineNoName);
+            FBTest.sysout("tried row "+i+" "+line.textContent+"=?="+lineNumberAsString);
     }
+
+    if (!row)
+        FBTest.sysout("DId not find "+lineNumberAsString);
+
     return row;
 }
 
@@ -538,9 +543,6 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
 
         var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
         FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set");
-
-        var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
-        FBTest.ok(canContinue, "The continue button is pushable");
 
         callback();
     }
