@@ -45,6 +45,9 @@ function runTest()
 
             FBTest.ok(detachedFW, "We created a detached window");
 
+            if (!detachedFW)
+                 FBTestFirebug.testDone("openInNewWindow.FAILED");
+
             var oneLoad = new FBTestFirebug.OneShotHandler(detachedFW, 'load', function onLoadWindow(event)
             {
                 var doc = event.target;

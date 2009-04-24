@@ -15,13 +15,13 @@ function runTest()
         if (!isOpen)
             FBTest.Firebug.pressToggleFirebug();
 
-            var panel = FW.FirebugChrome.selectPanel("script");
+        var panel = FW.FirebugChrome.selectPanel("script");
 
-            FBTest.progress("Navigated to script panel");
+        FBTest.progress("Navigated to "+panel.name+" panel");
 
-            // Select proper JS file.
-            var found = FBTestFirebug.selectPanelLocationByName(panel, "main.js");
-            FBTest.compare(found, true, "The main.js should be found");
+        // Select proper JS file.
+        var found = FBTestFirebug.selectPanelLocationByName(panel, "main.js");
+        FBTest.compare(found, true, "The main.js should be found");
 
 
         var panel = FW.FirebugContext.chrome.getSelectedPanel();

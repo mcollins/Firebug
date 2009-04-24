@@ -29,9 +29,21 @@ function openOpenCloseClose()
         FBTest.Firebug.pressToggleFirebug();
 
         var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(!isFirebugOpen, "Firebug ends closed");
+        FBTest.ok(!isFirebugOpen, "Firebug closed");
 
-        FBTestFirebug.testDone("openInNewWindow.DONE");
+        FBTest.ok(FW.FirebugContext.minimized, "Firebug is minimized");
+
+        FBTest.Firebug.pressToggleFirebug();
+
+        isFirebugOpen = FBTest.Firebug.isFirebugOpen();
+        FBTest.ok(isFirebugOpen, "Firebug reopens");
+
+        FBTest.Firebug.closeFirebug();
+
+        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
+        FBTest.ok(!isFirebugOpen, "Firebug closed");
+
+        FBTestFirebug.testDone("openOpenCloseClose.DONE");
     });
 }
 
