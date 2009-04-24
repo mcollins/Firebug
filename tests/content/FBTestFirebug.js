@@ -46,7 +46,7 @@ this.detachFirebug = function()
 this.closeFirebug = function()
 {
     if (this.isFirebugOpen())
-        this.pressToggleFirebug();
+        FW.Firebug.closeFirebug(FW.FirebugContext)
 }
 
 /**
@@ -97,7 +97,10 @@ this.testDone = function(message)
 this.setToKnownState = function()
 {
     this.closeFirebugOnAllTabs();
+    FW.Firebug.URLSelector.clearAll();
 };
+
+window.addEventListener('startFBTest', this.setToKnownState, true);  // maybe there is a better way?
 
 // ************************************************************************************************
 // URLs
