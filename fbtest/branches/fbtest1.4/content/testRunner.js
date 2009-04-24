@@ -24,6 +24,10 @@ FBTestApp.TestRunner =
     {
         tests = cloneArray(tests);
 
+        var startTestsEvent = document.createEvent("Events");
+        startTestsEvent.initEvent("startFBTest", true, false);
+        window.dispatchEvent(startTestsEvent);
+
         FBTestApp.TestSummary.clear();
         FBTestApp.TestProgress.start(tests.length);
 
