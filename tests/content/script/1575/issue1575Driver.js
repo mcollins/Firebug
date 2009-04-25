@@ -6,6 +6,7 @@ function runTest()
         FBTestFirebug.selectPanel("script");
         FBTestFirebug.enableScriptPanel(function()
         {
+            FBTestFirebug.selectPanel("script");
             FBTest.progress("reloaded, now set breakpoint");
             var panel = FW.FirebugContext.chrome.getSelectedPanel();
 
