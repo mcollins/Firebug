@@ -268,7 +268,12 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                 }
             }
             this.breakContext = context;
-            previousContext = context; // private to this function
+
+            if (context)
+                previousContext = context; // private to this function
+            else
+                previousContext = {global: null};
+
             return !!context;
         }
         catch (exc)
