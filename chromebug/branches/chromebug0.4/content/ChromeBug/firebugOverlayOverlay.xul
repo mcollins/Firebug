@@ -17,7 +17,7 @@
 
     <!-- overlay the Firebug inspect button -->
      <hbox id="fbPanelBar1-buttons" >
-      <toolbarbutton id="fbInspectButton" label="Inspect" class="toolbar-text-button"
+      <toolbarbutton id="fbInspectButton" label="Inspect"
                            tooltiptext="Mouse over a window to inspect its XUL"
                            command="cmd_toggleInspecting"/>
     </hbox>
