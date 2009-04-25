@@ -437,7 +437,17 @@ var XULWindowInfo = {
             if (domWindow.closed)
                 FBTrace.sysout("destroyContextByDOMWindow did not find context for closed window");
             else
-                FBTrace.sysout("destroyContextByDOMWindow did not find context for domWindow:"+ domWindow.location+"\n");
+            {
+                try
+                {
+                    FBTrace.sysout("destroyContextByDOMWindow did not find context for domWindow:"+ domWindow.location+"\n");
+                }
+                catch(exc)
+                {
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("nsIDOMWindow.location fails "+exc);
+                }
+            }
         }
     },
 
@@ -2516,80 +2526,83 @@ Firebug.Chromebug.PackageListLocator = function(xul_element)
 
 //**************************************************************************
 
-Firebug.Chromebug.ContextList = {
+Firebug.Chromebug.ContextList =
+{
 
     getCurrentLocation: function() // a context in a package
     {
         return cbContextList.repObject;
     },
 
- setCurrentLocation: function(context) // call from Firebug.Chromebug.syncToolBarToContext(context);
- {
-     cbContextList.location = context;
-     setTimeout( function delaySave()
-     {
-         Firebug.Chromebug.saveState(context);
-     }, 500);
- },
+    setCurrentLocation: function(context) // call from Firebug.Chromebug.syncToolBarToContext(context);
+    {
+        cbContextList.location = context;
+    },
 
- getLocationList: function()  // list of contextDescriptions
- {
-     var list = Firebug.Chromebug.contexts;
+    getLocationList: function()  // list of contextDescriptions
+    {
+        var list = Firebug.Chromebug.contexts;
 
-     if (FBTrace.DBG_LOCATIONS)
-         FBTrace.sysout("ContextList getLocationList list "+list.length, list);
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("ContextList getLocationList list "+list.length, list);
 
-     return list;
- },
+        return list;
+    },
 
- getDefaultLocation: function()
- {
-     var locations = this.getLocationList();
-     if (locations && locations.length > 0) return locations[0];
- },
+    getDefaultLocation: function()
+    {
+        var locations = this.getLocationList();
+        if (locations && locations.length > 0) return locations[0];
+    },
 
- getObjectLocation: function(context)
- {
-     return  context.getWindowLocation();
- },
+    getObjectLocation: function(context)
+    {
+        return  context.getWindowLocation();
+    },
 
- getObjectDescription: function(context)
- {
-     var title = (context.window ? context.getTitle() : null);
-     var d = Firebug.Chromebug.parseURI(context.getName());
+    getObjectDescription: function(context)
+    {
+        var title = (context.window ? context.getTitle() : null);
+        var d = Firebug.Chromebug.parseURI(context.getName());
 
-     d = {
-        path: d?d.path:"parseURI fails",
-        name: context.getName() +(title?"   "+title:""),
-        label: context.getName(),
-        href: context.getName()
-        };
+        d = {
+           path: d?d.path:"parseURI fails",
+           name: context.getName() +(title?"   "+title:""),
+           label: context.getName(),
+           href: context.getName()
+           };
 
-     if (FBTrace.DBG_LOCATIONS)
-         FBTrace.sysout("getObjectDescription for context "+context.uid+" path:"+d.path+" name:"+d.name, d);
-     return d;
- },
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("getObjectDescription for context "+context.uid+" path:"+d.path+" name:"+d.name, d);
+        return d;
+    },
 
- onSelectLocation: function(event)
- {
-     var context = event.currentTarget.repObject;
-     if (context)
-     {
-         if (!FirebugContext)
-             FirebugContext = context;
+    onSelectLocation: function(event)
+    {
+        var context = event.currentTarget.repObject;
+        if (context)
+        {
+            if (!FirebugContext)
+                FirebugContext = context;
 
-         if (FBTrace.DBG_LOCATIONS)
-             FBTrace.sysout("Firebug.Chromebug.ContextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
+            if (FBTrace.DBG_LOCATIONS)
+                FBTrace.sysout("Firebug.Chromebug.ContextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
 
-         Firebug.Chromebug.xulWindowInfo.selectContext(context);
+            Firebug.Chromebug.xulWindowInfo.selectContext(context);
 
-         event.currentTarget.location = context;
-     }
-     else
-     {
-         FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
-     }
- },
+            event.currentTarget.location = context;
+
+            setTimeout( function delaySave()  // we only want to do this when the user selects
+            {
+                Firebug.Chromebug.saveState(context);
+            }, 500);
+
+        }
+        else
+        {
+            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+        }
+    },
 }
 
 Firebug.Chromebug.ContextListLocator = function(xul_element)
