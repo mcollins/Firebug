@@ -101,10 +101,10 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 
     clearPanel: function(context)
     {
-        var tracePanel = context.getPanel("trace");
-        FBTrace.sysout("clearPanel ", tracePanel);
-        if (tracePanel)
-            tracePanel.clear();
+        if (this.tracePanel)
+            this.tracePanel.clear();
+        else
+            FBTrace("tracePanel.clearPanel no this.tracePanel");
     },
 });
 
