@@ -44,7 +44,9 @@ function alsoOpened(win)
     FBTest.progress("Opened "+win.location);
 
     var isFirebugOpen = FBTestFirebug.isFirebugOpen();
-    FBTest.ok(!isFirebugOpen, "Firebug opened because of all open");
+    FBTest.ok(isFirebugOpen, "Firebug opened because of all open");
+
+    FBTest.Firebug.pressToggleFirebug();  // toggle to minimize
 
     FBTest.ok(FW.FirebugContext.minimized, "Firebug is minimized");
 
@@ -67,8 +69,9 @@ function alsoOpened(win)
     FW.Firebug.toggleAll("none");
 
     var toolTip = statusbarIcon.getAttribute("tooltiptext");
-    var number = /all pages/.exec(toolTip);
-    FBTest.ok(!number, "Should be All pages info");
+    var expectedText = "all pages";
+    var all = (new RegExp(expectedText)).exec(toolTip);
+    FBTest.compare(expectedText, all, "Should be All pages info");
 
 
     FBTestFirebug.testDone("allOpenAllClose.DONE");
