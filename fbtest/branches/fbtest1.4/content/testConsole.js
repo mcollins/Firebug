@@ -414,6 +414,18 @@ FBTestApp.TestListURLBar =
  */
 var FBTest = FBTestApp.FBTest =
 {
+    /**
+     *  Function to be called before every test sequence.
+     */
+    setToKnownState: function()
+    {
+        FBTest.sysout("FBTestFirebug setToKnownState");
+        FBTest.FirebugWindow.Firebug.toggleAll("off");
+        FBTest.FirebugWindow.Firebug.toggleAll("none");
+        FBTest.FirebugWindow.Firebug.URLSelector.clearAll();
+        FBTest.FirebugWindow.Firebug.resetAllOptions();
+    },
+
     progress: function(msg)
     {
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));

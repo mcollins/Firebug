@@ -91,16 +91,6 @@ this.testDone = function(message)
     FBTest.testDone();
 }
 
-/**
- * xxxHonza: TBD.
- */
-this.setToKnownState = function()
-{
-    this.closeFirebugOnAllTabs();
-    FW.Firebug.URLSelector.clearAll();
-};
-
-window.addEventListener('startFBTest', this.setToKnownState, true);  // maybe there is a better way?
 
 // ************************************************************************************************
 // URLs
