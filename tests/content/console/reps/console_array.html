@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <script>
+      function defineObjects() {
+        arrayObjects = {
+          description: "objects that should be displayed as arrays (surrounded by square brackets)",
+          objects: [
+            [ "empty array by array literal", [] ],
+            [ "array with 1 element by array literal", [1] ],
+            [ "array with multiple elements by array literal", [1, "foo", window] ],
+            [ "array with multiple undefined elements by array literal", [, , ,] ],
+            [ "empty array by Array constructor", new Array() ],
+            [ "array with 1 element by Array constructor", new Array("foo") ],
+            [ "array with multiple elements by Array constructor", new Array(1, "foo", window) ],
+            [ "array with multiple undefined elements by Array constructor", new Array(3) ],
+            [ "arguments object", (function() { return arguments; })(1, "foo", window) ],
+          ],
+        };
+        notArrayObjects = {
+          description: "objects that should not be displayed as arrays",
+          objects: [
+            [ "string literal", "foo" ],
+            [ "string object (issue 234)", new String("foo") ],
+            [ "object with \"length\" property (issue 212)", ({0: "foo", 1: "bar", length: 2}) ],
+            [ "object created by a constructor that includes the word \"Array\" (issue 874)",
+              new (function NotAnArray() { this.data = "this is not Array"; })
+            ],
+          ],
+        };
+        todoObjects = {
+          description: "objects undecided",
+          objects: [
+            [ "empty array with user-defined properties (issue 766)",
+              (function() {
+                var arr = [];
+                arr["key1"] = "value1";
+                arr["key2"] = "value2";
+                return arr;
+              })()
+            ],
+            [ "HTMLCollection (issue 588 / issue 489)", document.getElementsByTagName("div") ],
+            [ "NodeList (issue 588)", document.documentElement.childNodes ],
+          ],
+        };
+      }
+      function runTests() {
+        testGroup(arrayObjects);
+        testGroup(notArrayObjects);
+        testGroup(todoObjects);
+      }
+      function output(name, obj) {
+        console.log(name + "\r\n", obj);
+      }
+      function testGroup(definition) {
+        console.group(definition.description);
+        for (var i = 0; i < definition.objects.length; i++) {
+          output(definition.objects[i][0], definition.objects[i][1]);
+        }
+        console.groupEnd(definition.description);
+      }
+    </script>
+  </head>
+  <body onload="defineObjects()">
+    <div>
+      <button onclick="runTests()">run tests</button>
+    </div>
+    <h2>Array Tests from issue 1159, contribution by <a href="http://code.google.com/u/sevenfurnace/">sevenfurnace</a>
+    <pre>
+
+    </pre>
+  </body>
+</html>
