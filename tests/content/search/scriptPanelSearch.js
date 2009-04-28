@@ -18,13 +18,13 @@ function runTest()
             testSuite.push(function(callback)
             {
                 FBTestFirebug.selectPanelLocationByName(panel, "scriptVictim.htm");
-                executeSearchTest("script", false, false, true, function(counter) 
+                executeSearchTest("script", false, false, true, function(counter)
                 {
                     FBTest.sysout("search; Case insensitive test finished", counter);
 
                     verifySearchResults({
-                        "scriptVictim.htm": 6,
-                        "htmlIframe.htm": 1,
+                        "scriptVictim.htm": 8,
+                        "htmlIframe.htm": 3,
                         "script1.js": 5,
                         "script2.js": 1
                     }, counter);
@@ -61,7 +61,7 @@ function runTest()
                     FBTest.sysout("search; Search within one file finished", counter);
 
                     verifySearchResults({
-                        "scriptVictim.htm": 6,
+                        "scriptVictim.htm": 8,
                         "htmlIframe.htm": undefined,
                         "script1.js": undefined,
                         "script2.js": undefined,
@@ -127,7 +127,7 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
                 line: lineNum
             };
 
-            FBTest.sysout("match found for '" + text +"': " + match.href + 
+            FBTest.sysout("match found for '" + text +"': " + match.href +
                 " (" + match.line + ")");
 
             var isFirstMatch = false;
@@ -140,10 +140,10 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
                 {
                     if ((match.line < prevMatch.line) != reverse)
                     {
-                        FBTest.sysout("search; line order is not correct " + isFirstMatch, 
+                        FBTest.sysout("search; line order is not correct " + isFirstMatch,
                             [match, prevMatch, firstMatch]);
 
-                        FBTest.ok(false, "Line order is NOT correct: " + match.line + " " + 
+                        FBTest.ok(false, "Line order is NOT correct: " + match.line + " " +
                             prevMatch.line + " " + match.href);
                     }
                 }
@@ -155,7 +155,7 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
 
             // If it isn't again the first match do next search (pressing enter key).
             // If we have reached the end of the last file and starting again, finish
-            // the test. 
+            // the test.
             if (!isFirstMatch)
             {
                 var href = match.href.substr(match.href.lastIndexOf("/") + 1);
