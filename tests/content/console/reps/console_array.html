@@ -13,10 +13,8 @@
             [ "array with 1 element by Array constructor", new Array("foo") ],
             [ "array with multiple elements by Array constructor", new Array(1, "foo", window) ],
             [ "array with multiple undefined elements by Array constructor", new Array(3) ],
-            [ "arguments object", (function() { return arguments; })(1, "foo", window) ],
             [ "HTMLCollection (issue 588 / issue 489)", document.getElementsByTagName("div") ],
             [ "NodeList (issue 588)", document.documentElement.childNodes ],
-            [ "sessionStorage (issue 1695)", window.sessionStorage ],
           ],
         };
         notArrayObjects = {
@@ -28,6 +26,8 @@
             [ "object created by a constructor that includes the word \"Array\" (issue 874)",
               new (function NotAnArray() { this.data = "this is not Array"; })
             ],
+            [ "arguments object", (function() { return arguments; })(1, "foo", window) ],
+            [ "sessionStorage (issue 1695)", window.sessionStorage ],
           ],
         };
         todoObjects = {
