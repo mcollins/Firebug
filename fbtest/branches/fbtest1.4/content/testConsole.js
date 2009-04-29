@@ -424,6 +424,7 @@ var FBTest = FBTestApp.FBTest =
         FBTest.FirebugWindow.Firebug.toggleAll("none");
         FBTest.FirebugWindow.Firebug.URLSelector.clearAll();
         FBTest.FirebugWindow.Firebug.resetAllOptions();
+        FBTest.FirebugWindow.Firebug.Debugger.clearAllBreakpoints(); // no context clears in all contexts
     },
 
     progress: function(msg)
