@@ -1293,7 +1293,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             clearTimeout(this.retryRestoreID);
             delete this.retryRestoreID;
-            Firebug.Chromebug.setDefaultContext();
             return true;
         }
         else

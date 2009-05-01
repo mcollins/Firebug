@@ -351,7 +351,7 @@
             <hbox id="cbPanelBox" flex="1">
             <panelbar id="cbPanelBar" flex="3" persist="width,height" paneltooltip="cbTooltip" panelcontextmenu="cbContextMenu">
                 <vbox id="cbXPCOMBrowserBox" flex="1">
-                    <browser id="cbXPCOMBrowser" type="content" src="chrome://chromebug/content/categoryBrowser.html" flex="1" />
+                    <browser disablehistory="true" id="cbXPCOMBrowser" type="content" src="chrome://chromebug/content/categoryBrowser.html" flex="1" />
                 </vbox>
             </panelbar>
             </hbox>
