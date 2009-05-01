@@ -1,3 +1,15 @@
+// Enable the dump() global function. Prints to stdout.
+pref("browser.dom.window.dump.enabled", true);
+
+//Logs errors in chrome files to the Error Console.
+pref("javascript.options.showInConsole", true);
+
+//This will send more detailed information about installation and update problems to the Error Console.
+pref("extensions.logging.enabled", true);
+
+//Turn off default browser check
+pref("browser.shell.checkDefaultBrowser", false);
+
 pref("extensions.chromebug.outerWidth", 0);
 pref("extensions.chromebug.outerHeight", 0);
 pref("extensions.chromebug.openalways", false);
