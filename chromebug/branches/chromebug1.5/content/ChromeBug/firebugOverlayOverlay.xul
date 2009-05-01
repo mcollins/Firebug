@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE window [
+<!ENTITY % firebugDTD SYSTEM "chrome://firebug/locale/firebug.dtd">
+%firebugDTD;
+]>
+
+<!-- overlays firebugOverlay.xul to change some items -->
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/x-javascript" src="chrome://chromebug/content/scandocuments.js"/>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_toggleInspecting" oncommand="Firebug.Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
+    </commandset>
+
+    <!-- overlay the Firebug inspect button -->
+     <hbox id="fbPanelBar1-buttons" >
+      <toolbarbutton id="fbInspectButton" label="Inspect"
+                           tooltiptext="Mouse over a window to inspect its XUL"
+                           command="cmd_toggleInspecting"/>
+    </hbox>
+
+    <keyset id="mainKeyset">
+        <key id="key_toggleInspecting" key="c" modifiers="accel,shift" class="fbOnlyKey"
+                command="cmd_toggleInspecting"/>
+    </keyset>
+
+    <hbox id="fbToolbarInner">
+
+      <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="false">
+          <toolbarbutton label="Clear" class="toolbar-text-button"
+                                       tooltiptext="&firebug.ClearTooltip;" command="cmd_clearTracePanel"/>
+      </hbox>
+
+    </hbox>
+
+
+
+</overlay>
