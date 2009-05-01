@@ -249,6 +249,8 @@ FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
         if (!this.logs)
             return;
 
+        var scrolledToBottom = isScrolledToBottom(this.logs);
+
         var index = message.text.indexOf("ERROR");
         if (index != -1)
             message.type = "DBG_ERRORS";
@@ -280,6 +282,8 @@ FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
         wrapper.appendChild(wrapperNumberCell);
         wrapper.appendChild(wrapperData);
         this.logs.firstChild.appendChild(wrapper);
+        if (scrolledToBottom)
+            scrollToBottom(this.logs);
     },
 
     unWrapMessage: function(event)
