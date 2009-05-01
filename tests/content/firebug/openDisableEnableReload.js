@@ -13,37 +13,41 @@ function runTest()
         FBTest.progress("opened tab for "+win.location);
         FBTestFirebug.openFirebug();
 
-        FBTest.progress("All panels should be disabled: check them");
-        // All panels must be disabled.
-        checkIsDisabled("console", FW.Firebug.Console);  // console must be disabled first
-        checkIsDisabled("script", FW.Firebug.Debugger);
-        checkIsDisabled("net", FW.Firebug.NetMonitor);
-
-        FBTest.progress("Enable all panels and check them");
-
-        // Enable and verify.
-        try
+        setTimeout(function delayChecks()
         {
-            enableAndCheck("script", FW.Firebug.Debugger);
-            enableAndCheck("net", FW.Firebug.NetMonitor);
-            enableAndCheck("console", FW.Firebug.Console);
-        }
-        catch (err)
-        {
-            FBTest.sysout("exception", err);
-        }
+            FBTest.progress("All panels should be disabled: check them");
+            // All panels must be disabled.
+            checkIsDisabled("console", FW.Firebug.Console);  // console must be disabled first
+            checkIsDisabled("script", FW.Firebug.Debugger);
+            checkIsDisabled("net", FW.Firebug.NetMonitor);
 
-        FBTestFirebug.reload(function ()
-        {
-            FBTest.progress("reloaded, check isEnabled");
-            // All panels must be still enabled.
-            checkIsEnabled("script", FW.Firebug.Debugger);
-            checkIsEnabled("net", FW.Firebug.NetMonitor);
-            checkIsEnabled("console", FW.Firebug.Console);
+            FBTest.progress("Enable all panels and check them");
 
-            FBTestFirebug.testDone("openDisableEnebleReload.DONE");
+            // Enable and verify.
+            try
+            {
+                enableAndCheck("script", FW.Firebug.Debugger);
+                enableAndCheck("net", FW.Firebug.NetMonitor);
+                enableAndCheck("console", FW.Firebug.Console);
+            }
+            catch (err)
+            {
+                FBTest.sysout("exception", err);
+            }
+
+            FBTestFirebug.reload(function ()
+            {
+                FBTest.progress("reloaded, check isEnabled");
+                // All panels must be still enabled.
+                checkIsEnabled("script", FW.Firebug.Debugger);
+                checkIsEnabled("net", FW.Firebug.NetMonitor);
+                checkIsEnabled("console", FW.Firebug.Console);
+
+                FBTestFirebug.testDone("openDisableEnebleReload.DONE");
+            });
         });
-    });
+
+        });
 }
 
 function enableAndCheck(panelName, module)
