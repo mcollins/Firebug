@@ -283,7 +283,7 @@ FBTestApp.TestResultTabView = domplate(
                         $STR("fbtest.title.Expected")
                     ),
                     TD({"class": "testResultCompareSwitch expected",
-                        onclick: "$onSwitchView"},
+                        onclick: "$onSwitchView", view: "fbtest.switch.view_source"},
                         $STR("fbtest.switch.view_source")
                     )
                 ),
@@ -295,7 +295,7 @@ FBTestApp.TestResultTabView = domplate(
                         $STR("fbtest.title.Result")
                     ),
                     TD({"class": "testResultCompareSwitch result",
-                        onclick: "$onSwitchView"},
+                        onclick: "$onSwitchView", view: "fbtest.switch.view_source"},
                         $STR("fbtest.switch.view_source")
                     )
                 ),
@@ -415,13 +415,35 @@ FBTestApp.TestResultTabView = domplate(
 
         clearNode(sourceBody);
 
-        if (target.sourceView)
-            this.insertXml(result.expected, sourceBody);
-        else
-            insertWrappedText(expected ? result.expected : result.result, sourceBody);
+        var views = [
+            "fbtest.switch.view_source",
+            "fbtest.switch.escaped",
+            "fbtest.switch.pretty_print",
+        ];
 
-        target.innerHTML = $STR("fbtest.switch." + (target.sourceView ? "view_source" : "pretty_print"));
-        target.sourceView = !target.sourceView;
+        // There are three possible views alternating as user clicks on the switch link.
+        var view = target.getAttribute("view");
+        if (!view || view == views[0])
+        {
+            // display view source, next view: escaped
+            insertWrappedText(expected ? result.expected : result.result, sourceBody);
+            view = views[1];
+        }
+        else if (view == views[1])
+        {
+            // display escaped, next view: pretty print
+            insertWrappedText(escape(expected ? result.expected : result.result), sourceBody);
+            view = views[2];
+        }
+        else if (view == views[2])
+        {
+            // display pretty print, next view: view source.
+            this.insertXml(result.expected, sourceBody);
+            view = views[0];
+        }
+
+        target.setAttribute("view", view);
+        target.innerHTML = $STR(view);
     },
 
     onClickStackFrame: function(event)
