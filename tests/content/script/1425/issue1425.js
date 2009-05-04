@@ -37,7 +37,7 @@ function runTest()
             FBTest.ok(rows.length > 1, "The script view must not be empty.");
             if (rows.length < 1)
                 issue1425.done();
-            var source1 = "function MapLoadingIndicator(m){";
+            var source1 = "function MapLoadingIndicator(m){\n";
             FBTest.compare(source1, rows[1].firstChild.nextSibling.textContent,
                     "Verify source on line 1");
 
@@ -59,7 +59,7 @@ function runTest()
                     FBTest.ok(row1143, "The row 1143 must exist");
                     if (row1143)
                     {
-                        var source1143 = "initialize:function(config){";
+                        var source1143 = "initialize:function(config){\n";
                         FBTest.compare(source1143, row1143.firstChild.nextSibling.textContent,
                             "The source code at line 1143 verified.");
                     }
