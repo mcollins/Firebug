@@ -20,7 +20,6 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         Firebug.Module.shutdown.apply(this, arguments);
     },
 
-    // UI Commands
     exportData: function(context)
     {
         if (!context)
@@ -29,64 +28,100 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.Exporting data for: " + context.getName());
 
-        // Build JSON structure and serialize it into a file.
-        var builder = new JSONBuilder();
-        var jsonData = builder.build(context);
-        var jsonString = JSON.stringify(jsonData, null, '\t');
-        jsonString = "(" + jsonString + ")";
+        try
+        {
+            // Export all data into a JSON string.
+            var builder = new JSONBuilder();
+            var jsonData = builder.build(context);
+            if (!jsonData.log.entries.length)
+            {
+                alert("There is nothing to export.");
+                return;
+            }
+            var jsonString = JSON.stringify(jsonData, null, '  ');
+            jsonString = "(" + jsonString + ")";
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.exportData EXCEPTION", err);
+        }
 
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.data", jsonData);
 
-        // Get unique file within user profile directory. 
-        var file = dirService.get("ProfD", Ci.nsIFile);
-        file.append("netExport");
-        file.append("netData.json");
-        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
+        this.onSaveToFile(jsonString);
+        this.openViewer("http://www.softwareishard.com/har/viewer", jsonString);
+    },
 
-        // Initialize output stream.
-        this.outputStream = Cc["@mozilla.org/network/file-output-stream;1"]
-            .createInstance(Ci.nsIFileOutputStream);
+    onSaveToFile: function(jsonString)
+    {
+        try 
+        {
+            var nsIFilePicker = Ci.nsIFilePicker;
+            var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
+            fp.init(window, null, nsIFilePicker.modeSave);
+            fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
+            fp.filterIndex = 1;
+            fp.defaultString = "netData.har";
 
-        // write, create, truncate
-        this.outputStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
-        this.outputStream.write(jsonString, jsonString.length);
-        this.outputStream.close();
+            var rv = fp.show();
+            if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
+            {
+                var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                    .createInstance(Ci.nsIFileOutputStream);
+                foStream.init(fp.file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
 
-        openNewTab("chrome://netexport/content/netExportViewer.xul?json=" + 
-            encodeURIComponent(jsonString));
+                foStream.write(jsonString, jsonString.length);
+                foStream.close();
+            }
+        }
+        catch (err)
+        {
+            alert(err.toString());
+        }
+    },
 
-        if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Exporting END JSON: " + file.path, jsonData);
+    openViewer: function(url, jsonString)
+    {
+        var result = iterateBrowserWindows("navigator:browser", function(browserWin)
+        {
+            return iterateBrowserTabs(browserWin, function(tab, currBrowser)
+            {
+                var currentUrl = currBrowser.currentURI.spec;
+                if (currentUrl.indexOf("/har/viewer") >= 0)
+                {
+                    var tabBrowser = browserWin.getBrowser();
+                    tabBrowser.selectedTab = tab;
+                    browserWin.focus();
+
+                    var win = tabBrowser.contentWindow.wrappedJSObject;
+                    var sourceEditor = win.document.getElementById("sourceEditor");
+                    sourceEditor.value = jsonString;
+                    win.SourceView.onAppendPreview();
+
+                    if (FBTrace.DBG_NETEXPORT)
+                        FBTrace.sysout("netExport.openViewer; Select an existing tab", tabBrowser);
+                    return true;
+                }
+            })
+        });
+
+        // The viewer is not opened yet so, open a new tab.
+        if (!result)
+        {
+            gBrowser.selectedTab = gBrowser.addTab(url);
+
+            var tabBrowser = gBrowser.getBrowserForTab(gBrowser.selectedTab);
+            tabBrowser.addProgressListener(new TabProgressListener(jsonString),
+                Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+        }
     },
 
     importData: function(context)
     {
         alert("TBD");
     },
-
-    refreshJSONViewer: function(parentNode, jsonString, toggles, originUrl)
-    {
-        jsonString = decodeURIComponent(jsonString);
-
-        var jsonObject = parseJSONString(jsonString, originUrl);
-        if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.json.parseJSONString", jsonObject);
-
-        try
-        {
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.json.refreshJSONViewer", parentNode);
-
-            var tag = Firebug.DOMPanel.DirTable.tag;
-            tag.replace({object: jsonObject, toggles: toggles}, parentNode);
-        }
-        catch (err)
-        {
-            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("netexport.json.refreshJSONViewer EXCEPTION", err);
-        }
-    }
 });
 
 // ************************************************************************************************
@@ -109,7 +144,7 @@ JSONBuilder.prototype =
         // Build entries.
         var self = this;
         panel.iterateEntries(function(file) {
-            log.entries.push(self.buildEntry(log.page, file));
+            log.entries.push(self.buildEntry(log.pages[0], file));
         })
 
         return {log:log};
@@ -118,8 +153,11 @@ JSONBuilder.prototype =
     buildLog: function(context)
     {
         var log = {};
-        log.page = this.buildPage(context);
+        log.pages = [this.buildPage(context)];
         log.entries = [];
+        log.version = "1.0";
+        log.creator =  {name: "", version: ""};
+        log.browser =  {name: "", version: ""};
         return log;
     },
 
@@ -130,8 +168,6 @@ JSONBuilder.prototype =
         page.startedDateTime = (new Date()).toUTCString();
         page.id = "page_0";
         page.title = context.getTitle();
-        page.dynamic = false;
-        page.unknown = false;
         return page;
     },
 
@@ -140,9 +176,11 @@ JSONBuilder.prototype =
         var entry = {};
         entry.pageref = page.id;
         entry.startTime = file.startTime;
+        entry.startedDateTime = "";
+        entry.time = "";
         entry.elapsedTime = file.endTime - file.startTime;
         entry.sent = 0;
-        entry.received = 0;
+        entry.received = file.size;
         entry.overview = this.buildOverview(file);
         entry.request = this.buildRequest(file);
         entry.response = this.buildResponse(file);
@@ -167,7 +205,7 @@ JSONBuilder.prototype =
         request.port = file.request.URI.port;
         request.httpVersion = this.getHttpVersion(file.request, true);
 
-        request.cookies = this.buildCookies(file);
+        request.cookies = this.buildRequestCookies(file);
         request.headers = this.buildHeaders(file.requestHeaders);
 
         request.queryString = file.urlParams;
@@ -197,16 +235,80 @@ JSONBuilder.prototype =
         return postData;
     },
 
-    buildCookies: function(cookies)
+    buildRequestCookies: function(file)
     {
-        var cookies = {};
-        return cookies;
+        var header = findHeader(file.requestHeaders, "cookie");
+
+        var result = [];
+        var cookies = header ? header.split("; ") : [];
+        for (var i=0; i<cookies.length; i++)
+        {
+            var option = cookies[i].split("=");
+            var cookie = {};
+            cookie.name = option[0];
+            cookie.value = option[1];
+            result.push(cookie);
+        }
+
+        return result;
+    },
+
+    buildResponseCookies: function(file)
+    {
+        var header = findHeader(file.responseHeaders, "set-cookie");
+
+        var result = [];
+        var cookies = header ? header.split("\n") : [];
+        for (var i=0; i<cookies.length; i++)
+        {
+            var cookie = this.parseCookieFromResponse(cookies[i]);
+            result.push(cookie);
+        }
+
+        return result;
+    },
+
+    parseCookieFromResponse: function(string)
+    {
+        var cookie = new Object();
+        var pairs = string.split("; ");
+        
+        for (var i=0; i<pairs.length; i++)
+        {
+            var option = pairs[i].split("=");
+            if (i == 0)
+            {
+                cookie.name = option[0];
+                cookie.value = option[1];
+            } 
+            else
+            {
+                var name = option[0].toLowerCase();
+                name = (name == "domain") ? "host" : name;
+                if (name == "httponly")
+                {
+                    cookie.httpOnly = true;
+                }
+                else if (name == "expires")
+                {
+                    var value = option[1];
+                    value = value.replace(/-/g, " ");
+                    cookie[name] = Date.parse(value) / 1000;
+                }
+                else
+                {
+                    cookie[name] = option[1];
+                }
+            }
+        }
+        
+        return cookie;
     },
 
     buildHeaders: function(headers)
     {
         var result = [];
-        for (var i=0; i<headers.length; i++)
+        for (var i=0; headers && i<headers.length; i++)
             result.push({name: headers[i].name, value: headers[i].value});
         return result;
     },
@@ -219,8 +321,8 @@ JSONBuilder.prototype =
         response.statusText = file.responseStatusText;
         response.httpVersion = this.getHttpVersion(file.request, false);
 
-        response.cookies = this.buildCookies(file);
-        response.headers = this.buildHeaders(file.requestHeaders);
+        response.cookies = this.buildResponseCookies(file);
+        response.headers = this.buildHeaders(file.responseHeaders);
         response.content = this.buildContent(file);
 
         return response;
@@ -231,7 +333,17 @@ JSONBuilder.prototype =
         var content = {};
         content.contentLength = file.responseText ? file.responseText.length : 0;
         content.compression = ""; //xxxHonza
-        content.mimeType = file.request.contentType;
+        
+        try 
+        {
+            content.mimeType = file.request.contentType;
+        } 
+        catch (e) 
+        {
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.buildContent EXCEPTION", e);
+        }
+
         content.encodingScheme = ""; //xxxHonza
         content.text = file.responseText ? file.responseText : "";
         return content;
@@ -269,6 +381,8 @@ JSONBuilder.prototype =
         timings.connectingTime = file.connectingTime;
         timings.waitingForTime = file.waitingForTime;
         timings.respondedTime = file.respondedTime;
+        timings.contentLoadTime = file.phase.contentLoadTime;
+        timings.windowLoadTime = file.phase.windowLoadTime;
 
         return timings;
     },
@@ -277,14 +391,22 @@ JSONBuilder.prototype =
     {
         if (request instanceof Ci.nsIHttpChannelInternal)
         {
-            var major = {}, minor = {};
-
-            if (forRequest)
-                request.getRequestVersion(major, minor);
-            else
-                request.getResponseVersion(major, minor);
-
-            return "HTTP/" + major.value + "." + minor.value;
+            try
+            {
+                var major = {}, minor = {};
+    
+                if (forRequest)
+                    request.getRequestVersion(major, minor);
+                else
+                    request.getResponseVersion(major, minor);
+    
+                return "HTTP/" + major.value + "." + minor.value;
+            }
+            catch(err)
+            {
+                if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("netexport.getHttpVersion EXCEPTION", err);
+            }
         }
 
         return "";
@@ -308,12 +430,57 @@ function isURLEncodedFile(file, text)
 
 function findHeader(headers, name)
 {
-    for (var i = 0; i < headers.length; ++i)
+    for (var i = 0; headers && i < headers.length; ++i)
     {
-        if (headers[i].name == name)
+        if (headers[i].name.toLowerCase() == name)
             return headers[i].value;
     }
 }
+
+function safeGetName(request)
+{
+    try
+    {
+        return request.name;
+    }
+    catch (exc) { }
+
+    return null;
+}
+
+// ************************************************************************************************
+
+function TabProgressListener(jsonData)
+{
+    this.jsonData = jsonData;
+    this.initialized = false;
+}
+
+TabProgressListener.prototype = extend(BaseProgressListener,
+{
+    onStateChange: function(progress, request, flag, status)
+    {
+        var win = progress.DOMWindow;
+        if (!win || !win.document)
+            return;
+
+        var name = safeGetName(request);
+        var sourceEditor = win.document.getElementById("sourceEditor");
+        if (!this.initialized && (name.indexOf("/har/viewer") > 0) && sourceEditor)
+        {
+            this.initialized = true;
+
+            var browser = TabWatcher.getBrowserByWindow(win);
+            browser.removeProgressListener(this);
+
+            var self = this;
+            win.addEventListener("load", function(event) {
+                win.document.getElementById("sourceEditor").value = self.jsonData;
+                win.wrappedJSObject.SourceView.onAppendPreview();
+            }, true);
+        }
+    }
+});
 
 // ************************************************************************************************
 // Registration

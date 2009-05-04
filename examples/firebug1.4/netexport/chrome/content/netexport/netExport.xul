@@ -11,13 +11,15 @@
     <toolbar id="fbToolbar" align="center" role="toolbar">
         <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
             <hbox id="fbNetButtons" collapsed="true">
-                <toolbarseparator insertbefore="fbNetButtonsFilter"/>
-                <toolbarbutton label="Export" class="toolbar-text-button"
-                    insertbefore="fbNetButtonsFilter"
-                    tooltiptext="Export HTTP Tracing" command="cmd_netExport"/>
-                <toolbarbutton label="Import" class="toolbar-text-button"
-                    insertbefore="fbNetButtonsFilter"
-                    tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>
+                <hbox id="fbNetButtonsFilter" collapsed="true" class="noTabStop">
+                    <toolbarbutton label="Export" class="toolbar-text-button"
+                        insertbefore="fbNetFilter-all"
+                        tooltiptext="Export HTTP Tracing" command="cmd_netExport"/>
+                    <!--<toolbarbutton label="Import" class="toolbar-text-button"
+                        insertbefore="fbNetFilter-all"
+                        tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>-->
+                    <toolbarseparator insertbefore="fbNetFilter-all"/>
+                </hbox>
             </hbox>
         </hbox>
     </toolbar>
