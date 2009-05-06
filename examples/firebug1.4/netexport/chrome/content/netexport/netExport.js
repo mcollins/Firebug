@@ -50,8 +50,11 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.data", jsonData);
 
-        this.onSaveToFile(jsonString);
-        this.openViewer("http://www.softwareishard.com/har/viewer", jsonString);
+        if (this.onSaveToFile(jsonString))
+        {
+            this.openViewer(Firebug.getPref(Firebug.prefDomain, 
+                "netExport.viewerURL"), jsonString);
+        }
     },
 
     onSaveToFile: function(jsonString)
@@ -61,6 +64,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
             var nsIFilePicker = Ci.nsIFilePicker;
             var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
             fp.init(window, null, nsIFilePicker.modeSave);
+            fp.appendFilter("HTTP Archive Files","*.har; *.json");
             fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
             fp.filterIndex = 1;
             fp.defaultString = "netData.har";
@@ -72,14 +76,19 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
                     .createInstance(Ci.nsIFileOutputStream);
                 foStream.init(fp.file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
 
-                foStream.write(jsonString, jsonString.length);
+                var data = jsonString;//convertToUnicode(jsonString);
+                foStream.write(data, data.length);
                 foStream.close();
+
+                return true;
             }
         }
         catch (err)
         {
             alert(err.toString());
         }
+
+        return false;
     },
 
     openViewer: function(url, jsonString)
