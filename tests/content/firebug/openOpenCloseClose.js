@@ -9,13 +9,14 @@ function openOpenCloseClose()
     {
         FBTest.progress("opened tab for "+win.location);
 
-        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(!isFirebugOpen, "Firebug starts closed");
+        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        FBTest.compare("none", placement, "Firebug starts placed nowhere");
 
-        FBTestFirebug.openFirebug();
+        FBTest.progress("Press the toggle Firebug");
+        FBTest.Firebug.pressToggleFirebug();
 
-        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(isFirebugOpen, "Firebug now open");
+        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        FBTest.compare("inBrowser", placement, "Firebug now open inBrowser");
 
         if (FBTest.FirebugWindow.FirebugContext)
         {
@@ -26,22 +27,23 @@ function openOpenCloseClose()
         else
             FBTest.ok(false, "no FirebugContext");
 
+        FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
 
-        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(!isFirebugOpen, "Firebug closed");
+        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        FBTest.compare("minimized", placement, "Firebug minimizes");
 
-        FBTest.ok(FW.FirebugContext.minimized, "Firebug is minimized");
-
+        FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
 
-        isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(isFirebugOpen, "Firebug reopens");
+        placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        FBTest.compare("inBrowser", placement, "Firebug reopens inBrowser");
 
+        FBTest.progress("Close Firebug");
         FBTest.Firebug.closeFirebug();
 
-        var isFirebugOpen = FBTest.Firebug.isFirebugOpen();
-        FBTest.ok(!isFirebugOpen, "Firebug closed");
+        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        FBTest.compare("none", placement, "Firebug closed");
 
         FBTestFirebug.testDone("openOpenCloseClose.DONE");
     });

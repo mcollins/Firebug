@@ -12,8 +12,8 @@ function allOpenAllClose()
     {
         FBTest.progress("opened tab for "+win.location);
 
-        var isFirebugOpen = FBTestFirebug.isFirebugOpen();
-        FBTest.ok(!isFirebugOpen, "Firebug starts closed");
+        var placement = FW.Firebug.getPlacement();
+        FBTest.compare("none", placement, "Firebug starts closed");
 
         FBTest.progress("All Open");
         FW.Firebug.toggleAll("on");
@@ -24,8 +24,8 @@ function allOpenAllClose()
 
 function allOpened()
 {
-    var isFirebugOpen = FBTestFirebug.isFirebugOpen();
-    FBTest.ok(isFirebugOpen, "Firebug now open");
+    var placement = FW.Firebug.getPlacement();
+    FBTest.compare("inBrowser", placement, "Firebug now open in browser");
 
     if (FBTest.FirebugWindow.FirebugContext)
     {
@@ -43,12 +43,13 @@ function alsoOpened(win)
 {
     FBTest.progress("Opened "+win.location);
 
-    var isFirebugOpen = FBTestFirebug.isFirebugOpen();
-    FBTest.ok(isFirebugOpen, "Firebug opened because of all open");
+    var placement = FW.Firebug.getPlacement();
+    FBTest.compare("inBrowser", placement, "Firebug opened because of all open");
 
     FBTest.Firebug.pressToggleFirebug();  // toggle to minimize
 
-    FBTest.ok(FW.FirebugContext.minimized, "Firebug is minimized");
+    var placement = FW.Firebug.getPlacement();
+    FBTest.compare("minimized", placement, "Firebug minimized");
 
     var statusbarIcon = FW.document.getElementById('fbStatusIcon');
 
@@ -59,8 +60,8 @@ function alsoOpened(win)
 
     FW.Firebug.toggleAll("off");
 
-    var isFirebugOpen = FBTestFirebug.isFirebugOpen();
-    FBTest.ok(!isFirebugOpen, "Firebug closed by all off");
+    var placement = FW.Firebug.getPlacement();
+    FBTest.compare("none", placement, "Firebug closed by all off");
 
     var toolTip = statusbarIcon.getAttribute("tooltiptext");
     var number = /^(\d).*Firebugs/.exec(toolTip);
@@ -72,7 +73,6 @@ function alsoOpened(win)
     var expectedText = "all pages";
     var all = (new RegExp(expectedText)).exec(toolTip);
     FBTest.compare(expectedText, all, "Should be All pages info");
-
 
     FBTestFirebug.testDone("allOpenAllClose.DONE");
 }

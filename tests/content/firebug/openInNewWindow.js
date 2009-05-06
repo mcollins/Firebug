@@ -91,13 +91,67 @@ function runTest()
                         FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
                         FBTest.progress("close detached window");
                         detachedFW.close();
-                        FBTestFirebug.testDone("openInNewWindow.DONE");
+
+                        testAlwaysOpenOption();
                     });
 
                 }, true);
             } , true);
             FBTest.progress("Waiting for onLoadWindow event");
         });
+    });
+}
+
+function testAlwaysOpenOption()
+{
+    // we should be on page issue1438.html with Firebug closed.
+
+    FBTest.progress("select openInWindow option in "+FW.location);
+
+    var browserDocument = FW.document;
+    var fbContentBox = browserDocument.getElementById('fbContentBox');
+
+    var menuitems = fbContentBox.getElementsByTagName("menuitem");
+
+    FBTest.sysout("Looking for openInWindow option in "+menuitems.length+" menuitems")
+    for (var i=0; i < menuitems.length; i++)
+    {
+        FBTest.sysout("Looking for openInWindow option["+i+"]:"+menuitems[i].getAttribute('option')+" menuitems", menuitems[i]);
+        if (menuitems[i].getAttribute('option') == "openInWindow")
+            break;
+    }
+
+    menuitems[i].setAttribute("checked", "true");
+    FW.FirebugChrome.onToggleOption(menuitems[i]);
+    FBTest.ok(FW.Firebug.openInWindow, "The openInWindow option is selected");
+
+    FBTest.progress("toggle Firebug ")
+    FBTest.Firebug.pressToggleFirebug();
+
+    setTimeout(function delayHopefully()
+    {
+        var placement = FW.Firebug.getPlacement();
+        if (!FBTest.compare("detached", placement, "Firebug detached"))
+        {
+            FBTestFirebug.testDone("openInNewWindow.FAILED");
+            return;
+        }
+
+        FBTest.sysout("FW.FirebugChrome.window.location: "+FW.FirebugChrome.window.location);
+
+        var detachedFW = browser.chrome.window;
+        var doc = detachedFW.document;
+        if (FBTest.compare("chrome://firebug/content/firebug.xul", doc.location.toString(), "The detached window should be firebug.xul"))
+        {
+            FBTest.progress("Close the window, hope its the right one...")
+            detachedFW.close();
+            FBTestFirebug.testDone("openInNewWindow.DONE");
+        }
+        else
+        {
+            FBTestFirebug.testDone("openInNewWindow.FAILED");
+        }
+
     });
 }
 

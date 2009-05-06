@@ -19,18 +19,8 @@ function runTest()
         {
             FBTest.progress("reloaded");
             FBTest.ok(FW.FirebugContext, "The current context must not be null");
-            FBTest.ok(isContextActive(FW.FirebugContext), "The current context must be active");
+            FBTest.ok(FW.FirebugContext.browser.showFirebug, "The browser should have showFirebug set")
             FBTestFirebug.testDone("activeContextAfterReload.DONE");
         });
     });
-}
-
-function isContextActive(context)
-{
-    var active = false;
-    FW.Firebug.eachActiveContext(function(ctx) {
-        if (context == ctx)
-            active = true;
-    });
-    return active;
 }
