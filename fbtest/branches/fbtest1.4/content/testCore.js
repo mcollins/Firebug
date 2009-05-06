@@ -19,6 +19,8 @@ this.ns = function(fn)
 // Initialization
 this.initialize = function() 
 {
+    FBTestApp.prefDomain = "extensions.fbtest";
+
     // Initialize global variables before all the namespaces are initialized.
     var args = window.arguments[0];
     window.initWithParams(args);

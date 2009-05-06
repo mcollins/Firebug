@@ -126,9 +126,7 @@ FBTestApp.TestRunner =
 
     getNextTest: function()
     {
-        var randomSelection = Firebug.getPref(Firebug.prefDomain, 
-            "fbtest.randomTestSelection");
-
+        var randomSelection = Firebug.getPref(FBTestApp.prefDomain, "randomTestSelection");
         if (randomSelection)
         {
             var index = (Math.floor(Math.random() * this.testQueue.length));
@@ -178,7 +176,7 @@ FBTestApp.TestRunner =
 
     getDefaultTestTimeout: function()
     {
-        return Firebug.getPref(Firebug.prefDomain, "fbtest.testTimeout");
+        return Firebug.getPref(FBTestApp.prefDomain, "testTimeout");
     },
 
     onLoadTestFrame: function(event)

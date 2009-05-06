@@ -42,7 +42,7 @@ FBTestApp.TestConsole =
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
 
-            this.haltOnFailedTest = Firebug.getPref(Firebug.prefDomain, "fbtest.haltOnFailedTest");
+            this.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
             this.setHaltOnFailedTestButton();
 
             // Load all tests from the default test list file (testList.html).
@@ -74,7 +74,7 @@ FBTestApp.TestConsole =
 
         // 2) The list from the last time (stored in preferences) can be also used.
         if (!defaultTestList)
-            defaultTestList = Firebug.getPref(Firebug.prefDomain, "fbtest.defaultTestSuite");
+            defaultTestList = Firebug.getPref(FBTestApp.prefDomain, "defaultTestSuite");
 
         // 3) If no list is specified, use the default from currently installed Firebug.
         if (!defaultTestList)
