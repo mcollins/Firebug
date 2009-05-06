@@ -1065,6 +1065,7 @@ var ChromeBugGlobalObserver = {
         }
         else if (topic == 'dom-window-destroyed')  // subject appears to be the nsIDOMWindow with a location that is invalid and closed == true; data null
         {
+        	return;
             if (FBTrace.DBG_WINDOWS)
                 FBTrace.sysout("ChromeBugGlobalObserver found dom-window-destroyed subject:", subject);
 
