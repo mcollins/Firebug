@@ -108,7 +108,8 @@ FBTestApp.TestRunner =
             if (this.startTime)
             {
                 this.endTime = (new Date()).getTime();
-                var message = "Elapsed Time: " + formatTime(this.endTime - this.startTime) +
+                var elapsedTime = this.endTime - this.startTime;
+                var message = "Elapsed Time: " + formatTime(elapsedTime) +
                     " (" + this.testCount + " test cases)";
                 this.startTime = null;
                 FBTestApp.TestSummary.setMessage(message);

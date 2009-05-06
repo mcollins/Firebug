@@ -504,7 +504,7 @@ FBTestApp.Test.prototype =
             if (testResult.pass)
                 continue;
 
-            text += "- " + testResult.msg + "\n";
+            text += "- " + testResult.msg + " [ERROR]\n";
         }
         return text;
     }
