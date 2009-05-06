@@ -11,7 +11,7 @@
     <toolbar id="fbToolbar" align="center" role="toolbar">
         <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
             <hbox id="fbNetButtons" collapsed="true">
-                <hbox id="fbNetButtonsFilter" collapsed="true" class="noTabStop">
+                <hbox id="fbNetButtonsFilter" class="noTabStop">
                     <toolbarbutton label="Export" class="toolbar-text-button"
                         insertbefore="fbNetFilter-all"
                         tooltiptext="Export HTTP Tracing" command="cmd_netExport"/>
