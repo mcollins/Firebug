@@ -444,6 +444,8 @@ var FBTest = FBTestApp.FBTest =
 
         if (!pass)
             this.onFailure(msg);
+
+        return pass;
     },
 
     testDone: function()
@@ -458,7 +460,7 @@ var FBTest = FBTestApp.FBTest =
             expected == actual, msg, expected, actual));
         if (expected != actual)
             FBTest.onFailure(msg);
-
+        return (expected == actual);
     },
 
     onFailure: function(msg)
@@ -485,6 +487,17 @@ var FBTest = FBTestApp.FBTest =
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
         event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
             false, false, false, false, 0, null);
+        return node.dispatchEvent(event);
+    },
+
+    rightClick: function(node)
+    {
+        if (!node)
+            FBTrace.sysout("testConsole.rightClick node is null");
+
+        var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
+        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
+            false, false, false, false, 2, null);
         return node.dispatchEvent(event);
     },
 
