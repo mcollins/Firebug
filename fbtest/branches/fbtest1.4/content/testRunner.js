@@ -28,6 +28,7 @@ FBTestApp.TestRunner =
         FBTestApp.TestProgress.start(tests.length);
 
         this.startTime = (new Date()).getTime();
+        this.testCount = tests.length;
         this.onFinishCallback = onFinishCallback;
         this.testQueue = tests;
         this.runTest(this.testQueue.shift());
@@ -107,7 +108,8 @@ FBTestApp.TestRunner =
             if (this.startTime)
             {
                 this.endTime = (new Date()).getTime();
-                var message = "Elapsed Time: " + formatTime(this.endTime - this.startTime);
+                var message = "Elapsed Time: " + formatTime(this.endTime - this.startTime) +
+                    " (" + this.testCount + " test cases)";
                 this.startTime = null;
                 FBTestApp.TestSummary.setMessage(message);
                 FBTestApp.FBTest.sysout("FBTest Suite Finished: " + message);
