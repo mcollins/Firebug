@@ -24,7 +24,6 @@ FBTestApp.TestRunner =
     {
         tests = cloneArray(tests);
 
-        FBTestApp.FBTest.setToKnownState();
         FBTestApp.TestSummary.clear();
         FBTestApp.TestProgress.start(tests.length);
 
@@ -192,6 +191,9 @@ FBTestApp.TestRunner =
 
         try
         {
+            // Initialize test environment.
+            FBTestApp.FBTest.setToKnownState();
+
             // Execute test's entry point.
             win.runTest();
         }

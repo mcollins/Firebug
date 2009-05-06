@@ -157,7 +157,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         items.push({
           label: $STR("fbtest.cmd.Copy All Errors"),
           nol10n: true,
-          command: bindFixed(this.onCopyAllErrors, this, group)
+          command: bindFixed(this.onCopyAllErrors, this)
         });
 
         return items;
@@ -180,7 +180,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
             this.collapseGroup(rows[i]);
     },
 
-    onCopyAllErrors: function(group)
+    onCopyAllErrors: function()
     {
         var text = "";
         var groups = FBTestApp.TestConsole.groups;
@@ -337,10 +337,17 @@ FBTestApp.TestList = domplate(
     {
         var items = [];
 
+        items.push({
+          label: $STR("fbtest.cmd.Copy All Errors"),
+          nol10n: true,
+          command: bindFixed(FBTestApp.GroupList.onCopyAllErrors, FBTestApp.GroupList)
+        });
+
         if (test.error)
         {
+            items.push("-");
             items.push({
-              label: $STR("fbtest.cmd.Copy Erorrs"),
+              label: $STR("fbtest.cmd.Copy Errors"),
               nol10n: true,
               command: bindFixed(this.onCopyAllErrors, this, test)
             });
