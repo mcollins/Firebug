@@ -475,7 +475,9 @@ FBTestApp.Test.prototype =
         }
 
         // Clear time info
-        clearNode(FBL.getElementByClass(this.row, "statusIcon"));
+        var timeNode = FBL.getElementByClass(this.row, "statusIcon");
+        clearNode(timeNode);
+        timeNode.removeAttribute("title");
     },
 
     onTestDone: function()
@@ -484,9 +486,10 @@ FBTestApp.Test.prototype =
         if (this.results.length > 0)
             setClass(this.row, "results");
 
-        // Show ellapsed time.
         var timeNode = FBL.getElementByClass(this.row, "statusIcon");
-        timeNode.innerHTML = "(" + formatTime(this.end - this.start) + ")";
+        var elapsedTime = this.end - this.start;
+        timeNode.innerHTML = "(" + formatTime(elapsedTime) + ")";
+        timeNode.setAttribute("title", elapsedTime + "ms");
     },
 
     getErrors: function()

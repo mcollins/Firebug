@@ -27,6 +27,7 @@ FBTestApp.TestRunner =
         FBTestApp.TestSummary.clear();
         FBTestApp.TestProgress.start(tests.length);
 
+        this.startTime = (new Date()).getTime();
         this.onFinishCallback = onFinishCallback;
         this.testQueue = tests;
         this.runTest(this.testQueue.shift());
@@ -101,6 +102,19 @@ FBTestApp.TestRunner =
         else
         {
             FBTestApp.TestProgress.stop();
+
+            // Show ellapsed time when running more than one test (entire suite or group of tests).
+            if (this.startTime)
+            {
+                this.endTime = (new Date()).getTime();
+                var message = "Elapsed Time: " + formatTime(this.endTime - this.startTime);
+                this.startTime = null;
+                FBTestApp.TestSummary.setMessage(message);
+                FBTestApp.FBTest.sysout("FBTest Suite Finished: " + message);
+            }
+
+            // Execute callback to notify about finished test suit (used e.g. for 
+            // Firefox shutdown if test suite is executed from the command line).
             if (this.onFinishCallback)
                 this.onFinishCallback(canceled);
             this.onFinishCallback = null;
