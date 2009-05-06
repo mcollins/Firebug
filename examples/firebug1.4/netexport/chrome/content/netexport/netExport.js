@@ -152,7 +152,7 @@ JSONBuilder.prototype =
 
         // Build entries.
         var self = this;
-        panel.iterateEntries(function(file) {
+        panel.enumerateRequests(function(file) {
             log.entries.push(self.buildEntry(log.pages[0], file));
         })
 
