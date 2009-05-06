@@ -182,7 +182,7 @@ FBTestApp.TestConsole =
                         test.category = "passes";
 
                     group.tests.push(new FBTestApp.Test(group, test.uri,
-                        test.desc, test.category));
+                        test.desc, test.category, test.testPage));
                 }
 
                 // Restart server with new home directory using a file: url

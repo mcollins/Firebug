@@ -182,7 +182,17 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
 
     onCopyAllErrors: function()
     {
-        var text = "";
+        var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+        var currLocale = Firebug.getPref("general.useragent", "locale");
+
+        // Store head info.
+        var text = "Firebug: " + Firebug.version + "\n" + 
+            appInfo.name + ": " + appInfo.version + ", " + 
+            appInfo.platformVersion + ", " + 
+            appInfo.appBuildID + ", " + currLocale + "\n" +
+            "Export Date: " + (new Date()).toGMTString() + 
+            "\n==========================================\n\n";
+
         var groups = FBTestApp.TestConsole.groups;
         for (group in groups)
             text += groups[group].getErrors();
@@ -337,6 +347,17 @@ FBTestApp.TestList = domplate(
     {
         var items = [];
 
+        if (test.testPage)
+        {
+            items.push({
+              label: $STR("fbtest.cmd.Open Test Page"),
+              nol10n: true,
+              command: bindFixed(this.onOpenTestPage, this, test)
+            });
+        }
+
+        items.push("-");
+
         items.push({
           label: $STR("fbtest.cmd.Copy All Errors"),
           nol10n: true,
@@ -345,7 +366,6 @@ FBTestApp.TestList = domplate(
 
         if (test.error)
         {
-            items.push("-");
             items.push({
               label: $STR("fbtest.cmd.Copy Errors"),
               nol10n: true,
@@ -361,6 +381,11 @@ FBTestApp.TestList = domplate(
     {
         copyToClipboard(test.getErrors());
     },
+
+    onOpenTestPage: function(test)
+    {
+        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(FBTestApp.TestServer.path + test.testPage);
+    }
 });
 
 // ************************************************************************************************
@@ -391,7 +416,7 @@ FBTestApp.TestGroup.prototype =
 // ************************************************************************************************
 // Test
 
-FBTestApp.Test = function(group, uri, desc, category)
+FBTestApp.Test = function(group, uri, desc, category, testPage)
 {
     if (category != "passes" && category != "fails")
     {
@@ -405,6 +430,7 @@ FBTestApp.Test = function(group, uri, desc, category)
     this.uri = uri;
     this.desc = desc;
     this.category = category;
+    this.testPage = testPage;
 
     // Used by the test runner.
     this.results = [];
@@ -468,14 +494,14 @@ FBTestApp.Test.prototype =
         if (!this.error)
             return "";
 
-        var text = this.uri + ": " + this.desc + "\n";
+        var text = "[FAILED] " + this.uri + ": " + this.desc + "\n";
         for (var i=0; i<this.results.length; i++)
         {
             var testResult = this.results[i];
             if (testResult.pass)
                 continue;
 
-            text += "- " + testResult.msg + " (ERROR)\n";
+            text += "- " + testResult.msg + "\n";
         }
         return text;
     }
