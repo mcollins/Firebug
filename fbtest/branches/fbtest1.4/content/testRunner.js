@@ -31,7 +31,7 @@ FBTestApp.TestRunner =
         this.testCount = tests.length;
         this.onFinishCallback = onFinishCallback;
         this.testQueue = tests;
-        this.runTest(this.testQueue.shift());
+        this.runTest(this.getNextTest());
     },
 
     runTest: function(testObj)
@@ -98,7 +98,7 @@ FBTestApp.TestRunner =
         if (this.testQueue && this.testQueue.length)
         {
             FBTestApp.TestProgress.update(this.testQueue.length);
-            this.runTest(this.testQueue.shift());
+            this.runTest(this.getNextTest());
         }
         else
         {
@@ -122,6 +122,20 @@ FBTestApp.TestRunner =
                 this.onFinishCallback(canceled);
             this.onFinishCallback = null;
         }
+    },
+
+    getNextTest: function()
+    {
+        var randomSelection = Firebug.getPref(Firebug.prefDomain, 
+            "fbtest.randomTestSelection");
+
+        if (randomSelection)
+        {
+            var index = (Math.floor(Math.random() * this.testQueue.length));
+            return this.testQueue.splice(index, 1)[0];
+        }
+
+        return this.testQueue.shift();
     },
 
     loadTestFrame: function(testURL)

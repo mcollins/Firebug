@@ -4,6 +4,7 @@ pref("extensions.firebug.fbtest.testTimeout", 10000);      // Break timeout for 
 pref("extensions.firebug.fbtest.defaultTestSuite", "");
 pref("extensions.firebug.fbtest.haltOnFailedTest", false);
 pref("extensions.firebug.alwaysOpenTestConsole", false);
+pref("extensions.firebug.fbtest.randomTestSelection", false);
 
 // Support for tracing console
 pref("extensions.firebug.DBG_FBTEST", false);              // Tracing from FBTest internal framework.
