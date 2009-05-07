@@ -92,7 +92,8 @@ function runTest()
                         FBTest.progress("close detached window");
                         detachedFW.close();
 
-                        testAlwaysOpenOption();
+                        //testAlwaysOpenOption();
+                        FBTestFirebug.testDone("openInNewWindow.DONE");
                     });
 
                 }, true);
