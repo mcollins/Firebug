@@ -18,15 +18,18 @@ function runTest()
             FBTest.focus(FW.document.getElementById("fbCommandLine"));
             win.wrappedJSObject.runTest();
 
-            FBTest.progress("close Firebug");
-            FBTestFirebug.closeFirebug();
-            FBTest.progress("open Firebug");
-            FBTestFirebug.openFirebug();
+            FBTest.progress("Toggle Firebug Icon to hide UI");
+            FBTest.Firebug.pressToggleFirebug();  // toggle to minimize
 
-            var logRow = FW.FBL.getElementByClass(panelNode, "logRow logRow-log");
-            var node = FW.FBL.getElementByClass(panelNode, "objectBox objectBox-text");
-            FBTest.compare("Hello From Test!", (node?node.textContent:"null node"), "The log must be still there.");
-            FBTestFirebug.testDone("panelContentAfterReopen.DONE");
+            FBTest.progress("Toggle Firebug Icon to show UI");
+            FBTest.Firebug.pressToggleFirebug();  // toggle to restore
+            setTimeout(function allowUIToUpdate(){
+                var logRow = FW.FBL.getElementByClass(panelNode, "logRow logRow-log");
+                var node = FW.FBL.getElementByClass(panelNode, "objectBox objectBox-text");
+                FBTest.compare("Hello From Test!", (node?node.textContent:"null node"), "The log must be still there.");
+                FBTestFirebug.testDone("panelContentAfterReopen.DONE");
+            });
+
         });
     });
 }
