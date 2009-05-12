@@ -1,14 +1,14 @@
-// Custom timeout for this test.
-window.FBTestTimeout = 25000;
-
 // FBTest entry point
 function runTest()
 {
     FBTest.sysout("search; START");
+    FBTestFirebug.clearCache();
     FBTestFirebug.openNewTab(basePath + "search/netVictim.htm", function(win)
     {
-        FBTestFirebug.enableScriptPanel(function(win)
+        FBTestFirebug.enableNetPanel(function(win)
         {
+            FBTestFirebug.selectPanel("net");
+
             // There is several configurations.
             var testSuite = [];
 
@@ -91,6 +91,7 @@ function executeSearchTest(text, reverse, caseSensitive, responseBody, callback)
         var match = sel.getRangeAt(0);
 
         // OK, we have found the first occurence again, so finish the test.
+        FBTest.sysout("search.match; ", match);
         if (firstMatch && (firstMatch.compareBoundaryPoints(Range.START_TO_START, match) ||
             firstMatch.compareBoundaryPoints(Range.END_TO_END, match)) == 0)
             return callback(counter);
@@ -109,5 +110,5 @@ function executeSearchTest(text, reverse, caseSensitive, responseBody, callback)
     };
 
     doSearch(text, reverse, caseSensitive, responseBody, callback);
-    setTimeout(searchNext, 400);
+    setTimeout(searchNext, 300);
 }
