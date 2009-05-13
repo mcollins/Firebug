@@ -7,6 +7,8 @@ function runTest()
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win) 
         {
+            FBTestFirebug.selectPanel("net");
+
             FBTest.sysout("issue1256.onReload; " + win.location.href);
 
             // Run test implemented on the page.
