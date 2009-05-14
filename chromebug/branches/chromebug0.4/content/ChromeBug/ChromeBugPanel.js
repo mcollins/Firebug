@@ -919,7 +919,6 @@ var XULWindowInfo = {
         browser.persistedState = null;
         browser.chrome =  FirebugChrome;
         browser.showFirebug = true;
-        browser.detached = true;
         browser.webProgress =
             {
                 isLoadingDocument: false // we are already in Firefox so we must not be loading...
@@ -1065,7 +1064,7 @@ var ChromeBugGlobalObserver = {
         }
         else if (topic == 'dom-window-destroyed')  // subject appears to be the nsIDOMWindow with a location that is invalid and closed == true; data null
         {
-        	return; // https://bugzilla.mozilla.org/show_bug.cgi?id=489378
+            return; // https://bugzilla.mozilla.org/show_bug.cgi?id=489378
             if (FBTrace.DBG_WINDOWS)
                 FBTrace.sysout("ChromeBugGlobalObserver found dom-window-destroyed subject:", subject);
 
