@@ -25,8 +25,6 @@ function runTest()
             var chrome = FW.FirebugContext.chrome;
             FBTestFirebug.listenForBreakpoint(chrome, lineNo, function hitBP()
             {
-                var exeline = sourceRow.getAttribute("exeline");
-                FBTest.compare("true", exeline, "The row must be marked as the execution line.");
                 checkWatchPanel();
                 var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
                 FBTest.ok(canContinue, "The continue button is pushable");
