@@ -1,4 +1,6 @@
-FBL.ns(function() { with (FBL) { 
+/* See license.txt for terms of usage */
+
+FBL.ns(function() { with (FBL) {
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -184,10 +186,8 @@ JSONBuilder.prototype =
     {
         var entry = {};
         entry.pageref = page.id;
-        entry.startTime = file.startTime;
-        entry.startedDateTime = "";
-        entry.time = "";
-        entry.elapsedTime = file.endTime - file.startTime;
+        entry.startedDateTime = file.startTime;
+        entry.time = file.endTime - file.startTime;
         entry.sent = 0;
         entry.received = file.size;
         entry.overview = this.buildOverview(file);
@@ -342,7 +342,7 @@ JSONBuilder.prototype =
         var content = {};
         content.contentLength = file.responseText ? file.responseText.length : 0;
         content.compression = ""; //xxxHonza
-        
+
         try 
         {
             content.mimeType = file.request.contentType;
@@ -393,17 +393,12 @@ JSONBuilder.prototype =
         timings.dns = file.resolvingTime - file.startTime;
         timings.connect = file.connectingTime - file.startTime;
         timings.blocked = file.waitingForTime - file.connectingTime;
-        timings.send = ""; //xxxHonza;
+        timings.send = -1; //xxxHonza;
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
 
-        //xxxHonza;
-        timings.resolvingTime = file.resolvingTime;
-        timings.connectingTime = file.connectingTime;
-        timings.waitingForTime = file.waitingForTime;
-        timings.respondedTime = file.respondedTime;
-        timings.contentLoadTime = file.phase.contentLoadTime;
-        timings.windowLoadTime = file.phase.windowLoadTime;
+        timings.DOMContentLoad = file.phase.contentLoadTime - file.startTime;
+        timings.load = file.phase.windowLoadTime - file.startTime;
 
         return timings;
     },
@@ -415,12 +410,12 @@ JSONBuilder.prototype =
             try
             {
                 var major = {}, minor = {};
-    
+
                 if (forRequest)
                     request.getRequestVersion(major, minor);
                 else
                     request.getResponseVersion(major, minor);
-    
+
                 return "HTTP/" + major.value + "." + minor.value;
             }
             catch(err)
