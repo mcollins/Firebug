@@ -115,7 +115,7 @@ FBTestApp.TestConsole =
     shutdown: function()
     {
         FBTestApp.TestServer.stop();
-        Firebug.setPref(Firebug.prefDomain, "fbtest.defaultTestSuite", this.testListPath);
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestSuite", this.testListPath);
 
         if (Firebug.TraceModule)
             Firebug.TraceModule.removeListener(this.TraceListener);
@@ -342,7 +342,7 @@ FBTestApp.TestConsole =
     onToggleHaltOnFailedTest: function()
     {
         this.haltOnFailedTest = !this.haltOnFailedTest;
-        Firebug.setPref(Firebug.prefDomain, "fbtest.haltOnFailedTest", this.haltOnFailedTest);
+        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", this.haltOnFailedTest);
         this.setHaltOnFailedTestButton();
     },
 
