@@ -257,10 +257,11 @@ FBTestApp.TestList = domplate(
     {
         if (isLeftClick(event))
         {
-            var row = getAncestorByClass(event.target, "testListRow");
-            FBTestApp.TestSummary.clear();
-            FBTestApp.TestRunner.runTest(row.repObject);
             cancelEvent(event);
+
+            // Even one test is launched as a test-suite.
+            var row = getAncestorByClass(event.target, "testListRow");
+            FBTestApp.TestRunner.runTests([row.repObject]);
         }
     },
 

@@ -8,6 +8,8 @@ FBTestApp.ns(function() { with (FBL) {
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
+
 // ************************************************************************************************
 // TestRunner
 
@@ -24,6 +26,7 @@ FBTestApp.TestRunner =
     {
         tests = cloneArray(tests);
 
+        FBTestApp.Preferences.save();
         FBTestApp.TestSummary.clear();
         FBTestApp.TestProgress.start(tests.length);
 
@@ -99,29 +102,33 @@ FBTestApp.TestRunner =
         {
             FBTestApp.TestProgress.update(this.testQueue.length);
             this.runTest(this.getNextTest());
+            return;
         }
-        else
+
+        // Otherwise the test-suite (could be also a single test) is finished.
+        FBTestApp.TestProgress.stop();
+
+        // Show ellapsed time when running more than one test (entire suite or group of tests).
+        if (this.startTime)
         {
-            FBTestApp.TestProgress.stop();
+            this.endTime = (new Date()).getTime();
+            var elapsedTime = this.endTime - this.startTime;
+            var message = "Elapsed Time: " + formatTime(elapsedTime) +
+                " (" + this.testCount + " test cases)";
+            this.startTime = null;
 
-            // Show ellapsed time when running more than one test (entire suite or group of tests).
-            if (this.startTime)
-            {
-                this.endTime = (new Date()).getTime();
-                var elapsedTime = this.endTime - this.startTime;
-                var message = "Elapsed Time: " + formatTime(elapsedTime) +
-                    " (" + this.testCount + " test cases)";
-                this.startTime = null;
-                FBTestApp.TestSummary.setMessage(message);
-                FBTestApp.FBTest.sysout("FBTest Suite Finished: " + message);
-            }
-
-            // Execute callback to notify about finished test suit (used e.g. for 
-            // Firefox shutdown if test suite is executed from the command line).
-            if (this.onFinishCallback)
-                this.onFinishCallback(canceled);
-            this.onFinishCallback = null;
+            FBTestApp.TestSummary.setMessage(message);
+            FBTestApp.FBTest.sysout("FBTest Suite Finished: " + message);
         }
+
+        // Preferences could be changed by tests so restore the previous values.
+        FBTestApp.Preferences.restore();
+
+        // Execute callback to notify about finished test suit (used e.g. for
+        // Firefox shutdown if test suite is executed from the command line).
+        if (this.onFinishCallback)
+            this.onFinishCallback(canceled);
+        this.onFinishCallback = null;
     },
 
     getNextTest: function()
@@ -419,6 +426,40 @@ FBTestApp.TestSummary =
         $("passingTests").value = "";
         $("failingTests").value = "";
         $("progressMessage").value = "";
+    }
+}
+
+// ************************************************************************************************
+
+FBTestApp.Preferences =
+{
+    values : [],
+
+    save: function()
+    {
+        this.values = [];
+
+        var preferences = prefs.getChildList(Firebug.prefDomain, {});
+        for (var i=0; i<preferences.length; i++)
+        {
+            var prefName = preferences[i].substr(Firebug.prefDomain.length + 1);
+            if (prefName.indexOf("DBG_") == -1 &&
+                prefName.indexOf("filterSystemURLs") == -1)
+            {
+                this.values[prefName] = Firebug.getPref(Firebug.prefDomain, prefName);
+            }
+        }
+    },
+
+    restore: function()
+    {
+        if (!this.values)
+            return;
+
+        for (var prefName in this.values)
+            Firebug.setPref(Firebug.prefDomain, prefName, this.values[prefName]);
+
+        this.values = [];
     }
 }
 
