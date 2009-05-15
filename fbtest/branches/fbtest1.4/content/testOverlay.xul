@@ -13,15 +13,20 @@
         <command id="cmd_openTestConsole" oncommand="FBTestFirebugOverlay.open()"/>
     </commandset>
 
+    <keyset id="mainKeyset">
+        <key id="key_openTestConsole" key="t" modifiers="shift" command="cmd_openTestConsole" class="fbOnlyKey"/>
+    </keyset>
+
     <!-- Overlay for Firebug icon menu -->
     <menupopup id="fbFirebugMenuPopup">
-        <menuseparator/>
         <menuitem id="menu_openTestConsole" label="Open Test Console"
-            command="cmd_openTestConsole"/>
+            command="cmd_openTestConsole" insertbefore="menu_aboutSeparator"
+            key="key_openTestConsole"/>
 
         <menu id="FirebugMenu_Options">
             <menupopup id="FirebugMenu_OptionsPopup">
-                <menuitem id="FirebugMenu_Options_alwaysOpenTestConsole" 
+                <menuitem id="FirebugMenu_Options_alwaysOpenTestConsole"
+                    insertbefore="menu_optionsSeparator"
                     type="checkbox" label="Always Open Test Console"
                     oncommand="FirebugChrome.onToggleOption(this)"
                     option="alwaysOpenTestConsole"/>
