@@ -367,11 +367,23 @@ JSONBuilder.prototype =
         if (!file.fromCache)
             return cache;
 
-        cache.beforeRequest.cacheEntry = file.cacheEntry;
+        cache.beforeRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
 
-        //xxxHonza: get URL from the cache
-        cache.afterRequest.cacheEntry = [];
+        //xxxHonza: There is no such info yet in the Net panel.
+        //cache.afterRequest.cacheEntry = {};
 
+        return cache;
+    },
+
+    buildCacheEntry: function(cacheEntry)
+    {
+        var cache = {};
+        cache.expires = findHeader(cacheEntry, "Expires");
+        cache.lastModification = findHeader(cacheEntry, "Last Modified");
+        cache.lastCacheUpdate = ""; //xxxHonza
+        cache.lastAccess = findHeader(cacheEntry, "Last Fetched");
+        cache.eTag = ""; //xxxHonza
+        cache.hitCount = findHeader(cacheEntry, "Fetch Count");
         return cache;
     },
 
@@ -439,6 +451,7 @@ function isURLEncodedFile(file, text)
 
 function findHeader(headers, name)
 {
+    name = name.toLowerCase();
     for (var i = 0; headers && i < headers.length; ++i)
     {
         if (headers[i].name.toLowerCase() == name)
