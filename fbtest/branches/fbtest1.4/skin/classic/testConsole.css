@@ -28,6 +28,10 @@ body {
     list-style-image: url("chrome://firebug/skin/trace/clear.png");
 }
 
+#haltOnFailedTest {
+    list-style-image: url("chrome://fbtest/skin/downloadButtons-aero.png");
+    -moz-image-region: rect(0px 48px 16px 32px);
+}
 #refreshList {
     list-style-image: url("chrome://browser/skin/Toolbar-small.png");
     -moz-image-region: rect(0px 64px 16px 48px);
