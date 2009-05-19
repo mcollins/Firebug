@@ -109,7 +109,15 @@ this.openNewTab = function(url, callback)
     var onLoadURLInNewTab = function(event)
     {
         browser.removeEventListener("load", onLoadURLInNewTab, true);
-        setTimeout(function() { callback(browser.contentWindow); }, 100);
+        setTimeout(
+            function() {
+                try {
+                    callback(browser.contentWindow);
+                } catch (exc) {
+                    FBTest.sysout("runTest FAILS "+exc, exc);
+                    FBTest.ok(false, "runTest FAILS "+exc);
+                }
+            }, 100);
     }
     browser.addEventListener("load", onLoadURLInNewTab, true);
     return newTab;
