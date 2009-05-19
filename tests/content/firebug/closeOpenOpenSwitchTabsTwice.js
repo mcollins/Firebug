@@ -15,9 +15,11 @@ function runTest()
 
         var openedPage = basePath + "firebug/OpenFirebugOnThisPage.html";
 
+        FBTest.progress("Open window that will have Firebug");
+
         FBTestFirebug.openNewTab(openedPage, function(win)
         {
-            FBTest.progress("Open Firebug UI in this new tab");
+            FBTest.progress("Now open Firebug UI in this new tab");
             FBTestFirebug.openFirebug();
 
             var theFirebuggedTab = tabbrowser.selectedTab;
