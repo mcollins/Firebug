@@ -10,6 +10,9 @@ pref("extensions.logging.enabled", true);
 //Turn off default browser check
 pref("browser.shell.checkDefaultBrowser", false);
 
+// Allow dynamic reloading of xul
+pref("nglayout.debug.disable_xul_cache", true);
+
 pref("extensions.chromebug.outerWidth", 0);
 pref("extensions.chromebug.outerHeight", 0);
 pref("extensions.chromebug.openalways", false);
