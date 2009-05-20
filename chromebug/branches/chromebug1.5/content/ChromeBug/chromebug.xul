@@ -252,7 +252,7 @@
                 <spacer flex="1"/>
             </vbox>
 
-            <toolbarbutton label="(no filter)" id="cbPackageList" locationProvider="Firebug.Chromebug.PackageListLocator;"
+            <toolbarbutton label="(no filter)" id="cbPackageList" locationProvider="Chromebug.packageListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>

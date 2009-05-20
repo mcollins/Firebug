@@ -301,7 +301,7 @@ Chromebug.globalScopeInfos =
         if(!FirebugContext)
                 FirebugContext = context;  // pkg: currently focused context
 
-        Firebug.Chromebug.PackageList.assignContextToPackage(context);
+        Chromebug.packageList.assignContextToPackage(context);
 
         Firebug.loadedContext(context);
         if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("GlobalScopeInfos add "+ gs.kindOfInfo+" for context "+context.uid+", "+context.getName() );
@@ -691,87 +691,10 @@ Chromebug.XULWindowInfo = {
         if (Chromebug.XULWindowInfo.stateReloader)  // TODO this should be per xul_window
             outerDOMWindow.addEventListener("DOMContentLoaded", Chromebug.XULWindowInfo.stateReloader, true);
 
-        context.domWindowWatcher = function(event)
-        {
-            // We've just loaded all of the content for an nsiDOMWindow. We need to create a context for it.
-            var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
-            var domWindow = event.target.defaultView;
-
-            if (domWindow == outerDOMWindow)
-            {
-                if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("context.domWindowWatcher found outerDOMWindow", outerDOMWindow.location);
-                return;
-            }
-
-            if (domWindow.location.protocol != "chrome:")  // the chrome in ChromeBug
-                return;
-
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("context.domWindowWatcher, new window in outerDOMWindow", outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
-
-            var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
-            if (context)
-            {
-                // then we had one, say from a Frame
-                 if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
-                Chromebug.globalScopeInfos.remove(context.globalScope);
-            }
-            else
-            {
-                var context = Firebug.Chromebug.getOrCreateContext(domWindow); // subwindow
-                if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
-            }
-            var gs = new ContainedDocument(xul_window, context);
-            Chromebug.globalScopeInfos.add(context, gs);
-        }
         // 'true' for capturing, so all of the sub-window loads also trigger
-        outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.domWindowWatcher, context), true);
+        outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
 
-        context.destructContext = function(event)
-        {
-            if (event.target instanceof HTMLDocument)  // we are only interested in Content windows
-                var domWindow = event.target.defaultView;
-            else if (event.target instanceof XULElement || event.target instanceof XULDocument)
-            {
-            //FBTrace.sysout("context.destructContext event.currentTarget.location: "+event.currentTarget.location+"\n");
-            //FBTrace.sysout("context.destructContext for context.window: "+this.window.location+" event", event);
-
-                FBTrace.sysout("context.destructContext for context.window: "+this.window.location+" event.target "+event.target+" tag:"+event.target.tagName+"\n");
-                var document = event.target.ownerDocument;
-                if (document)
-                    var domWindow = document.defaultView;
-                else
-                {
-                    FBTrace.sysout("context.destructContext cannont find document for context.window: "+this.window.location, event.target);
-                    return;   // var domWindow = event.target.ownerDocument.defaultView;
-                }
-            }
-
-            if (domWindow)
-            {
-                if (domWindow instanceof nsIDOMWindow)
-                {
-                    var context = Firebug.Chromebug.getContextByGlobal(domWindow);
-                    if (context)
-                    {
-                        FBTrace.sysout("Firebug.Chromebug.destructContext found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
-                        if (context.globalScope instanceof ContainedDocument && context.globalScope.getDocumentType() == "Content")
-                        {
-                            Chromebug.globalScopeInfos.remove(context.globalScope);
-                            remove(Firebug.Chromebug.contexts, context);
-                            Firebug.destroyContext(context);
-                        }
-                        return;
-                    }
-                    FBTrace.sysout("ChromeBug destructContext found no context for event.currentTarget.location"+event.currentTarget.location, domWindow);
-                    return;
-                }
-                FBTrace.sysout("ChromeBug destructContext domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
-            }
-            FBTrace.sysout("ChromeBug destructContext found no DOMWindow for event.target", event.target);
-        }
-        //outerDOMWindow.addEventListener("unload", bind(context.destructContext, context), true);
+        //outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), true);
 
         outerDOMWindow.addEventListener("keypress", bind(this.keypressToBreakIntoWindow, this, context), true);
 
@@ -1140,7 +1063,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Debugger.addListener(this);
 
-        Firebug.Chromebug.PackageList.addListener(Firebug.Chromebug.AllFilesList);  // how changes to the package filter are sensed by AllFilesList
+        Chromebug.packageList.addListener(Firebug.Chromebug.AllFilesList);  // how changes to the package filter are sensed by AllFilesList
 
         Firebug.TraceModule.addListener(this);
 
@@ -1264,11 +1187,11 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         if (previousState.pkgName)
         {
-            var pkg = Firebug.Chromebug.PackageList.getPackageByName(previousState.pkgName);
+            var pkg = Chromebug.packageList.getPackageByName(previousState.pkgName);
             if (pkg)
             {
-                Firebug.Chromebug.PackageList.setCurrentLocation(pkg.getContextDescription(context));
-                FBTrace.sysout("restoreFilter found "+previousState.pkgName+" and set PackageList to ", Firebug.Chromebug.PackageList.getCurrentLocation());
+                Chromebug.packageList.setCurrentLocation(pkg.getContextDescription(context));
+                FBTrace.sysout("restoreFilter found "+previousState.pkgName+" and set PackageList to ", Chromebug.packageList.getCurrentLocation());
                 return pkg;
             }
             else  // we had a package named, but its not available (yet?)
@@ -1294,7 +1217,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var sourceLinkJSON = sourceLink.toJSON();
         }
 
-        var pkgDescription = Firebug.Chromebug.PackageList.getCurrentLocation();
+        var pkgDescription = Chromebug.packageList.getCurrentLocation();
 
         var previousContextJSON = "{"+
             " \"contextName\": \"" + context.getName() +"\"," +
@@ -1526,7 +1449,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (context.browser)
             delete context.browser.detached;
 
-        this.PackageList.deleteContext(context);
+        Chromebug.packageList.deleteContext(context);
         GlobalScopeInfos.destroy(context);
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromeBugPanel.destroyContext ---------------------- for context:"+context.uid+" :"+context.getName()+"\n");
@@ -1743,7 +1666,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     onSourceFileCreated: function(context, sourceFile)
     {
         var description = Firebug.Chromebug.parseURI(sourceFile.href);
-        var pkg = Firebug.Chromebug.PackageList.getOrCreatePackage(description);
+        var pkg = Chromebug.packageList.getOrCreatePackage(description);
         pkg.appendContext(context);
         if (FBTrace.DBG_SOURCEFILES)
             FBTrace.sysout("onSourceFileCreated sourceFile "+sourceFile.href+" in  "+pkg.name);
@@ -2256,7 +2179,7 @@ Firebug.Chromebug.Package.prototype =
 // chrome://<packagename>/<part>/<file>
 // A list of packages each with a context list
 //
-Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
+Chromebug.packageList = extend(new Firebug.Listener(),
 {
     //  key name of package, value Package object containing contexts
     pkgs: {},
@@ -2409,11 +2332,11 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
                 FirebugContext = context;
 
             //if (FBTrace.DBG_LOCATIONS)
-                FBTrace.sysout("Firebug.Chromebug.PackageList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
+                FBTrace.sysout("Chromebug.packageList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
 
             Chromebug.XULWindowInfo.selectContext(context);
 
-            Firebug.Chromebug.PackageList.setCurrentLocation(filteredContext);
+            Chromebug.packageList.setCurrentLocation(filteredContext);
        }
        else
        {
@@ -2423,9 +2346,9 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
 
 });
 
-Firebug.Chromebug.PackageListLocator = function(xul_element)
+Chromebug.packageListLocator = function(xul_element)
 {
-    var list = Firebug.Chromebug.PackageList;
+    var list = Chromebug.packageList;
     return connectedList(xul_element, list);
 }
 
