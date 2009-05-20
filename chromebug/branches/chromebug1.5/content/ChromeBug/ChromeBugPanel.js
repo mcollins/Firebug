@@ -1,5 +1,22 @@
 /* See license.txt for terms of usage */
 
+/*
+ * This file has a lot of experimental code, partly because I am unsure about the model and partly because so
+ * much of this is unknown to anyone.
+ *
+ * For the most part Chromebug is a wrapper around Firebug. You can see from the UI it is Firebug with an extra
+ * top toolbar.
+ *
+ * The biggest difference is that Firebug deals with neatly contained windows whose life time in contained with in
+ * browser.xul. Chromebug deals multiple XUL windows and components, some with lifetimes similar to Chromebug itself.
+ *
+ * Firebug creates a meta-data object called "context" for each web page. (So it incorrectly mixes iframe info)
+ * Chromebug creates a context for each nsIDOMWondow plus one for components.
+ *
+ * Most of Chromebug works on any XUL application. A few uses of DTD or CSS files from 'browser' causes problems
+ * however.
+ *
+ */
 
 FBL.ns(function chromebug() { with (FBL) {
 
@@ -132,7 +149,7 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
             return docShellTypeNames[typeIndex];
         }
         else
-            FBTrace.dumpProperties("Chromebug.getDocumentType, docShell is not a nsIDocShellTreeItem:", docShell);
+            FBTrace.sysout("Chromebug.getDocumentType, docShell is not a nsIDocShellTreeItem:", docShell);
     },
 
     getDocumentLocation: function()
@@ -231,8 +248,8 @@ FrameGlobalScopeInfo.prototype = extend (HiddenWindow.prototype,
         }
         catch (exc)
         {
-            FBTrace.dumpProperties("FrameGlobalScopeInfo location.href fails, status:"+(this.context.window?this.context.window.status:"no window"), exc);
-            FBTrace.dumpProperties("FrameGlobalScopeInfo global", this.global);
+            FBTrace.sysout("FrameGlobalScopeInfo location.href fails, status:"+(this.context.window?this.context.window.status:"no window"), exc);
+            FBTrace.sysout("FrameGlobalScopeInfo global", this.global);
         }
         return {path: path, name: name}
     },
@@ -264,6 +281,7 @@ JSContextScopeInfo.prototype = extend (FrameGlobalScopeInfo.prototype,
         return {path: this.jsClassName, name: " "+this.jsContextTag };
     }
 });
+
 var GlobalScopeInfos =
 {
     allGlobalScopeInfos: [],
@@ -378,7 +396,7 @@ var GlobalScopeInfos =
 }
 
 //************************************************************************
-//  XUL Window list, visible global scopes containing
+//  XUL Windows
 
 var XULWindowInfo = {
 
@@ -418,7 +436,7 @@ var XULWindowInfo = {
         }
         else
         {
-            FBTrace.dumpProperties("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
+            FBTrace.sysout("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
             FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+(domWindow instanceof nsIDOMWindow));
         }
     },
@@ -464,7 +482,7 @@ var XULWindowInfo = {
                 if (xul_windows_domWindow)
                     FBTrace.sysout("getXULWindowByRootDOMWindow comparing "+xul_windows_domWindow.location.href+" with "+domWindow.location.href+"\n");
                 else
-                    FBTrace.dumpProperties("getXULWindowByRootDOMWindow no domWindow for xul_window #"+i, xul_window);
+                    FBTrace.sysout("getXULWindowByRootDOMWindow no domWindow for xul_window #"+i, xul_window);
             }
 
             if (xul_windows_domWindow == domWindow)
@@ -494,7 +512,7 @@ var XULWindowInfo = {
         }
         catch (exc)
         {
-            FBTrace.dumpProperties("Firebug.Chromebug.getDOMWindowByDocShell FAILS", exc);
+            FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell FAILS", exc);
         }
     },
 
@@ -541,7 +559,7 @@ var XULWindowInfo = {
               }
               catch (exc)
               {
-                FBTrace.dumpProperties("ChromeBugPanels.eachDocShell FAILED", exc);
+                FBTrace.sysout("ChromeBugPanels.eachDocShell FAILED", exc);
               }
         }
         return true;
@@ -584,32 +602,26 @@ var XULWindowInfo = {
         if (this.fullVersion)
             document.title = "Chromebug "+this.fullVersion;
 
-        if (Firebug.Fireclipse)
-        {
-            FBTrace.sysout("Chromebug running with Fireclipse "+Firebug.Fireclipse.observerURL);
-        }
-        else
-            FBTrace.sysout("Chromebug running WITHOUT Fireclipse");
-    },
+     },
 
     watchXULWindows: function()
     {
+        // get the existing windows first
         var enumerator = windowMediator.getXULWindowEnumerator(null);
         while(enumerator.hasMoreElements())
         {
             var xul_window = enumerator.getNext();
             if (xul_window instanceof nsIXULWindow)
-            {
                 this.addXULWindow(xul_window);
-            }
         }
         try
         {
+            // then watch for new ones
             windowMediator.addListener(this);  // removed in this.shutdown
         }
         catch(exc)
         {
-            FBTrace.dumpProperties("Firebug.Chromebug.xulWindowInfo initialize fails", exc);
+            FBTrace.sysout("Firebug.Chromebug.xulWindowInfo initialize fails", exc);
         }
     },
 
@@ -621,7 +633,7 @@ var XULWindowInfo = {
         }
         catch (exc)
         {
-            FBTrace.dumpProperties("Firebug.Chromebug.xulWindowInfo shutdown fails", exc);
+            FBTrace.sysout("Firebug.Chromebug.xulWindowInfo shutdown fails", exc);
         }
     },
 
@@ -642,21 +654,19 @@ var XULWindowInfo = {
         try
         {
             if (xul_window instanceof nsIXULWindow)
-            {
                 this.addXULWindow(xul_window);
-            }
         }
         catch (e)
         {
-            FBTrace.dumpProperties("chromebug-onOpenWindow-FAILS", e);
-            FBTrace.dumpProperties("chromebug-onOpenWindow-xul_window", xul_window);
+            FBTrace.sysout("chromebug-onOpenWindow-FAILS", e);
+            FBTrace.sysout("chromebug-onOpenWindow-xul_window", xul_window);
         }
     },
 
     addXULWindow: function(xul_window)
     {
         if (!xul_window.docShell)
-            FBTrace.dumpProperties("Firebug.Chromebug.addXULWindow no docShell", xul_window);
+            FBTrace.sysout("Firebug.Chromebug.addXULWindow no docShell", xul_window);
 
         var outerDOMWindow = this.getDOMWindowByDocShell(xul_window.docShell);
 
@@ -665,11 +675,12 @@ var XULWindowInfo = {
 
         if (outerDOMWindow.location.href == "chrome://fb4cb/content/traceConsole.xul")
             return; // don't track our own tracing console.
-        window.dump("outerDOMWindow.location.href "+outerDOMWindow.location.href+"\n");
+
+        //window.dump("outerDOMWindow.location.href "+outerDOMWindow.location.href+"\n");
 
         this.xulWindows.push(xul_window);
         var newTag = "tag-"+this.xulWindowTagSeed++;
-        this.xulWindowTags.push(newTag);
+        this.xulWindowTags.push(newTag);  // co-indexed arrays
 
         var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);  // addXULWindow
         var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
@@ -722,7 +733,7 @@ var XULWindowInfo = {
             else if (event.target instanceof XULElement || event.target instanceof XULDocument)
             {
             //FBTrace.sysout("context.destructContext event.currentTarget.location: "+event.currentTarget.location+"\n");
-            //FBTrace.dumpProperties("context.destructContext for context.window: "+this.window.location+" event", event);
+            //FBTrace.sysout("context.destructContext for context.window: "+this.window.location+" event", event);
 
                 FBTrace.sysout("context.destructContext for context.window: "+this.window.location+" event.target "+event.target+" tag:"+event.target.tagName+"\n");
                 var document = event.target.ownerDocument;
@@ -730,7 +741,7 @@ var XULWindowInfo = {
                     var domWindow = document.defaultView;
                 else
                 {
-                    FBTrace.dumpProperties("context.destructContext cannont find document for context.window: "+this.window.location, event.target);
+                    FBTrace.sysout("context.destructContext cannont find document for context.window: "+this.window.location, event.target);
                     return;   // var domWindow = event.target.ownerDocument.defaultView;
                 }
             }
@@ -751,12 +762,12 @@ var XULWindowInfo = {
                         }
                         return;
                     }
-                    FBTrace.dumpProperties("ChromeBug destructContext found no context for event.currentTarget.location"+event.currentTarget.location, domWindow);
+                    FBTrace.sysout("ChromeBug destructContext found no context for event.currentTarget.location"+event.currentTarget.location, domWindow);
                     return;
                 }
-                FBTrace.dumpProperties("ChromeBug destructContext domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
+                FBTrace.sysout("ChromeBug destructContext domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
             }
-            FBTrace.dumpProperties("ChromeBug destructContext found no DOMWindow for event.target", event.target);
+            FBTrace.sysout("ChromeBug destructContext found no DOMWindow for event.target", event.target);
         }
         //outerDOMWindow.addEventListener("unload", bind(context.destructContext, context), true);
 
@@ -838,7 +849,7 @@ var XULWindowInfo = {
         }
         catch(e)
         {
-            FBTrace.dumpProperties("ChromeBugPanel.onClose fails ", e);
+            FBTrace.sysout("ChromeBugPanel.onClose fails ", e);
         }
     },
 
@@ -892,7 +903,7 @@ var XULWindowInfo = {
             catch (exc)
             {
                 var ssEnabled = prefs.getBoolPref("browser.sessionstore.enabled");
-                FBTrace.dumpProperties("Firebug.Chromebug.reloadWindow FAILS with browser.sessionstore.enabled= "+ssEnabled, exc);
+                FBTrace.sysout("Firebug.Chromebug.reloadWindow FAILS with browser.sessionstore.enabled= "+ssEnabled, exc);
             }
 
             FBTrace.sysout("ChromeBug reloadWindow closing outerDOMWindow\n");
@@ -1023,7 +1034,7 @@ ChromeBugProgressListener.prototype =
     },
     onLinkIconAvailable : function(aBrowser)
     {
-        FBTrace.dumpProperties("ChromeBugProgressListener.onLinkIconAvailable: "+this.traceWindow(webProgress, request), aBrowser);
+        FBTrace.sysout("ChromeBugProgressListener.onLinkIconAvailable: "+this.traceWindow(webProgress, request), aBrowser);
     },
 };
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1052,7 +1063,7 @@ var ChromeBugGlobalObserver = {
             }
             catch(exc)
             {
-                FBTrace.dumpProperties("ChromeBugGlobalObserver notify console opener FAILED ", exc);
+                FBTrace.sysout("ChromeBugGlobalObserver notify console opener FAILED ", exc);
             }
         }
         else if (topic == 'domwindowclosed') // Apparently this event comes before the unload event on the DOMWindow
@@ -1334,7 +1345,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         catch(exc)
         {
-            FBTrace.dumpProperties("onUnloadTopWindow FAILS", exc);
+            FBTrace.sysout("onUnloadTopWindow FAILS", exc);
         }
     },
 
@@ -1363,7 +1374,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("showPanel module:"+this.uid+" panel:"+panel.uid+" location:"+panel.location+"\n");
             }
         } catch(e) {
-            FBTrace.dumpProperties("chromebug.showPanel error", e);
+            FBTrace.sysout("chromebug.showPanel error", e);
         }
     },
 
@@ -2048,7 +2059,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("Firebug.Chromebug.cleanUpXULExplorer prefs\n");
         }
         else
-            FBTrace.dumpProperties("Firebug.Chromebug.cleanUpXULExplorer no data for subject", subject);
+            FBTrace.sysout("Firebug.Chromebug.cleanUpXULExplorer no data for subject", subject);
     },
 
     openXPCOMExplorer: function()
@@ -2093,7 +2104,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("Firebug.Chromebug.avoidStrict prefs\n");
         }
         else
-            FBTrace.dumpProperties("CHromeBug.avoidStrict no data for subject", subject);
+            FBTrace.sysout("CHromeBug.avoidStrict no data for subject", subject);
     },
 
     createDirectory: function(parent, name)
@@ -2110,7 +2121,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         var directoryService = Components.classes["@mozilla.org/file/directory_service;1"].
             getService(Components.interfaces.nsIProperties);
-        FBTrace.dumpProperties("dumpDirectory begins\n", directoryService);
+        FBTrace.sysout("dumpDirectory begins\n", directoryService);
         if (directoryService instanceof Components.interfaces.nsIProperties)
         {
             FBTrace.sysout("dumpDirectory finds an nsIProperties\n");
@@ -2240,7 +2251,7 @@ window.timeOut = function(title)
             {
                 var context = globalScope.getContext();
                 if (!context)
-                    FBTrace.dumpProperties("onSelectLocation globalScope", globalScope);
+                    FBTrace.sysout("onSelectLocation globalScope", globalScope);
                 if (FBTrace.DBG_CHROMEBUG)
                 {
                     FBTrace.sysout("onSelectLocation globalScope:",globalScope.getObjectLocation());
@@ -2254,7 +2265,7 @@ window.timeOut = function(title)
            }
            else
            {
-               FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+               FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
            }
         },
     }
@@ -2512,7 +2523,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
        }
        else
        {
-           FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+           FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
        }
     },
 
@@ -2525,6 +2536,7 @@ Firebug.Chromebug.PackageListLocator = function(xul_element)
 }
 
 //**************************************************************************
+// The implements the list on the right side of the top bar with the prefix "context:"
 
 Firebug.Chromebug.ContextList =
 {
@@ -2600,7 +2612,7 @@ Firebug.Chromebug.ContextList =
         }
         else
         {
-            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+            FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
         }
     },
 }
@@ -2622,7 +2634,7 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
             {
                 var xul_windows = Firebug.Chromebug.xulWindowInfo.getXULWindowTags();
                 if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.dumpProperties("WindowList getLocationList ", xul_windows);
+                    FBTrace.sysout("WindowList getLocationList ", xul_windows);
                 return xul_windows;
             },
 
@@ -2655,7 +2667,7 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
                     return {path: win.location.href, name: index+". "+win.document.title};
                 else
                 {
-                    FBTrace.dumpProperties("Firebug.Chromebug.WindowList.getObjectDescription xul_window:",xul_window);
+                    FBTrace.sysout("Firebug.Chromebug.WindowList.getObjectDescription xul_window:",xul_window);
                     return {path: "xul_window", name: "no docShell"};
                 }
             },
@@ -2674,7 +2686,7 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
                     event.currentTarget.location = xul_window_tag;
                 }
                 else
-                    FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+                    FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
             }
         }
         xul_element.addEventListener("selectObject", Firebug.Chromebug.WindowList.onSelectLocation, false);  // where is the remove?
@@ -2682,65 +2694,65 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
     return this.WindowList;
 }
 
-        Firebug.Chromebug.InterfaceList = {
+Firebug.Chromebug.InterfaceList = {
 
-            getLocationList: function()
+        getLocationList: function()
+        {
+            var ifaces = [];
+            for(iface in Components.interfaces)
             {
-                var ifaces = [];
-                for(iface in Components.interfaces)
-                {
-                    ifaces.push(iface);
-                }
-                return ifaces;
-            },
-
-            getDefaultLocation: function()
-            {
-                var locations = this.getLocationList();
-                if (locations && locations.length > 0) return locations[0];
-            },
-
-            reLowerCase: /([a-z]*)(.*)/,
-
-            getObjectLocation: function(iface)
-            {
-                var dot = iface.lastIndexOf('.');
-                if (dot > 0)
-                    return iface.substr(dot+1);
-                else
-                    return iface;
-            },
-
-            getObjectDescription: function(iface)
-            {
-                var ifaceName = this.getObjectLocation(iface);
-                var prefix = "";
-                var prefixFinder = this.reLowerCase.exec(ifaceName);
-                if (prefixFinder)
-                {
-                    return {path: "Components.interfaces."+prefixFinder[1], name: prefixFinder[2]};
-                }
-                else
-                    return iface;
-            },
-
-            onSelectLocation: function(event)
-            {
-                var ifaceName = event.currentTarget.repObject;
-                if (ifaceName)
-                {
-                    var docBase = "http://www.oxymoronical.com/experiments/apidocs/interface/";
-                    var url = docBase + ifaceName;
-                    openWindow( "navigator:browser", url );
-                    window.open(url, "navigator:browser");
-                    FirebugChrome.select(Components.interfaces[ifaceName]);
-                }
-                else
-                    FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
-                if (Components.interfaces[ifaceName] instanceof Components.interfaces.nsIJSIID)
-                    FBTrace.dumpProperties("onSelectLocation "+ifaceName, Components.interfaces[ifaceName]);
+                ifaces.push(iface);
             }
+            return ifaces;
+        },
+
+        getDefaultLocation: function()
+        {
+            var locations = this.getLocationList();
+            if (locations && locations.length > 0) return locations[0];
+        },
+
+        reLowerCase: /([a-z]*)(.*)/,
+
+        getObjectLocation: function(iface)
+        {
+            var dot = iface.lastIndexOf('.');
+            if (dot > 0)
+                return iface.substr(dot+1);
+            else
+                return iface;
+        },
+
+        getObjectDescription: function(iface)
+        {
+            var ifaceName = this.getObjectLocation(iface);
+            var prefix = "";
+            var prefixFinder = this.reLowerCase.exec(ifaceName);
+            if (prefixFinder)
+            {
+                return {path: "Components.interfaces."+prefixFinder[1], name: prefixFinder[2]};
+            }
+            else
+                return iface;
+        },
+
+        onSelectLocation: function(event)
+        {
+            var ifaceName = event.currentTarget.repObject;
+            if (ifaceName)
+            {
+                var docBase = "http://www.oxymoronical.com/experiments/apidocs/interface/";
+                var url = docBase + ifaceName;
+                openWindow( "navigator:browser", url );
+                window.open(url, "navigator:browser");
+                FirebugChrome.select(Components.interfaces[ifaceName]);
+            }
+            else
+                FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+            if (Components.interfaces[ifaceName] instanceof Components.interfaces.nsIJSIID)
+                FBTrace.sysout("onSelectLocation "+ifaceName, Components.interfaces[ifaceName]);
         }
+    }
 
 Firebug.Chromebug.InterfaceListLocator = function(xul_element)
 {
@@ -2901,7 +2913,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
         if (description)
             this.doSelect(description);
         else
-            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+            FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
     },
 
     doSelect: function(description)
@@ -3112,7 +3124,7 @@ Firebug.Chromebug.CategoryListLocator = function(xul_element)
                     Firebug.Console.log(categorySlashEntry+": "+value); // category/entry
                 }
                 else
-                    FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+                    FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
             }
         }
         xul_element.addEventListener("selectObject", Firebug.Chromebug.CategoryList.onSelectLocation, false);
@@ -3219,7 +3231,7 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
                 FirebugChrome.showContext(object.context);
                 FirebugChrome.selectPanel("HTML");
 
-                FBTrace.dumpProperties("Firebug.Chromebug.OverlayList onSelectLocation object", object);
+                FBTrace.sysout("Firebug.Chromebug.OverlayList onSelectLocation object", object);
             }
         }
         xul_element.addEventListener("selectObject", Firebug.Chromebug.OverlayList.onSelectLocation, false);
@@ -3253,7 +3265,7 @@ Firebug.Chromebug.ComponentList = extend(new SourceFileListBase(), {
         if (object)
             FirebugChrome.select(object, "script", null, true);  // SourceFile
         else
-            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+            FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
     }
 });
 
@@ -3387,7 +3399,7 @@ Firebug.Chromebug.JSContextList = {
         }
         else
         {
-            FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+            FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
         }
     }
 }
@@ -3456,7 +3468,7 @@ Firebug.Chromebug.PathListLocator = function(xul_element)
                     FBL.openWindow(null, URL.spec);
                 }
                 else
-                    FBTrace.dumpProperties("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+                    FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
             }
         }
         xul_element.addEventListener("selectObject", Firebug.Chromebug.PathList.onSelectLocation, false);
@@ -3492,7 +3504,7 @@ function getFrameWindow(frame)
     catch (exc)
     {
         if (FBTrace.DBG_ERRORS && FBTrace.DBG_WINDOWS)
-            FBTrace.dumpProperties("ChromeBugPanel getFrameWindow fails: ", exc);  // FBS.DBG_WINDOWS
+            FBTrace.sysout("ChromeBugPanel getFrameWindow fails: ", exc);  // FBS.DBG_WINDOWS
         return null;
     }
 }
