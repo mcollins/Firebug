@@ -93,7 +93,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             var context = Firebug.Chromebug.getOrCreateContext(domWindow); // subwindow
             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
         }
-        var gs = new ContainedDocument(xul_window, context);
+        var gs = new Chromebug.ContainedDocument(context.xul_window, context);
         Chromebug.globalScopeInfos.add(context, gs);
     },
     unLoadHandler: function(event)
@@ -124,7 +124,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 if (context)
                 {
                     FBTrace.sysout("Firebug.Chromebug.destructContext found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
-                    if (context.globalScope instanceof ContainedDocument && context.globalScope.getDocumentType() == "Content")
+                    if (context.globalScope instanceof Chromebug.ContainedDocument && context.globalScope.getDocumentType() == "Content")
                     {
                         Chromebug.globalScopeInfos.remove(context.globalScope);
                         remove(Firebug.Chromebug.contexts, context);

@@ -211,7 +211,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
             var xulWindowInfo = Firebug.Chromebug.xulWindowInfo;
             var context = (win ? Firebug.Chromebug.getContextByGlobal(win) : null);
 
-            if (context && context.globalScope instanceof ContainedDocument)
+            if (context && context.globalScope instanceof Chromebug.ContainedDocument)
             {
                 if (context.window.Firebug)  // Don't debug, let Firebug do it.
                     return false;
@@ -292,9 +292,9 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         if (sourceFile.isEvent() && !this.showEvents)
             return false;
 
-        var description = Firebug.Chromebug.parseURI(sourceFile.href);
+        var description = Chromebug.parseURI(sourceFile.href);
 
-        if (Firebug.Chromebug.AllFilesList.isWantedDescription(description))
+        if (Chromebug.allFilesList.isWantedDescription(description))
             return true;
         else
             return false;

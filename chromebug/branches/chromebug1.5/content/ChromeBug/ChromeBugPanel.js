@@ -107,7 +107,7 @@ GlobalScopeInfo.prototype =
 
 // Global Scopes - Visible
 
-function ContainedDocument(xul_window, context)
+Chromebug.ContainedDocument = function(xul_window, context)
 {
     this.xul_window = xul_window;
     this.context = context;
@@ -122,7 +122,7 @@ function ChromeRootGlobalScopeInfo(xul_window, context)
     this.kindOfInfo = "ChromeRoot";
 };
 
-ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
+Chromebug.ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
 {
 
     //**********************************************************
@@ -199,7 +199,7 @@ ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
 
 });
 
-ChromeRootGlobalScopeInfo.prototype = ContainedDocument.prototype;
+ChromeRootGlobalScopeInfo.prototype = Chromebug.ContainedDocument.prototype;
 
 function HiddenWindow(domWindow, context)
 {
@@ -352,7 +352,7 @@ Chromebug.globalScopeInfos =
                                 context = Firebug.Chromebug.getOrCreateContext(domWindow);
                         }
 
-                        var gs = new ContainedDocument(xul_window, context);
+                        var gs = new Chromebug.ContainedDocument(xul_window, context);
                         Chromebug.globalScopeInfos.add(context, gs);
                     }
                 }
@@ -685,6 +685,7 @@ Chromebug.XULWindowInfo = {
         this.xulWindowTags.push(newTag);  // co-indexed arrays
 
         var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);  // addXULWindow
+        context.xul_window = xul_window;
         var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
         Chromebug.globalScopeInfos.add(context, gs);
 
@@ -1063,7 +1064,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Debugger.addListener(this);
 
-        Chromebug.packageList.addListener(Firebug.Chromebug.AllFilesList);  // how changes to the package filter are sensed by AllFilesList
+        Chromebug.packageList.addListener(Chromebug.allFilesList);  // how changes to the package filter are sensed by AllFilesList
 
         Firebug.TraceModule.addListener(this);
 
@@ -1172,7 +1173,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         });
         if (context)
         {
-            Firebug.Chromebug.ContextList.setCurrentLocation( context );
+            Chromebug.contextList.setCurrentLocation( context );
             FBTrace.sysout("restoreState found previousState and set context "+context.getName());
             return context;
         }
@@ -1467,13 +1468,13 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            var startupObserver = Firebug.Chromebug.getStartupObserver();
+            var startupObserver = Chromebug.getStartupObserver();
             var jsdState = startupObserver.jsdState;
             if (!jsdState || !jsdState._chromebug)
             {
                 setTimeout(function waitForFBTrace()
                 {
-                    var startupObserver = Firebug.Chromebug.getStartupObserver();
+                    var startupObserver = Chromebug.getStartupObserver();
                     FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
                 }, 1500);
                 return;
@@ -1665,7 +1666,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     onSourceFileCreated: function(context, sourceFile)
     {
-        var description = Firebug.Chromebug.parseURI(sourceFile.href);
+        var description = Chromebug.parseURI(sourceFile.href);
         var pkg = Chromebug.packageList.getOrCreatePackage(description);
         pkg.appendContext(context);
         if (FBTrace.DBG_SOURCEFILES)
@@ -1693,7 +1694,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     {
                         var filename = event.target.text;
 
-                        var found = Firebug.Chromebug.AllFilesList.eachSourceFileDescription(function findMatching(d)
+                        var found = Chromebug.allFilesList.eachSourceFileDescription(function findMatching(d)
                         {
                             var testName = d.href;
                             //window.dump(filename +"=?="+testName+"\n");
@@ -1734,7 +1735,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         if (context)
         {
-            Firebug.Chromebug.ContextList.setCurrentLocation( context );
+            Chromebug.contextList.setCurrentLocation( context );
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set location bar to "+context.getName());
         }
@@ -1888,8 +1889,8 @@ Firebug.Chromebug = extend(Firebug.Module,
     reload: function(skipCache)
     {
         // get the window we plan to kill
-        var current_location = Firebug.Chromebug.ContextList.getCurrentLocation();
-        FBTrace.sysout("Firebug.Chromebug.reload current_location", Firebug.Chromebug.ContextList.getObjectLocation(current_location));
+        var current_location = Chromebug.contextList.getCurrentLocation();
+        FBTrace.sysout("Firebug.Chromebug.reload current_location", Chromebug.contextList.getObjectLocation(current_location));
         if (current_location && current_location.getContainingXULWindow)
         {
             var xul_window = current_location.getContainingXULWindow();
@@ -2103,7 +2104,7 @@ function connectedList(xul_element, list)
     return list;
 }
 
-Firebug.Chromebug.Package = function(name, kind)
+Chromebug.Package = function(name, kind)
 {
     this.name = name;
     this.kind = kind;
@@ -2113,7 +2114,7 @@ Firebug.Chromebug.Package = function(name, kind)
     FBTrace.sysout("Create Package "+name+"("+kind+")");
 }
 
-Firebug.Chromebug.Package.prototype =
+Chromebug.Package.prototype =
 {
     appendContext: function(context)
     {
@@ -2224,7 +2225,7 @@ Chromebug.packageList = extend(new Firebug.Listener(),
         var kind = description.kind;
 
         if (!this.pkgs.hasOwnProperty(pkgName))
-            this.pkgs[pkgName] = new Firebug.Chromebug.Package(pkgName, kind);
+            this.pkgs[pkgName] = new Chromebug.Package(pkgName, kind);
 
         return this.pkgs[pkgName];
     },
@@ -2232,7 +2233,7 @@ Chromebug.packageList = extend(new Firebug.Listener(),
     assignContextToPackage: function(context)  // a window context owned by a package
     {
         var url = context.getName();
-        var description = Firebug.Chromebug.parseURI(url);
+        var description = Chromebug.parseURI(url);
         if (description && description.path)
         {
             var pkg = this.getOrCreatePackage(description);
@@ -2355,7 +2356,7 @@ Chromebug.packageListLocator = function(xul_element)
 //**************************************************************************
 // The implements the list on the right side of the top bar with the prefix "context:"
 
-Firebug.Chromebug.ContextList =
+Chromebug.contextList =
 {
 
     getCurrentLocation: function() // a context in a package
@@ -2392,7 +2393,7 @@ Firebug.Chromebug.ContextList =
     getObjectDescription: function(context)
     {
         var title = (context.window ? context.getTitle() : null);
-        var d = Firebug.Chromebug.parseURI(context.getName());
+        var d = Chromebug.parseURI(context.getName());
 
         d = {
            path: d?d.path:"parseURI fails",
@@ -2415,7 +2416,7 @@ Firebug.Chromebug.ContextList =
                 FirebugContext = context;
 
             if (FBTrace.DBG_LOCATIONS)
-                FBTrace.sysout("Firebug.Chromebug.ContextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
+                FBTrace.sysout("Chromebug.contextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
 
             Chromebug.XULWindowInfo.selectContext(context);
 
@@ -2434,13 +2435,13 @@ Firebug.Chromebug.ContextList =
     },
 }
 
-Firebug.Chromebug.ContextListLocator = function(xul_element)
+Chromebug.contextListLocator = function(xul_element)
 {
-    var list = Firebug.Chromebug.ContextList;
+    var list = Chromebug.contextList;
     return connectedList(xul_element, list);
 }
 
-Firebug.Chromebug.WindowListLocator = function(xul_element)
+Chromebug.windowListLocator = function(xul_element)
 {
     if (!this.WindowList)
     {
@@ -2484,7 +2485,7 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
                     return {path: win.location.href, name: index+". "+win.document.title};
                 else
                 {
-                    FBTrace.sysout("Firebug.Chromebug.WindowList.getObjectDescription xul_window:",xul_window);
+                    FBTrace.sysout("Chromebug.windowList.getObjectDescription xul_window:",xul_window);
                     return {path: "xul_window", name: "no docShell"};
                 }
             },
@@ -2499,19 +2500,19 @@ Firebug.Chromebug.WindowListLocator = function(xul_element)
                     Chromebug.XULWindowInfo.selectContext(context);
 
                     if (FBTrace.DBG_CHROMEBUG)
-                        FBTrace.sysout("Firebug.Chromebug.WindowList.onSelectLocation context:", context.getName());
+                        FBTrace.sysout("Chromebug.windowList.onSelectLocation context:", context.getName());
                     event.currentTarget.location = xul_window_tag;
                 }
                 else
                     FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
             }
         }
-        xul_element.addEventListener("selectObject", Firebug.Chromebug.WindowList.onSelectLocation, false);  // where is the remove?
+        xul_element.addEventListener("selectObject", Chromebug.windowList.onSelectLocation, false);  // where is the remove?
     }
     return this.WindowList;
 }
 
-Firebug.Chromebug.InterfaceList = {
+Chromebug.interfaceList = {
 
         getLocationList: function()
         {
@@ -2571,9 +2572,9 @@ Firebug.Chromebug.InterfaceList = {
         }
     }
 
-Firebug.Chromebug.InterfaceListLocator = function(xul_element)
+Chromebug.interfaceListLocator = function(xul_element)
 {
-    return connectedList(xul_element, Firebug.Chromebug.InterfaceList);
+    return connectedList(xul_element, Chromebug.interfaceList);
 }
 
 function SourceFileListBase()
@@ -2752,7 +2753,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
 
 });
 
-Firebug.Chromebug.parseWebURI = function(uri)
+Chromebug.parseWebURI = function(uri)
 {
     var m = reWeb.exec(uri);
     if(m)
@@ -2762,7 +2763,7 @@ Firebug.Chromebug.parseWebURI = function(uri)
     }
 }
 
-Firebug.Chromebug.parseSystemURI = function(uri)
+Chromebug.parseSystemURI = function(uri)
 {
     if (isSystemURL(uri))
     {
@@ -2771,7 +2772,7 @@ Firebug.Chromebug.parseSystemURI = function(uri)
     }
 }
 
-Firebug.Chromebug.parseNoWindowURI = function(uri)
+Chromebug.parseNoWindowURI = function(uri)
 {
     if (uri.indexOf('noWindow')==0)
     {
@@ -2780,34 +2781,34 @@ Firebug.Chromebug.parseNoWindowURI = function(uri)
     }
 }
 
-Firebug.Chromebug.parseURI = function(URI)
+Chromebug.parseURI = function(URI)
 {
     if (!URI || Firebug.Chromebug.avoidSelf(URI))
         return null;
 
-    var description = Firebug.Chromebug.ComponentList.parseURI(URI);
+    var description = Chromebug.componentList.parseURI(URI);
     if (!description)
-        description = Firebug.Chromebug.ExtensionList.parseURI(URI);
+        description = Chromebug.extensionList.parseURI(URI);
     if (!description)
-        description = Firebug.Chromebug.ModuleList.parseURI(URI);
+        description = Chromebug.moduleList.parseURI(URI);
     if (!description)
-        description = Firebug.Chromebug.parseSystemURI(URI);
+        description = Chromebug.parseSystemURI(URI);
     if (!description)
-        description = Firebug.Chromebug.parseWebURI(URI);
+        description = Chromebug.parseWebURI(URI);
     if (!description)
-        description = Firebug.Chromebug.parseNoWindowURI(URI);
+        description = Chromebug.parseNoWindowURI(URI);
 
     if (!description)
     {
         if (FBTrace.SOURCEFILES)
-            FBTrace.sysout("Firebug.Chromebug.parseURI: no match for "+URI);
+            FBTrace.sysout("Chromebug.parseURI: no match for "+URI);
         description = {path:"mystery", name:URI, kind: "mystery", pkgName: "unparsable"};
     }
 
     return description;
 }
 
-Firebug.Chromebug.ExtensionList = extend( new SourceFileListBase(), {
+Chromebug.extensionList = extend( new SourceFileListBase(), {
 
     kind: "extension",
 
@@ -2840,17 +2841,17 @@ Firebug.Chromebug.ExtensionList = extend( new SourceFileListBase(), {
 
 });
 
-Firebug.Chromebug.ExtensionListLocator = function(xul_element)
+Chromebug.extensionListLocator = function(xul_element)
 {
-    return connectedList(xul_element, Firebug.Chromebug.ExtensionList);
+    return connectedList(xul_element, Chromebug.extensionList);
 }
 
 
-Firebug.Chromebug.AllFilesList = extend(new SourceFileListBase(), {
+Chromebug.allFilesList = extend(new SourceFileListBase(), {
 
     kind: "all",
 
-    parseURI: Firebug.Chromebug.parseURI,
+    parseURI: Chromebug.parseURI,
 
 
     // **************************************************************************
@@ -2861,11 +2862,11 @@ Firebug.Chromebug.AllFilesList = extend(new SourceFileListBase(), {
         FBTrace.sysout("onSetLocation current: "+current.pkg.name);
         var noFilter = packageList.getDefaultPackageName();
         if (current.pkg.name == noFilter)
-            Firebug.Chromebug.AllFilesList.setFilter(null)
+            Chromebug.allFilesList.setFilter(null)
         else
         {
             var targetName = current.pkg.name;
-            Firebug.Chromebug.AllFilesList.setFilter( function byPackageName(description)
+            Chromebug.allFilesList.setFilter( function byPackageName(description)
             {
                 return (description && (targetName == description.pkgName) );
             });
@@ -2874,19 +2875,19 @@ Firebug.Chromebug.AllFilesList = extend(new SourceFileListBase(), {
 
 });
 
-Firebug.Chromebug.AllFilesListLocator = function(xul_element)
+Chromebug.allFilesListLocator = function(xul_element)
 {
     if (FBTrace.DBG_LOCATIONS)
         FBTrace.sysout("AllFilesListLocator called");
-    return connectedList(xul_element, Firebug.Chromebug.AllFilesList);
+    return connectedList(xul_element, Chromebug.allFilesList);
 }
 
 
-Firebug.Chromebug.CategoryListLocator = function(xul_element)
+Chromebug.categoryListLocator = function(xul_element)
 {
-    if (!Firebug.Chromebug.CategoryList)
+    if (!Chromebug.categoryList)
     {
-        Firebug.Chromebug.CategoryList = {
+        Chromebug.categoryList = {
             elementBoundTo: xul_element,
 
             getLocationList: function()
@@ -2935,25 +2936,25 @@ Firebug.Chromebug.CategoryListLocator = function(xul_element)
                 var categorySlashEntry = event.currentTarget.repObject;
                 if (categorySlashEntry)
                 {
-                    var d = Firebug.Chromebug.CategoryList.getObjectDescription(categorySlashEntry);
+                    var d = Chromebug.categoryList.getObjectDescription(categorySlashEntry);
                     Firebug.Console.log(d);
-                    var value = Firebug.Chromebug.CategoryList.catman.getCategoryEntry(d.path, d.name);
+                    var value = Chromebug.categoryList.catman.getCategoryEntry(d.path, d.name);
                     Firebug.Console.log(categorySlashEntry+": "+value); // category/entry
                 }
                 else
                     FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
             }
         }
-        xul_element.addEventListener("selectObject", Firebug.Chromebug.CategoryList.onSelectLocation, false);
+        xul_element.addEventListener("selectObject", Chromebug.categoryList.onSelectLocation, false);
     }
-    return Firebug.Chromebug.CategoryList;
+    return Chromebug.categoryList;
 }
 
-Firebug.Chromebug.OverlayListLocator = function(xul_element)
+Chromebug.overlayListLocator = function(xul_element)
 {
-    if (!Firebug.Chromebug.OverlayList)
+    if (!Chromebug.overlayList)
     {
-        Firebug.Chromebug.OverlayList = {
+        Chromebug.overlayList = {
             elementBoundTo: xul_element,
 
             getOverlayList: function(href)
@@ -3006,7 +3007,7 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
 
             getObjectDescription: function(overlay)
             {
-                return Firebug.Chromebug.parseURI(overlay.href);
+                return Chromebug.parseURI(overlay.href);
             },
 
             getBrowserForOverlay: function(url)
@@ -3036,11 +3037,11 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
 
                 if (!object.context)
                 {
-                    var description = Firebug.Chromebug.parseURI(object.href);
+                    var description = Chromebug.parseURI(object.href);
                     if (description)
                     {
-                        var pkg = Firebug.Chromebug.ContextList.getPackageByName(description.path);
-                        var browser = Firebug.Chromebug.OverlayList.getBrowserForOverlay(object.href);
+                        var pkg = Chromebug.contextList.getPackageByName(description.path);
+                        var browser = Chromebug.overlayList.getBrowserForOverlay(object.href);
                         var context = pkg.createContextInPackage(win, browser);
                         object.context = context;
                     }
@@ -3048,16 +3049,16 @@ Firebug.Chromebug.OverlayListLocator = function(xul_element)
                 FirebugChrome.showContext(object.context);
                 FirebugChrome.selectPanel("HTML");
 
-                FBTrace.sysout("Firebug.Chromebug.OverlayList onSelectLocation object", object);
+                FBTrace.sysout("Chromebug.overlayList onSelectLocation object", object);
             }
         }
-        xul_element.addEventListener("selectObject", Firebug.Chromebug.OverlayList.onSelectLocation, false);
+        xul_element.addEventListener("selectObject", Chromebug.overlayList.onSelectLocation, false);
     }
-    return Firebug.Chromebug.OverlayList;
+    return Chromebug.overlayList;
 }
 
 
-Firebug.Chromebug.ComponentList = extend(new SourceFileListBase(), {
+Chromebug.componentList = extend(new SourceFileListBase(), {
       kind: "component",
 
     parseURI: function(URIString)
@@ -3086,12 +3087,12 @@ Firebug.Chromebug.ComponentList = extend(new SourceFileListBase(), {
     }
 });
 
-Firebug.Chromebug.ComponentListLocator = function(xul_element)
+Chromebug.componentListLocator = function(xul_element)
 {
-    return connectedList(xul_element, Firebug.Chromebug.ComponentList);
+    return connectedList(xul_element, Chromebug.componentList);
 }
 
-Firebug.Chromebug.ModuleList = extend( new SourceFileListBase(), {
+Chromebug.moduleList = extend( new SourceFileListBase(), {
       kind: "module",
 
     parseURI: function(URIString)
@@ -3112,13 +3113,13 @@ Firebug.Chromebug.ModuleList = extend( new SourceFileListBase(), {
 
 });
 
-Firebug.Chromebug.ModuleListLocator = function(xul_element)
+Chromebug.moduleListLocator = function(xul_element)
 {
-    return connectedList(xul_element, Firebug.Chromebug.ModuleList);
+    return connectedList(xul_element, Chromebug.moduleList);
 }
 
 // A list of the jsContexts built by enumerating them dynamically.
-Firebug.Chromebug.JSContextList = {
+Chromebug.jsContextList = {
 
     getLocationList: function()
     {
@@ -3164,7 +3165,7 @@ Firebug.Chromebug.JSContextList = {
         if (Firebug.Chromebug.avoidSelf(URI))
             var d = {path:"avoided chromebug", name: URI};
         if (!d)
-            var d = Firebug.Chromebug.parseURI( URI );
+            var d = Chromebug.parseURI( URI );
         if (!d)
             d = {path:"unparsable", name: this.getObjectLocation(jscontext)};
         d.name = d.name +" ("+jscontext.tag+")";
@@ -3210,7 +3211,7 @@ Firebug.Chromebug.JSContextList = {
             }
             else
             {
-                FBTrace.sysout("Firebug.Chromebug.JSContextList onSelectLocation: FAILED to no globalObject in jscontext\n");
+                FBTrace.sysout("Chromebug.jsContextList onSelectLocation: FAILED to no globalObject in jscontext\n");
                 FirebugChrome.select(object, "script", null, true);  // jscontext
             }
         }
@@ -3220,18 +3221,18 @@ Firebug.Chromebug.JSContextList = {
         }
     }
 }
-Firebug.Chromebug.JSContextListLocator = function(xul_element)
+Chromebug.jsContextListLocator = function(xul_element)
 {
-     return connectedList(xul_element, Firebug.Chromebug.JSContextList);
+     return connectedList(xul_element, Chromebug.jsContextList);
 }
 
-Firebug.Chromebug.PathListLocator = function(xul_element)
+Chromebug.pathListLocator = function(xul_element)
 {
     var ds = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties);
 
-    if (!Firebug.Chromebug.PathList)
+    if (!Chromebug.pathList)
     {
-        Firebug.Chromebug.PathList = {
+        Chromebug.pathList = {
             elementBoundTo: xul_element,
             directoryService: ds,
             strings: ['ProfD', 'DefProfRt', 'UChrm', 'DefRt', 'PrfDef', 'APlugns', 'AChrom','ComsD', 'Home', 'TmpD', 'ProfLD', 'resource:app', 'Desk', 'Progs', 'BMarks', 'DLoads', 'UStor'],
@@ -3288,21 +3289,21 @@ Firebug.Chromebug.PathListLocator = function(xul_element)
                     FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
             }
         }
-        xul_element.addEventListener("selectObject", Firebug.Chromebug.PathList.onSelectLocation, false);
+        xul_element.addEventListener("selectObject", Chromebug.pathList.onSelectLocation, false);
     }
-    return Firebug.Chromebug.PathList;
+    return Chromebug.pathList;
 }
 
-Firebug.Chromebug.getStartupObserver = function()
+Chromebug.getStartupObserver = function()
 {
     var chromebugAppStartClass = Components.classes["@getfirebug.com/chromebug-startup-observer;1"];
     var startupObserver = chromebugAppStartClass.getService(Ci.nsISupports);
     return startupObserver.wrappedJSObject;
 }
 
-Firebug.Chromebug.dumpFileTrack = function()
+Chromebug.dumpFileTrack = function()
 {
-    var startupObserver = Firebug.Chromebug.getStartupObserver();
+    var startupObserver = Chromebug.getStartupObserver();
     fbs.dumpFileTrack(startupObserver.getAllTrackedFiles());
 }
 

@@ -115,7 +115,7 @@
         <command id="cmd_imAnExpert" oncommand="Firebug.Chromebug.toggleIntroductionTrue()" />
         <command id="cmd_clearTracePanel" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)"/>
         <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.TraceModule.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
-        <command id="cmd_cbDumpFileTrack" oncommand="Firebug.Chromebug.dumpFileTrack()"/>
+        <command id="cmd_cbDumpFileTrack" oncommand="Chromebug.dumpFileTrack()"/>
         <command id="cmd_cbUnitTest" oncommand="Firebug.Chromebug.unitTest()"/>
     </commandset>
 
@@ -149,30 +149,30 @@
         <toolbox id="cbExplorerToolBox">
 
             <toolbar id="cbExplorerToolbar" >
-                <toolbarbutton label="Categories" id="cbCategoryList" locationProvider="Firebug.Chromebug.CategoryListLocator;"
+                <toolbarbutton label="Categories" id="cbCategoryList" locationProvider="Chromebug.categoryListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="XPCOM Categories"
                             command="cmd_toggleXPCOMBrowser"/>
-                <toolbarbutton label="Extensions" id="cbExtensionList" locationProvider="Firebug.Chromebug.ExtensionListLocator;"
+                <toolbarbutton label="Extensions" id="cbExtensionList" locationProvider="Chromebug.extensionListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="Extensions visible via Javascript"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-            <toolbarbutton label="Overlays" id="cbOverlayList" locationProvider="Firebug.Chromebug.OverlayListLocator;"
+            <toolbarbutton label="Overlays" id="cbOverlayList" locationProvider="Chromebug.overlayListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="Overlays on current windon"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-            <toolbarbutton label="Components" id="cbComponentList" locationProvider="Firebug.Chromebug.ComponentListLocator;"
+            <toolbarbutton label="Components" id="cbComponentList" locationProvider="Chromebug.componentListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="Components visible via Javascript"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-            <toolbarbutton label="JSContexts" id="cbJSContextList" locationProvider="Firebug.Chromebug.JSContextListLocator;"
+            <toolbarbutton label="JSContexts" id="cbJSContextList" locationProvider="Chromebug.jsContextListLocator;"
                             class="toolbar-text-menubutton"
                             tooltiptext="jsdIContext objects"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-            <toolbarbutton label="Interfaces" id="cbInterfaceList" locationProvider="Firebug.Chromebug.InterfaceListLocator;"
+            <toolbarbutton label="Interfaces" id="cbInterfaceList" locationProvider="Chromebug.interfaceListLocator;"
                            class="toolbar-text-menubutton"  tooltiptext="XPCOM Interfaces"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-            <toolbarbutton label="Paths" id="cbPathList" locationProvider="Firebug.Chromebug.PathListLocator;"
+            <toolbarbutton label="Paths" id="cbPathList" locationProvider="Chromebug.pathListLocator;"
                            class="toolbar-text-menubutton"  tooltiptext="Files and Directories"
                            labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
                             <!--  All toolbarbuttons also need XBL hook in chromebug.css -->
