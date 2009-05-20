@@ -538,6 +538,9 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
         var bp = row.getAttribute('breakpoint');
         FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set");
 
+        var exeline = row.getAttribute("exeline");
+        FBTest.compare("true", exeline, "The row must be marked as the execution line.");
+
         FBTest.progress("Remove breakpoint");
         var panel = chrome.getSelectedPanel();
         panel.toggleBreakpoint(lineNo);
