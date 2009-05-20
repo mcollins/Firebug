@@ -1065,7 +1065,7 @@ var ChromeBugGlobalObserver = {
         }
         else if (topic == 'dom-window-destroyed')  // subject appears to be the nsIDOMWindow with a location that is invalid and closed == true; data null
         {
-        	return;
+            return;
             if (FBTrace.DBG_WINDOWS)
                 FBTrace.sysout("ChromeBugGlobalObserver found dom-window-destroyed subject:", subject);
 
@@ -3477,11 +3477,6 @@ Firebug.Chromebug.dumpFileTrack = function()
     fbs.dumpFileTrack(startupObserver.getAllTrackedFiles());
 }
 
-Firebug.Chromebug.unitTest = function()
-{
-    this.toggleIntroduction();
-    $('content').setAttribute("src", "chrome://unit/content/start.html");
-}
 function getFrameWindow(frame)
 {
    // if (debuggers.length < 1)  // too early, frame.eval will crash FF2

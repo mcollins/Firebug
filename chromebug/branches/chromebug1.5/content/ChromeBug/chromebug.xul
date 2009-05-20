@@ -136,7 +136,6 @@
         <command id="cmd_clearTracePanel" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)"/>
         <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.TraceModule.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
         <command id="cmd_cbDumpFileTrack" oncommand="Firebug.Chromebug.dumpFileTrack()"/>
-        <command id="cmd_cbUnitTest" oncommand="Firebug.Chromebug.unitTest()"/>
         <command id="cmd_platformCc" oncommand="Firebug.Platform.Cc()"/>
     </commandset>
 
@@ -184,8 +183,6 @@
                             key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole"/>
                     <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
-                    <menuitem id="menu_chromebugUnitTest" command="cmd_cbUnitTest"
-                            key="key_cbUnitTest" label="Start Firebug Unit Test"/>
                     <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
                 </menupopup>
             </menu>
