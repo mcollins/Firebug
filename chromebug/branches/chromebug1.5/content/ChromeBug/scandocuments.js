@@ -2,7 +2,7 @@
 
 FBL.ns(function() { with (FBL) {
 
-Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
+Chromebug.DocumentScanner = extend(Firebug.Module,
 {
     dispatchName: "documentScanner",
     scanningDocuments: false,
@@ -225,7 +225,7 @@ Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
             FirebugChrome.keyCodeListen("DOWN", isControl, bindFixed(this.inspectNodeBy, this, "down"), true),
         ];
 
-        Firebug.Chromebug.xulWindowInfo.iterateXULWindows( bind(function(subWin)
+        Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
         {
             // If you change the bubbling/capture option on these, do so on the removeEventListener as well.
             subWin.document.addEventListener("mouseover", this.onScanningDocumentsMouseOver, true); // trigger on capture
@@ -245,7 +245,7 @@ Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
             delete this.keyListeners;
         }
 
-        Firebug.Chromebug.xulWindowInfo.iterateXULWindows( bind(function(subWin)
+        Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
         {
             try
             {
@@ -264,14 +264,14 @@ Firebug.Chromebug.DocumentScanner = extend(Firebug.Module,
     {
         // We have to remove the click listener in a second phase because if we remove it
         // after the mousedown, we won't be able to cancel clicked links
-        Firebug.Chromebug.xulWindowInfo.iterateXULWindows( bind(function(subWin)
+        Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
         {
             subWin.document.removeEventListener("click", this.onScanningDocumentsClick, true);
         }, this));
     },
 });
 
-Firebug.registerModule(Firebug.Chromebug.DocumentScanner);
+Firebug.registerModule(Chromebug.DocumentScanner);
 
 // ************************************************************************************************
 

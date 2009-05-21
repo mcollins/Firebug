@@ -3291,7 +3291,7 @@ Chromebug.pathListLocator = function(xul_element)
         }
         xul_element.addEventListener("selectObject", Chromebug.pathList.onSelectLocation, false);
     }
-    return Chromebug.pathList;
+    return Chromebug.List;
 }
 
 Chromebug.getStartupObserver = function()

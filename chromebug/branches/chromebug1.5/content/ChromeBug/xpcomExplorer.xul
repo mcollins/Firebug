@@ -62,6 +62,9 @@
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/plugin.js"/>
 
+<!-- Temp, need to refactor to get the listy things out of the module things -->
+    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
+
     <script type="application/x-javascript" src="chrome://chromebug/content/categoryBrowser.js"/>
 
     <commandset id="mainCommandSet">
@@ -110,7 +113,7 @@
         <command id="cmd_toggleChromeList" oncommand="Firebug.Chromebug.toggleChromeList()"
                  checked="false"/>
         <command id="cmd_search" oncommand="Firebug.Search.focus(FirebugContext)" />
-        <command id="cmd_toggleScanningDocuments" oncommand="Firebug.Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
+        <command id="cmd_toggleScanningDocuments" oncommand="Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
         <command id="cmd_toggleIntroduction" oncommand="Firebug.Chromebug.toggleIntroduction()" />
         <command id="cmd_imAnExpert" oncommand="Firebug.Chromebug.toggleIntroductionTrue()" />
         <command id="cmd_clearTracePanel" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)"/>

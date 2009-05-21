@@ -1,7 +1,8 @@
 /* See license.txt for terms of usage */
 window.dump("categoryBrowser.js loading \n");
+try {
 FBL.ns(function() { with (FBL) {
-	window.dump("categoryBrowser.js running \n");
+    window.dump("categoryBrowser.js running \n");
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const nsISupportsCString = Ci.nsISupportsCString;
@@ -179,3 +180,7 @@ Firebug.registerModule(Firebug.Chromebug.CategoryBrowser);
 // ************************************************************************************************
 
 }});
+} catch(exc)
+{
+    window.dump("categorybrowser fails "+exc+"\n");
+}
