@@ -462,7 +462,7 @@ inspectorCanvas =
             this.mouseY = eventOrElt.layerY;
 
             elt = doc.elementFromPoint(this.mouseX, this.mouseY);
-            if(/frame/i.test(elt.nodeName))
+            if(/[^i]frame/i.test(elt.nodeName))
             {
                 rect = elt.getBoundingClientRect();
                 this.offsetX = rect.left;
@@ -690,7 +690,7 @@ inspectorCanvas =
             elt = doc.elementFromPoint(this.mouseX, this.mouseY),
             rect = getRectTRBLWH(elt);
             
-        if(/frame/i.test(elt.nodeName))
+        if(/[^i]frame/i.test(elt.nodeName))
         {
             this.offsetX = rect.left;
             this.offsetY = rect.top;
