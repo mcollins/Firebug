@@ -361,15 +361,15 @@ JSONBuilder.prototype =
     buildCache: function(file)
     {
         var cache = {};
-        cache.beforeRequest = {};
-        cache.afterRequest = {};
 
         if (!file.fromCache)
             return cache;
 
+        cache.beforeRequest = {};
         cache.beforeRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
 
         //xxxHonza: There is no such info yet in the Net panel.
+        //cache.afterRequest = {};
         //cache.afterRequest.cacheEntry = {};
 
         return cache;
