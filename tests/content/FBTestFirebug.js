@@ -335,7 +335,7 @@ this.isPanelTabDisabled = function(name)
         var role = child.getAttribute("role");
         if (role == 'tab' && label == name)
         {
-            FBTest.sysout("isPanelTablDisabled found "+child.getAttribute('aria-disabled'));
+            FBTest.sysout("isPanelTablDisabled found role tab and label "+label+" has "+child.getAttribute('aria-disabled'));
             return child.getAttribute('aria-disabled'); // "true" or "false"
         }
     }
@@ -406,7 +406,7 @@ this.clickContinueButton = function(breakOnNext, chrome)
 {
     // xxxHonza: why the click doesn't work? Is is because the execution context
     // is stopped at a breakpoint?
-    // xxxJJB: I guess because the continue button is active that the time of the call.
+    // xxxJJB: I guess because the continue button is not active that the time of the call.
     if (!chrome)
         chrome = FW.FirebugChrome;
 
