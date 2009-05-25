@@ -434,7 +434,7 @@ Chromebug.XULWindowInfo = {
                 return navi;
             }
             else
-                FBTrace.dumpStack("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
+                FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
         }
         else
         {
@@ -510,7 +510,7 @@ Chromebug.XULWindowInfo = {
                     FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell xul_win.docShell has no nsIInterfaceRequestor\n");
             }
             else
-                FBTrace.dumpStack("Firebug.Chromebug.getDOMWindowByDocShell xul_win has no docShell");
+                FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell xul_win has no docShell");
         }
         catch (exc)
         {
@@ -857,7 +857,6 @@ Chromebug.XULWindowInfo = {
         var browser = document.createElement("browser");  // in chromebug.xul
         // Ok, this looks dubious. Firebug has a context for every browser (tab), we have a tabbrowser but don;t use the browser really.
         browser.persistedState = null;
-        browser.chrome =  FirebugChrome;
         browser.showFirebug = true;
         browser.detached = true;
         browser.webProgress =
@@ -1068,7 +1067,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.TraceModule.addListener(this);
 
-        if (FBTrace.DBG_CHROMEBUG) FBTrace.dumpStack("Chromebug.initialize module "+this.uid+" Firebug.Debugger:"+Firebug.Debugger.fbListeners.length+" window.location="+window.location+"\n");
+        if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("Chromebug.initialize module "+this.uid+" Firebug.Debugger:"+Firebug.Debugger.fbListeners.length+" window.location="+window.location+"\n");
     },
 
     initializeUI: function(detachArgs)
@@ -1210,7 +1209,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         this.stopRestoration();
 
-        var panel = context.chrome.getSelectedPanel();
+        var panel = Firebug.chrome.getSelectedPanel();
         if (panel && panel.getSourceLink)
         {
             var sourceLink = panel.getSourceLink();
@@ -1321,7 +1320,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         var browser = Chromebug.XULWindowInfo.createBrowser(global);
 
         if (!FirebugChrome)
-            FBTrace.dumpStack("FirebugChrome is null??");
+            FBTrace.sysout("FirebugChrome is null??");
 
         var browser = Chromebug.XULWindowInfo.createBrowser(global);
         var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
@@ -1708,7 +1707,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                                     var line = event.target.getAttribute("lineNumber");
                                     var link = new SourceLink(filename, line, "js" );
                                     FBTrace.sysout("Chromebug click on traceConsole isAStackFrame SourceLink:"+(link instanceof SourceLink), {target: event.target, href: filename, lineNo:line, link:link});
-                                    context.chrome.select(link);
+                                    Firebug.chrome.select(link);
                                     return true;
                                 }
                                 else

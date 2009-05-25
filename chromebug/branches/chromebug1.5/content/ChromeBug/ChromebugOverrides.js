@@ -107,7 +107,7 @@ var ChromeBugOverrides = {
     {
         if (!node)
         {
-            FBTrace.dumpStack("null node to getChildObject");
+            FBTrace.sysout("null node to getChildObject");
             return;
         }
 var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+index+" prev="+(previousSibling?previousSibling.tagName:"null")+" result:";
@@ -155,11 +155,11 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
 
                  result = node.contentDocument.documentElement;  // (the node's).(type 9 document).(HTMLElement)
                  /*
-                 FBTrace.dumpProperties("ChromeBugPanel.getChildObject for no prev yes contentDocument this.embeddedBrowserParents: ", this.embeddedBrowserParents);
-                 FBTrace.dumpProperties("ChromeBugPanel.getChildObject for no prev yes contentDocument node.parentNode: ", node.parentNode);
-                 FBTrace.dumpProperties("ChromeBugPanel.getChildObject for no prev yes contentDocument node: ", node);
-                 FBTrace.dumpProperties("ChromeBugPanel.getChildObject for no prev yes contentDocument node.contentDocument: ", node.contentDocument);
-                 FBTrace.dumpProperties("ChromeBugPanel.getChildObject for no prev yes contentDocument documentElement: ", result);
+                 FBTrace.sysout("ChromeBugPanel.getChildObject for no prev yes contentDocument this.embeddedBrowserParents: ", this.embeddedBrowserParents);
+                 FBTrace.sysout("ChromeBugPanel.getChildObject for no prev yes contentDocument node.parentNode: ", node.parentNode);
+                 FBTrace.sysout("ChromeBugPanel.getChildObject for no prev yes contentDocument node: ", node);
+                 FBTrace.sysout("ChromeBugPanel.getChildObject for no prev yes contentDocument node.contentDocument: ", node.contentDocument);
+                 FBTrace.sysout("ChromeBugPanel.getChildObject for no prev yes contentDocument documentElement: ", result);
                  */
             }
             else if (Firebug.showWhitespaceNodes)
@@ -224,7 +224,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
         }
         catch (exc)
         {
-            FBTrace.dumpProperties("ChromebugPanel.supportsWindow FAILS", exc);
+            FBTrace.sysout("ChromebugPanel.supportsWindow FAILS", exc);
             return false;
         }
     },

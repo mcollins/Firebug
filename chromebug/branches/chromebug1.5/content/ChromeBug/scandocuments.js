@@ -44,7 +44,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             this.detachClickInspectListeners(win);
         }
         else
-            FBTrace.dumpProperties("onScanningDocuments no defaultView", event.currentTarget);
+            FBTrace.sysout("onScanningDocuments no defaultView", event.currentTarget);
         cancelEvent(event);  // inspector sees nothing or if on same target, 'click' and redundant detach occurs
     },
 
@@ -138,7 +138,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
 
         if (FBTrace.DBG_INSPECT)
             FBTrace.sysout("ChromeBug startScanning with "+context?context.getName():"NULL CONTEXT!"+" in "+window.location);
-        context.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "true");
+        Firebug.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "true");
 
         this.attachScanListeners();
 
@@ -147,9 +147,9 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         this.previousPanelName = context.panelName;
         this.previousSidePanelName = context.sidePanelName;
         this.previouslyCollapsed = $("fbContentBox").collapsed;
-        this.previouslyFocused = context.detached && context.chrome.isFocused();
+        this.previouslyFocused = context.detached && Firebug.chrome.isFocused();
 
-        var htmlPanel = context.chrome.selectPanel("html");
+        var htmlPanel = Firebug.chrome.selectPanel("html");
         this.previousObject = htmlPanel.selection;
 
         htmlPanel.panelNode.focus();
@@ -178,12 +178,12 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         if (!waitForClick)
             this.detachClickInspectListeners();
 
-        context.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "false");
+        Firebug.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "false");
 
         var htmlPanel = context.getPanel("html");
 
         if (this.previouslyFocused)
-            context.chrome.focus();
+            Firebug.chrome.focus();
 
         if (cancelled)
         {
@@ -191,16 +191,16 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
                 Firebug.showBar(false);
 
             if (this.previousPanelName == "html")
-                context.chrome.select(this.previousObject);
+                Firebug.chrome.select(this.previousObject);
             else
-                context.chrome.selectPanel(this.previousPanelName, this.previousSidePanelName);
+                Firebug.chrome.selectPanel(this.previousPanelName, this.previousSidePanelName);
         }
         else
         {
             if (FBTrace.DBG_INSPECT)
                 FBTrace.sysout("stopScanningDocuments selection:", htmlPanel.selection.tagName);
-            context.chrome.select(htmlPanel.selection, "html", "dom");
-            context.chrome.getSelectedPanel().panelNode.focus();
+            Firebug.chrome.select(htmlPanel.selection, "html", "dom");
+            Firebug.chrome.getSelectedPanel().panelNode.focus();
         }
 
         //htmlPanel.stopInspecting(htmlPanel.selection, cancelled);

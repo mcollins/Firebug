@@ -143,12 +143,12 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
             FBTrace.sysout("cb.TraceConsolePanel.show", state);
 
         this.showToolbarButtons("cbTraceButtons", true);
-        var buttons = this.context.browser.chrome.$("cbTraceButtons");
+        var buttons = Firebug.chrome.$("cbTraceButtons");
         if (!buttons)
         {
             buttons = document.getElementById("cbTraceButtons");
             if (buttons)
-                FBTrace.sysout("tracePanel fails with this.context.browser.chrome.$ but succeeds with document.getElementById");
+                FBTrace.sysout("tracePanel fails with Firebug.chrome.$ but succeeds with document.getElementById");
             else
                 FBTrace.sysout("tracePanel fails with document.getElementById "+window.location);
         }

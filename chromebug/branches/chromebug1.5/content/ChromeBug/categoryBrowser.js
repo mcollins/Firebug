@@ -90,12 +90,12 @@ FBTrace.sysout("startXPCOMBrowser browserElt", browserElt);
     refresh: function()
     {
         var categories = Firebug.Chromebug.CategoryBrowser.getCategories();
-        FBTrace.dumpProperties("BEFORE this.categoryBox", this.categoryBox);
+        FBTrace.sysout("BEFORE this.categoryBox", this.categoryBox);
         this.CategoryRep.tag.replace({categories: categories}, this.categoryBox);
 
         this.categoryBox.addEventListener('click', this.showProperties, true); // capturing
 
-        FBTrace.dumpProperties("AFTER: this.categoryBox.innerHTML", this.categoryBox.innerHTML);
+        FBTrace.sysout("AFTER: this.categoryBox.innerHTML", this.categoryBox.innerHTML);
     },
 
     showProperties: function(event)

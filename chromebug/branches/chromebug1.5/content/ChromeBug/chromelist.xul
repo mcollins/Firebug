@@ -115,7 +115,7 @@
         //http://developer.mozilla.org/en/docs/XUL:PopupGuide:ContextMenus#Determining_what_was_Context_Clicked
          var element = document.popupNode;
          dump("selectExtension " +element.innerHTML+"\n");
-         FBTrace.dumpProperties("chromelist.selectExtension event", event);
+         FBTrace.sysout("chromelist.selectExtension event", event);
         }
         </script>
         <popup id="extensionSelectionMenu" onpopupshowing="return selectExtension(event);">
