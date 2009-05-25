@@ -29,7 +29,7 @@ function runTest()
         if (browser.detached)
         {
             FBTest.progress("Kill the detached window for browser "+browser.currentURI.spec);
-            FBTest.sysout("browser.chrome.window.location: "+browser.chrome.window.location);
+            FBTest.sysout("Firebug.chrome.window.location: "+FW.Firebug.chrome.window.location);
             FW.Firebug.toggleDetachBar();
         }
 
@@ -38,7 +38,7 @@ function runTest()
             FBTest.progress("reloaded page to ensure all source is available");
             FBTestFirebug.openFirebug();
 
-            FBTest.sysout("ready to detach, browser "+browser.currentURI.spec+" browser.chrome:"+browser.chrome.window.location);
+            FBTest.sysout("ready to detach, browser "+browser.currentURI.spec+" Firebug.chrome:"+FW.Firebug.chrome.window.location);
 
             FBTest.progress("Detach");
             var detachedFW = FW.Firebug.detachBar(FW.FirebugContext);
@@ -53,7 +53,7 @@ function runTest()
                 var doc = event.target;
                 FBTest.compare("chrome://firebug/content/firebug.xul", doc.location.toString(), "The detached window should be firebug.xul");
 
-                FBTest.sysout("after to detach, browser "+browser.currentURI.spec+" browser.chrome:"+browser.chrome.window.location);
+                FBTest.sysout("after to detach, browser "+browser.currentURI.spec+" Firebug.chrome:"+FW.Firebug.chrome.window.location);
 
                 var mainBrowser = doc.getElementById('fbPanelBar1-browser');
                 var panelDocument = mainBrowser.contentDocument;
@@ -140,7 +140,7 @@ function testAlwaysOpenOption()
 
         FBTest.sysout("FW.FirebugChrome.window.location: "+FW.FirebugChrome.window.location);
 
-        var detachedFW = browser.chrome.window;
+        var detachedFW = FW.Firebug.chrome.window;
         var doc = detachedFW.document;
         if (FBTest.compare("chrome://firebug/content/firebug.xul", doc.location.toString(), "The detached window should be firebug.xul"))
         {
