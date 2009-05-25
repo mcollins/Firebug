@@ -1,0 +1,8 @@
+
+1. If the canvas is shown by hovering over a node in the HTML panel it is necessary to click twice to select the node, once to hide the canvas and once to select the node.
+
+2. If the canvas is shown by hovering over a node in the HTML panel and the user moves the cursor into the content area (over the canvas) then inspection begins in the content area.
+
+3. Highlighter is offset on the Mac
+
+4. Offsets are not set correctly inside iframes
