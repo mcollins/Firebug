@@ -436,7 +436,7 @@ var FBTest = FBTestApp.FBTest =
     ok: function(pass, msg)
     {
         if (!pass)
-            FBTest.sysout("FBTest FAILS "+msg);
+            FBTest.sysout("FBTest **** FAILS **** "+msg);
         else
             FBTest.sysout("FBTest ok "+msg);
 
@@ -455,7 +455,7 @@ var FBTest = FBTestApp.FBTest =
 
     compare: function(expected, actual, msg)
     {
-        FBTest.sysout("compare "+(expected == actual)+" "+msg);
+        FBTest.sysout("compare "+((expected == actual)?"passes":"**** FAILS ****")+" "+msg);
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
             expected == actual, msg, expected, actual));
         if (expected != actual)
