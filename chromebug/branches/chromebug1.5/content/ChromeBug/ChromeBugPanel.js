@@ -304,7 +304,7 @@ Chromebug.globalScopeInfos =
         Chromebug.packageList.assignContextToPackage(context);
 
         Firebug.loadedContext(context);
-        if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("GlobalScopeInfos add "+ gs.kindOfInfo+" for context "+context.uid+", "+context.getName() );
+        if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("globalScopeInfos add "+ gs.kindOfInfo+" for context "+context.uid+", "+context.getName() );
     },
 
     addHiddenWindow: function(hidden_window)
@@ -386,7 +386,7 @@ Chromebug.globalScopeInfos =
     {
         if (gs)
             remove(this.allGlobalScopeInfos, gs);
-        if (gs && FBTrace.DBG_CHROMEBUG) FBTrace.sysout("GlobalScopeInfos remove ", gs.kindOfInfo+ " "+gs.context.uid+", "+gs.context.getName());
+        if (gs && FBTrace.DBG_CHROMEBUG) FBTrace.sysout("globalScopeInfos remove ", gs.kindOfInfo+ " "+gs.context.uid+", "+gs.context.getName());
     },
 
     destroy: function(context)
@@ -763,6 +763,11 @@ Chromebug.XULWindowInfo = {
                 {
                     if (FBTrace.DBG_CHROMEBUG)
                         FBTrace.sysout("Chromebugpanel.onclose: removing getXULWindowIndex="+mark+"\n");
+                    Firebug.Chromebug.eachContext( function findContextsInXULWindow(context)
+                    {
+                        if (context.xul_window == xul_win)
+                            TabWatcher.unwatchTopWindow(context.window);
+                    });
                     var tag = this.xulWindowTags[mark];
                     this.xulWindows.splice(mark,1);
                     this.xulWindowTags.splice(mark,1);
@@ -1086,6 +1091,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.restructureUI();
 
 
+
+
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
         Chromebug.XULWindowInfo.watchXULWindows(); // Start creating contexts
@@ -1112,6 +1119,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     restructureUI: function()
     {
+        Firebug.setChrome(FirebugChrome, "detached"); // 1.4
     },
 
     restoreState: function()  // TODO context+file
@@ -1444,13 +1452,25 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBugPanel. reattachContext for context:"+context.uid+" isChromeBug:"+context.isChromeBug+"\n");
     },
 
+    unwatchWindow: function(context, win)
+    {
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("ChromeBugPanel.unwatchWindow for context:"+context.uid+" isChromeBug:"+context.isChromeBug+"\n");
+
+        // Firebug groups subwindows under context.  We have contexts for top level nsIDOMWindows.
+        if (context.xul_window)
+        {
+            this.destroyContext(context);
+        }
+    },
+
     destroyContext: function(context)
     {
         if (context.browser)
             delete context.browser.detached;
 
         Chromebug.packageList.deleteContext(context);
-        GlobalScopeInfos.destroy(context);
+        Chromebug.globalScopeInfos.destroy(context);
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromeBugPanel.destroyContext ---------------------- for context:"+context.uid+" :"+context.getName()+"\n");
     },
