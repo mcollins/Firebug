@@ -42,7 +42,7 @@ ZipFile.prototype.zipAll = function()
     {
         if (exc.name == "NS_ERROR_FILE_NOT_FOUND")
         {
-            FBTrace.dumpProperties("ZipFile.zipall FAILS for file", xpi);
+            FBTrace.sysout("ZipFile.zipall FAILS for file", xpi);
             throw "The file "+xpi.path+" was not found (or its directory does not exist) and the flags "+(PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE)+" didn't permit creating it."
         }
         else
@@ -86,7 +86,7 @@ ZipFile.prototype.zipAll = function()
         } 
         catch (exc)
         {
-        	FBTrace.dumpProperties("zipit FAILS nsIZipWriter addEntryFile relPath:"+relPath+" file:"+file.path, exc);
+        	FBTrace.sysout("zipit FAILS nsIZipWriter addEntryFile relPath:"+relPath+" file:"+file.path, exc);
         	throw exc;
         }
     }
@@ -207,9 +207,9 @@ var Zipper  = {
                 	}
                 	catch (exc)
                     {
-                    	FBTrace.dumpStack(" Exception in mozzipper.dispatch "+ name, exc);
-                    	FBTrace.dumpProperties(" Exception in mozzipper.dispatch "+ name+" For extension ", extension);
-                        FBTrace.dumpProperties(" Exception in mozzipper.dispatch "+ name, exc);
+                    	FBTrace.sysout(" Exception in mozzipper.dispatch "+ name, exc);
+                    	FBTrace.sysout(" Exception in mozzipper.dispatch "+ name+" For extension ", extension);
+                        FBTrace.sysout(" Exception in mozzipper.dispatch "+ name, exc);
                         throw "mozziper dispatch "+name+" FAILS: "+exc;
                     }
                 } 
@@ -276,7 +276,7 @@ var PrintZipperExtension = {
         if (this.debugPhase != "xpiFileName")
             return;
 
-        FBTrace.dumpProperties("PrintZipperExtension xpiFileName: ",zip.name);
+        FBTrace.sysout("PrintZipperExtension xpiFileName: ",zip.name);
     },
 
     xpi: function(zip)
@@ -284,7 +284,7 @@ var PrintZipperExtension = {
        if (this.debugPhase != "xpi")
             return;
 
-        FBTrace.dumpProperties("PrintZipperExtension xpi phase zip: ",zip.zipfile.path);
+        FBTrace.sysout("PrintZipperExtension xpi phase zip: ",zip.zipfile.path);
     },
 }
 

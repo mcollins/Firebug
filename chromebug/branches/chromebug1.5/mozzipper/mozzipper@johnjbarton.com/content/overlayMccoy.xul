@@ -28,7 +28,7 @@ function zipOnLoad(event)
         }
         catch (exc)
         {
-            FBTrace.dumpProperties("mozziper FAILS", exc);
+            FBTrace.sysout("mozziper FAILS", exc);
         }
         FBTrace.sysout("zipOnLoad complete\n");
     }

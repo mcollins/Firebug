@@ -178,9 +178,9 @@ this.dumpPermissions = function()
     {
         var perm = perms.getNext();
         if (perm instanceof Ci.nsIPermission)
-            FBTrace.dumpProperties("Permission ", perm);
+            FBTrace.sysout("Permission ", perm);
         else
-            FBTrace.dumpProperties("NOT an nsIPermission", perm);
+            FBTrace.sysout("NOT an nsIPermission", perm);
     }
     FBTrace.sysout("Enumerate permissions DONE\n");
 },
