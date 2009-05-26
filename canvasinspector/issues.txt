@@ -5,4 +5,4 @@
 
 3. Highlighter is offset on the Mac
 
-4. Offsets are not set correctly inside iframes
+4. Canvas covers scrollbar for framesets

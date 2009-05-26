@@ -265,6 +265,7 @@ Firebug.Inspector = extend(Firebug.Module,
         var win = event.currentTarget.defaultView;
         if (win)
         {
+            this.stopInspecting(true);
             win = getRootWindow(win);
             this.detachClickInspectListeners(win);
         }
@@ -462,7 +463,7 @@ inspectorCanvas =
             this.mouseY = eventOrElt.layerY;
 
             elt = doc.elementFromPoint(this.mouseX, this.mouseY);
-            if(/[^i]frame/i.test(elt.nodeName))
+            if(/^frame$/i.test(elt.nodeName))
             {
                 rect = elt.getBoundingClientRect();
                 this.offsetX = rect.left;
@@ -474,17 +475,21 @@ inspectorCanvas =
         {
             elt = eventOrElt;
 
-            if(win.frames.length > 0 && win.frames.length > doc.getElementsByTagName('iframe').length)
+            if(win.frames.length > 0)
             {
                 for(i=0; i<win.frames.length; i++)
                 {
-                    if(win.frames[i].document == elt.ownerDocument)
+                    try
                     {
-                        rect = win.frames[i].frameElement.getBoundingClientRect();
-                        this.offsetX = rect.left;
-                        this.offsetY = rect.top;
-                        break;
+                        if(win.frames[i].document == elt.ownerDocument)
+                        {
+                            rect = win.frames[i].frameElement.getBoundingClientRect();
+                            this.offsetX = rect.left;
+                            this.offsetY = rect.top;
+                            break;
+                        }
                     }
+                    catch(e) {}
                 }
             }
         }
@@ -689,38 +694,41 @@ inspectorCanvas =
             doc = win.document,
             elt = doc.elementFromPoint(this.mouseX, this.mouseY),
             rect = getRectTRBLWH(elt);
-            
-        if(/[^i]frame/i.test(elt.nodeName))
+        
+        if(this.ctx.fillText)
         {
-            this.offsetX = rect.left;
-            this.offsetY = rect.top;
-            elt = elt.contentDocument.elementFromPoint(this.mouseX - this.offsetX, this.mouseY - this.offsetY);
+            if(/^frame$/i.test(elt.nodeName))
+            {
+                this.offsetX = rect.left;
+                this.offsetY = rect.top;
+                elt = elt.contentDocument.elementFromPoint(this.mouseX - this.offsetX, this.mouseY - this.offsetY);
+            }
+
+            if(this.mouseX <= 150 && this.mouseY <= 110)
+                left = elt.ownerDocument.activeElement.offsetWidth - 155;
+            
+            if(!this.ctx)
+                this.ctx = canvas.getContext("2d");
+
+            this.ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+            this.ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
+            
+            this.ctx.textBaseline = "top";
+            
+            this.ctx.fillRect(left, top, 150, 110);
+            this.ctx.strokeRect(left, top, 150, 110);
+
+            left += 5;
+            
+            this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
+            this.ctx.fillText("Type: "+elt.nodeName, left, top+5, 140);
+            this.ctx.fillText("id: "+elt.id, left, top+20, 140);
+            this.ctx.fillText("name: "+elt.name, left, top+35, 140);
+            this.ctx.fillText("top: "+(rect.top + elt.ownerDocument.activeElement.scrollTop), left, top+50, 140);
+            this.ctx.fillText("left: "+(rect.left + elt.ownerDocument.activeElement.scrollLeft), left, top+65, 140);
+            this.ctx.fillText("width: "+rect.width, left, top+80, 140);
+            this.ctx.fillText("height: "+rect.height, left, top+95, 140);
         }
-
-        if(this.mouseX <= 150 && this.mouseY <= 110)
-            left = elt.ownerDocument.activeElement.offsetWidth - 155;
-        
-        if(!this.ctx)
-            this.ctx = canvas.getContext("2d");
-
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-        this.ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
-        
-        this.ctx.textBaseline = "top";
-        
-        this.ctx.fillRect(left, top, 150, 110);
-        this.ctx.strokeRect(left, top, 150, 110);
-
-        left += 5;
-        
-        this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
-        this.ctx.fillText("Type: "+elt.nodeName, left, top+5, 140);
-        this.ctx.fillText("id: "+elt.id, left, top+20, 140);
-        this.ctx.fillText("name: "+elt.name, left, top+35, 140);
-        this.ctx.fillText("top: "+(rect.top + elt.ownerDocument.activeElement.scrollTop), left, top+50, 140);
-        this.ctx.fillText("left: "+(rect.left + elt.ownerDocument.activeElement.scrollLeft), left, top+65, 140);
-        this.ctx.fillText("width: "+rect.width, left, top+80, 140);
-        this.ctx.fillText("height: "+rect.height, left, top+95, 140);
     },
     
     "highlightImageMap": function(context, image, boxModel)
@@ -916,6 +924,12 @@ inspectorCanvas =
             popup.sizeTo(w, h);
             canvas.width = w;
             canvas.height = h;
+            
+            this.ctx = canvas.getContext("2d");
+            this.ctx.strokeStyle = "#FF0000";
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(1,1,w,h);
+
             popup.openPopupAtScreen(appContent.boxObject.screenX, appContent.boxObject.screenY + content.tabContainer.boxObject.height, false);
         }
         else
