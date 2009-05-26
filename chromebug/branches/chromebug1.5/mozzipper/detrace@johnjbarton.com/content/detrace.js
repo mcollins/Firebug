@@ -102,7 +102,7 @@ var DetraceZipperExtension = {
         }
         catch (e)
         {
-            FBTrace.dumpProperties("detrace.getTmpFolder FAILS "+e, tmp);            
+            FBTrace.sysout("detrace.getTmpFolder FAILS "+e, tmp);            
         }
     },
 }
