@@ -13,10 +13,12 @@ function runTest()
     FBTest.sysout("activation.START");
 
     // Open two tabs one after another, open Firebug on both and select Net panel.
-    tab1 = FBTestFirebug.openNewTab(basePath + "net/activation/activation1.html", function() {
+    tab1 = FBTestFirebug.openNewTab(basePath + "net/activation/activation1.html", function(win) {
+        FBTest.progress("Opened new tab at "+win.location);
         FBTestFirebug.openFirebug();
         FW.FirebugChrome.selectPanel("net");
         tab2 = FBTestFirebug.openNewTab(basePath + "net/activation/activation2.html", function() {
+            FBTest.progress("Opened new tab at "+win.location);
             FBTestFirebug.openFirebug();
             FW.FirebugChrome.selectPanel("net");
             onRunTest();
@@ -27,10 +29,12 @@ function runTest()
 function onRunTest(window)
 {
     // Disable and enable
+    FBTest.progress("Disable net panel");
     FBTestFirebug.disableNetPanel();
+    FBTest.progress("Enable net panel");
     FBTestFirebug.enableNetPanel();
 
-    // Select first tab, execute XHR and verify. Once it's done do the same for the other tab. 
+    // Select first tab, execute XHR and verify. Once it's done do the same for the other tab.
     selectTabAndVerify(tab1, function() {
         selectTabAndVerify(tab2, function() {
             FBTestFirebug.testDone("activation.DONE");
@@ -44,6 +48,7 @@ function selectTabAndVerify(tab, callback)
     tabbrowser.selectedTab = tab;
 
     var win = tab.linkedBrowser.contentWindow;
+    FBTest.progress("Selected Firefox tab "+win.location);
     win.wrappedJSObject.runTest(function(request)
     {
         var panel = FW.FirebugChrome.selectPanel("net");
