@@ -892,7 +892,6 @@ Chromebug.XULWindowInfo = {
     {
         Chromebug.XULWindowInfo.selectBrowser(context.browser);
         Firebug.showContext(context.browser, context);
-        FirebugChrome.select(context.window);
     },
 };
 // ************************************************************************************************
