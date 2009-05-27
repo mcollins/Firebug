@@ -30,6 +30,7 @@ var ChromeBugOverrides = {
         // a function that returns an object with .getObjectDescription() and .getLocationList()
         return function multiContextLocator()
         {
+            FBTrace.sysout("ChromebugOverride running multiContextLocator");
             var locatorDelegator =
             {
                     getObjectDescription: function(object)
@@ -376,7 +377,7 @@ function overrideFirebugFunctions()
     try {
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
-        top.FirebugChrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
+        top.Firebug.chrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
 
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
@@ -403,11 +404,11 @@ function overrideFirebugFunctions()
         //
         Firebug.setPref("extensions.firebug", "enableTraceConsole", "panel");
 
-        dump("ChromebugPanel Overrides applied"+"\n");
+        window.dump("ChromebugPanel Overrides applied"+"\n");
     }
     catch(exc)
     {
-        dump("ChromebugPanel override FAILS "+exc+"\n");
+        window.dump("ChromebugPanel override FAILS "+exc+"\n");
     }
 }
 
