@@ -1761,7 +1761,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (context != FirebugContext)
         {
-            var panel = FirebugChrome.getSelectedPanel();
+            var panel = Firebug.chrome.getSelectedPanel();
 
             FirebugContext = context;
 
@@ -1770,8 +1770,14 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (FBTrace.DBG_CHROMEBUG)
                     FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set FirebugContext to "+context.getName()+" at "+panel.name);
 
-                FirebugChrome.selectPanel(panel.name);
+                Firebug.chrome.selectPanel(panel.name);
             }
+            else
+            {
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set FirebugContext to "+context.getName()+" no panel ");
+            }
+
         }
     },
 
