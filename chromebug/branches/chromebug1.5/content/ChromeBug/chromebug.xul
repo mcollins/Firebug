@@ -84,7 +84,7 @@
 
 
     <!-- END -->
- <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugOverrides.js"/>
+ <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
  <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
 
 
