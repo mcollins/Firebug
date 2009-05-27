@@ -19,7 +19,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsMouseOver: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.dumpEvent("onScanningDocuments", event);
+           FBTrace.sysout("onScanningDocuments", event);
         this.scanDocuments(event.target);
         // Let it go to inspect cancelEvent(event);
     },
@@ -27,7 +27,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsMouseDown: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.dumpEvent("onScanningDocuments", event);
+           FBTrace.sysout("onScanningDocuments", event);
         this.stopScanningDocuments(false, true);
         cancelEvent(event);  // inspector sees nothing or mousedown and stopInspecting but not inspecting
         Firebug.Inspector.stopInspecting(false, false);  // not canceled and don't wait, I'll wait for you.
@@ -36,7 +36,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsClick: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.dumpEvent("onScanningDocuments", event);
+           FBTrace.sysout("onScanningDocuments", event);
         var win = event.currentTarget.defaultView;
         if (win)
         {
@@ -180,7 +180,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
 
         Firebug.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "false");
 
-        var htmlPanel = context.getPanel("html");
+        var htmlPanel = Firebug.chrome.unswitchToPanel(context, "html", cancelled);
 
         if (this.previouslyFocused)
             Firebug.chrome.focus();
@@ -194,13 +194,6 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
                 Firebug.chrome.select(this.previousObject);
             else
                 Firebug.chrome.selectPanel(this.previousPanelName, this.previousSidePanelName);
-        }
-        else
-        {
-            if (FBTrace.DBG_INSPECT)
-                FBTrace.sysout("stopScanningDocuments selection:", htmlPanel.selection.tagName);
-            Firebug.chrome.select(htmlPanel.selection, "html", "dom");
-            Firebug.chrome.getSelectedPanel().panelNode.focus();
         }
 
         //htmlPanel.stopInspecting(htmlPanel.selection, cancelled);
