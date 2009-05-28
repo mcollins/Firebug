@@ -581,12 +581,14 @@ Chromebug.XULWindowInfo = {
                         var childDoc = childDocShell.contentViewer.DOMDocument;
 
                         if (childDoc instanceof nsIDOMDocument && childDoc.defaultView instanceof nsIDOMWindow)
-                            FBL.iterateWindows(childDoc.defaultView, handler);
+                            //FBL.iterateWindows(childDoc.defaultView, handler);
+                            handler(childDoc.defaultView);
                     }
                 }
             );
         }
     },
+
     //************************************************************
     initialize: function()
     {

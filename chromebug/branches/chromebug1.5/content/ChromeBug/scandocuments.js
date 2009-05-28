@@ -20,8 +20,9 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     {
         if (FBTrace.DBG_INSPECT)
            FBTrace.sysout("onScanningDocuments", event);
-        this.scanDocuments(event.target);
-        // Let it go to inspect cancelEvent(event);
+        if (!this.scanDocuments(event.target))
+            cancelEvent(event);
+        // else let it go to inspect
     },
 
     onScanningDocumentsMouseDown: function(event)
@@ -61,24 +62,28 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         if (!node)
             return;
 
+        var nodeAsScanned = node;
         var tagName = node.tagName;
-        FBTrace.sysout("scanDocuments tag:"+tagName, "scanning "+(this.scanningDOMWindow?this.scanningDOMWindow.location:"none"));
-        if (this.hasContentDocument.indexOf(tagName) != -1)
+        FBTrace.sysout("scanDocuments tag:"+tagName+" scanning "+(this.scanningDOMWindow?this.scanningDOMWindow.location:"none"));
+
+        if (this.hasContentDocument.indexOf(tagName) != -1) // then the tag is a container of content
         {
             var doc = node.contentDocument;
-            node = doc.documentElement;
+            node = doc.documentElement;  // switch to the inside of the container
         }
 
         var domWindow = node.ownerDocument.defaultView;
-        if (domWindow == this.scanningDOMWindow)
-            return;
+        if (domWindow == this.scanningDOMWindow)  // we did not cross windows,
+            return true;                          // carry on with inspect
 
         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (!context)
         {
              if (FBTrace.DBG_INSPECT)
                 FBTrace.sysout("No chrome context for "+domWindow.location+"\n");
-            return;
+
+            //this.scanningContext.hoverNode = nodeAsScanned;
+            return false;  // we crossed windows, don't inspect here
         }
         this.scanningContext = context;
 
@@ -99,18 +104,19 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         Firebug.Inspector.startInspecting(context);  // on new window
 
         if (FBTrace.DBG_INSPECT)
-                FBTrace.sysout("ScanDocuments ", "startInspecting new context "+context.window.location);
+                FBTrace.sysout("ScanDocuments startInspecting new context "+context.window.location);
 
         this.scanningTimeout = context.setTimeout
         (
-            function()
+            function delaySyncToolbar()
             {
-                 FBTrace.sysout("scanningTimeout context.window:", context.window.location);
+                 FBTrace.sysout("scanningTimeout context.window:"+ context.window.location);
                 if (context)
                     Firebug.Chromebug.syncToolBarToContext(context);
             },
             100
         );
+        return true; // do inspect
     },
 
     //*****************************************************************************
@@ -139,6 +145,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         if (FBTrace.DBG_INSPECT)
             FBTrace.sysout("ChromeBug startScanning with "+context?context.getName():"NULL CONTEXT!"+" in "+window.location);
         Firebug.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "true");
+        Firebug.chrome.setGlobalAttribute("cmd_toggleInspecting", "checked", "true");
 
         this.attachScanListeners();
 
@@ -179,6 +186,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             this.detachClickInspectListeners();
 
         Firebug.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "false");
+        Firebug.chrome.setGlobalAttribute("cmd_toggleInspecting", "checked", "false");
 
         var htmlPanel = Firebug.chrome.unswitchToPanel(context, "html", cancelled);
 
@@ -220,6 +228,9 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
 
         Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
         {
+            var context = Firebug.Chromebug.getContextByGlobal(subWin);
+            if (!context)  // don't attach to windows we are not watching
+                 return;
             // If you change the bubbling/capture option on these, do so on the removeEventListener as well.
             subWin.document.addEventListener("mouseover", this.onScanningDocumentsMouseOver, true); // trigger on capture
             subWin.document.addEventListener("mousedown", this.onScanningDocumentsMouseDown, true);
