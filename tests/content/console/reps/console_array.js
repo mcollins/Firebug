@@ -7,7 +7,6 @@ function runTest()
         FBTestFirebug.enableConsolePanel(function(win) // causes reload
         {
             fireTest(win, "runTests");
-            FBTest.testDone("console_array.done");
         });
     });
 }
@@ -24,6 +23,10 @@ function waitForLogEvent(event)
     if (FW.FBL.hasClass(elt, 'logRow'))
     {
         var shouldBe = elt.firstChild;
+
+        if (shouldBe.innerHTML == "DONE")
+            FBTest.testDone("console_array.done");
+
         var desc = shouldBe.nextSibling;
 
         while (desc.tagName != 'SPAN')  // skip text

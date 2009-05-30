@@ -15,6 +15,7 @@
             [ "array with multiple undefined elements by Array constructor", new Array(3) ],
             [ "HTMLCollection (issue 588 / issue 489)", document.getElementsByTagName("div") ],
             [ "NodeList (issue 588)", document.documentElement.childNodes ],
+            [ "arguments object", (function() { return arguments; })(1, "foo", window) ],
           ],
         };
         notArrayObjects = {
@@ -26,7 +27,6 @@
             [ "object created by a constructor that includes the word \"Array\" (issue 874)",
               new (function NotAnArray() { this.data = "this is not Array"; })
             ],
-            [ "arguments object", (function() { return arguments; })(1, "foo", window) ],
             [ "sessionStorage (issue 1695)", window.sessionStorage ],
           ],
         };
@@ -48,6 +48,7 @@
           testGroup("array", arrayObjects);
           testGroup("notArray", notArrayObjects);
           testGroup("array", todoObjects);
+          console.log("DONE");
       }
       function showTests() {
         showGroup(arrayObjects);
