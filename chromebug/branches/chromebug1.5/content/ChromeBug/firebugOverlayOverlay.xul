@@ -13,6 +13,7 @@
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleInspecting" oncommand="Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
+        <command id="cmd_clearTrace" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)" />
     </commandset>
 
     <!-- overlay the Firebug inspect button -->
@@ -25,6 +26,10 @@
     <keyset id="mainKeyset">
         <key id="key_toggleInspecting" key="c" modifiers="accel,shift" class="fbOnlyKey"
                 command="cmd_toggleInspecting"/>
+        <key id="key_toggleFirebug" keycode="VK_F12" command="cmd_clearTrace"/>
+        <key id="key_detachFirebug" keycode="VK_F12" modifiers="accel" command="cmd_clearTrace"/>
+        <key id="key_clearConsole" key="r" modifiers="accel,shift" command="cmd_clearConsole" class="fbOnlyKey"/>
+
     </keyset>
 
     <hbox id="fbToolbarInner">
