@@ -517,9 +517,16 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
 
     var panel = chrome.getSelectedPanel();
     var doc = panel.panelNode.ownerDocument; // panel.html
+
+    var hits = {};
     function isBreakpointAttr(event)
     {
-        return (event.attrName == "exeline" && event.newValue == "true");
+        FBTest.sysout("DOMAttrModified "+event.attrName+"="+event.newValue);
+        if (event.attrName == "breakpoint" && event.newValue == "true")
+            hits.breakpoint = true;
+        if (event.attrName == "exeline" && event.newValue == "true")
+            hits.exeline = true;
+        return (hits.breakpoint && hits.exeline);
     }
 
     function onBreakPoint(event)
@@ -535,18 +542,19 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
             return;
         }
 
-        var bp = row.getAttribute('breakpoint');
-        FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set");
-
         var exeline = row.getAttribute("exeline");
         FBTest.compare("true", exeline, "The row must be marked as the execution line.");
+
+        var bp = row.getAttribute('breakpoint');
+           FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set");
 
         FBTest.progress("Remove breakpoint");
         var panel = chrome.getSelectedPanel();
         panel.toggleBreakpoint(lineNo);
 
         var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
-        FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set");
+        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set"))
+            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
         callback();
     }
