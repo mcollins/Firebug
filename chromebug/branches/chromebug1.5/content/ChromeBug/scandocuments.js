@@ -19,16 +19,20 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsMouseOver: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onScanningDocuments", event);
+           FBTrace.sysout("onScanningDocuments mouse over", event);
         if (!this.scanDocuments(event.target))
+        {
             cancelEvent(event);
+            if (FBTrace.DBG_INSPECT)
+                FBTrace.sysout("onScanningDocuments canceled mouseover Event", event);
+        }
         // else let it go to inspect
     },
 
     onScanningDocumentsMouseDown: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onScanningDocuments", event);
+           FBTrace.sysout("onScanningDocuments mouse down", event);
         this.stopScanningDocuments(false, true);
         cancelEvent(event);  // inspector sees nothing or mousedown and stopInspecting but not inspecting
         Firebug.Inspector.stopInspecting(false, false);  // not canceled and don't wait, I'll wait for you.
@@ -37,7 +41,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsClick: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onScanningDocuments", event);
+           FBTrace.sysout("onScanningDocuments click", event);
         var win = event.currentTarget.defaultView;
         if (win)
         {
