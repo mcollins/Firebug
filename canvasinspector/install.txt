@@ -1,0 +1,5 @@
+Copy the following files to firebug/content:
+inspector.js
+highlighter.css
+
+Only 1 function needs to be changed in lib.js (getRectTRBLWH). Replace the current version with the one from  lib.js in this folder.

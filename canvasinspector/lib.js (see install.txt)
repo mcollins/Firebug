@@ -1,0 +1,30 @@
+this.getRectTRBLWH = function(elt)
+{
+    var i, rect,
+        coords =
+        {
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0,
+            "width": 0,
+            "height": 0
+        };
+
+    if (elt)
+    {
+        rect = elt.getBoundingClientRect();
+
+        coords =
+        {
+            "top": rect.top,
+            "right": rect.right,
+            "bottom": rect.bottom,
+            "left": rect.left,
+            "width": rect.right-rect.left,
+            "height": rect.bottom-rect.top
+        };
+    }
+
+    return coords;
+};

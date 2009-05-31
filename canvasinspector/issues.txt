@@ -1,3 +1,4 @@
+ISSUES
 
 1. If the canvas is shown by hovering over a node in the HTML panel it is necessary to click twice to select the node, once to hide the canvas and once to select the node.
 
@@ -6,3 +7,11 @@
 3. Highlighter is offset on the Mac
 
 4. Canvas covers scrollbar for framesets
+
+5. Selection of nodes on large pages appears is a lot slower than in previous versions but maybe this is an HTML Panel issue.
+
+TODO
+
+1. Remove second body tag ... the canvas can be injected directly into the document until a suitable XUL widget comes along.
+
+2. Look at computed style for canvas tag and be sure to account for any offsets that could be inherited from the document.
