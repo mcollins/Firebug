@@ -10,6 +10,11 @@ const dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsI
 // ************************************************************************************************
 // Module implementation
 
+/**
+ * This module implements an Export feature that allows to save all Net panel
+ * data into a file using HTTP Archive format.
+ * http://groups.google.com/group/firebug-working-group/web/http-tracing---export-format
+ */
 Firebug.NetMonitorSerializer = extend(Firebug.Module,
 {
     initialize: function(owner)
@@ -22,6 +27,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         Firebug.Module.shutdown.apply(this, arguments);
     },
 
+    // Handle Export toolbar button.
     exportData: function(context)
     {
         if (!context)
@@ -29,6 +35,47 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
 
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.Exporting data for: " + context.getName());
+
+        // Get target file for exported data. Bail out, if the user presses cancel.
+        var file = this.getTargetFile();
+        if (!file)
+            return;
+
+        // Build JSON result string.
+        var jsonString = this.buildData(context);
+        if (!jsonString)
+            return;
+
+        if (!this.saveToFile(file, jsonString))
+            return;
+
+        var viewerURL = Firebug.getPref(Firebug.prefDomain, "netExport.viewerURL");
+        if (viewerURL)
+            this.openViewer(viewerURL, jsonString);
+    },
+
+    // Open File Save As dialog and let the user to pick proper file location.
+    getTargetFile: function()
+    {
+        var nsIFilePicker = Ci.nsIFilePicker;
+        var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
+        fp.init(window, null, nsIFilePicker.modeSave);
+        fp.appendFilter("HTTP Archive Files","*.har; *.json");
+        fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
+        fp.filterIndex = 1;
+        fp.defaultString = "netData.har";
+
+        var rv = fp.show();
+        if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
+            return fp.file;
+
+        return null;
+    },
+
+    // Build JSON string from the Net panel data.
+    buildData: function(context)
+    {
+        var jsonString = "";
 
         try
         {
@@ -38,9 +85,10 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
             if (!jsonData.log.entries.length)
             {
                 alert("There is nothing to export.");
-                return;
+                return null;
             }
-            var jsonString = JSON.stringify(jsonData, null, '  ');
+
+            jsonString = JSON.stringify(jsonData, null, '  ');
             jsonString = "(" + jsonString + ")";
         }
         catch (err)
@@ -52,38 +100,23 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.data", jsonData);
 
-        if (this.onSaveToFile(jsonString))
-        {
-            this.openViewer(Firebug.getPref(Firebug.prefDomain, 
-                "netExport.viewerURL"), jsonString);
-        }
+        return jsonString;
     },
 
-    onSaveToFile: function(jsonString)
+    // Save JSON string into a file.
+    saveToFile: function(file, jsonString)
     {
-        try 
+        try
         {
-            var nsIFilePicker = Ci.nsIFilePicker;
-            var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
-            fp.init(window, null, nsIFilePicker.modeSave);
-            fp.appendFilter("HTTP Archive Files","*.har; *.json");
-            fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
-            fp.filterIndex = 1;
-            fp.defaultString = "netData.har";
+            var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                .createInstance(Ci.nsIFileOutputStream);
+            foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
 
-            var rv = fp.show();
-            if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
-            {
-                var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                    .createInstance(Ci.nsIFileOutputStream);
-                foStream.init(fp.file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
+            var data = jsonString;//convertToUnicode(jsonString);
+            foStream.write(data, data.length);
+            foStream.close();
 
-                var data = jsonString;//convertToUnicode(jsonString);
-                foStream.write(data, data.length);
-                foStream.close();
-
-                return true;
-            }
+            return true;
         }
         catch (err)
         {
@@ -93,6 +126,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         return false;
     },
 
+    // Open online viewer for immediate preview.
     openViewer: function(url, jsonString)
     {
         var result = iterateBrowserWindows("navigator:browser", function(browserWin)
@@ -129,6 +163,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         }
     },
 
+    // Handle Import toolbat button.
     importData: function(context)
     {
         alert("TBD");
