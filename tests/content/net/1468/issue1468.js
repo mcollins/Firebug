@@ -1,4 +1,4 @@
-window.testTimeout = 15000;
+window.FBTestTimeout = 15000;
 
 function runTest()
 {
