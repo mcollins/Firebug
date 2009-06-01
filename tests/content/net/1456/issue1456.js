@@ -43,7 +43,7 @@ function runTest()
                     for (var i=0; i<children.length; i++)
                         lines.push(children[i].textContent);
 
-                    FBTest.compare(responseText, lines.join("\n"), "Response must match.");
+                    FBTest.compare(responseText, lines.join(""), "Response must match.");
                 }
 
                 // Finish test
