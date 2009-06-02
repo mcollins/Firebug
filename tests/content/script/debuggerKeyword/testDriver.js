@@ -1,7 +1,28 @@
 var win = null;             // Reference to the target window.
 var testSuite = null;       // List of tests within this test.
 
+var listeners = [];
+
 function runTest()
+{
+    try
+    {
+        doRunRun();
+    }
+    catch(exc)
+    {
+        FBTest.sysout("testDriver fails "+exc, exc);
+    }
+    finally
+    {
+        for (var i = 0; i < listeners.length; i++)
+        {
+            FW.Firebug.Debugger.removeListener(listeners[i]);
+        }
+    }
+}
+
+function doRunRun()
 {
     FBTest.sysout("debuggerKeyword.START");
 
@@ -47,7 +68,8 @@ function runTest()
             // Execute XHR and eval the response, there is debugger; keyword in it.
             win.wrappedJSObject.loadXHRDebugger(function(request)
             {
-                FW.Firebug.Debugger.addListener(new DebuggerListener("@debuggerXHRRow", "debuggerInScript"));
+                listeners.push(new DebuggerListener("@debuggerXHRRow", "debuggerInScript"));
+                FW.Firebug.Debugger.addListener(listeners[listeners.length-1]);
             });
         }, 1);
     });
@@ -59,7 +81,8 @@ function runTest()
         {
             win.wrappedJSObject.loadScriptDebugger(function()
             {
-                FW.Firebug.Debugger.addListener(new DebuggerListener("@debuggerScriptRow"));
+                listeners.push(new DebuggerListener("@debuggerScriptRow"));
+                FW.Firebug.Debugger.addListener(listeners[listeners.length-1]);
             });
         }, 1);
     });
@@ -70,7 +93,8 @@ function runTest()
 
 function executeTestAsync(testMethod, debuggerKeywordId, nextTest)
 {
-    FW.Firebug.Debugger.addListener(new DebuggerListener(debuggerKeywordId, nextTest));
+    listeners.push(new DebuggerListener(debuggerKeywordId, nextTest));
+    FW.Firebug.Debugger.addListener(listeners[listeners.length-1]);
 
     // Execute a method with debuggger; keyword in it. This is done
     // asynchronously since it stops the execution context.
