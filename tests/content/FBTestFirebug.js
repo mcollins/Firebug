@@ -84,11 +84,15 @@ this.clearCache = function()
  */
 this.testDone = function(message)
 {
-    this.closeFirebug();
-    this.cleanUpTestTabs();
-    if (message)
-        FBTest.progress(message);
-    FBTest.testDone();
+    var self = this;
+    setTimeout(function cleanUpLater(){
+        self.closeFirebug();
+        self.cleanUpTestTabs();
+        if (message)
+            FBTest.progress(message);
+        FBTest.testDone();
+    });
+
 }
 
 
