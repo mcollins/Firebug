@@ -1,24 +1,23 @@
-/* See license.txt for terms of usage */
+8/29/2007/* See license.txt for terms of usage */
 
 FBL.ns(function() { with (FBL) {
 
 // ************************************************************************************************
 // Constants
 
-const inspectDelay = 50;
+const inspectDelay = 100;
 
 const edgeSize = 2;
 
 const defaultPrimaryPanel = "html";
 const defaultSecondaryPanel = "dom";
 
-const highlightCSS = "chrome://firebug/content/highlighter.css";
-
 // ************************************************************************************************
 // Globals
 
 var standardHighlighter = null;
 var popupHighlighter = null;
+var mx, my;
 
 // ************************************************************************************************
 
@@ -97,6 +96,14 @@ Firebug.Inspector = extend(Firebug.Module,
         this.highlightObject(node, context);
 
         this.inspectingNode = node;
+
+        if (node)
+        {
+            this.inspectTimeout = context.setTimeout(function()
+            {
+                Firebug.chrome.select(node);
+            }, inspectDelay);
+        }
     },
 
     stopInspecting: function(cancelled, waitForClick)
@@ -238,7 +245,7 @@ Firebug.Inspector = extend(Firebug.Module,
     onInspectingMouseOver: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onInspectingMouseOver event", event);
+           FBTrace.dumpEvent("onInspecting event", event);
         this.inspectNode(event.target);
         cancelEvent(event);
     },
@@ -246,7 +253,7 @@ Firebug.Inspector = extend(Firebug.Module,
     onInspectingMouseDown: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onInspectingMouseDown event", event);
+           FBTrace.dumpEvent("onInspecting event", event);
         this.stopInspecting(false, true);
         cancelEvent(event);
     },
@@ -254,7 +261,7 @@ Firebug.Inspector = extend(Firebug.Module,
     onInspectingClick: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-            FBTrace.sysout("onInspectingClick event", event);
+            FBTrace.dumpEvent("onInspecting event", event);
         var win = event.currentTarget.defaultView;
         if (win)
         {
@@ -441,28 +448,12 @@ inspectorCanvas =
         Firebug.Inspector.stopInspecting(false, true);
     },
     
-    "getElementFromPoint": function(doc, context, x, y)
-    {
-        var elt,
-            canvas = context.window.document.getElementById("firebugCanvas");
-        
-        if(canvas)
-        {
-            canvas.style.display="none";
-            elt = doc.elementFromPoint(x, y);
-            canvas.style.display="block";
-        }
-        
-        return elt;
-    },
-    
     "highlight": function(context, eventOrElt, boxModel, boxFrame)
     {
         var i, elt, rect, popup, canvas,
             htmlPanel = Firebug.chrome.selectPanel("html"),
             win = context.window,
-            doc = win.document,
-            canvas = doc.getElementById("firebugCanvas");
+            doc = win.document;
             
         this.show(context, true, null, boxModel);
 
@@ -471,15 +462,14 @@ inspectorCanvas =
             this.mouseX = eventOrElt.layerX;
             this.mouseY = eventOrElt.layerY;
 
-            elt = this.getElementFromPoint(doc, context, this.mouseX, this.mouseY);
+            elt = doc.elementFromPoint(this.mouseX, this.mouseY);
 
             if(/^frame$/i.test(elt.nodeName))
             {
                 rect = elt.getBoundingClientRect();
                 this.offsetX = rect.left;
                 this.offsetY = rect.top;
-                
-                elt = this.getElementFromPoint(elt.contentDocument, context, this.mouseX - this.offsetX, this.mouseY - this.offsetY);
+                elt = elt.contentDocument.elementFromPoint(this.mouseX - this.offsetX, this.mouseY - this.offsetY);
             }
         }
         else
@@ -511,8 +501,8 @@ inspectorCanvas =
             this.highlightImageMap(context, elt, boxModel);
         else
         {
-            //popup = document.getElementById("autoscroller");
-            canvas = doc.getElementById("firebugCanvas");
+            popup = document.getElementById("autoscroller");
+            canvas = document.getElementById("firebugCanvas");
 
             rect = getRectTRBLWH(elt);
             rect.left += this.offsetX;
@@ -646,7 +636,7 @@ inspectorCanvas =
             }
             else
             {
-                this.highlightElement(context, elt, false, "", "#3875d7");
+                this.highlightElement(elt, false, "", "#3875d7");
 
                 if(htmlPanel.selection != elt)
                 {
@@ -662,9 +652,9 @@ inspectorCanvas =
         }
     },
     
-    "highlightElement": function(context, elt, clearCanvas, fillStyle, strokeStyle, lineWidth)
+    "highlightElement": function(elt, clearCanvas, fillStyle, strokeStyle, lineWidth)
     {
-        var canvas = context.window.document.getElementById("firebugCanvas");
+        var canvas = document.getElementById("firebugCanvas");
         
         if(!this.ctx)
             this.ctx = canvas.getContext("2d");
@@ -700,10 +690,10 @@ inspectorCanvas =
         var rect,
             top = 5,
             left = 5,
+            canvas = document.getElementById("firebugCanvas"),
             win = context.window,
             doc = win.document,
-            canvas = doc.getElementById("firebugCanvas"),
-            elt = this.getElementFromPoint(doc, context, this.mouseX, this.mouseY),
+            elt = doc.elementFromPoint(this.mouseX, this.mouseY),
             rect = getRectTRBLWH(elt);
         
         if(this.ctx.fillText)
@@ -712,7 +702,7 @@ inspectorCanvas =
             {
                 this.offsetX = rect.left;
                 this.offsetY = rect.top;
-                elt = this.getElementFromPoint(elt.contentDocument, context, this.mouseX - this.offsetX, this.mouseY - this.offsetY);
+                elt = elt.contentDocument.elementFromPoint(this.mouseX - this.offsetX, this.mouseY - this.offsetY);
             }
 
             if(this.mouseX <= 150 && this.mouseY <= 110)
@@ -754,23 +744,23 @@ inspectorCanvas =
                     map = image.ownerDocument.getElementById(mapName),
                     areas = map.areas;
 
-                this.highlightElement(context, image, true, "default", "");
+                this.highlightElement(image, true, "default", "");
 
                 for(i=0;i<areas.length;i++)
                 {
-                    tempArea = this.highlightImageMapArea(context, image, areas[i], false, "", "default");
+                    tempArea = this.highlightImageMapArea(image, areas[i], false, "", "default");
                     currentArea = tempArea || currentArea;
                 }
             }
             else
             {
-                images = this.getImages(context, "#"+image.parentNode.name, image.ownerDocument);
+                images = this.getImages(context, "#"+image.parentNode.name, boxModel, image.ownerDocument);
                 
                 if(images.length===0)
                     images[0] = image;
                 
                 for(i=0;i<images.length;i++)
-                    this.highlightImageMapArea(context, images[i], image, i==0, "default", "default");
+                    this.highlightImageMapArea(images[i], image, i==0, "default", "default");
             }
             
             if(!boxModel)
@@ -790,14 +780,14 @@ inspectorCanvas =
             }
             
             if(currentArea)
-                this.highlightImageMapArea(context, image, currentArea, false, "rgba(255, 0, 0, 0.2)", "default", 2, true);
+                this.highlightImageMapArea(image, currentArea, false, "rgba(255, 0, 0, 0.2)", "default", 2, true);
         }
     },
     
-    "highlightImageMapArea": function(context, image, area, clearCanvas, fillStyle, strokeStyle, lineWidth)
+    "highlightImageMapArea": function(image, area, clearCanvas, fillStyle, strokeStyle, lineWidth)
     {
         var i, v, rect,
-            canvas = context.window.document.getElementById("firebugCanvas");
+            canvas = document.getElementById("firebugCanvas");
 
         if(!this.ctx)
             this.ctx = canvas.getContext("2d");
@@ -854,7 +844,7 @@ inspectorCanvas =
             return area;
     },
     
-    "getImages": function(context, mapName, doc)
+    "getImages": function(context, mapName, boxModel, doc)
     {
         var i,
             elts = [],
@@ -875,7 +865,16 @@ inspectorCanvas =
                 if(elts[i].getAttribute('usemap') == mapName)
                 {
                     rect=elts[i].getBoundingClientRect();
-                    images.push(elts[i]);
+
+                    if(boxModel)
+                    {
+                        images.push(elts[i]);
+                    }
+                    else if(rect.left <= mx && rect.right >= mx && rect.top <= my && rect.bottom >= my)
+                    {
+                        images[0]=elts[i];
+                        break;
+                    }
                 }
             }
         }
@@ -884,50 +883,60 @@ inspectorCanvas =
     
     "show": function(context, state, event, boxModel)
     {
-        var content = document.getElementById("content"),
+        var popup = document.getElementById('autoscroller'),
+            canvas = document.getElementById("firebugCanvas"),
+            content = document.getElementById("content"),
             appContent = document.getElementById("appcontent"),
             doc = context.window.document,
-            body = getFirebugBody(context),
-            canvas = doc.getElementById("firebugCanvas"),
             _this = this,
             w, h;
         
         if(state)
         {
+            if(!popup)
+            {
+                popup = context.browser._createAutoScrollPopup();
+                context.browser._autoScrollNeedsCleanup = true;
+            }
+
             if(!canvas)
             {
-                canvas = doc.createElementNS("http://www.w3.org/1999/xhtml", "canvas")
+                canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas")
                 canvas.id = "firebugCanvas";
-                canvas.firebugIgnore = true;
                 canvas.className = "firebugCanvas";
 
                 canvas.addEventListener("mousemove", function(event){_this.mousemove(event, context);}, false);
                 canvas.addEventListener("mouseout", function(event){_this.mouseout(event, context);}, false);
                 canvas.addEventListener("mousedown", function(){_this.mousedown(context);}, false);
-                
-                attachStyles(context, doc.body);
-                body.appendChild(canvas);
+                popup.appendChild(canvas);
             }
 
             w = context.window.innerWidth;
             h = context.window.innerHeight;
 
             if(context.window.scrollMaxX)
-                h -= 17;
+                h -= 15;
 
             if(context.window.scrollMaxY)
-                w -= 17;
+                w -= 15;
   
+            popup.style.backgroundImage = "url()";
+            popup.style.margin = "0 0";
+            popup.sizeTo(w, h);
             canvas.width = w;
             canvas.height = h;
             
             this.ctx = canvas.getContext("2d");
             this.ctx.strokeStyle = "#FF0000";
             this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(1,1,w-2,h-2);
+            this.ctx.strokeRect(1,1,w,h);
+
+            popup.openPopupAtScreen(appContent.boxObject.screenX, appContent.boxObject.screenY + content.tabContainer.boxObject.height, false);
         }
         else
         {
+            var canvas = document.getElementById("firebugCanvas");
+            
             if(canvas)
             {
                 if(!event || event.layerX === 0 || event.layerX >= canvas.width || event.layerY === 0 || event.layerY >= canvas.height)
@@ -936,59 +945,16 @@ inspectorCanvas =
                     return;
             }
             
-            removeFirebugBody(context);
+            popup.style.backgroundImage = "";
+            popup.style.margin = "";
+            popup.sizeTo(0, 0);
+            popup.hidePopup();
             
             this.offsetX = 0;
             this.offsetY = 0;
             this.ctx = null;
         }
     }
-}
-
-function getFirebugBody(context)
-{
-    var doc = context.window.document,
-        body = doc.getElementById("firebugBody");
-
-    if(!body)
-    {
-        body = doc.createElement('body');
-        body.id='firebugBody';
-        body.firebugIgnore = true;
-        doc.documentElement.appendChild(body);
-        attachStyles(context, body);
-    }
-
-    if (body)
-    {
-        if (FBTrace.DBG_INSPECT)
-            FBTrace.sysout("getFirebugBody for doc "+doc.location, body);
-
-        return body;
-    }
-
-    if (FBTrace.DBG_INSPECT)
-        FBTrace.sysout("getFirebugBody", doc.firstChild);
-
-    return doc.firstChild;  // For non-HTML docs
-}
-
-function removeFirebugBody(context)
-{
-    var firebugBody = context.window.document.getElementById("firebugBody");
-
-    if(firebugBody)
-        firebugBody.parentNode.removeChild(firebugBody);
-}
-
-function attachStyles(context, body)
-{
-    var doc = body.ownerDocument;
-    if (!context.highlightStyle)
-        context.highlightStyle = createStyleSheet(doc, highlightCSS);
-
-    if (!context.highlightStyle.parentNode || context.highlightStyle.ownerDocument != doc)
-        addStyleSheet(body.ownerDocument, context.highlightStyle);
 }
 
 // ************************************************************************************************
