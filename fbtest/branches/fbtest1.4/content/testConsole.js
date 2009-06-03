@@ -272,7 +272,8 @@ FBTestApp.TestConsole =
             {
                 FBTestApp.TestConsole.onRunAll(function(canceled)
                 {
-                    if (!canceled)
+                    var allPassed = FBTestApp.TestSummary.passingTests.failing == 0;
+                    if (!canceled && allPassed)
                         goQuitApplication();
                 });
             }
@@ -423,6 +424,7 @@ var FBTest = FBTestApp.FBTest =
         FBTest.FirebugWindow.Firebug.toggleAll("off");
         FBTest.FirebugWindow.Firebug.toggleAll("none");
         FBTest.FirebugWindow.Firebug.URLSelector.clearAll();
+        var filterThem = FBTest.FirebugWindow.Firebug.filterSystemURLs;
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
 
