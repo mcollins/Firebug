@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+<?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://fbtest/skin/testConsole.css"?>
+
+<!DOCTYPE window [
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
+%browserDTD;
+<!ENTITY % findBarDTD SYSTEM "chrome://global/locale/findbar.dtd" >
+%findBarDTD;
+]>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        id="TestConsole"
+        windowtype="FBTestConsole"
+        title="Firebug Test Console XUL Window"
+        width="640" height="480"
+        screenX="10" screenY="10"
+        persist="screenX screenY width height sizemode">
+
+    <!-- Firefox -->
+    <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
+    <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
+
+    <!-- Firebug -->
+    <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/xpcom.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/lib.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
+
+    <!-- FBTest -->
+    <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
+
+    <script type="application/x-javascript" src="chrome://fbtest/content/testCore.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testServer.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testRunner.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="strings_firebug" src="chrome://firebug/locale/firebug.properties"/>
+        <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
+        <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
+    </stringbundleset>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_runAll" oncommand="FBTestApp.TestConsole.onRunAll()"/>
+        <command id="cmd_stopTest" oncommand="FBTestApp.TestConsole.onStop()"/>
+        <command id="cmd_haltOnFailedTest" oncommand="FBTestApp.TestConsole.onToggleHaltOnFailedTest()"/>
+        <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
+        <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
+        <command id="cmd_refreshTestList" oncommand="FBTestApp.TestConsole.onRefreshTestList()"/>
+    </commandset>
+
+    <keyset id="mainKeyset">
+        <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
+    </keyset>
+
+    <toolbox id="consoleToolbox">
+        <toolbar id="consoleToolbar" align="center">
+            <toolbarbutton id="runAll"
+                label="fbtest.cmd.Run All" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Run All Tests"
+                command="cmd_runAll"/>
+            <toolbarbutton id="stopTest"
+                label="fbtest.cmd.Stop" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Stop"
+                command="cmd_stopTest"/>
+            <toolbarbutton id="haltOnFailedTest"
+                label="fbtest.cmd.haltOnFailedTest" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.haltOnFailedTest"
+                command="cmd_haltOnFailedTest"/>
+            <toolbarseparator flex="1"/>
+            <toolbarbutton id="refreshList"
+                label="fbtest.cmd.Refresh" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.Refresh"
+                command="cmd_refreshTestList"/>
+        </toolbar>
+        <toolbar id="testListUrlBar" align="center" mode="text">
+            <toolbaritem>
+                <label value="Test Suite:" />
+            </toolbaritem>
+            <toolbaritem flex="1">
+                <textbox id="testListURL" flex="1"
+                    onkeydown="FBTestApp.TestListURLBar.onKeyDown(event)"/>
+            </toolbaritem>
+            <toolbarbutton id="testListPicker"
+                command="cmd_openTestList"
+                tooltiptext="fbtest.cmd.tip.Browser For Test List"/>
+        </toolbar>
+    </toolbox>
+
+    <popupset id="mainPopupSet">
+        <popup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
+        <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
+    </popupset>
+
+    <vbox flex="2">
+        <browser id="consoleFrame" type="content-primary" src="" flex="1"
+             disablehistory="true" contextmenu="fbContextMenu"
+             tooltip="fbTooltip"/>
+        <findbar id="FindToolbar" browserid="consoleFrame"/>
+    </vbox>
+
+    <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest"
+        resizeAfter="closest" persist="state substate"/>
+
+    <!-- Test frame, all tests are launched as frames within this frame -->
+    <vbox>
+        <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html" />
+    </vbox>
+
+    <statusbar id="statusBar">
+        <label id="passingTests" />
+        <label id="failingTests" />
+        <label id="todoTests" tooltip="todoTestsTooltip"/>
+        <tooltip id="todoTestsTooltip" onpopupshowing="return FBTestApp.TestSummary.onTodoShowTooltip(this)"/>
+        <spacer flex="1" />
+        <label id="progressMessage" />
+        <progressmeter id="progressMeter" mode="determined" style="display:none"/>
+    </statusbar>
+</window>
