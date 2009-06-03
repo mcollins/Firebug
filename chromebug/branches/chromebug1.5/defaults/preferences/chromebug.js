@@ -112,6 +112,7 @@ pref("extensions.chromebug.alwaysOpenTraceConsole", false);     /*@explore*/
 pref("extensions.chromebug.trace.maxMessageLength", 400);     /*@explore*/
 pref("extensions.chromebug.trace.enableScope", false);     /*@explore*/
 pref("extensions.chromebug.trace.enableJSConsoleLogs", false);     /*@explore*/
+pref("extensions.chromebug.trace.showTime", false);      // /*@explore*/
 pref("extensions.chromebug.DBG_BP", false);             // debugger.js and firebug-services.js; lots of output   /*@explore*/
 pref("extensions.chromebug.DBG_TOPLEVEL", false);     // top level jsd scripts                     /*@explore*/
 pref("extensions.chromebug.DBG_STACK", false);        // call stack, mostly debugger.js            /*@explore*/
