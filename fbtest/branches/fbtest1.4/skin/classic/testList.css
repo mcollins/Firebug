@@ -72,6 +72,7 @@
     margin-right: 7px;
     text-align: left;
     padding: 1px 0 2px 4px !important;
+    width: 100%;
 }
 
 .testDesc SPAN {
@@ -90,7 +91,6 @@
 /************************************************************************************************/
 
 .testListCol.testIcon {
-    width: 100%;
     color: gray;
     padding-top: 1px;
 }
