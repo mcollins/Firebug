@@ -256,8 +256,11 @@ FBTestApp.TestRunner =
             FBTestApp.FBTest.ok(false, "TIMEOUT: " + time );
 
             if (FBTrace.DBG_FBTEST)
+            {
+                var currTest = FBTestApp.TestRunner.currentTest;
                 FBTrace.sysout("fbtest.testTimeout TEST FAILED (timeout: " + time + "): " +
-                    FBTestApp.TestRunner.currentTest.path);
+                    (currTest ? currTest.path : "NO CURRENT TEST"));
+            }
 
            FBTestApp.TestRunner.testDone(false);
         }, FBTestApp.FBTest.testTimeout);
