@@ -136,8 +136,11 @@ this.openURL = function(url, callback)
     var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
     var onLoadURL = function(event)
     {
-        browser.removeEventListener("load", onLoadURL, true);
-        callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+        setTimeout(function()
+        {
+            browser.removeEventListener("load", onLoadURL, true);
+            callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+        }, 10);
     }
     browser.addEventListener("load", onLoadURL, true);
 
@@ -154,9 +157,11 @@ this.reload = function(callback)
     var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
     var onLoadURL = function(event)
     {
-        FBTest.progress("FBTestFirebug reload onLoadURL fired");  // maybe we need this to slow down things?
-        browser.removeEventListener("load", onLoadURL, true);
-        callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+        setTimeout(function()
+        {
+            browser.removeEventListener("load", onLoadURL, true);
+            callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+        }, 10);
     }
     browser.addEventListener("load", onLoadURL, true);
 
