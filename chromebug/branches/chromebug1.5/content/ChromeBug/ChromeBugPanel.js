@@ -34,7 +34,7 @@ const nsIWebProgress = Ci.nsIWebProgress;
 const nsISupportsWeakReference = Ci.nsISupportsWeakReference;
 const nsISupports = Ci.nsISupports;
 const nsISupportsCString = Ci.nsISupportsCString;
-const  jsdIExecutionHook 	 = Components.interfaces.jsdIExecutionHook;
+const jsdIExecutionHook = Components.interfaces.jsdIExecutionHook;
 
 const NOTIFY_ALL = nsIWebProgress.NOTIFY_ALL;
 const nsIObserverService = Ci.nsIObserverService
@@ -1770,25 +1770,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
 
         if (context != FirebugContext)
-        {
-            var panel = Firebug.chrome.getSelectedPanel();
-
             FirebugContext = context;
-
-            if (panel)
-            {
-                if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set FirebugContext to "+context.getName()+" for panel.name "+panel.name);
-
-                Firebug.chrome.selectPanel(panel.name, true);
-            }
-            else
-            {
-                if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set FirebugContext to "+context.getName()+" no panel ");
-            }
-
-        }
     },
 
     formatLists: function(header, lists)
