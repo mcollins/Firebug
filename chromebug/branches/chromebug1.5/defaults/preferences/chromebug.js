@@ -137,3 +137,4 @@ pref("extensions.chromebug.DBG_NET", false);          // net.js                 
 pref("extensions.chromebug.DBG_INITIALIZE", false);   // registry (modules panels); initialize FB  /*@explore*/
 pref("extensions.chromebug.DBG_INSPECT", false);   // inspector  /*@explore*/
 pref("extensions.chromebug.DBG_OPTIONS", false);      // /*@explore*/
+pref("extensions.chromebug.DBG_FBCACHE", false);      // /*@explore*/
