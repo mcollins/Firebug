@@ -73,7 +73,7 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
 {
     name: panelName,
     title: "Firebug Cache",
-    searchable: true,
+    searchable: false,
     editable: false,
 
     initializeNode: function(panelNode)
@@ -92,6 +92,9 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
 
         clearNode(this.panelNode);
 
+        // Append custom stylesheet for this panel.
+        Module.addStyleSheet();
+
         // If the current browser window (associated with the context) has TabWatcher
         // display its cache entries. Otherwise bail out.
         var tabWatcher = this.context.browser.contentWindow.TabWatcher;
@@ -106,9 +109,6 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
                 "Firebug is not embedded in: " + this.context.name); //xxxHonza: localization
             return;
         }
-
-        // Append custom stylesheet for this panel.
-        Module.addStyleSheet();
 
         // Get all caches from the browser window (there is one cache per tab).
         var cacheList = [];
