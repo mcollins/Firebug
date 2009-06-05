@@ -97,7 +97,6 @@ FBTestApp.TestResultRep = domplate(
         else
         {
             var infoBodyRow = row.nextSibling;
-            var netInfoBox = getElementByClass(infoBodyRow, "testResultInfoBody");
             row.parentNode.removeChild(infoBodyRow);
         }
     },
