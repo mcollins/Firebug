@@ -22,8 +22,7 @@
         windowtype="chromebug:ui"
         title="Chromebug 0.4"
         width="600" height="400"
-        persist="screenX,screenY,width,height"
-        >
+        persist="screenX,screenY,width,height">
 
     <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
     <script type="application/x-javascript">
@@ -39,7 +38,6 @@
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
-
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabWatcher.js"/>
@@ -57,12 +55,13 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/inspector.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/plugin.js"/>
-     <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>
 
-     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
-     <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
+    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
+    <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
 
-     <script type="application/x-javascript" src="chrome://chromebug/content/tracePanel.js"/>
+    <script type="application/x-javascript" src="chrome://chromebug/content/tracePanel.js"/>
+    <script type="application/x-javascript" src="chrome://chromebug/content/firebugCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/html.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/css.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/layout.js"/>
@@ -77,23 +76,21 @@
     <script type="application/x-javascript" src="chrome://firebug/content/jsonViewer.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/consoleAPI.js"/>
-     <script type="application/x-javascript" src="chrome://fb4cb/content/commandLineAPI.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/commandLineAPI.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/shortcuts.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/a11y.js"/>
 
-
-
     <!-- END -->
- <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
- <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
-
+    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
+    <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
         <command id="cmd_detachFirebug" oncommand="Firebug.detachBar()"/>
         <command id="cmd_toggleDetachFirebug" oncommand="Firebug.toggleDetachBar()"/>
     </commandset>
-     <stringbundleset id="stringbundleset"/>
+
+    <stringbundleset id="stringbundleset"/>
     <commandset id="baseMenuCommandSet"/>
     <keyset id="baseMenuKeyset"/>
 
@@ -140,6 +137,7 @@
         <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.TraceModule.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
         <command id="cmd_cbDumpFileTrack" oncommand="Chromebug.dumpFileTrack()"/>
         <command id="cmd_platformCc" oncommand="Firebug.Platform.Cc()"/>
+        <command id="cmd_openProfileDir" oncommand="Firebug.Chromebug.openProfileDir(FirebugContext)"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -187,6 +185,7 @@
                     <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
                     <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
+                    <menuitem id="menu_openProfileDir" command="cmd_openProfileDir" label="Open Profile Directory"/>
                 </menupopup>
             </menu>
             <menu id="view-menu" label="&firebug.View;">

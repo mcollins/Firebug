@@ -43,7 +43,7 @@ const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverServ
 
 const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
 const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
-
+const directoryService = CCSV("@mozilla.org/file/directory_service;1", "nsIProperties");
 
 const PrefService = Cc["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
@@ -1047,9 +1047,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     getPlatformStringURL: function(string)
     {
-        var dir = Components.classes["@mozilla.org/file/directory_service;1"]
-                                     .getService(Components.interfaces.nsIProperties)
-                                     .get(string, Components.interfaces.nsIFile);
+        var dir = directoryService.get(string, Components.interfaces.nsIFile);
         var URL = FBL.getURLFromLocalFile(dir);
         return URL;
     },
@@ -2023,6 +2021,15 @@ Firebug.Chromebug = extend(Firebug.Module,
             throw new Error("Could not find "+xpcomExplorerURL);
     },
 
+    openProfileDir: function(context)
+    {
+        var profileFolder = directoryService.get("ProfD", Ci.nsIFile);
+        var path = profileFolder.QueryInterface(Ci.nsILocalFile).path;
+        var fileLocal = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
+        fileLocal.initWithPath(path);
+        fileLocal.launch();
+    },
+
     avoidStrict: function(subject, topic, data)
     {
         if (data)
@@ -2048,8 +2055,6 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     dumpDirectory: function()
     {
-        var directoryService = Components.classes["@mozilla.org/file/directory_service;1"].
-            getService(Components.interfaces.nsIProperties);
         FBTrace.sysout("dumpDirectory begins\n", directoryService);
         if (directoryService instanceof Components.interfaces.nsIProperties)
         {
@@ -3265,13 +3270,11 @@ Chromebug.jsContextListLocator = function(xul_element)
 
 Chromebug.pathListLocator = function(xul_element)
 {
-    var ds = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties);
-
     if (!Chromebug.pathList)
     {
         Chromebug.pathList = {
             elementBoundTo: xul_element,
-            directoryService: ds,
+            directoryService: directoryService,
             strings: ['ProfD', 'DefProfRt', 'UChrm', 'DefRt', 'PrfDef', 'APlugns', 'AChrom','ComsD', 'Home', 'TmpD', 'ProfLD', 'resource:app', 'Desk', 'Progs', 'BMarks', 'DLoads', 'UStor'],
 
             getLocationList: function()
