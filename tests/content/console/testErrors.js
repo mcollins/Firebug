@@ -25,41 +25,20 @@ function fireTest(win, ith)
         return;
     }
 
-    window.currentLogHandler = getLogHandler(win, ith, titles[ith], sources[ith]);
-    window.currentLogHandler.eventName = "DOMNodeInserted";
-    window.currentLogHandler.capturing = false;
-
     var panelDoc = FBTestFirebug.getPanelDocument();
-    panelDoc.addEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
 
-    window.addEventListener("unload", function cleanUp()
+    var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {class: "logRow-errorMessage"});
+
+    lookForLogRow.onRecognize(function sawLogRow(elt)
     {
-        panelDoc.removeEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
-    }, true);
-
+        FBTest.progress("matched logRow-errorMessage with "+ith, elt);
+        checkConsoleLogMessage(elt, titles[ith], sources[ith]);
+        setTimeout(function bindArgs() { return fireTest(win, ith+1); });
+    });
 
     var button = win.document.getElementById(buttons[ith]);
     FBTest.progress("testing "+button.getAttribute('id'));
     FBTest.click(button);
-}
-
-function getLogHandler(win, ith, expectedTitle, expectedSource)
-{
-    FBTest.sysout("getLogHandler "+ith+" on window "+win.location+" "+expectedTitle+" source: "+expectedSource);
-    return function waitForLogEvent(event)
-    {
-        if (window.closed)
-            throw "Window is closed!!!";
-
-        FBTest.sysout("waitForLogEvent got event, new child is: "+event.target.tagName, event);
-        var elt = event.target;
-        if (FW.FBL.hasClass(elt, 'logRow'))
-        {
-            elt.ownerDocument.removeEventListener(window.currentLogHandler.eventName, window.currentLogHandler, window.currentLogHandler.capturing);
-            checkConsoleLogMessage(elt, expectedTitle, expectedSource);
-            fireTest(win, ith+1);
-        }
-    }
 }
 
 function checkConsoleLogMessage(log, expectedTitle, expectedSource)
