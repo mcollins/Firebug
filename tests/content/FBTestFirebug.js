@@ -619,8 +619,11 @@ this.selectSourceLine = function(url, lineNo, category, chrome)
         FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
 }
 
-// ************************************************************************************************
-// Test Handlers
+//************************************************************************************************
+
+
+//************************************************************************************************
+// Test Handlers  XXXjjb I would like to get rid of this one
 
 // var fooTest = new FBTest.Firebug.TestHandlers("TestFoo");
 this.TestHandlers = function(testName)
@@ -747,6 +750,124 @@ this.TestHandlers.prototype =
 
 // ************************************************************************************************
 };
+
+ /*
+  * var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {class: "logRow-errorMessage"});
+
+    lookForLogRow.onRecognize(function sawLogRow(elt)
+    {
+        checkConsoleLogMessage(elt, titles[ith], sources[ith]);  // deeper analysis if needed
+        setTimeout(function bindArgs() { return fireTest(win, ith+1); }); // run next UI event on a new top level
+    });
+    // now fire a UI event
+  */
+var MutationRecognizer = function(win, tagName, attributes, text)
+{
+    this.win = win;
+    this.tagName = tagName;
+    this.attributes = attributes;
+    this.characterData = text;
+};
+
+MutationRecognizer.prototype.onRecognize = function(handler)
+{
+    return new MutationEventFilter(this, handler);
+}
+MutationRecognizer.prototype.getWindow = function()
+{
+    return this.win;
+}
+
+MutationRecognizer.prototype.matches = function(elt)
+{
+    if (elt.tagName.toLowerCase() != this.tagName)
+    {
+        FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName, elt);
+        return false;
+    }
+
+    for (var p in this.attributes)
+    {
+        if (this.attributes.hasOwnProperty(p))
+        {
+            var eltP = elt.getAttribute(p);
+            if (!eltP)
+            {
+                FBTest.sysout("MutationRecognizer no attribute "+p);
+                return false;
+            }
+            if (this.attributes[p] != null)
+            {
+                if (p == 'class')
+                {
+                    if (eltP.indexOf(this.attributes[p]) < 0)
+                    {
+                        FBTest.sysout("MutationRecognizer no match for class "+this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class')+" indexOf: "+eltP.indexOf(this.attributes[p]));
+                        return false;
+                    }
+                }
+                else if (eltP != this.attributes[p])
+                {
+                    FBTest.sysout("MutationRecognizer no match for attribute "+p+": "+this.attributes[p]+" vs "+eltP);
+                    return false;
+                }
+            }
+        }
+    }
+
+    if (this.characterData)
+    {
+        if (elt.textContent.indexOf(this.characterData) < 0)
+        {
+            FBTest.sysout("MutationRecognizer no match for characterData "+this.characterData+" vs "+elt.textContent);
+            return false;
+        }
+    }
+    // tagName and all attributes match
+    return true;
+}
+
+function MutationEventFilter(recognizer, handler)
+{
+    this.recognizer = recognizer;
+    this.handler = handler;
+
+    var filter = this;
+    this.onMutateAttr = function handleMatches(event)
+    {
+        FBTest.sysout("onMutateAttr "+event.target);
+        if (recognizer.matches(event.target))
+        {
+            handler(event.target);
+            filter.unwatchWindow(recognizer.getWindow())
+        }
+    }
+
+    // the matches() function could be tuned to each kind of mutation for improved efficiency
+    this.onMutateNode = this.onMutateAttr;
+    this.onMutateText = this.onMutateAttr;
+
+    filter.watchWindow(recognizer.win);
+}
+
+MutationEventFilter.prototype.watchWindow = function(win)
+{
+     var doc = win.document;
+     doc.addEventListener("DOMAttrModified", this.onMutateAttr, false);
+     doc.addEventListener("DOMCharacterDataModified", this.onMutateText, false);
+     doc.addEventListener("DOMNodeInserted", this.onMutateNode, false);
+     // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
+     FBTest.progress("added MutationWatcher to "+doc.location);
+}
+
+MutationEventFilter.prototype.unwatchWindow = function(win)
+{
+     var doc = win.document;
+     doc.removeEventListener("DOMAttrModified", this.onMutateAttr, false);
+     doc.removeEventListener("DOMCharacterDataModified", this.onMutateText, false);
+     doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
+     // not needed? doc.removeEventListener("DOMNodeRemoved", this.onMutateNode, false);
+}
 
 // Initialization
 function initializeFBTestFirebug()
