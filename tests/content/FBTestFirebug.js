@@ -857,15 +857,23 @@ MutationEventFilter.prototype.watchWindow = function(win)
      doc.addEventListener("DOMCharacterDataModified", this.onMutateText, false);
      doc.addEventListener("DOMNodeInserted", this.onMutateNode, false);
      // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
+     this.watching = true;
+     var filter = this;
+     filter.cleanUp = function() { filter.unwatchWindow(win); }
+     doc.addEventListener("unload", filter.cleanUp, true);
      FBTest.progress("added MutationWatcher to "+doc.location);
 }
 
 MutationEventFilter.prototype.unwatchWindow = function(win)
 {
      var doc = win.document;
+
      doc.removeEventListener("DOMAttrModified", this.onMutateAttr, false);
      doc.removeEventListener("DOMCharacterDataModified", this.onMutateText, false);
      doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
+     doc.removeEventListener("unload", this.cleanUp, true);
+     delete this.watching;
+     FBTest.progress("removed MutationWatcher from "+doc.location);
      // not needed? doc.removeEventListener("DOMNodeRemoved", this.onMutateNode, false);
 }
 
