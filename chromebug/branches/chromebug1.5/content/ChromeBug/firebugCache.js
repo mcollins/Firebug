@@ -105,8 +105,8 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
                     this.context.name, this.context);
 
             // Display info about no Firebug in the current window instance.
-            Module.Message.render(this.panelNode,
-                "Firebug is not embedded in: " + this.context.name); //xxxHonza: localization
+            Module.Message.render(this.panelNode, "Firebug is not embedded in: " +
+                this.context.name + " - " + this.context.getTitle()); //xxxHonza: localization
             return;
         }
 
@@ -127,8 +127,8 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
                 FBTrace.sysout("fbcache.refresh; empty cache: " + this.context.name, this.context);
 
             // Display info about empty cache in the current window instance.
-            Module.Message.render(this.panelNode, 
-                "Firebug cache is empty for: " + this.context.name); //xxxHonza: localization
+            Module.Message.render(this.panelNode, "Firebug cache is empty for: " +
+                this.context.name + " - " + this.context.getTitle()); //xxxHonza: localization
             return;
         }
 
