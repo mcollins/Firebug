@@ -136,9 +136,9 @@ this.openURL = function(url, callback)
     var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
     var onLoadURL = function(event)
     {
+        browser.removeEventListener("load", onLoadURL, true);
         setTimeout(function()
         {
-            browser.removeEventListener("load", onLoadURL, true);
             callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
         }, 10);
     }
@@ -157,9 +157,9 @@ this.reload = function(callback)
     var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
     var onLoadURL = function(event)
     {
+        browser.removeEventListener("load", onLoadURL, true);
         setTimeout(function()
         {
-            browser.removeEventListener("load", onLoadURL, true);
             callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
         }, 10);
     }
