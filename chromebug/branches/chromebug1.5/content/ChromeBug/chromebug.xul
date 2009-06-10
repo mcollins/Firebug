@@ -95,28 +95,13 @@
     <keyset id="baseMenuKeyset"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_undo"
-                 oncommand="goDoCommand('cmd_undo')"
-                 disabled="true"/>
-        <command id="cmd_redo"
-                 oncommand="goDoCommand('cmd_redo')"
-                 disabled="true"/>
-        <command id="cmd_cut"
-                 oncommand="goDoCommand('cmd_cut')"
-                 disabled="true"/>
-        <command id="cmd_copy"
-                 oncommand="goDoCommand('cmd_copy')"
-                 disabled="true"/>
-        <command id="cmd_paste"
-                 oncommand="goDoCommand('cmd_paste')"
-                 disabled="true"/>
-        <command id="cmd_delete"
-                 oncommand="goDoCommand('cmd_delete')"
-                 valueDefault="deleteCmd_label"
-                 disabled="true"/>
-        <command id="cmd_selectAll"
-                 oncommand="goDoCommand('cmd_selectAll')"
-                 disabled="true"/>
+        <command id="cmd_undo" oncommand="goDoCommand('cmd_undo')" disabled="true"/>
+        <command id="cmd_redo" oncommand="goDoCommand('cmd_redo')" disabled="true"/>
+        <command id="cmd_cut" oncommand="goDoCommand('cmd_cut')" disabled="true"/>
+        <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
+        <command id="cmd_paste" oncommand="goDoCommand('cmd_paste')" disabled="true"/>
+        <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')" valueDefault="deleteCmd_label" disabled="true"/>
+        <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')" disabled="true"/>
         <command id="cmd_closeWindow" oncommand="window.close()"/>
         <command id="cmd_toggleXPCOMBrowser" oncommand="Firebug.Chromebug.CategoryBrowser.toggleXPCOMBrowser()"/>
         <command id="cmd_firefox" oncommand="window.open().home();"/>
@@ -126,10 +111,8 @@
         <command id="cmd_reload" disabled="true" oncommand="Firebug.Chromebug.reload()"/>
         <command id="cmd_reloadSkipCache" oncommand="Firebug.Chromebug.reload(true)"/>
         <command id="cmd_toggleOrient" oncommand="FirebugChrome.toggleOrient()" />
-        <command id="cmd_toggleInterfaceList" oncommand="Firebug.Chromebug.toggleInterfaceList()"
-                 checked="false"/>
-        <command id="cmd_toggleChromeList" oncommand="Firebug.Chromebug.toggleChromeList()"
-                 checked="false"/>
+        <command id="cmd_toggleInterfaceList" oncommand="Firebug.Chromebug.toggleInterfaceList()" checked="false"/>
+        <command id="cmd_toggleChromeList" oncommand="Firebug.Chromebug.toggleChromeList()" checked="false"/>
         <command id="cmd_search" oncommand="Firebug.Search.focus(FirebugContext)" />
         <command id="cmd_toggleIntroduction" oncommand="Firebug.Chromebug.toggleIntroduction()" />
         <command id="cmd_imAnExpert" oncommand="Firebug.Chromebug.toggleIntroductionTrue()" />
@@ -141,19 +124,11 @@
     </commandset>
 
     <keyset id="mainKeyset">
-        <key id="key_undo"
-             key="&undoCmd.key;"
-             modifiers="accel"/>
+        <key id="key_undo" key="&undoCmd.key;" modifiers="accel"/>
         <key id="key_redo" key="&undoCmd.key;" modifiers="accel,shift"/>
-        <key id="key_cut"
-             key="&cutCmd.key;"
-             modifiers="accel"/>
-        <key id="key_copy"
-             key="&copyCmd.key;"
-             modifiers="accel"/>
-        <key id="key_paste"
-             key="&pasteCmd.key;"
-             modifiers="accel"/>
+        <key id="key_cut" key="&cutCmd.key;" modifiers="accel"/>
+        <key id="key_copy" key="&copyCmd.key;" modifiers="accel"/>
+        <key id="key_paste" key="&pasteCmd.key;" modifiers="accel"/>
         <key id="key_delete" keycode="VK_DELETE" command="cmd_delete"/>
         <key id="key_selectAll" key="&selectAllCmd.key;" modifiers="accel"/>
         <key key="r" command="cmd_reload" modifiers="accel" id="key_reload"/>
@@ -165,130 +140,113 @@
     <broadcasterset id="mainBroadcasterSet"/>
     <popupset id="mainPopupSet"/>
 
+    <!-- appcontent START -->
     <vbox id="appcontent" flex="1">
 
         <hbox id="cbCommandToolbox">
-            <menubar align="center" >
-                <menu id="file-menu" label="Tools">
-                    <menupopup onpopupshowing="Firebug.Chromebug.onOptionsShowing(this)">
-                        <menuitem id="menu_firefox" command="cmd_firefox" key="key_firefox"
-                                  label="Open Firefox"/>
-                        <menuitem id="menu_chromeList" command="cmd_chromeList" key="key_chromeList"
-                                  label="Gijs Kruitbosch's Chrome List"/>
-                        <!-- <menuitem id="menu_xulExplorer" command="cmd_xulExplorer" key="key_xulExplorer"
-                                  label="Mark Finkle's XUL Explorer"/> -->
-                        <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
-                                  label="XPCOM Explorer"/>
-                        <menuitem id="menu_chromebugTraceConsole" command="cmd_toggleCBTraceConsole"
-                                key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole"/>
-                        <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
-                                key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
-                        <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
-                        <menuitem id="menu_openProfileDir" command="cmd_openProfileDir" label="Open Profile Directory"/>
-                    </menupopup>
-                </menu>
-                <menu id="view-menu" label="&firebug.View;">
-                    <menupopup onpopupshowing="return Firebug.Chromebug.onOptionsShowing(this);">
-                        <menuitem id="menu_toggleOrient" command="cmd_toggleOrient" type="checkbox"
-                                  label="&firebug.Vertical;" persist="checked"/>
-                        <menuseparator/>
 
-                        <menuitem id="menu_reload" command="cmd_reload" key="key_reload"
-                                  label="reload" accesskey="reloadCmd.accesskey"/>
-                        <menuseparator/>
+            <!-- Tools Menu -->
+            <toolbarbutton id="file-menu" label="Tools" type="menu">
+                <menupopup onpopupshowing="Firebug.Chromebug.onOptionsShowing(this)">
+                    <menuitem id="menu_firefox" command="cmd_firefox" key="key_firefox"
+                              label="Open Firefox"/>
+                    <menuitem id="menu_chromeList" command="cmd_chromeList" key="key_chromeList"
+                              label="Gijs Kruitbosch's Chrome List"/>
+                    <!-- <menuitem id="menu_xulExplorer" command="cmd_xulExplorer" key="key_xulExplorer"
+                              label="Mark Finkle's XUL Explorer"/> -->
+                    <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
+                              label="XPCOM Explorer"/>
+                    <menuitem id="menu_chromebugTraceConsole" command="cmd_toggleCBTraceConsole"
+                            key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole"/>
+                    <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
+                            key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
+                    <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
+                    <menuitem id="menu_openProfileDir" command="cmd_openProfileDir" label="Open Profile Directory"/>
+                </menupopup>
+            </toolbarbutton>
 
-                        <menu label="&firebug.TextSize;">
-                            <menupopup>
-                                <menuitem label="&firebug.IncreaseTextSize;" oncommand="Firebug.increaseTextSize(1)"/>
-                                <menuitem label="&firebug.DecreaseTextSize;" oncommand="Firebug.increaseTextSize(-1)"/>
-                                <menuitem label="&firebug.NormalTextSize;" oncommand="Firebug.setTextSize(0)"/>
-                            </menupopup>
-                        </menu>
+            <!-- View Menu -->
+            <toolbarbutton id="view-menu" label="&firebug.View;" type="menu">
+                <menupopup onpopupshowing="return Firebug.Chromebug.onOptionsShowing(this);">
+                    <menuitem id="menu_toggleOrient" command="cmd_toggleOrient" type="checkbox"
+                              label="&firebug.Vertical;" persist="checked"/>
+                    <menuseparator/>
 
-                        <menu label="&firebug.Options;">
-                            <menupopup onpopupshowing="return FirebugChrome.onOptionsShowing(this);">
-                                <menuitem type="checkbox" label="&firebug.AlwaysOpenInWindow;"
-                                          oncommand="FirebugChrome.onToggleOption(this)"
-                                          option="openInWindow"/>
+                    <menuitem id="menu_reload" command="cmd_reload" key="key_reload"
+                              label="reload" accesskey="reloadCmd.accesskey"/>
+                    <menuseparator/>
 
-                                <menuitem type="checkbox" label="&firebug.ShowTooltips;"
-                                          oncommand="FirebugChrome.onToggleOption(this)"
-                                          option="showInfoTips"/>
+                    <menu label="&firebug.TextSize;">
+                        <menupopup>
+                            <menuitem label="&firebug.IncreaseTextSize;" oncommand="Firebug.increaseTextSize(1)"/>
+                            <menuitem label="&firebug.DecreaseTextSize;" oncommand="Firebug.increaseTextSize(-1)"/>
+                            <menuitem label="&firebug.NormalTextSize;" oncommand="Firebug.setTextSize(0)"/>
+                        </menupopup>
+                    </menu>
 
-                                <menuitem type="checkbox" label="&firebug.ShadeBoxModel;"
-                                          oncommand="FirebugChrome.onToggleOption(this)"
-                                          option="shadeBoxModel"/>
-                            </menupopup>
-                        </menu>
-                    </menupopup>
-                </menu>
+                    <menu label="&firebug.Options;">
+                        <menupopup onpopupshowing="return FirebugChrome.onOptionsShowing(this);">
+                            <menuitem type="checkbox" label="&firebug.AlwaysOpenInWindow;"
+                                      oncommand="FirebugChrome.onToggleOption(this)"
+                                      option="openInWindow"/>
 
-                <menu id="window-menu" label="&firebug.Help;">
-                    <menupopup>
-                        <menuitem label="Show That Great Introduction" oncommand="Firebug.Chromebug.toggleIntroduction()"/>
-                        <menuseparator/>
-                        <menuitem label="&firebug.Website;" oncommand="Firebug.visitWebsite('main')"/>
-                        <menuitem label="&firebug.Documentation;" oncommand="Firebug.visitWebsite('docs')"/>
-                        <menuitem label="&firebug.KeyShortcuts;" oncommand="Firebug.visitWebsite('keyboard')"/>
-                        <menuitem label="&firebug.Forums;" oncommand="Firebug.visitWebsite('discuss')"/>
-                        <menuitem label="&firebug.Issues;" oncommand="Firebug.visitWebsite('issues')"/>
-                        <menuseparator/>
+                            <menuitem type="checkbox" label="&firebug.ShowTooltips;"
+                                      oncommand="FirebugChrome.onToggleOption(this)"
+                                      option="showInfoTips"/>
 
-                        <menuitem label="&firebug.About;" oncommand="Firebug.Chromebug.openAboutDialog()"/>
-                    </menupopup>
-                </menu>
-            </menubar>
+                            <menuitem type="checkbox" label="&firebug.ShadeBoxModel;"
+                                      oncommand="FirebugChrome.onToggleOption(this)"
+                                      option="shadeBoxModel"/>
+                        </menupopup>
+                    </menu>
+                </menupopup>
+            </toolbarbutton>
 
-            <vbox>
-                <spacer flex="1"/>
-                <label value="|" control="cbPackageList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
-                <spacer flex="1"/>
-            </vbox>
+            <!-- Window Menu -->
+            <toolbarbutton id="window-menu" label="&firebug.Help;" type="menu">
+                <menupopup>
+                    <menuitem label="Show That Great Introduction" oncommand="Firebug.Chromebug.toggleIntroduction()"/>
+                    <menuseparator/>
+                    <menuitem label="&firebug.Website;" oncommand="Firebug.visitWebsite('main')"/>
+                    <menuitem label="&firebug.Documentation;" oncommand="Firebug.visitWebsite('docs')"/>
+                    <menuitem label="&firebug.KeyShortcuts;" oncommand="Firebug.visitWebsite('keyboard')"/>
+                    <menuitem label="&firebug.Forums;" oncommand="Firebug.visitWebsite('discuss')"/>
+                    <menuitem label="&firebug.Issues;" oncommand="Firebug.visitWebsite('issues')"/>
+                    <menuseparator/>
+                    <menuitem label="&firebug.About;" oncommand="Firebug.Chromebug.openAboutDialog()"/>
+                </menupopup>
+            </toolbarbutton>
 
-            <vbox>
-                <spacer flex="1"/>
-                <label value="filter:" control="cbPackageList" id="cbPackageLabel" class="toolbar-text-menubutton"
-                       tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
-                <spacer flex="1"/>
-            </vbox>
+            <toolbarseparator id="cbButtonSeperatorLabel"/>
 
-            <toolbarbutton label="(no filter)" id="cbPackageList" locationProvider="Chromebug.packageListLocator;"
-                           class="toolbar-text-menubutton"
-                           tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+            <!-- Filter -->
+            <!-- xxxHonza: localization -->
+            <toolbarbutton label="(no filter)" id="cbPackageList"
+                locationProvider="Chromebug.packageListLocator;" title="Filter:"
+                tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
+                labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
-            <vbox>
-                <spacer flex="1"/>
-                <label value="|" control="cbAllFilesList" id="cbButtonSeperatorLabel" class="toolbar-text-menubutton"/>
-                <spacer flex="1"/>
-            </vbox>
+            <toolbarseparator/>
 
-            <vbox>
-                <spacer flex="1"/>
-                <label value="All files:" control="cbAllFilesList" id="cbAllFilesLabel" class="toolbar-text-menubutton"
-                       tooltiptext="All files known to Chromebug" />
-                <spacer flex="1"/>
-            </vbox>
+            <!-- List of all files -->
+            <!-- xxxHonza: localization -->
+            <toolbarbutton label="(no file)" id="cbAllFilesList"
+                locationProvider="Chromebug.allFilesListLocator;" title="File:"
+                tooltiptext="All files known to Chromebug"
+                labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
-            <toolbarbutton label="files" id="cbAllFilesList" locationProvider="Chromebug.allFilesListLocator;"
-                           class="toolbar-text-menubutton"
-                           tooltiptext="All files known to Chromebug"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
+            <toolbarseparator/>
 
-            <vbox>
-                <spacer flex="1"/>
-                <label value="context:" control="cbContextList" id="cbContextLabel" class="toolbar-text-menubutton"
-                       tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;" />
-                <spacer flex="1"/>
-            </vbox>
+            <!-- List of Chromebug contexts (windows) -->
+            <!-- xxxHonza: localization -->
+            <toolbarbutton label="context" id="cbContextList"
+                locationProvider="Chromebug.contextListLocator;" title="Window:"
+                tooltiptext="currently selected context"
+                labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
-            <toolbarbutton label="context" id="cbContextList" locationProvider="Chromebug.contextListLocator;"
-                           class="toolbar-text-menubutton"
-                           tooltiptext="currently selected context"
-                           labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
-
-           <toolbarbutton  id="reload-button" class="toolbarbutton-1"
-                           command="cmd_reload" tooltiptext="Reload current window"/>
+            <spacer flex="1"/>
+            <toolbarbutton  id="reload-button" class="toolbarbutton-1"
+                command="cmd_reload" tooltiptext="Reload current window"/>
 
         </hbox>
 
@@ -310,12 +268,13 @@
 
         <hbox id="fbCommandBox"/>
         </vbox>
-    
+
         <vbox id="cbOverlayViewer" flex="1" collapsed="true">
             <!-- <browser src=... type="content" flex="1" /> -->
         </vbox>
 
-    </vbox>  <!-- appcontent -->
+    </vbox>
+    <!-- appcontent END -->
 
     <!-- If Firebug is displayed in this external window, but not active for currently selected
          Firefox tab, the following button allows to resume it.
