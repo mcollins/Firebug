@@ -240,7 +240,7 @@
             <!-- List of Chromebug contexts (windows) -->
             <!-- xxxHonza: localization -->
             <toolbarbutton label="context" id="cbContextList"
-                locationProvider="Chromebug.contextListLocator;" title="Window:"
+                locationProvider="Chromebug.contextListLocator;" title="Context:"
                 tooltiptext="currently selected context"
                 labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
