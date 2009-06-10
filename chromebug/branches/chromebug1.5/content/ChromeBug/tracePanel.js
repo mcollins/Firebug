@@ -39,6 +39,10 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 
     initContext: function(context)
     {
+        if (FBTrace.DBG_CB_CONSOLE)
+            FBTrace.sysout("cb.TraceConsoleModule.initContext; " +
+                context.getName() + " - " + context.getTitle());
+
         if (this.tracePanel)  // one per app
             context.setPanel(this.tracePanel.name, this.tracePanel);
         else
@@ -47,6 +51,10 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 
     destroyContext: function(context)
     {
+        if (FBTrace.DBG_CB_CONSOLE)
+            FBTrace.sysout("cb.TraceConsoleModule.destroyContext; " +
+                context.getName() + " - " + context.getTitle());
+
         // unpoint from this context to our panel so its not destroyed.
         if (this.tracePanel)
             context.setPanel(this.tracePanel.name, null);
@@ -54,6 +62,10 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 
     createTracePanel: function(context)
     {
+        if (FBTrace.DBG_CB_CONSOLE)
+            FBTrace.sysout("cb.TraceConsoleModule.createTracePanel; " +
+                context.getName() + " - " + context.getTitle());
+
         var panel = context.getPanel("trace", false); // create if need be.
         var panelType = Firebug.getPanelType("trace");
         var doc = FirebugChrome.getPanelDocument(panelType);
