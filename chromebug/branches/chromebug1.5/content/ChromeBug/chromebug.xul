@@ -121,6 +121,7 @@
         <command id="cmd_cbDumpFileTrack" oncommand="Chromebug.dumpFileTrack()"/>
         <command id="cmd_platformCc" oncommand="Firebug.Platform.Cc()"/>
         <command id="cmd_openProfileDir" oncommand="Firebug.Chromebug.openProfileDir(FirebugContext)"/>
+        <command id="cmd_exitFirefox" oncommand="Firebug.Chromebug.exitFirefox()"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -162,6 +163,8 @@
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
                     <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
                     <menuitem id="menu_openProfileDir" command="cmd_openProfileDir" label="Open Profile Directory"/>
+                    <menuseparator/>
+                    <menuitem id="menu_exitFirefox" command="cmd_exitFirefox" label="Exit Firefox"/> <!-- xxxHonza: localization -->
                 </menupopup>
             </toolbarbutton>
 

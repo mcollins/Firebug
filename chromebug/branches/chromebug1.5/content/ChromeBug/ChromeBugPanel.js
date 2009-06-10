@@ -2012,6 +2012,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         fileLocal.launch();
     },
 
+    exitFirefox: function()
+    {
+        goQuitApplication();
+    },
+
     avoidStrict: function(subject, topic, data)
     {
         if (data)
