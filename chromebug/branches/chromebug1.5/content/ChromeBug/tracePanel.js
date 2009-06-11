@@ -284,14 +284,22 @@ FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
         wrapperNumber.className = "messageNameLabel messageLabel";
         wrapperNumberCell.appendChild(wrapperNumber);
 
+        var wrapperTime = this.logs.ownerDocument.createElement("td");
+        wrapperTime.className = "messageTimeCol messageCol";
+        var timeLabel =  this.logs.ownerDocument.createElement("div");
+        timeLabel.className = "messageTimeLabel messageLabel";
+        timeLabel.innerHTML = message.time;
+        wrapperTime.appendChild(timeLabel);
+
         var wrapperData = this.logs.ownerDocument.createElement("td");
         wrapperData.innerHTML = message.getLabel(-1);
-        wrapperData.className = "messageCol messageLabel";
+        wrapperData.className = "messageBodyCol messageCol messageLabel";
 
         wrapper.message = message;
         wrapper.addEventListener('click', this.unwrapper, true);
 
         wrapper.appendChild(wrapperNumberCell);
+        wrapper.appendChild(wrapperTime);
         wrapper.appendChild(wrapperData);
         this.logs.firstChild.appendChild(wrapper);
         if (scrolledToBottom)
