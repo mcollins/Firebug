@@ -1,3 +1,5 @@
+window.FBTestTimeout = 17000; // override the default test timeout [ms].
+
 function runTest()
 {
     FBTest.sysout("issue1693.START");
