@@ -361,8 +361,8 @@ this.listenerCleanups = [];
 this.cleanUpListeners = function()
 {
     var c = FBTestFirebug.listenerCleanups;
-    for (var i = i; i < c.length; i++)
-        c[i]();
+    while(c.length)
+        c.shift().call();
 }
 
 this.UntilHandler = function(eventTarget, eventName, isMyEvent, onEvent, capturing)
@@ -824,6 +824,7 @@ MutationRecognizer.prototype.matches = function(elt)
         }
     }
     // tagName and all attributes match
+    FBTest.sysout("MutationRecognizer tagName and all attributes match");
     return true;
 }
 
@@ -835,7 +836,10 @@ function MutationEventFilter(recognizer, handler)
     var filter = this;
     this.onMutateAttr = function handleMatches(event)
     {
-        FBTest.sysout("onMutateAttr "+event.target);
+        if (window.closed)
+            throw "WINDOW CLOSED with this.watching "+filter.watching;
+
+        FBTest.sysout("onMutateAttr "+event.target+" in "+event.target.ownerDocument.location);
         if (recognizer.matches(event.target))
         {
             handler(event.target);
@@ -859,8 +863,8 @@ MutationEventFilter.prototype.watchWindow = function(win)
      // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
      this.watching = true;
      var filter = this;
-     filter.cleanUp = function() { filter.unwatchWindow(win); }
-     doc.addEventListener("unload", filter.cleanUp, true);
+     filter.cleanUp = function() { FBTrace.sysout("Filter.cleanup******************"); filter.unwatchWindow(win); }
+     win.addEventListener("unload", filter.cleanUp, false);
      FBTest.progress("added MutationWatcher to "+doc.location);
 }
 
@@ -871,9 +875,9 @@ MutationEventFilter.prototype.unwatchWindow = function(win)
      doc.removeEventListener("DOMAttrModified", this.onMutateAttr, false);
      doc.removeEventListener("DOMCharacterDataModified", this.onMutateText, false);
      doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
-     doc.removeEventListener("unload", this.cleanUp, true);
+     doc.removeEventListener("unload", this.cleanUp, false);
      delete this.watching;
-     FBTest.progress("removed MutationWatcher from "+doc.location);
+     FBTest.progress("*********************************removed MutationWatcher from "+doc.location);
      // not needed? doc.removeEventListener("DOMNodeRemoved", this.onMutateNode, false);
 }
 
@@ -890,4 +894,8 @@ function initializeFBTestFirebug()
 
 // Make sure FBTest.Firebug namespace is initialized at the right time.
 window.addEventListener("load", initializeFBTestFirebug, true);
-
+window.addEventListener('unload', function sayUnload(){
+    FBTest.sysout("********* UNLOAD "+window.location);
+    // If this window is closed we must delete any browsers we've created because we may have failed to removeListeners
+    FBTestFirebug.cleanUpTestTabs();
+    }, false);
