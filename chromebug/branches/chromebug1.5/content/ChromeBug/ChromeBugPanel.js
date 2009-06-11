@@ -874,14 +874,15 @@ Chromebug.XULWindowInfo = {
         browser.contentWindow = domWindow;
         browser.tag = this.fakeTabBrowser.browsers.length;
 
-        if (domWindow && 'location' in domWindow)
-            browser.currentURI = domWindow.location;
-        else
-            browser.currentURI = "chrome://chromebug/fakeTabBrowser"+browser.tag;
+        var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
+        if (domWindow && 'location' in domWindow && domWindow.location && domWindow.location.toString())
+            browserName = domWindow.location.toString();
+
+        browser.currentURI = makeURI(browserName);
 
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
-        FBTrace.sysout("createBrowser "+browser.tag+" for "+browser.currentURI);
+        FBTrace.sysout("createBrowser "+browser.tag+" for browserName "+browserName+' with URI '+browser.currentURI.spec);
         return browser;
     },
 
@@ -1334,7 +1335,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (context.window)
             context.windows.push(context.window); // since we don't watchWindows in chromebug
-
+FBTrace.sysout("Chromebug.createContext "+context.getName());
         return context;
     },
 
@@ -2806,6 +2807,7 @@ Chromebug.parseNoWindowURI = function(uri)
     if (uri.indexOf('noWindow')==0)
     {
         var split =  FBL.splitURLBase(uri);
+        FBTrace.sysout("parseNoWindowURI "+uri, split);
         return {path: uri.substr(0,9), name: uri.substr(10), kind: "noWindow", pkgName: "noWindow" }
     }
 }
