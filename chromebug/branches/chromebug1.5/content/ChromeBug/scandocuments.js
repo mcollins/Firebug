@@ -263,7 +263,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             catch (exc)
             {
                 if (FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("scandocuments detachInspectListeners fails "+exc, exc);
+                    FBTrace.sysout("scandocuments detachInspectListeners fails for subWin.document "+subWin.document.location+" because: "+exc, exc);
             }
         }, this));
     },

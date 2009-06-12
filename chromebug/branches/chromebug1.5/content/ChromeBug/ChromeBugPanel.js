@@ -697,7 +697,7 @@ Chromebug.XULWindowInfo = {
         // 'true' for capturing, so all of the sub-window loads also trigger
         outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
 
-        //outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), true);
+        outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), true);
 
         outerDOMWindow.addEventListener("keypress", bind(this.keypressToBreakIntoWindow, this, context), true);
 
@@ -1263,7 +1263,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         fbs.DBG_FBS_FF_START = true;
 
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("registerDebugger start ******************************\n");
+            FBTrace.sysout("initializeDebugger start ******************************\n");
 
         // we are not going to count down the contexts, just leave it at one
         fbs.countContext(true); // connect to firebug-service
@@ -1272,7 +1272,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Debugger.wrappedJSObject = Firebug.Debugger;
         Firebug.Debugger.addListener(this);
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("registerDebugger complete ******************************\n");
+            FBTrace.sysout("initializeDebugger complete ******************************\n");
 
     },
 
