@@ -23,7 +23,10 @@ function fireTest(win)
     {
         FBTest.progress("matched logRow-errorMessage", elt);
         checkConsoleLogMessage(elt, "This is an error from an iframe!", null);
-        FBTest.testDone("872.done");
+        setTimeout(function allowCleanup()
+        {
+            FBTest.testDone("872.done");
+        });
     });
 
     var button = win.document.getElementById("refreshIFrame");
