@@ -780,7 +780,28 @@ MutationRecognizer.prototype.getWindow = function()
 
 MutationRecognizer.prototype.matches = function(elt)
 {
-    if (elt.tagName.toLowerCase() != this.tagName)
+    // Note Text nodes have no tagName
+    if (this.tagName == "Text")
+    {
+        if (elt.data.indexOf(this.characterData) != -1)
+        {
+            FBTest.sysout("MutationRecognizer matches Text character data "+this.characterData);
+            return true;
+        }
+        else
+        {
+            FBTest.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data);
+            return false;
+        }
+    }
+
+    if ( !(elt instanceof Element) )
+    {
+        FBTest.sysout("MutationRecognizer Node not an Element ", elt);
+        return false;
+    }
+
+    if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
     {
         FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName, elt);
         return false;
@@ -833,11 +854,12 @@ function MutationEventFilter(recognizer, handler)
     this.recognizer = recognizer;
     this.handler = handler;
 
+    this.winName = new String(recognizer.win.location.toString());
     var filter = this;
     this.onMutateAttr = function handleMatches(event)
     {
         if (window.closed)
-            throw "WINDOW CLOSED with this.watching "+filter.watching;
+            throw "WINDOW CLOSED with watching: "+filter.watching+" on window named: "+filter.winName;
 
         FBTest.sysout("onMutateAttr "+event.target+" in "+event.target.ownerDocument.location);
         if (recognizer.matches(event.target))
@@ -877,7 +899,7 @@ MutationEventFilter.prototype.unwatchWindow = function(win)
      doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
      doc.removeEventListener("unload", this.cleanUp, false);
      delete this.watching;
-     FBTest.progress("*********************************removed MutationWatcher from "+doc.location);
+     FBTest.sysout("*********************************removed MutationWatcher from "+doc.location);
      // not needed? doc.removeEventListener("DOMNodeRemoved", this.onMutateNode, false);
 }
 
