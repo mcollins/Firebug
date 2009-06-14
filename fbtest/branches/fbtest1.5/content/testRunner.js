@@ -95,7 +95,7 @@ FBTestApp.TestRunner =
         this.currentTest = null;
 
         // Test is done so, clear the break-timeout.
-        this.resetTestTimeout();
+        this.clearTestTimeout();
 
         // If there are tests in the queue, execute them.
         if (this.testQueue && this.testQueue.length)
@@ -198,7 +198,7 @@ FBTestApp.TestRunner =
         var testDoc = event.target;
         var win = testDoc.defaultView;
 
-        // Helper wrapper for all FBTest APIs so, every function call can be monitored.
+        // Helper wrapper for all FBTest APIs to reset the timeout timer.
         var fbTestWrapper = new FBTestApp.FBTestWrapper(win);
 
         // Inject FBTest object into the test page.
@@ -236,14 +236,14 @@ FBTestApp.TestRunner =
         catch (exc)
         {
             FBTestApp.FBTest.sysout("runTest FAILS "+exc, exc);
-            FBTestApp.TestRunner.resetTestTimeout();
+            FBTestApp.TestRunner.clearTestTimeout();
         }
     },
 
     setTestTimeout: function(win)
     {
         if (this.testTimeoutID)
-            this.resetTestTimeout();
+            this.clearTestTimeout();
 
         // Use test timeout from the test driver window if any. This is how
         // a test can override the default value.
@@ -261,10 +261,12 @@ FBTestApp.TestRunner =
 
            FBTestApp.TestRunner.testDone(false);
         }, FBTestApp.FBTest.testTimeout);
+        FBTrace.sysout("TestRunner set testTimeoutID "+this.testTimeoutID+"<<<<<<<<<<<< **********");
     },
 
-    resetTestTimeout: function()
+    clearTestTimeout: function()
     {
+        FBTrace.sysout("TestRunner clear testTimeoutID "+this.testTimeoutID+"<<<<<<<<<<<< **********");
         if (this.testTimeoutID)
         {
             clearTimeout(this.testTimeoutID);
