@@ -7,9 +7,10 @@
 <h1>Test for Issue #1468</h1>
 <ul>
     <li>Open Firebug UI and enable Net panel.</li>
+    <li>Browse for a file and click the <b>Send File</b> button.</li>
 </ul>
 
-<form id="userForm" method="post" action="http://www.getfirebug.com"
+<form id="userForm" method="post" action="/net/1468/issue1468Submit.html"
     enctype="multipart/form-data" name="TestForm">
 Send this file: <input id="userFile" type="file" name="userfile" />
 <input id="userSubmit" type="submit" value="Send File"/>
