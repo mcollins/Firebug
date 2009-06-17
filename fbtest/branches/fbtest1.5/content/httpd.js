@@ -170,7 +170,7 @@ const SJS_TYPE = "sjs";
 /** dump(str) with a trailing "\n" -- only outputs if DEBUG */
 function dumpn(str)
 {
-  if (FBTrace.DBG_ERRORS)
+  if (FBTrace.DBG_NET)
     dump(str + "\n");
 }
 
