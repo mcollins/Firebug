@@ -111,13 +111,13 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         {
         //FBTrace.sysout("context.unloadHandler for context.window: "+this.window.location+" event", event);
 
-            FBTrace.sysout("context.unloadHandler for context.window: "+this.window.location+" event.target "+event.target+" tag:"+event.target.tagName+"\n");
+            FBTrace.sysout("context.unloadHandler for typeof(event.target): "+typeof(event.target)+" event.target "+event.target+" tag:"+event.target.tagName+"\n");
             var document = event.target.ownerDocument;
             if (document)
                 var domWindow = document.defaultView;
             else
             {
-                FBTrace.sysout("context.unloadHandler cannont find document for context.window: "+this.window.location, event.target);
+                FBTrace.sysout("context.unloadHandler cannot find document for context.window: "+this.window.location, event.target);
                 return;   // var domWindow = event.target.ownerDocument.defaultView;
             }
         }

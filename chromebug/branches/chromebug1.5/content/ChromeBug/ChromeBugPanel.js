@@ -775,7 +775,10 @@ Chromebug.XULWindowInfo = {
                     this.xulWindowTags.splice(mark,1);
                 }
                 else
-                    FBTrace.sysout("Chromebugpanel.onclose: timeless nsISupportsInterfacePointer FAILED??\n");
+                {
+                    var outerDOMWindow = this.getDOMWindowByDocShell(xul_win.docShell);
+                    FBTrace.sysout("Chromebugpanel.onclose: xul_window is unknown to us at location "+outerDOMWindow.location);
+                }
              }
              else
                  FBTrace.sysout("Chromebugpanel.onclose: not a nsIXULWindow");
@@ -855,12 +858,6 @@ Chromebug.XULWindowInfo = {
 
     createBrowser: function(domWindow)
     {
-/*        if (domWindow.closed)
-        {
-            window.dump("Chromebug createBrowser sees closed window!\n"+FBL.getStackDump());
-            throw new Error("Chromebug createBrowser sees closed window!");
-        }
-*/
         var browser = document.createElement("browser");  // in chromebug.xul
         // Ok, this looks dubious. Firebug has a context for every browser (tab), we have a tabbrowser but don;t use the browser really.
         browser.persistedState = null;
@@ -1281,6 +1278,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         try
         {
             event.currentTarget.removeEventListener("close", this.onUnloadTopWindow, true);
+            FBTrace.sysout("onUnloadTopWindow ", event);
             FirebugChrome.shutdown();
         }
         catch(exc)
@@ -1298,6 +1296,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (FBTrace.DBG_CHROMEBUG)
              FBTrace.sysout("Firebug.Chromebug.shutdown set prefs w,h="+window.outerWidth+","+window.outerHeight+")\n");
+
 
         Chromebug.XULWindowInfo.shutdown();
         if(FBTrace.DBG_INITIALIZE)
