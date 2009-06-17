@@ -31,7 +31,7 @@ const Cr = Components.results;
 
 // category names are sorted alphabetically. Typical command-line handlers use a
 // category that begins with the letter "m".
-const  clh_category = "b-chromebug";
+const  clh_category = "aaa-chromebug";
 
 const nsIWindowMediator = Components.interfaces.nsIWindowMediator;
 const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
