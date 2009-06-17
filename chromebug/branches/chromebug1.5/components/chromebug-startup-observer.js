@@ -103,7 +103,7 @@ StartupObserver.prototype =
 
        if (trace)
        {
-    	   jsd.enumerateFilters({ enumerateFilter: function(filter)
+           jsd.enumerateFilters({ enumerateFilter: function(filter)
            {
                Components.utils.reportError("gStartupObserverSingleton filter "+filter.urlPattern+" "+filter.flags+"\n");
            }});
@@ -192,8 +192,6 @@ StartupObserver.prototype =
        {
            onExecute: function(frame, type, val)
            {
-               gStartupObserverSingleton.trackFiles.def(frame);
-
                frame.script.clearBreakpoint(0);
                var script = frame.script;
                //if (trace) jsdState.dump("breakpointHook script "+script.tag+"\n");
@@ -218,7 +216,14 @@ StartupObserver.prototype =
                            tag = cb.globals.push(frameGlobal) - 1;
 
                        var scopeName = getLocationSafe(frameGlobal);
-                       if (!scopeName || !jsdState.avoidSelf(scopeName))
+                       if (!scopeName)
+                       {
+                           var globalName = getGlobalName(frameGlobal);
+                           if (globalName)
+                               scopeName = "noWindow://"+globalName;
+                       }
+                       gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName);
+                       if (!scopeName || !jsdState.avoidSelf(scopeName)) // then the scopeName is undefined or not self
                        {
                            if (trace) Components.utils.reportError("assigning "+tag+" to "+frame.script.fileName+"\n");
                            cb.globalTagByScriptTag[frame.script.tag] = tag;
@@ -268,7 +273,7 @@ StartupObserver.prototype =
    /* API */
    startOnStartupNextTime: function()
    {
-	   return; // these fail, I don't know why
+       return; // these fail, I don't know why
        categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
                "service," + CONTRACT_ID, true, true);
        Components.utils.reportError("chromebug registered to listen for "+STARTUP_TOPIC+" components next time this program runs");
@@ -276,7 +281,7 @@ StartupObserver.prototype =
 
    dontStartOnStartupNextTime: function()
    {
-	   return; // these fail, I don't know why
+       return; // these fail, I don't know why
        categoryManager.deleteCategoryEntry(STARTUP_TOPIC, CLASS_NAME, true);
        Components.utils.reportError("chromebug deregistered to listen for "+STARTUP_TOPIC+" components next time this program runs");
    },
@@ -363,28 +368,18 @@ StartupObserver.prototype =
             add: function(script)
             {
                 var name = new String(script.fileName);
-                this.allFiles[name] = [script.functionName];
+                this.allFiles[name] = [script.functionName];  // overwrite slot each time for same file
             },
             drop: function(fileName)
             {
                 var name = new String(fileName);
                 this.allFiles[name].push("dropped");
             },
-            def: function(frame)
+            def: function(scriptFileName, scopeName)
             {
-                var scopeName = "noJSContext";
-                var jscontext = frame.executionContext;
-                if (jscontext)
-                {
-                    frameGlobal = jscontext.globalObject.getWrappedValue();
-                    scopeName = getLocationSafe(frameGlobal);
-                    if (!scopeName)
-                        scopeName = "noGlobalObjectLocationInJSContext:"+(jscontext?jscontext.tag:"none");
-                }
-
-                var name = new String(frame.script.fileName);
+                var name = new String(scriptFileName);
                 if (! (name in this.allFiles))
-                    this.allFiles[name]=["not added"];
+                    this.allFiles[name]=["no onScriptCreated for this filename"];
 
                 this.allFiles[name].push(scopeName+" (from cbcl)");
             },
@@ -428,6 +423,27 @@ function getLocationSafe(global)
     return null;
 }
 
+const reObject = /\[object (.*?)\]/;
+
+function getGlobalName(global)
+{
+    var label = safeToString(global);
+    var m = reObject.exec(label);
+    return m ? m[1] : label;
+}
+
+function safeToString(ob)
+{
+    try
+    {
+        if (ob && (typeof (ob['toString']) == "function") )
+            return ob.toString();
+    }
+    catch (exc)
+    {
+    }
+    return "[object has no toString() function]";
+};
 // ************************************************************************************************
 // Service factory
 
