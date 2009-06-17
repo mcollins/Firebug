@@ -386,7 +386,7 @@ Chromebug.globalScopeInfos =
     {
         if (gs)
             remove(this.allGlobalScopeInfos, gs);
-        if (gs && FBTrace.DBG_CHROMEBUG) FBTrace.sysout("globalScopeInfos remove ", gs.kindOfInfo+ " "+gs.context.uid+", "+gs.context.getName());
+        if (gs && FBTrace.DBG_CHROMEBUG) FBTrace.sysout("globalScopeInfos remove "+ gs.kindOfInfo+ " "+gs.context.uid+", "+gs.context.getName());
     },
 
     destroy: function(context)
@@ -1004,6 +1004,8 @@ Chromebug.globalObserver = {
             {
                 if (FBTrace.DBG_WINDOWS)
                     FBTrace.sysout("Chromebug.globalObserver found domwindowclosed "+subject.location+"\n");
+                if (subject.location.toString() == "chrome://chromebug/content.chromebug.xul")
+                    throw new Error("Chromebug.globalObserver should not find chromebug.xul");
             }
         }
         else if (topic == 'dom-window-destroyed')  // subject appears to be the nsIDOMWindow with a location that is invalid and closed == true; data null
@@ -1064,6 +1066,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Chromebug.XULWindowInfo.initialize();
 
         Firebug.Debugger.addListener(this);
+        Firebug.Debugger.setDefaultState(true);
 
         Chromebug.packageList.addListener(Chromebug.allFilesList);  // how changes to the package filter are sensed by AllFilesList
 
@@ -1087,16 +1090,14 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.prepareForCloseEvents();
         this.restructureUI();
 
-
+        // cause onJSDActivate to be triggered.
+        this.initializeDebugger();
+        // from this point forward scripts should come via debugger interface
 
 
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
         Chromebug.XULWindowInfo.watchXULWindows(); // Start creating contexts
-
-        // cause onJSDActivate to be triggered.
-        this.initializeDebugger();
-        // from this point forward scripts should come via debugger interface
 
         // Wait to let the initial windows open, then return to users past settings
         this.retryRestoreID = setInterval( bind(Firebug.Chromebug.restoreState, this), 500);
@@ -1260,7 +1261,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         fbs.DBG_FBS_FF_START = true;
 
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("initializeDebugger start ******************************\n");
+            FBTrace.sysout("initializeDebugger start, enabled: "+fbs.enabled+" ******************************\n");
 
         // we are not going to count down the contexts, just leave it at one
         fbs.countContext(true); // connect to firebug-service
@@ -1332,9 +1333,9 @@ Firebug.Chromebug = extend(Firebug.Module,
         var browser = Chromebug.XULWindowInfo.createBrowser(global);
         var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
 
-        if (context.window)
-            context.windows.push(context.window); // since we don't watchWindows in chromebug
-FBTrace.sysout("Chromebug.createContext "+context.getName());
+        if (context.window && context.window.location)
+            TabWatcher.watchWindow(context.window, context);
+
         return context;
     },
 
@@ -3332,7 +3333,7 @@ Chromebug.getStartupObserver = function()
 Chromebug.dumpFileTrack = function()
 {
     var startupObserver = Chromebug.getStartupObserver();
-    fbs.dumpFileTrack(startupObserver.getAllTrackedFiles());
+    fbs.dumpFileTrack(startupObserver.getJSDState().getAllTrackedFiles());
 }
 
 function getFrameWindow(frame)
