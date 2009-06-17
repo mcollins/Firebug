@@ -21,6 +21,8 @@ function fireTest(win)
 {
     var panelDoc = FBTestFirebug.getPanelDocument();
 
+    var otherThing = '"otherThing"';
+
     var lookForMemberRow = new MutationRecognizer(panelDoc.defaultView, 'tr', {class: "memberRow"}, '"something"');
 
     lookForMemberRow.onRecognize(function sawLogRow(elt)
@@ -33,14 +35,15 @@ function fireTest(win)
              lookForInput.onRecognize(function sawInput(elt)
              {
                  FBTest.compare('"something"', elt.value, "The INPUT element value should be \"something\"");
-                 elt.value = '"otherThing"';
+                 elt.value = otherThing;
                  FBTest.click(elt.parentNode);
                  setTimeout(function allowRefocus()
                  {
-                     var lookForOtherMemberRow = new MutationRecognizer(panelDoc.defaultView, 'tr', {class: "memberRow"}, '"otherthing"');
+                     var lookForOtherMemberRow = new MutationRecognizer(panelDoc.defaultView, 'tr', {class: "memberRow"}, otherThing);
                      lookForOtherMemberRow.onRecognize(function sawOtherthing(elt)
                      {
-                         FBTest.compare('\"otherThing\"', elt.textContent, "The new value should be set");
+                         var foundOtherThing = (elt.textContent.indexOf(otherThing) != -1);
+                         FBTest.ok(foundOtherThing, "The new value+"+otherThing+" should be set");
                          FBTest.testDone("1738 DONE");
                      });
                      FBTest.progress("Changed the value, now hit return key");
