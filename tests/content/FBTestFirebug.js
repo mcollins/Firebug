@@ -803,7 +803,7 @@ MutationRecognizer.prototype.matches = function(elt)
 
     if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
     {
-        FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName, elt);
+        FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), elt);
         return false;
     }
 
@@ -854,24 +854,74 @@ function MutationEventFilter(recognizer, handler)
     this.recognizer = recognizer;
     this.handler = handler;
 
-    this.winName = new String(recognizer.win.location.toString());
+    this.winName = new String(window.location.toString());
     var filter = this;
-    this.onMutateAttr = function handleMatches(event)
+    this.onMutateAttr = function handleAttrMatches(event)
     {
         if (window.closed)
             throw "WINDOW CLOSED with watching: "+filter.watching+" on window named: "+filter.winName;
 
-        FBTest.sysout("onMutateAttr "+event.target+" in "+event.target.ownerDocument.location);
-        if (recognizer.matches(event.target))
-        {
-            handler(event.target);
-            filter.unwatchWindow(recognizer.getWindow())
-        }
+        if (!recognizer.attributes)
+            return; // we don't care about attribute mutation
+
+        FBTest.sysout("onMutateAttr "+event.attrName+"=>"+event.newValue+" on "+event.target+" in "+event.target.ownerDocument.location);
+
+        if (filter.checkElement(event.target))
+            return;
     }
 
     // the matches() function could be tuned to each kind of mutation for improved efficiency
-    this.onMutateNode = this.onMutateAttr;
-    this.onMutateText = this.onMutateAttr;
+    this.onMutateNode = function handleNodeMatches(event)
+    {
+        if (window.closed)
+            throw "WINDOW CLOSED with watching: "+filter.watching+" on window named: "+filter.winName;
+
+        FBTest.sysout("onMutateNode "+event.target+" in "+event.target.ownerDocument.location, event.target);
+
+        if (filter.checkElementDeep(event.target))
+            return;
+    }
+
+    this.onMutateText = function handleTextMatches(event)
+    {
+        if (window.closed)
+            throw "WINDOW CLOSED with watching: "+filter.watching+" on window named: "+filter.winName;
+
+        if (!recognizer.characterData)
+            return; // we don't care about text
+
+        FBTest.sysout("onMutateText =>"+event.newValue+" on "+event.target.ownerDocument.location);
+
+        if (filter.checkElement(event.target))  // target is CharacterData node
+            return;
+    }
+
+    filter.checkElement = function(elt)
+    {
+        if (recognizer.matches(elt))
+        {
+            handler(elt);
+            filter.unwatchWindow(recognizer.getWindow())
+            return true;
+        }
+        return false;
+    }
+
+    filter.checkElementDeep = function(elt)
+    {
+        if (filter.checkElement(elt))
+            return true;
+        else
+        {
+            var child = elt.firstChild;
+            for (; child; child = child.nextSibling)
+            {
+                if (this.checkElementDeep(child))
+                    return true;
+            }
+        }
+        return false;
+    }
 
     filter.watchWindow(recognizer.win);
 }
@@ -920,4 +970,4 @@ window.addEventListener('unload', function sayUnload(){
     FBTest.sysout("********* UNLOAD "+window.location);
     // If this window is closed we must delete any browsers we've created because we may have failed to removeListeners
     FBTestFirebug.cleanUpTestTabs();
-    }, false);
+    }, true);
