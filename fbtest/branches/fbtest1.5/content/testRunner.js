@@ -261,12 +261,15 @@ FBTestApp.TestRunner =
 
            FBTestApp.TestRunner.testDone(false);
         }, FBTestApp.FBTest.testTimeout);
-        FBTrace.sysout("TestRunner set testTimeoutID "+this.testTimeoutID+"<<<<<<<<<<<< **********");
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("TestRunner set   testTimeoutID "+this.testTimeoutID);
     },
 
     clearTestTimeout: function()
     {
-        FBTrace.sysout("TestRunner clear testTimeoutID "+this.testTimeoutID+"<<<<<<<<<<<< **********");
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("TestRunner clear testTimeoutID "+this.testTimeoutID);
         if (this.testTimeoutID)
         {
             clearTimeout(this.testTimeoutID);
