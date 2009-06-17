@@ -28,26 +28,17 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
     {
         if (global)
             var name = Firebug.Rep.getTitle(global);
-        else if (jsContext)
-            var name = (jsContext?jsContext.tag:0)+"/"+jsClassName;
-        else if (jsClassName)
-            var name = jsClassName;
         else
             var name ="mystery";
 
         this.setName("noWindow://"+name);
     }
 
-    this.global = global; // maybe equal to domWindow
-
-    if (this.window)
-        this.windows.push(this.window); // since we don't watchWindows in chromebug
-
     var persistedState = FBL.getPersistedState(this, "script");
     if (!persistedState.enabled)  // for now default all chromebug window to enabled.
         persistedState.enabled = "enable";
 
-    FBTrace.sysout("Chromebug.domWindowContext: "+(this.global?" ":"NULL global ")+this.getName(), this.getName());
+    FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":"")+(this.global?" ":"NULL global ")+this.getName());
 }
 
 Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
@@ -75,13 +66,13 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 FBTrace.sysout("context.domWindowWatcher found outerDOMWindow", outerDOMWindow.location);
             return;
         }
-
+/*
         if (domWindow.location.protocol != "chrome:")  // the chrome in ChromeBug
         {
             FBTrace.sysout("DomWindowContext.loadHandler skips "+domWindow.location);
             return;
         }
-
+*/
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("context.domWindowWatcher, new window in outerDOMWindow", outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
@@ -103,7 +94,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
     unloadHandler: function(event)
     {
-        FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location+"\n");
+        FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location, event);
 
         if (event.target instanceof HTMLDocument)  // we are only interested in Content windows
             var domWindow = event.target.defaultView;
@@ -138,7 +129,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                     }
                     return;
                 }
-                FBTrace.sysout("ChromeBug unloadHandler found no context for event.currentTarget.location"+event.currentTarget.location, domWindow);
+                FBTrace.sysout("ChromeBug unloadHandler found no context for domWindow:"+domWindow.location);
                 return;
             }
             FBTrace.sysout("ChromeBug unloadHandler domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
