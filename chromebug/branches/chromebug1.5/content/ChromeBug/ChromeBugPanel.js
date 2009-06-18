@@ -2812,6 +2812,16 @@ Chromebug.parseNoWindowURI = function(uri)
     }
 }
 
+Chromebug.parseDataURI = function(URI)
+{
+    if (isDataURL(URI))
+    {
+        var split = splitURLBase(URI);
+        FBTrace.sysout("parseDataURI "+URI, split);
+        return {path: "data:", name: split.path+'/'+split.name, kind:"data", pkgName: "data:"};
+    }
+}
+
 Chromebug.parseURI = function(URI)
 {
     if (!URI || Firebug.Chromebug.avoidSelf(URI))
@@ -2828,6 +2838,8 @@ Chromebug.parseURI = function(URI)
         description = Chromebug.parseWebURI(URI);
     if (!description)
         description = Chromebug.parseNoWindowURI(URI);
+    if (!description)
+        description = Chromebug.parseDataURI(URI);
 
     if (!description)
     {
