@@ -75,21 +75,6 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
         return panel;
     },
 
-    onLoadConsole: function(win, rootNode)  // NOT CALLED
-    {
-        try {
-            // Initilize basic content. Notice that this tracing-console is intended
-            // for firebug logs so, this is why the pref-domain is hardcoded.
-            this.logs = Firebug.TraceModule.CommonBaseUI.initializeContent(rootNode, "extensions.firebug");
-
-            Firebug.TraceModule.onLoadConsole(win, rootNode);
-        }
-        catch(exc)
-        {
-            window.dump("tracePanel onLoadConsole FAILS "+exc+"\n"); // FBTrace does not work here
-        }
-    },
-
     // nsIObserver
     observe: function(subject, topic, data)
     {
