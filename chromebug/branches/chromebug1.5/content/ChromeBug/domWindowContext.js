@@ -108,7 +108,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 var domWindow = document.defaultView;
             else
             {
-                FBTrace.sysout("context.unloadHandler cannot find document for context.window: "+this.window.location, event.target);
+                FBTrace.sysout("context.unloadHandler cannot find document for unloadHandler target "+event.target, event.target);
                 return;   // var domWindow = event.target.ownerDocument.defaultView;
             }
         }
