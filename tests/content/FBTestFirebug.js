@@ -938,17 +938,17 @@ MutationEventFilter.prototype.watchWindow = function(win)
      filter.cleanUp = function() {
          try
          {
-             FBTrace.sysout("Filter.cleanup******************");
+             window.FBTrace.sysout("Filter.cleanup******************");
              filter.unwatchWindow(win);
          }
          catch (e)
          {
-           FBTrace.sysout("cleanup FAILS "+e, e);
+           window.FBTrace.sysout("cleanup FAILS "+e, e);
          }
      }
      win.addEventListener("unload", filter.cleanUp, false);
      window.addEventListener("unload", filter.cleanUp, false);
-     FBTest.progress("added MutationWatcher to "+doc.location);
+     window.FBTest.progress("added MutationWatcher to "+doc.location);
 }
 
 MutationEventFilter.prototype.unwatchWindow = function(win)
@@ -960,7 +960,7 @@ MutationEventFilter.prototype.unwatchWindow = function(win)
      doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
      doc.removeEventListener("unload", this.cleanUp, false);
      delete this.watching;
-     FBTest.sysout("*********************************removed MutationWatcher from "+doc.location);
+     window.FBTest.sysout("*********************************removed MutationWatcher from "+doc.location);
      // not needed? doc.removeEventListener("DOMNodeRemoved", this.onMutateNode, false);
 }
 
