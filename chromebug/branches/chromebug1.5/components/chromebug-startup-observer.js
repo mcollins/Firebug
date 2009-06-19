@@ -115,6 +115,7 @@ StartupObserver.prototype =
        // This is a minature version of the double hook in firebug-service.js
        jsdState._chromebug = {};
        jsdState._chromebug.globalTagByScriptTag = {};
+       jsdState._chromebug.globalTagByScriptFileName = {};
        jsdState._chromebug.globals = [];
        jsdState._chromebug.breakpointedScripts = {};
        jsdState._chromebug.innerScripts = [];
@@ -211,9 +212,12 @@ StartupObserver.prototype =
                            scope = scope.jsParent;
 
                        var frameGlobal = scope.getWrappedValue();
-                       var tag = cb.globals.indexOf(frameGlobal);
-                       if (tag < 0)
-                           tag = cb.globals.push(frameGlobal) - 1;
+                       var frameGlobalTag = cb.globals.indexOf(frameGlobal);
+                       if (frameGlobalTag < 0)
+                       {
+                           cb.globals.push(frameGlobal);
+                           frameGlobalTag = cb.globals.indexOf(frameGlobal);
+                       }
 
                        var scopeName = getLocationSafe(frameGlobal);
                        if (!scopeName)
@@ -222,24 +226,24 @@ StartupObserver.prototype =
                            if (globalName)
                                scopeName = "noWindow://"+globalName;
                        }
-                       gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName);
+                       gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName, frame.script.tag, frameGlobalTag);
                        if (!scopeName || !jsdState.avoidSelf(scopeName)) // then the scopeName is undefined or not self
                        {
-                           if (trace) Components.utils.reportError("assigning "+tag+" to "+frame.script.fileName+"\n");
-                           cb.globalTagByScriptTag[frame.script.tag] = tag;
-
+                           if (trace) Components.utils.reportError("assigning "+frameGlobalTag+" to "+frame.script.fileName+"\n");
+                           cb.globalTagByScriptTag[frame.script.tag] = frameGlobalTag;
+                           cb.globalTagByScriptFileName[frame.script.fileName] = frameGlobalTag;
                            // add the unassigned innerscripts
                            for (var i = 0; i < cb.innerScripts.length; i++)
                            {
                                var script = cb.innerScripts[i];
-                               if (script.fileName != frame.script.fileName)  // so what tag then?
+                               if (script.fileName != frame.script.fileName)  // so what frameGlobalTag then?
                                    if (trace) Components.utils.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
-                               cb.globalTagByScriptTag[script.tag] = tag;
+                               cb.globalTagByScriptTag[script.tag] = frameGlobalTag;
                            }
                        }
                        else
                        {
-                           if (trace) Components.utils.reportError("dropping "+tag+" with location "+scopeName+"\n");
+                           if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
                        }
                        cb.innerScripts = [];
                    }
@@ -375,13 +379,13 @@ StartupObserver.prototype =
                 var name = new String(fileName);
                 this.allFiles[name].push("dropped");
             },
-            def: function(scriptFileName, scopeName)
+            def: function(scriptFileName, scopeName, scriptTag, frameGlobalTag)
             {
                 var name = new String(scriptFileName);
                 if (! (name in this.allFiles))
                     this.allFiles[name]=["no onScriptCreated for this filename"];
 
-                this.allFiles[name].push(scopeName+" (from cbcl)");
+                this.allFiles[name].push(scopeName+" outer script tag: "+scriptTag+" frameGlobalTag: "+frameGlobalTag+" (from cbcl)");
             },
             dump: function()
             {

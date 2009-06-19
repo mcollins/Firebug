@@ -924,12 +924,13 @@ Chromebug.ProgressListener.prototype =
     {
         try
         {
-            return request.name;
+            if (request.name)
+                return request.name;
         }
         catch (exc)
         {
-            return null;
         }
+        return null;
     },
     traceWindow: function(webProgress, request)
     {
@@ -1533,8 +1534,9 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 var globals = jsdState._chromebug.globals; // []
                 var globalTagByScriptTag = jsdState._chromebug.globalTagByScriptTag; // globals index by script tag
+                var globalTagByScriptFileName = jsdState._chromebug.globalTagByScriptFileName; // globals index by script fileName
                 var xulScriptsByURL = jsdState._chromebug.xulScriptsByURL;
-                Firebug.Chromebug.buildInitialContextList(globals, globalTagByScriptTag, xulScriptsByURL);
+                Firebug.Chromebug.buildInitialContextList(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName);
 
                 delete jsdState._chromebug.globalTagByScriptTag;
                 delete jsdState._chromebug.jsContexts;
@@ -1564,15 +1566,15 @@ Firebug.Chromebug = extend(Firebug.Module,
         return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);
     },
 
-    buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL)
+    buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
     {
-        this.buildEnumeratedSourceFiles(globals, globalTagByScriptTag, xulScriptsByURL);
+        this.buildEnumeratedSourceFiles(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName);
 
         for (var url in xulScriptsByURL)
             Firebug.Chromebug.onXULScriptCreated(url, xulScriptsByURL);
     },
 
-    buildEnumeratedSourceFiles: function(globals, globalTagByScriptTag, xulScriptsByURL)
+    buildEnumeratedSourceFiles: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
     {
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
             {
@@ -1590,11 +1592,15 @@ Firebug.Chromebug = extend(Firebug.Module,
                 }
 
                 var globalsTag = globalTagByScriptTag[script.tag];
-                if (!globalsTag)
+                if (typeof (globalsTag) == 'undefined' )
                 {
-                    if (FBTrace.DBG_SOURCEFILES)
-                        FBTrace.sysout("buildEnumeratedSourceFiles no jsContext (isChromebug?) "+script.tag+" in "+script.fileName);
-                    return;  // chromebug file (we hope)
+                    globalsTag = globalTagByScriptFileName[script.fileName];
+                    if ( typeof (globalsTag) == 'undefined' )
+                    {
+                        if (FBTrace.DBG_ERRORS)
+                            FBTrace.sysout("buildEnumeratedSourceFiles NO globalTag for script tag "+script.tag+" in "+script.fileName);
+                        return;
+                    }
                 }
 
                 var global = globals[globalsTag];
@@ -1626,7 +1632,24 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (FBTrace.DBG_SOURCEFILES)
                     FBTrace.sysout("Using globalsTag "+globalsTag+ " assigned "+script.tag+"|"+url+" to "+ context.getName());
                 sourceFile.innerScripts[script.tag] = script;
+
+                delete globalTagByScriptTag[script.tag];
             }});
+        if (FBTrace.DBG_SOURCEFILES)
+        {
+            var lostScriptTags = {};
+            for (var scriptTag in globalTagByScriptTag)
+            {
+                var globalTag = globalTagByScriptTag[scriptTag];
+                if (!(globalTag in lostScriptTags))
+                    lostScriptTags[globalTag] = [];
+                lostScriptTags[globalTag].push(scriptTag);
+            }
+            for (var globalTag in lostScriptTags)
+            {
+                FBTrace.sysout("Lost scripts from globalTag "+globalTag+" :"+lostScriptTags[globalTag].join(', '));
+            }
+        }
     },
 
     getAppShellService: function()
