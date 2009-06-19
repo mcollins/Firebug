@@ -935,8 +935,19 @@ MutationEventFilter.prototype.watchWindow = function(win)
      // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
      this.watching = true;
      var filter = this;
-     filter.cleanUp = function() { FBTrace.sysout("Filter.cleanup******************"); filter.unwatchWindow(win); }
+     filter.cleanUp = function() {
+         try
+         {
+             FBTrace.sysout("Filter.cleanup******************");
+             filter.unwatchWindow(win);
+         }
+         catch (e)
+         {
+           FBTrace.sysout("cleanup FAILS "+e, e);
+         }
+     }
      win.addEventListener("unload", filter.cleanUp, false);
+     window.addEventListener("unload", filter.cleanUp, false);
      FBTest.progress("added MutationWatcher to "+doc.location);
 }
 
