@@ -1398,6 +1398,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (!this.contexts)
             this.contexts = TabWatcher.contexts;
 
+        if (global instanceof Window)
+            return TabWatcher.getContextByWindow(global);
 
         for (var i = 0; i < this.contexts.length; ++i)
         {
