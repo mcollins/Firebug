@@ -777,7 +777,8 @@ Chromebug.XULWindowInfo = {
                 else
                 {
                     var outerDOMWindow = this.getDOMWindowByDocShell(xul_win.docShell);
-                    FBTrace.sysout("Chromebugpanel.onclose: xul_window is unknown to us at location "+outerDOMWindow.location);
+                    FBTrace.sysout("Chromebugpanel.onclose: xul_window is unknown to us at location "+outerDOMWindow.location+"\n"+getStackDump());
+                    throw "NO, do not exit";
                 }
              }
              else
@@ -786,6 +787,7 @@ Chromebug.XULWindowInfo = {
         catch(e)
         {
             FBTrace.sysout("ChromeBugPanel.onClose fails ", e);
+            throw "NO, do not exit";
         }
     },
 
@@ -802,7 +804,7 @@ Chromebug.XULWindowInfo = {
 
                 if (outerDOMWindow.location.href == "chrome://fb4cb/content/traceConsole.xul")
                 {
-                    window.dump("onWindowTitleChange ignoring outerDOMWindow.location.href "+outerDOMWindow.location.href+"\n");
+                    FBTrace.sysout("onWindowTitleChange ignoring outerDOMWindow.location.href "+outerDOMWindow.location.href+"\n");
                     this.onCloseWindow(xul_win);  // don't track our own tracing console.
                 }
 
@@ -1002,9 +1004,9 @@ Chromebug.globalObserver = {
         {
             if (subject instanceof nsIDOMWindow)
             {
-                if (FBTrace.DBG_WINDOWS)
-                    FBTrace.sysout("Chromebug.globalObserver found domwindowclosed "+subject.location+"\n");
-                if (subject.location.toString() == "chrome://chromebug/content.chromebug.xul")
+                //if (FBTrace.DBG_WINDOWS)
+                    FBTrace.sysout("Chromebug.globalObserver found domwindowclosed "+subject.location+getStackDump());
+                if (subject.location.toString() == "chrome://chromebug/content/chromebug.xul")
                     throw new Error("Chromebug.globalObserver should not find chromebug.xul");
             }
         }
@@ -1105,6 +1107,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             Firebug.Chromebug.stopRestoration();  // if the window is not up by now give up.
         }, 5000);
+
+        window.addEventListener("unload", function whyIsThis(event)
+        {
+            FBTrace.sysout(window.location+ " unload "+getStackDump(), event);
+        }, true);
     },
 
     prepareForCloseEvents: function()
@@ -1471,7 +1478,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Chromebug.packageList.deleteContext(context);
         Chromebug.globalScopeInfos.destroy(context);
-        if (FBTrace.DBG_CHROMEBUG)
+       // if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromeBugPanel.destroyContext ---------------------- for context:"+context.uid+" :"+context.getName()+"\n");
     },
 
