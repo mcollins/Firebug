@@ -1,9 +1,8 @@
 // Test entry point.
 function runTest()
 {
-    var Events = FBTest.FirebugWindow.FireDiff.events,
-        Firebug = FBTest.FirebugWindow.Firebug,
-        FBTrace = FBTest.FirebugWindow.FBTrace;
+    var Firebug = FBTest.FirebugWindow.Firebug;
+    var FBTrace = FBTest.FirebugWindow.FBTrace;
 
     FBTestFirebug.openNewTab(basePath + "chrome/1883/issue1883.html", function(win) {
         with (FBTest.FirebugWindow.FBL) { with (FBTest.FirebugWindow) {
