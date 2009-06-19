@@ -27,7 +27,7 @@ function fireTest(win)
 
     lookForMemberRow.onRecognize(function sawLogRow(elt)
     {
-         FBTest.sysout("matched something", elt);
+         FBTest.progress("Matched something in a memberRow");
          setTimeout(function editSomething()
          {
              var label = FW.FBL.getElementByClass(elt, "memberLabel");
@@ -36,6 +36,7 @@ function fireTest(win)
              {
                  FBTest.compare('"something"', elt.value, "The INPUT element value should be \"something\"");
                  elt.value = otherThing;
+                 FBTest.progress("Click outside the edit box");
                  FBTest.click(elt.parentNode);
                  setTimeout(function allowRefocus()
                  {
@@ -51,7 +52,7 @@ function fireTest(win)
                  });
 
              });
-
+             FBTest.progress("Double click the line to bring up the editor");
              FBTest.dblclick(label);
          });
     });
