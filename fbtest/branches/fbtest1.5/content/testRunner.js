@@ -78,24 +78,20 @@ FBTestApp.TestRunner =
 
     testDone: function(canceled)
     {
-        if (!this.currentTest)
-            return;
-
-        if (FBTrace.DBG_FBTEST)
+        if (this.currentTest)
         {
             FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
-                this.currentTest);
-
-            if (canceled)
-                FBTrace.sysout("fbtest.TestRunner.CANCELED");
+                    this.currentTest);
+            this.currentTest.end = (new Date()).getTime();
+            this.currentTest.onTestDone();
+            this.currentTest = null;
         }
 
-        this.currentTest.end = (new Date()).getTime();
-        this.currentTest.onTestDone();
-        this.currentTest = null;
+        if (canceled)
+            FBTrace.sysout("fbtest.TestRunner.CANCELED");
 
         // Test is done so, clear the break-timeout.
-        this.clearTestTimeout();
+        FBTestApp.TestRunner.cleanUp();
 
         // If there are tests in the queue, execute them.
         if (this.testQueue && this.testQueue.length)
@@ -108,7 +104,7 @@ FBTestApp.TestRunner =
         // Otherwise the test-suite (could be also a single test) is finished.
         FBTestApp.TestProgress.stop();
 
-        // Show ellapsed time when running more than one test (entire suite or group of tests).
+        // Show elapsed time when running more than one test (entire suite or group of tests).
         if (this.startTime)
         {
             this.endTime = (new Date()).getTime();
@@ -149,14 +145,7 @@ FBTestApp.TestRunner =
         var outerWindow =  testFrame.contentWindow;
         var doc = outerWindow.document;
 
-        // Clean up previous test if any.
-        var testCaseIframe = null;
-        var frames = doc.getElementsByTagName("iframe");
-        for (var i = 0; i < frames.length; i++)
-        {
-            testCaseIframe = frames[i];
-            testCaseIframe.parentNode.removeChild(testCaseIframe);
-        }
+        FBTestApp.TestRunner.removePreviousFrames(doc);
 
         // Create a new frame for this test.
         testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
@@ -169,7 +158,7 @@ FBTestApp.TestRunner =
         FBTestApp.FBTest.testTimeout = this.getDefaultTestTimeout();
 
         // Now hook the load event, so the next src= will trigger it.
-        testCaseIframe.addEventListener("load", this.onLoadTestFrame, true);
+        testCaseIframe.addEventListener("load", FBTestApp.TestRunner.onLoadTestFrame, true);
 
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
@@ -178,6 +167,19 @@ FBTestApp.TestRunner =
         {
             var docShell = this.getDocShellByDOMWindow(testCaseIframe);
             FBTrace.sysout("iframe.docShell for "+testURL, docShell);
+        }
+    },
+
+    removePreviousFrames: function(doc)
+    {
+        // Clean up previous test if any.
+        var testCaseIframe = null;
+        var frames = doc.getElementsByTagName("iframe");
+        for (var i = 0; i < frames.length; i++)
+        {
+            testCaseIframe = frames[i];
+            FBTrace.sysout("Removing testCaseIFrame "+testCaseIframe, testCaseIframe);
+            testCaseIframe.parentNode.removeChild(testCaseIframe);
         }
     },
 
@@ -202,10 +204,7 @@ FBTestApp.TestRunner =
         var fbTestWrapper = new FBTestApp.FBTestWrapper(win);
 
         // Inject FBTest object into the test page.
-        if (win.wrappedJSObject)
-            win.wrappedJSObject.FBTest = fbTestWrapper;
-        else
-            win.FBTest = fbTestWrapper;
+        win.FBTest = fbTestWrapper;
 
         // As soon as the window is loaded, execute a "runTest" method, that must be
         // implemented within the test file.
@@ -219,7 +218,7 @@ FBTestApp.TestRunner =
 
         win.removeEventListener('load', FBTestApp.TestRunner.runTestCase, true);
 
-        // Start timeout that breaks stucked tests.
+        // Start timeout that breaks stuck tests.
         FBTestApp.TestRunner.setTestTimeout(win);
 
         // Initialize start time.
@@ -236,7 +235,22 @@ FBTestApp.TestRunner =
         catch (exc)
         {
             FBTestApp.FBTest.sysout("runTest FAILS "+exc, exc);
+            FBTestApp.TestRunner.cleanUp();
+        }
+        // If we don't get an exception the test should call testDone() or the testTimeout will fire
+    },
+
+    cleanUp: function()
+    {
+        try
+        {
             FBTestApp.TestRunner.clearTestTimeout();
+            var doc = $("testFrame").contentWindow.document;
+            FBTestApp.TestRunner.removePreviousFrames(doc);
+        }
+        catch(e)
+        {
+            FBTrace.sysout("testRunner.cleanUp FAILS "+e, e);
         }
     },
 
@@ -295,6 +309,7 @@ FBTestApp.TestRunner =
         {
             FBTrace.sysout("test result came in after testDone!", result);
             $("progressMessage").value = "test result came in after testDone!";
+            FBTestApp.TestRunner.cleanUp();
             return;
         }
 
