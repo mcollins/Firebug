@@ -449,7 +449,7 @@ this.clickContinueButton = function(breakOnNext, chrome)
 this.getSourceLineNode = function(lineNo, chrome)
 {
     if (!chrome)
-        chrome = FW.FirebugContext.chrome;
+        chrome = FW.Firebug.chrome;
     var panel = chrome.getSelectedPanel();
     var sourceBox = panel.getSourceBoxByURL(panel.location.href);
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
