@@ -16,7 +16,7 @@
 <button id="deepError" onclick="deepError()">Deep Error</button>
 <button id="throw" onclick="throwit()">Throw</button>
 <button id="thousandErrors" onclick="explode()">A Thousand Errors</button>
-
+<button id="uncaughtException1891" onclick="test1891()">Uncaught Exception</button>
 <br/>
 <button id="clickClick" onclick="clickClick()">Fire two errors via events</button>
 <br/>
@@ -60,6 +60,11 @@ function click(node)
         event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
             false, false, false, false, 0, null);
         return node.dispatchEvent(event);
+}
+function test1891()
+{
+    var myDocument = document.implementation.createDocument("","",null);
+    myDocument.createElement("0");
 }
 </script>
 </body>
