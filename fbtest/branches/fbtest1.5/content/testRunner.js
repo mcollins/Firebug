@@ -78,6 +78,13 @@ FBTestApp.TestRunner =
 
     testDone: function(canceled)
     {
+        // testDone maybe called in an event handler which may need to complete before we clean up
+        var self = this;
+        setTimeout( function delayTestDone(){self.testDoneOnDelay.apply(self, [canceled]);} );
+    },
+
+    testDoneOnDelay: function(canceled)
+    {
         if (this.currentTest)
         {
             FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
@@ -159,7 +166,7 @@ FBTestApp.TestRunner =
 
         // Now hook the load event, so the next src= will trigger it.
         testCaseIframe.addEventListener("load", FBTestApp.TestRunner.onLoadTestFrame, true);
-
+        testCaseIframe.addEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
 
@@ -178,9 +185,20 @@ FBTestApp.TestRunner =
         for (var i = 0; i < frames.length; i++)
         {
             testCaseIframe = frames[i];
+            var event = testCaseIframe.contentDocument.createEvent("Event");
+            event.initEvent("FBTestCleanup", true, false); // bubbles and not cancelable
+            FBTrace.sysout("Firing FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
+            testCaseIframe.contentDocument.dispatchEvent(event);
+            FBTrace.sysout("Fired FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
+
             FBTrace.sysout("Removing testCaseIFrame "+testCaseIframe, testCaseIframe);
             testCaseIframe.parentNode.removeChild(testCaseIframe);
         }
+    },
+
+    onUnloadTestFrame: function(event)
+    {
+        FBTrace.sysout("onUnloadTestFrame ", event);
     },
 
     getDefaultTestTimeout: function()
