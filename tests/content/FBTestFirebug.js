@@ -925,7 +925,8 @@ function MutationEventFilter(recognizer, handler)
 
     filter.watchWindow(recognizer.win);
 }
-
+var filterInstance = 1;
+var activeFilters = {};
 MutationEventFilter.prototype.watchWindow = function(win)
 {
      var doc = win.document;
@@ -933,24 +934,33 @@ MutationEventFilter.prototype.watchWindow = function(win)
      doc.addEventListener("DOMCharacterDataModified", this.onMutateText, false);
      doc.addEventListener("DOMNodeInserted", this.onMutateNode, false);
      // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
-     this.watching = true;
+
      var filter = this;
-     filter.cleanUp = function() {
+     filterInstance++;
+     activeFilters[filterInstance] = filter;
+     this.filterInstance = filterInstance;
+
+     filter.cleanUp = function(event) {
          try
          {
-             window.FBTrace.sysout("Filter.cleanup******************");
+             if (window.closed)
+             {
+                 throw new Error("Filter cleanup in window.closed event.target:"+event.target);
+             }
+             FBTest.sysout("Filter.cleanup "+filter.filterInstance);
              filter.unwatchWindow(win);
-             win.removeEventListener("unload", filter.cleanUp, true);
-             window.removeEventListener("unload", filter.cleanUp, true);
+             document.removeEventListener("FBTestCleanup", filter.cleanUp, true);
          }
          catch (e)
          {
-           window.FBTrace.sysout("Filter.cleanup FAILS "+e, e);
+           FBTest.sysout("Filter.cleanup FAILS "+e, e);
          }
      }
      win.addEventListener("unload", filter.cleanUp, true);
      window.addEventListener("unload", filter.cleanUp, true);
-     window.FBTest.progress("added MutationWatcher to "+doc.location);
+     document.addEventListener("FBTestCleanup", filter.cleanUp, true);
+     window.FBTest.progress("added MutationWatcher to "+doc.location+" and FBTestCleanup to "+document.location);
+     window.FBTest.progress("added FBTestCleanup "+filterInstance+" to "+document.location);
 }
 
 MutationEventFilter.prototype.unwatchWindow = function(win)
@@ -962,9 +972,8 @@ MutationEventFilter.prototype.unwatchWindow = function(win)
      doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
      win.removeEventListener("unload", this.cleanUp, true);
      window.removeEventListener("unload", this.cleanUp, true);
-     delete this.watching;
-     window.FBTest.sysout("*********************************removed MutationWatcher from "+doc.location);
-     // not needed? doc.removeEventListener("DOMNodeRemoved", this.onMutateNode, false);
+     window.FBTest.sysout("unwatchWindow removed MutationWatcher "+this.filterInstance+" from "+doc.location);
+     delete activeFilters[this.filterInstance];
 }
 
 // Initialization
@@ -980,10 +989,14 @@ function initializeFBTestFirebug()
 
 // Make sure FBTest.Firebug namespace is initialized at the right time.
 window.addEventListener("load", initializeFBTestFirebug, true);
-/*
-window.addEventListener('unload', function sayUnload(){
-    FBTest.sysout("********* UNLOAD "+window.location);
-    // If this window is closed we must delete any browsers we've created because we may have failed to removeListeners
-    setTimeout( FBTestFirebug.cleanUpTestTabs );
-    }, true);
-*/
+
+window.addEventListener('unload', function sayUnload()
+{
+    FBTest.sysout(" UNLOAD "+window.location);
+    for (var p in activeFilters)
+    {
+        FBTest.sysout(p+" still active filter ");
+        activeFilters[p].cleanUp();
+    }
+
+}, true);
