@@ -21,7 +21,7 @@ function defineIssue1483()
     issue1483.selectFile = function()
     {
      // Select proper JS file.
-        var panel = FW.FirebugContext.chrome.getSelectedPanel();
+        var panel = FW.Firebug.chrome.getSelectedPanel();
 
         var found = FBTestFirebug.selectPanelLocationByName(panel, issue1483.fileName);
         FBTest.compare(found, true, "The "+issue1483.fileName+" should be found");
@@ -36,14 +36,14 @@ function defineIssue1483()
 
     issue1483.setBreakpoint = function(event)
     {
-        var panel = FW.FirebugContext.chrome.getSelectedPanel();
+        var panel = FW.Firebug.chrome.getSelectedPanel();
         panel.toggleBreakpoint(issue1483.lineNo);
 
         // use chromebug to see the elements that make up the row
         var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
         FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
 
-        issue1483.secondReload(FW.FirebugContext.chrome);
+        issue1483.secondReload(FW.Firebug.chrome);
     };
 
 

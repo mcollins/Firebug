@@ -27,7 +27,7 @@ function runTest()
             FBTest.compare(found, true, "The main.js should be found");
 
 
-            var panel = FW.FirebugContext.chrome.getSelectedPanel();
+            var panel = FW.Firebug.chrome.getSelectedPanel();
             var selectedLocationDescription = panel.getObjectDescription(panel.location);
             FBTest.compare("main.js", selectedLocationDescription.name,  "The selected location must be main.js");
 

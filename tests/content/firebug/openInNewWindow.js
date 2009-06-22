@@ -171,7 +171,7 @@ function isPanelNode(event)
 
 function setBreakpoint(detachedFW)
 {
-    var panel = detachedFW.FirebugContext.chrome.getSelectedPanel();
+    var panel = detachedFW.Firebug.chrome.getSelectedPanel();
     panel.toggleBreakpoint(issue1483.lineNo);
 
     // use chromebug to see the elements that make up the row
