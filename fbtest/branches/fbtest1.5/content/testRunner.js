@@ -187,18 +187,26 @@ FBTestApp.TestRunner =
             testCaseIframe = frames[i];
             var event = testCaseIframe.contentDocument.createEvent("Event");
             event.initEvent("FBTestCleanup", true, false); // bubbles and not cancelable
-            FBTrace.sysout("Firing FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
-            testCaseIframe.contentDocument.dispatchEvent(event);
-            FBTrace.sysout("Fired FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
 
-            FBTrace.sysout("Removing testCaseIFrame "+testCaseIframe, testCaseIframe);
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("Firing FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
+
+            testCaseIframe.contentDocument.dispatchEvent(event);
+
+            if (FBTrace.DBG_FBTEST)
+            {
+                FBTrace.sysout("Fired FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
+                FBTrace.sysout("Removing testCaseIFrame "+testCaseIframe, testCaseIframe);
+            }
+
             testCaseIframe.parentNode.removeChild(testCaseIframe);
         }
     },
 
     onUnloadTestFrame: function(event)
     {
-        FBTrace.sysout("onUnloadTestFrame ", event);
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("onUnloadTestFrame ", event);
     },
 
     getDefaultTestTimeout: function()
