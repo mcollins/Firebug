@@ -8,7 +8,7 @@ function runTest()
         {
             FBTestFirebug.selectPanel("script");
             FBTest.progress("reloaded, now set breakpoint");
-            var panel = FW.FirebugContext.chrome.getSelectedPanel();
+            var panel = FW.Firebug.chrome.getSelectedPanel();
 
             FBTest.compare("script", panel.name, "Got selected panel "+panel.name);
 
@@ -22,7 +22,7 @@ function runTest()
             FBTest.compare("true", sourceRow.getAttribute('breakpoint'), "Line "+lineNo+" should have a breakpoint set");
 
 
-            var chrome = FW.FirebugContext.chrome;
+            var chrome = FW.Firebug.chrome;
             FBTestFirebug.listenForBreakpoint(chrome, lineNo, function hitBP()
             {
                 checkWatchPanel();
