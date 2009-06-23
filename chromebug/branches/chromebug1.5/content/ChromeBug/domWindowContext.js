@@ -56,7 +56,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
     loadHandler: function(event)
     {
-        // We've just loaded all of the content for an nsIDOMWindow. We need to create a context for it.
+        // We've just loaded all of the content for an outer nsIDOMWindow for a XUL window. We need to create a context for it.
         var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
         var domWindow = event.target.defaultView;
 
@@ -66,15 +66,9 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 FBTrace.sysout("context.domWindowWatcher found outerDOMWindow", outerDOMWindow.location);
             return;
         }
-/*
-        if (domWindow.location.protocol != "chrome:")  // the chrome in ChromeBug
-        {
-            FBTrace.sysout("DomWindowContext.loadHandler skips "+domWindow.location);
-            return;
-        }
-*/
+
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("context.domWindowWatcher, new window in outerDOMWindow", outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
+            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULWindowInfo.getDocumentTypeByDOMWindow(domWindow)+" window in outerDOMWindow"+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
         var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
         if (context)
@@ -96,7 +90,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
     {
         FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location, event);
 
-        if (event.target instanceof HTMLDocument)  // we are only interested in Content windows
+        if (event.target instanceof HTMLDocument)  
             var domWindow = event.target.defaultView;
         else if (event.target instanceof XULElement || event.target instanceof XULDocument)
         {

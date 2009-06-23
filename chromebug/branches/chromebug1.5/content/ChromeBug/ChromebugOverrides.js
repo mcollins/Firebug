@@ -38,12 +38,12 @@ var ChromeBugOverrides = {
                         // the selected panel may not be able to handle this because its in the wrong context
                         if (FBTrace.DBG_LOCATIONS)
                             FBTrace.sysout("MultiContextLocator getObjectDescription "+object, object);
-                        return FirebugContext.chrome.getSelectedPanel().getObjectDescription(object);
+                        return Firebug.chrome.getSelectedPanel().getObjectDescription(object);
                     },
                     getLocationList: function()
                     {
                         // The select panel is in charge.
-                        return FirebugContext.chrome.getSelectedPanel().getLocationList();
+                        return Firebug.chrome.getSelectedPanel().getLocationList();
                     },
             }
             return locatorDelegator;

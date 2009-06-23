@@ -443,6 +443,18 @@ Chromebug.XULWindowInfo = {
         }
     },
 
+    getDocumentTypeByDOMWindow: function(domWindow)
+    {
+        var docShell = Chromebug.XULWindowInfo.getDocShellByDOMWindow(domWindow);
+        if (docShell instanceof nsIDocShellTreeItem)
+        {
+            var typeIndex = docShell.itemType;
+            return docShellTypeNames[typeIndex];
+        }
+        else
+            FBTrace.sysout("Chromebug.getDocumentType, docShell is not a nsIDocShellTreeItem:", docShell);
+    },
+
     destroyContextByDOMWindow: function(domWindow)
     {
         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
@@ -695,9 +707,9 @@ Chromebug.XULWindowInfo = {
             outerDOMWindow.addEventListener("DOMContentLoaded", Chromebug.XULWindowInfo.stateReloader, true);
 
         // 'true' for capturing, so all of the sub-window loads also trigger
-        outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
+        //outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
 
-        outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), true);
+        //outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), false);
 
         outerDOMWindow.addEventListener("keypress", bind(this.keypressToBreakIntoWindow, this, context), true);
 
@@ -874,7 +886,7 @@ Chromebug.XULWindowInfo = {
         browser.tag = this.fakeTabBrowser.browsers.length;
 
         var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
-        if (domWindow && 'location' in domWindow && domWindow.location && domWindow.location.toString())
+        if (domWindow && 'location' in domWindow && domWindow.location && domWindow.location["toString"])
             browserName = domWindow.location.toString();
 
         browser.currentURI = makeURI(browserName);
