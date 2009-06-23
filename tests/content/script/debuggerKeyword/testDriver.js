@@ -105,6 +105,9 @@ function DebuggerListener(debuggerKeywordId, nextTest)
 {
     this.onStop = function(context, frame, type, rv)
     {
+        if (window.closed)
+            throw new Error("testDriver DebugggerListener onStop window is closed");
+        
         FBTest.sysout("debuggerKeyword.DebuggerListener.onStop " + debuggerKeywordId);
 
         FW.Firebug.Debugger.removeListener(this);
