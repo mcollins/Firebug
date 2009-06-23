@@ -28,32 +28,39 @@ function fireTest(win)
     lookForMemberRow.onRecognize(function sawLogRow(elt)
     {
          FBTest.progress("Matched something in a memberRow");
+
+         var label = FW.FBL.getElementByClass(elt, "memberLabel");
+         FBTest.sysout("got label "+label.textContent, label);
+         FBTest.compare("topLevelVar", label.textContent, "The member label is 'topLevelVar'");
+         var lookForInput = new MutationRecognizer(panelDoc.defaultView, 'input', {class: "fixedWidthEditor"});
+         lookForInput.onRecognize(function sawInput(elt)
+         {
+             FBTest.compare('"something"', elt.value, "The INPUT element value should be \"something\"");
+             elt.value = otherThing;
+             FBTest.progress("Click outside the edit box");
+             FBTest.click(elt.parentNode);
+             setTimeout(function allowRefocus()
+             {
+                 var lookForOtherMemberRow = new MutationRecognizer(panelDoc.defaultView, 'tr', {class: "memberRow"}, otherThing);
+                 lookForOtherMemberRow.onRecognize(function sawOtherthing(elt)
+                 {
+                     var foundOtherThing = (elt.textContent.indexOf(otherThing) != -1);
+                     FBTest.ok(foundOtherThing, "The new value+"+otherThing+" should be set");
+                     FBTest.testDone("1738 DONE");
+                 });
+                 FBTest.progress("Changed the value, now hit return key");
+                 FBTest.pressKey(13);
+             });
+
+         });
          setTimeout(function editSomething()
          {
-             var label = FW.FBL.getElementByClass(elt, "memberLabel");
-             var lookForInput = new MutationRecognizer(panelDoc.defaultView, 'input', {class: "fixedWidthEditor"});
-             lookForInput.onRecognize(function sawInput(elt)
-             {
-                 FBTest.compare('"something"', elt.value, "The INPUT element value should be \"something\"");
-                 elt.value = otherThing;
-                 FBTest.progress("Click outside the edit box");
-                 FBTest.click(elt.parentNode);
-                 setTimeout(function allowRefocus()
-                 {
-                     var lookForOtherMemberRow = new MutationRecognizer(panelDoc.defaultView, 'tr', {class: "memberRow"}, otherThing);
-                     lookForOtherMemberRow.onRecognize(function sawOtherthing(elt)
-                     {
-                         var foundOtherThing = (elt.textContent.indexOf(otherThing) != -1);
-                         FBTest.ok(foundOtherThing, "The new value+"+otherThing+" should be set");
-                         FBTest.testDone("1738 DONE");
-                     });
-                     FBTest.progress("Changed the value, now hit return key");
-                     FBTest.pressKey(13);
-                 });
-
-             });
-             FBTest.progress("Double click the line to bring up the editor");
-             FBTest.dblclick(label);
+             FBTest.progress("Double click the line to bring up the editor ");
+FBTest.sysout("FBTest ", FBTest);
+             if (FBTest.dblclick(label))
+                 FBTest.progress("SUCCESS Double click the line to bring up the editor");
+             else
+                 FBTest.progress("Double click was aborted by preventDefault");
          });
     });
 
