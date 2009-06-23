@@ -20,10 +20,11 @@ function runTest()
             var panelNode = FBTestFirebug.selectPanel("console").panelNode;
             win.wrappedJSObject.executeRequest(function(request)
             {
+                FBTest.progress("Request call back called");
                 FBTestFirebug.expandElements(panelNode, "spyTitleCol", "spyCol");
-                setTimeout(function() {
-                    FBTest/*Firebug*/.testDone("issue1693.DONE");
-                }, 500);
+                FBTest.ok(true, "Completing the functions is the test?");
+                FBTest.testDone("issue1693.DONE");
+
             });
         });
     });
