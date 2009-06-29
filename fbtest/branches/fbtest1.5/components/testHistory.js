@@ -36,7 +36,7 @@ var History =
     {
         // Get all test-lists from preferences.
         var history = prefs.getCharPref("extensions.fbtest.history");
-        var arr = history.split(" ");
+        var arr = history.split(",");
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.History; startSearch '" + searchString + "'", arr);

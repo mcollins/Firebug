@@ -300,7 +300,7 @@ FBTestApp.TestConsole =
     appendToHistory: function(testListPath)
     {
         var history = Firebug.getPref(FBTestApp.prefDomain, "history");
-        var arr = history.split(" ");
+        var arr = history.split(",");
 
         // Avoid duplicities.
         for (var i=0; i<arr.length; i++) {
@@ -310,7 +310,7 @@ FBTestApp.TestConsole =
 
         // Store in preferences.
         arr.push(testListPath);
-        Firebug.setPref(FBTestApp.prefDomain, "history", arr.join(" "));
+        Firebug.setPref(FBTestApp.prefDomain, "history", arr.join(","));
     },
 
     // UI Commands
