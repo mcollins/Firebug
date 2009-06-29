@@ -912,8 +912,8 @@ function MutationEventFilter(recognizer, handler)
     {
         if (recognizer.matches(elt))
         {
-            handler(elt);
             filter.unwatchWindow(recognizer.getWindow())
+            handler(elt);
             return true;
         }
         return false;
@@ -937,6 +937,7 @@ function MutationEventFilter(recognizer, handler)
 
     filter.watchWindow(recognizer.win);
 }
+
 var filterInstance = 1;
 var activeFilters = {};
 MutationEventFilter.prototype.watchWindow = function(win)
