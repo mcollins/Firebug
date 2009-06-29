@@ -22,7 +22,8 @@
         </xul:toolbaritem>
         <xul:toolbaritem flex="1">
             <xul:textbox anonid="textBox" flex="1" enablehistory="true"
-                type="autocomplete" autocompletesearch="FBTestHistory"/>
+                type="autocomplete" autocompletesearch="FBTestHistory"
+                ontextentered="this.parentNode.parentNode.handleCommand();"/>
         </xul:toolbaritem>
         <xul:toolbarbutton anonid="testListPicker"
             command="cmd_openTestList"
@@ -41,6 +42,12 @@
         <property name="testURL"
             onget="return this.mTextBox.value;"
             onset="this.mTextBox.value = val; return val;"/>
+
+        <method name="handleCommand">
+            <body><![CDATA[
+                FBTestApp.TestConsole.loadTestList(this.mTextBox.value);
+            ]]></body>
+        </method>
     </implementation>
 
     <handlers>
