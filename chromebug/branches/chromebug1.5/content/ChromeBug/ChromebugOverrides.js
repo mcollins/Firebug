@@ -209,7 +209,6 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     supportsWindow: function(win)
     {
         try {
-            var xulWindowInfo = Chromebug.XULWindowInfo;
             var context = (win ? Firebug.Chromebug.getContextByGlobal(win) : null);
 
             if (context && context.globalScope instanceof Chromebug.ContainedDocument)
@@ -262,10 +261,7 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                 }
                 else
                 {
-                    var jsContext = frame.executionContext;  // may be null, mapped to tag zero
-                    context = Chromebug.XULWindowInfo.addJSContext(scope.jsClassName, global, jsContext);
-                    if (FBTrace.DBG_TOPLEVEL)
-                            FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope+jsContext gave new context "+context.getName());
+                     FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": no context!");
                 }
             }
             this.breakContext = context;
@@ -378,6 +374,7 @@ function overrideFirebugFunctions()
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
         top.Firebug.chrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
+        top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
 
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
@@ -396,6 +393,16 @@ function overrideFirebugFunctions()
         Firebug.ActivableModule.isAlwaysEnabled = ChromeBugOverrides.isAlwaysEnabled;
         Firebug.suspendFirebug = ChromeBugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
+
+        Firebug.URLSelector = Chromebug.URLSelector;
+        Firebug.allOff = function () {};  // TODO: move allOff into URLSelector in Firebug
+
+        Firebug.getContextType = function getChromebugContextType()
+        {
+            return Chromebug.DomWindowContext;
+        };
+
+        FBL.getRootWindow = function(win) { return win; };
 
         //Firebug.CommandLine.evaluate = ChromeBugOverrides.commandLine.evaluate;
         //Firebug.CommandLine.onCommandLineFocus = ChromeBugOverrides.commandLine.onCommandLineFocus;
@@ -432,6 +439,24 @@ function panelSupportsObject(panelType, object)
     return 0;
 }
 
+Chromebug.URLSelector = {
+        initialize: function()
+        {
+            return;
+        },
+        shouldCreateContext: function(browser, url, userCommands)  //
+        {
+            FBTrace.sysout("Chromebug.URLSelector "+url, browser);
+            return !Firebug.Chromebug.isChromebugURL(url);
+        },
+        shouldShowContext: function(context)
+        {
+            if (context && context.window && context.window instanceof Window)
+                return !Firebug.Chromebug.isChromebugURL(context.window.location.toString());
+            else
+                return false;
+        }
+    };
 
 overrideFirebugFunctions();
 }});

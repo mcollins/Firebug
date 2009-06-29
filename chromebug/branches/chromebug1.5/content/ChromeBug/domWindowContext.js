@@ -9,6 +9,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 //************************************************************************************************
 
+
 Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
 {
     var tabContext = new Firebug.TabContext(global, browser, Firebug.chrome, persistedState);
@@ -54,7 +55,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
     },
     // *************************************************************************************************
 
-    loadHandler: function(event)
+    loadHandler: function(event)  // this is bound to a XULWindow's outerDOMWindow (only)
     {
         // We've just loaded all of the content for an outer nsIDOMWindow for a XUL window. We need to create a context for it.
         var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
@@ -63,12 +64,12 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         if (domWindow == outerDOMWindow)
         {
             if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("context.domWindowWatcher found outerDOMWindow", outerDOMWindow.location);
+                FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location);
             return;
         }
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULWindowInfo.getDocumentTypeByDOMWindow(domWindow)+" window in outerDOMWindow"+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
+            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
         var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
         if (context)
@@ -89,46 +90,30 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
     unloadHandler: function(event)
     {
         FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location, event);
+        var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
+        var domWindow = event.target.defaultView;
 
-        if (event.target instanceof HTMLDocument)  
-            var domWindow = event.target.defaultView;
-        else if (event.target instanceof XULElement || event.target instanceof XULDocument)
+         if (!domWindow)
         {
-        //FBTrace.sysout("context.unloadHandler for context.window: "+this.window.location+" event", event);
-
-            FBTrace.sysout("context.unloadHandler for typeof(event.target): "+typeof(event.target)+" event.target "+event.target+" tag:"+event.target.tagName+"\n");
-            var document = event.target.ownerDocument;
-            if (document)
-                var domWindow = document.defaultView;
-            else
-            {
-                FBTrace.sysout("context.unloadHandler cannot find document for unloadHandler target "+event.target, event.target);
-                return;   // var domWindow = event.target.ownerDocument.defaultView;
-            }
+            FBTrace.sysout("ChromeBug unloadHandler found no DOMWindow for event.target", event.target);
+            return;
         }
 
-        if (domWindow)
+        if (! domWindow instanceof Ci.nsIDOMWindow)
         {
-            if (domWindow instanceof Ci.nsIDOMWindow)
-            {
-                var context = Firebug.Chromebug.getContextByGlobal(domWindow);
-                if (context)
-                {
-                    FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
-                    if (context.globalScope instanceof Chromebug.ContainedDocument && context.globalScope.getDocumentType() == "Content")
-                    {
-                        Chromebug.globalScopeInfos.remove(context.globalScope);
-                        remove(Firebug.Chromebug.contexts, context);
-                        Firebug.destroyContext(context);
-                    }
-                    return;
-                }
-                FBTrace.sysout("ChromeBug unloadHandler found no context for domWindow:"+domWindow.location);
-                return;
-            }
             FBTrace.sysout("ChromeBug unloadHandler domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
+            return;
         }
-        FBTrace.sysout("ChromeBug unloadHandler found no DOMWindow for event.target", event.target);
+
+        var context = Firebug.Chromebug.getContextByGlobal(domWindow);
+        if (context)
+        {
+            FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
+            Chromebug.globalScopeInfos.remove(context.globalScope);
+        }
+        else
+            FBTrace.sysout("ChromeBug unloadHandler found no context for domWindow:"+domWindow.location);
+        return;
     },
 
 });

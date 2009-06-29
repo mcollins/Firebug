@@ -44,6 +44,10 @@
                 tooltiptext="Refresh" command="cmd_refreshFirebugCache"/>
         </hbox>
 
+        <hbox insertbefore="fbHTMLButtons" id="cbWindowButtons" collapsed="false">
+            <toolbarbutton label="Refresh" class="toolbar-text-button"
+                tooltiptext="Refresh" command="cmd_refreshWindows"/>
+        </hbox>
     </hbox>
 
 </overlay>

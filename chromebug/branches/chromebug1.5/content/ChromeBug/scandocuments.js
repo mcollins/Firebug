@@ -230,7 +230,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             FirebugChrome.keyCodeListen("DOWN", isControl, bindFixed(this.inspectNodeBy, this, "down"), true),
         ];
 
-        Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
+        Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
         {
             var context = Firebug.Chromebug.getContextByGlobal(subWin);
             if (!context)  // don't attach to windows we are not watching
@@ -253,7 +253,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             delete this.keyListeners;
         }
 
-        Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
+        Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
         {
             try
             {
@@ -272,7 +272,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     {
         // We have to remove the click listener in a second phase because if we remove it
         // after the mousedown, we won't be able to cancel clicked links
-        Chromebug.XULWindowInfo.iterateXULWindows( bind(function(subWin)
+        Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
         {
             subWin.document.removeEventListener("click", this.onScanningDocumentsClick, true);
         }, this));
