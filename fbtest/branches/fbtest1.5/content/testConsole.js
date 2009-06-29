@@ -201,6 +201,9 @@ FBTestApp.TestConsole =
                 // Build new test list UI.
                 self.refreshTestList();
 
+                // Remember sucessfully loaded test within test history.
+                self.appendToHistory(testListPath);
+
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
                         testListPath, doc);
@@ -292,6 +295,22 @@ FBTestApp.TestConsole =
             }
         }
         return null;
+    },
+
+    appendToHistory: function(testListPath)
+    {
+        var history = Firebug.getPref(FBTestApp.prefDomain, "history");
+        var arr = history.split(" ");
+
+        // Avoid duplicities.
+        for (var i=0; i<arr.length; i++) {
+            if (arr[i] == testListPath)
+                return;
+        }
+
+        // Store in preferences.
+        arr.push(testListPath);
+        Firebug.setPref(FBTestApp.prefDomain, "history", arr.join(" "));
     },
 
     // UI Commands

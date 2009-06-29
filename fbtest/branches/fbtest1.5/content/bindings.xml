@@ -21,7 +21,8 @@
             <xul:label value="Test Suite:" />
         </xul:toolbaritem>
         <xul:toolbaritem flex="1">
-            <xul:textbox anonid="textBox" flex="1" />
+            <xul:textbox anonid="textBox" flex="1" enablehistory="true"
+                type="autocomplete" autocompletesearch="FBTestHistory"/>
         </xul:toolbaritem>
         <xul:toolbarbutton anonid="testListPicker"
             command="cmd_openTestList"
