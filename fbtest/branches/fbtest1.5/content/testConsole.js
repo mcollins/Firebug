@@ -469,6 +469,10 @@ var FBTest = FBTestApp.FBTest =
     {
         FBTestApp.TestRunner.testDone(false);
     },
+    manualVerify: function(verifyMsg, instructions, cleanupHandler)
+    {
+        FBTestApp.TestRunner.manualVerify(verifyMsg, instructions, cleanupHandler);
+    },
 
     onFailure: function(msg)
     {

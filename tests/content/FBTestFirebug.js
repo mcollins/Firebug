@@ -92,9 +92,21 @@ this.testDone = function(message)
             FBTest.progress(message);
         FBTest.testDone();
     });
-
 }
 
+this.manualVerify = function(verifyMsg, instructions)
+{
+    var self = this;
+    FBTest.manualVerify(
+        verifyMsg, instructions,
+        function(passes)
+        {
+            FBTest.ok(passes, "Manual verification");
+            self.closeFirebug();
+            self.cleanUpTestTabs();
+            FBTest.testDone();
+        });
+}
 
 // ************************************************************************************************
 // URLs
