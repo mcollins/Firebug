@@ -32,19 +32,29 @@ body {
     list-style-image: url("chrome://fbtest/skin/downloadButtons-aero.png");
     -moz-image-region: rect(0px 48px 16px 32px);
 }
+
 #refreshList {
     list-style-image: url("chrome://browser/skin/Toolbar-small.png");
     -moz-image-region: rect(0px 64px 16px 48px);
 }
 
-#testListPicker {
+/************************************************************************************************/
+/* Test List URL Bar */
+
+#testListUrlBar textbox {
+    height: 20px;
+    border: 1px solid gray;
+}
+
+#testListUrlBar > toolbarbutton {
     list-style-image: url(chrome://browser/skin/Search-glass.png);
     -moz-image-region: rect(0px, 16px, 16px, 0px);
 }
 
-#testListPicker:hover {
-  -moz-image-region: rect(0px 32px 16px 16px);
+#testListUrlBar > toolbarbutton:hover {
+    -moz-image-region: rect(0px 32px 16px 16px);
 }
+
 /************************************************************************************************/
 /* Statusbar */ 
  

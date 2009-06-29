@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE window [
+<!ENTITY % firebugDTD SYSTEM "chrome://firebug/locale/firebug.dtd">
+%firebugDTD;
+]>
+
+<bindings xmlns="http://www.mozilla.org/xbl"
+    xmlns:xbl="http://www.mozilla.org/xbl"
+    xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<!-- Test URL Bar (history of test files) -->
+<binding id="urlbar" extends="chrome://global/content/bindings/toolbar.xml#toolbar">
+
+    <resources>
+        <stylesheet src="chrome://fbtest/skin/testConsole.css"/>
+    </resources>
+
+    <content>
+        <xul:toolbaritem>
+            <xul:label value="Test Suite:" />
+        </xul:toolbaritem>
+        <xul:toolbaritem flex="1">
+            <xul:textbox anonid="textBox" flex="1" />
+        </xul:toolbaritem>
+        <xul:toolbarbutton anonid="testListPicker"
+            command="cmd_openTestList"
+            tooltiptext="fbtest.cmd.tip.Browser For Test List" />
+    </content>
+
+    <implementation>
+        <constructor><![CDATA[
+            this.mTextBox = document.getAnonymousElementByAttribute(this, "anonid", "textBox");
+
+            // Internationalize UI
+            var picker = document.getAnonymousElementByAttribute(this, "anonid", "testListPicker");
+            FBL.internationalize(picker, "tooltiptext");
+        ]]></constructor>
+
+        <property name="testURL"
+            onget="return this.mTextBox.value;"
+            onset="this.mTextBox.value = val; return val;"/>
+    </implementation>
+
+    <handlers>
+        <handler event="keypress" keycode="VK_RETURN"><![CDATA[
+            FBTestApp.TestConsole.loadTestList(this.mTextBox.value);
+        ]]></handler>
+    </handlers>
+</binding>
+
+</bindings>

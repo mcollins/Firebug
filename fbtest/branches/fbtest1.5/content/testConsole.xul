@@ -3,6 +3,7 @@
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
 <?xml-stylesheet href="chrome://fbtest/skin/testConsole.css"?>
+<?xml-stylesheet href="chrome://fbtest/content/bindings.css"?>
 
 <!DOCTYPE window [
 <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
@@ -81,18 +82,8 @@
                 tooltiptext="fbtest.cmd.Refresh"
                 command="cmd_refreshTestList"/>
         </toolbar>
-        <toolbar id="testListUrlBar" align="center" mode="text">
-            <toolbaritem>
-                <label value="Test Suite:" />
-            </toolbaritem>
-            <toolbaritem flex="1">
-                <textbox id="testListURL" flex="1"
-                    onkeydown="FBTestApp.TestListURLBar.onKeyDown(event)"/>
-            </toolbaritem>
-            <toolbarbutton id="testListPicker"
-                command="cmd_openTestList"
-                tooltiptext="fbtest.cmd.tip.Browser For Test List"/>
-        </toolbar>
+
+        <toolbar id="testListUrlBar" align="center" />
     </toolbox>
 
     <popupset id="mainPopupSet">

@@ -85,7 +85,7 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList", "testListPicker"];
+        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList"];
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);
@@ -216,8 +216,8 @@ FBTestApp.TestConsole =
         consoleFrame.setAttribute("src", testListPath);
 
         // Update test list URL box.
-        var testListURLBox = $("testListURL");
-        testListURLBox.value = testListPath;
+        var urlBar = $("testListUrlBar");
+        urlBar.testURL = testListPath;
     },
 
     refreshTestList: function()
@@ -386,23 +386,6 @@ FBTestApp.TestConsole.TraceListener =
             message.text = message.text.substr("fbtest.".length);
             message.text = trimLeft(message.text);
             message.type = "DBG_FBTEST";
-        }
-    }
-};
-
-// ************************************************************************************************
-// Test List URL Bar
-
-FBTestApp.TestListURLBar =
-{
-    onKeyDown: function(event)
-    {
-        //FBTrace.sysout("FBTestApp.TestListURLBar.onKeyDown", event);
-
-        if (event.keyCode == 13) // Return
-        {
-            var testListURLBox = $("testListURL");
-            FBTestApp.TestConsole.loadTestList(testListURLBox.value);
         }
     }
 };
