@@ -27,7 +27,7 @@
         </xul:toolbaritem>
         <xul:toolbarbutton anonid="testListPicker"
             command="cmd_openTestList"
-            tooltiptext="fbtest.cmd.tip.Browser For Test List" />
+            tooltiptext="fbtest.cmd.tip.Browse For Test List" />
     </content>
 
     <implementation>
