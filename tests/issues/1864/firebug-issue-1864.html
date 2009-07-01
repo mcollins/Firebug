@@ -1,0 +1,20 @@
+<html>
+    <head>
+        <script type="text/javascript">
+            function swallowExceptions(fn) {
+                try {
+                    fn();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            function fail() {
+                throw new Error('FAIL');
+            }
+
+            swallowExceptions(fail);
+        </script>
+    </head>
+    <body></body>
+</html>
