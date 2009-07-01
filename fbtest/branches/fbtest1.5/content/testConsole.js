@@ -321,6 +321,9 @@ FBTestApp.TestConsole =
         for (var i=0; i<this.groups.length; i++)
             testQueue.push.apply(testQueue, this.groups[i].tests);
 
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.runAll; Number of tests: " + testQueue.length);
+
         // ... and execute them as one test suite.
         FBTestApp.TestRunner.runTests(testQueue, onFinishCallback);
     },
