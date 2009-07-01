@@ -375,6 +375,7 @@ function overrideFirebugFunctions()
         top.Firebug.prefDomain = "extensions.chromebug";
         top.Firebug.chrome.getLocationProvider = ChromeBugOverrides.getLocationProvider;
         top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
+        top.Firebug.chrome.syncTitle = ChromeBugOverrides.syncTitle;
 
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
