@@ -495,15 +495,14 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     getBrowsers: function()
     {
-        if (window.closed)
-            throw new Error("Firebug.Chromebug.getBrowsers from a closed window");
-         FBTrace.sysout("ChromebugPanels getBrowsers "+this.fakeTabBrowser.browsers);
-         return this.fakeTabBrowser.browsers;
+         return Firebug.Chromebug.fakeTabBrowser.browsers;
     },
 
     onXULWindowAdded: function(xul_window, outerDOMWindow)
     {
-         var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);  // addXULWindow
+        try
+        {
+         var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);
          context.xul_window = xul_window;
          var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
          Chromebug.globalScopeInfos.add(context, gs);
@@ -512,11 +511,22 @@ Firebug.Chromebug = extend(Firebug.Module,
              outerDOMWindow.addEventListener("DOMContentLoaded", Firebug.Chromebug.stateReloader, true);
 
          // 'true' for capturing, so all of the sub-window loads also trigger
-         outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
+         if (context.loadHandler)
+             outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
+         else
+             FBTrace.sysout("onXULWindowAdded no context.loadHandler");
 
-         outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), false);
+         if (context.unloadHandler)
+             outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), false);
+         else
+             FBTrace.sysout("onXULWindowAdded no context.unloadHandler");
 
          outerDOMWindow.addEventListener("keypress", bind(this.keypressToBreakIntoWindow, this, context), true);
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("onXULWindowAdded FAILS "+exc, exc);
+        }
     },
 
     // Browsers in ChromeBug hold our context info
@@ -596,7 +606,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             document.title = "Chromebug "+this.fullVersion;
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("Chromebug.initialize this.fullVersion: "+this.fullVersion+" in "+document.location);
+            FBTrace.sysout("Chromebug.initialize this.fullVersion: "+this.fullVersion+" in "+document.location+" title:"+document.title);
 
         this.uid = FBL.getUniqueId();
 
