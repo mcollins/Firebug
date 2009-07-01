@@ -6,6 +6,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 const dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+const appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 
 // ************************************************************************************************
 // Module implementation
@@ -202,8 +203,8 @@ JSONBuilder.prototype =
         log.pages = [this.buildPage(context)];
         log.entries = [];
         log.version = "1.0";
-        log.creator =  {name: "", version: ""};
-        log.browser =  {name: "", version: ""};
+        log.creator =  {name: "Firebug", version: Firebug.version};
+        log.browser =  {name: appInfo.name, version: appInfo.version};
         return log;
     },
 
@@ -223,7 +224,7 @@ JSONBuilder.prototype =
         entry.pageref = page.id;
         entry.startedDateTime = file.startTime;
         entry.time = file.endTime - file.startTime;
-        entry.sent = 0;
+        entry.sent = 0;//xxxHonza: fix when activity observer is in place.
         entry.received = file.size;
         entry.overview = this.buildOverview(file);
         entry.request = this.buildRequest(file);
@@ -369,20 +370,22 @@ JSONBuilder.prototype =
         response.headers = this.buildHeaders(file.responseHeaders);
         response.content = this.buildContent(file);
 
+        response.redirectURL = ""; // xxxHonza: display the last redirect URL.
+
         return response;
     },
 
     buildContent: function(file)
     {
         var content = {};
-        content.contentLength = file.responseText ? file.responseText.length : 0;
-        content.compression = ""; //xxxHonza
+        content.contentLength = file.responseText ? file.responseText.length : file.size;
+        content.compression = ""; //xxxHonza: does activity-observer provide compression info?
 
-        try 
+        try
         {
             content.mimeType = file.request.contentType;
-        } 
-        catch (e) 
+        }
+        catch (e)
         {
             if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("netexport.buildContent EXCEPTION", e);
@@ -397,15 +400,11 @@ JSONBuilder.prototype =
     {
         var cache = {};
 
+        cache.beforeRequest = {};   //xxxHonza: There is no such info yet in the Net panel.
+        cache.afterRequest = {};
+
         if (!file.fromCache)
-            return cache;
-
-        cache.beforeRequest = {};
-        cache.beforeRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
-
-        //xxxHonza: There is no such info yet in the Net panel.
-        //cache.afterRequest = {};
-        //cache.afterRequest.cacheEntry = {};
+            cache.afterRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
 
         return cache;
     },
