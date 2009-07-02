@@ -400,11 +400,11 @@ JSONBuilder.prototype =
     {
         var cache = {};
 
-        cache.beforeRequest = {};   //xxxHonza: There is no such info yet in the Net panel.
-        cache.afterRequest = {};
+        cache.beforeRequest = {};
+        cache.afterRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
 
         if (!file.fromCache)
-            cache.afterRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
+            cache.beforeRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
 
         return cache;
     },
