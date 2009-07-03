@@ -211,8 +211,7 @@ JSONBuilder.prototype =
     buildPage: function(context)
     {
         var page = {};
-        //?page.started = {};
-        page.startedDateTime = (new Date()).toUTCString();
+        page.startedDateTime = (new Date()).toUTCString(); //xxxHonza: support for ISO 8601
         page.id = "page_0";
         page.title = context.getTitle();
         return page;
@@ -222,7 +221,7 @@ JSONBuilder.prototype =
     {
         var entry = {};
         entry.pageref = page.id;
-        entry.startedDateTime = file.startTime;
+        entry.startedDateTime = file.startTime;      //xxxHonza: support for ISO 8601
         entry.time = file.endTime - file.startTime;
         entry.sent = 0;//xxxHonza: fix when activity observer is in place.
         entry.received = file.size;
