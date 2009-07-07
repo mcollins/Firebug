@@ -9,8 +9,8 @@ function openOpenCloseClose()
     {
         FBTest.progress("opened tab for "+win.location);
 
-        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
-        FBTest.compare("none", placement, "Firebug starts placed nowhere");
+        var open = FW.Firebug.chrome.isOpen();
+        FBTest.ok(!open, "Firebug starts closed");
 
         FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
@@ -42,8 +42,8 @@ function openOpenCloseClose()
         FBTest.progress("Close Firebug");
         FBTest.Firebug.closeFirebug();
 
-        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
-        FBTest.compare("none", placement, "Firebug closed");
+        var open = FW.Firebug.chrome.isOpen();
+        FBTest.ok(!open, "Firebug closed");
 
         FBTestFirebug.testDone("openOpenCloseClose.DONE");
     });

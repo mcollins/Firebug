@@ -12,8 +12,8 @@ function allOpenAllClose()
     {
         FBTest.progress("opened tab for "+win.location);
 
-        var placement = FW.Firebug.getPlacement();
-        FBTest.compare("none", placement, "Firebug starts closed");
+        var open = FW.Firebug.chrome.isOpen();
+        FBTest.ok(!open, "Firebug starts closed");
 
         FBTest.progress("All Open");
         FW.Firebug.toggleAll("on");
@@ -60,8 +60,8 @@ function alsoOpened(win)
 
     FW.Firebug.toggleAll("off");
 
-    var placement = FW.Firebug.getPlacement();
-    FBTest.compare("none", placement, "Firebug closed by all off");
+    var open = FW.Firebug.chrome.isOpen();
+    FBTest.ok(!open, "Firebug closed by all off");
 
     var toolTip = statusbarIcon.getAttribute("tooltiptext");
     var number = /^(\d).*Firebugs/.exec(toolTip);
