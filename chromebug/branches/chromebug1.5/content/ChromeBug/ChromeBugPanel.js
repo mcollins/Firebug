@@ -498,6 +498,11 @@ Firebug.Chromebug = extend(Firebug.Module,
          return Firebug.Chromebug.fakeTabBrowser.browsers;
     },
 
+    getCurrentBrowser: function()
+    {
+        return this.fakeTabBrowser.selectedBrowser;
+    },
+
     onXULWindowAdded: function(xul_window, outerDOMWindow)
     {
         try
@@ -1003,7 +1008,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
     },
 
-    reattachContext: function(browser, context) // externalBrowser and FirebugContext from chrome.js
+    reattachContext: function(browser, context) // FirebugContext from chrome.js
     {
         // this is called after the chromebug window has opened.
         if (FBTrace.DBG_CHROMEBUG)
