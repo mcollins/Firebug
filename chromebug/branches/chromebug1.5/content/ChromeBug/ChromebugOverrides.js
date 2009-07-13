@@ -377,6 +377,9 @@ function overrideFirebugFunctions()
         top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
 
+        Firebug.Chromebug.syncResumeBox = Firebug.chrome.syncResumeBox;
+        top.Firebug.chrome.syncResumeBox = function(context) { if (context) Firebug.Chromebug.syncResumeBox(context); }
+
         top.Firebug.chrome.syncTitle = ChromeBugOverrides.syncTitle;
 
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
