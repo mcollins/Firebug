@@ -106,7 +106,6 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
             }
 
             jsonString = JSON.stringify(jsonData, null, '  ');
-            jsonString = "(" + jsonString + ")";
         }
         catch (err)
         {
