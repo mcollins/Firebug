@@ -37,12 +37,24 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.Exporting data for: " + context.getName());
 
-        // Get target file for exported data. Bail out, if the user presses cancel.
-        var file = this.getTargetFile();
-        if (!file)
-            return;
+        var panel = context.getPanel("net");
 
-        // Build JSON result string.
+        // Build entries.
+        var numberOfRequests = 0;
+        panel.enumerateRequests(function(file) {
+            numberOfRequests++;
+        })
+
+        if (numberOfRequests > 0)
+        {
+            // Get target file for exported data. Bail out, if the user presses cancel.
+            var file = this.getTargetFile();
+            if (!file)
+                return;
+        }
+
+        // Build JSON result string. If the panel is empty a dialog with warning message
+        // automatically appears.
         var jsonString = this.buildData(context);
         if (!jsonString)
             return;
@@ -83,9 +95,13 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
             // Export all data into a JSON string.
             var builder = new JSONBuilder();
             var jsonData = builder.build(context);
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.buildData; entries: " + jsonData.log.entries.length,
+                    jsonData);
+
             if (!jsonData.log.entries.length)
             {
-                alert("There is nothing to export.");
+                alert($STR("Nothing to export"));
                 return null;
             }
 
@@ -158,9 +174,30 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         {
             gBrowser.selectedTab = gBrowser.addTab(url);
 
-            var tabBrowser = gBrowser.getBrowserForTab(gBrowser.selectedTab);
-            tabBrowser.addProgressListener(new TabProgressListener(jsonString),
-                Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netExport.openViewer; Open HAR Viewer tab",
+                    gBrowser.selectedTab.linkedBrowser);
+
+            var browser = gBrowser.selectedTab.linkedBrowser;
+            browser.addEventListener("DOMContentLoaded", function(event) {
+                var win = event.currentTarget;
+                var content = win.contentDocument.getElementById("content");
+                if (FBTrace.DBG_NETEXPORT)
+                    FBTrace.sysout("netexport.DOMContentLoaded;", content);
+
+                content.addEventListener("onViewerInit", function(event) {
+                    var doc = content.ownerDocument;
+                    var win = doc.defaultView.wrappedJSObject;
+                    if (FBTrace.DBG_NETEXPORT)
+                        FBTrace.sysout("netexport.onViewerInit; HAR Viewer initialized", win);
+
+                    // Initialize input JSON box.
+                    doc.getElementById("sourceEditor").value = jsonString;
+
+                    // Switch to the Preview tab.
+                    win.SourceView.onAppendPreview();
+                }, true);
+            }, true);
         }
     },
 
@@ -176,7 +213,6 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
 
 function JSONBuilder()
 {
-    
 }
 
 JSONBuilder.prototype =
@@ -462,6 +498,9 @@ JSONBuilder.prototype =
     },
 }
 
+// ************************************************************************************************
+// Helpers
+
 // xxxHonza: duplicated in net.js
 function isURLEncodedFile(file, text)
 {
@@ -497,40 +536,6 @@ function safeGetName(request)
 
     return null;
 }
-
-// ************************************************************************************************
-
-function TabProgressListener(jsonData)
-{
-    this.jsonData = jsonData;
-    this.initialized = false;
-}
-
-TabProgressListener.prototype = extend(BaseProgressListener,
-{
-    onStateChange: function(progress, request, flag, status)
-    {
-        var win = progress.DOMWindow;
-        if (!win || !win.document)
-            return;
-
-        var name = safeGetName(request);
-        var sourceEditor = win.document.getElementById("sourceEditor");
-        if (!this.initialized && (name.indexOf("/har/viewer") > 0) && sourceEditor)
-        {
-            this.initialized = true;
-
-            var browser = TabWatcher.getBrowserByWindow(win);
-            browser.removeProgressListener(this);
-
-            var self = this;
-            win.addEventListener("load", function(event) {
-                win.document.getElementById("sourceEditor").value = self.jsonData;
-                win.wrappedJSObject.SourceView.onAppendPreview();
-            }, true);
-        }
-    }
-});
 
 // ************************************************************************************************
 // Registration
