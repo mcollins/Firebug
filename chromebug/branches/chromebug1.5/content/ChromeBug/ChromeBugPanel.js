@@ -526,7 +526,7 @@ Firebug.Chromebug = extend(Firebug.Module,
          else
              FBTrace.sysout("onXULWindowAdded no context.unloadHandler");
 
-         outerDOMWindow.addEventListener("keypress", bind(this.keypressToBreakIntoWindow, this, context), true);
+         outerDOMWindow.addEventListener("keypress", bind(Chromebug.XULAppModule.keypressToBreakIntoWindow, this, context), true);
         }
         catch(exc)
         {
@@ -857,7 +857,9 @@ Firebug.Chromebug = extend(Firebug.Module,
              FBTrace.sysout("Firebug.Chromebug.shutdown set prefs w,h="+window.outerWidth+","+window.outerHeight+")\n");
 
 
-        Firebug.Chromebug.shutdown();
+        window.dump(window.location+ " shutdown:\n "+getStackDump());
+
+        Firebug.shutdown();
         if(FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("ChromeBugPanel.shutdown EXIT\n");
     },
