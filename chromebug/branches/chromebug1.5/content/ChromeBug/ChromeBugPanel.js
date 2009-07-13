@@ -516,15 +516,11 @@ Firebug.Chromebug = extend(Firebug.Module,
              outerDOMWindow.addEventListener("DOMContentLoaded", Firebug.Chromebug.stateReloader, true);
 
          // 'true' for capturing, so all of the sub-window loads also trigger
-         if (context.loadHandler)
-             outerDOMWindow.addEventListener("DOMContentLoaded", bind(context.loadHandler, context), true);
-         else
-             FBTrace.sysout("onXULWindowAdded no context.loadHandler");
+         var handler = context.getLoadHandler();
+         outerDOMWindow.addEventListener("DOMContentLoaded", bind(handler, context), true);
 
-         if (context.unloadHandler)
-             outerDOMWindow.addEventListener("unload", bind(context.unloadHandler, context), false);
-         else
-             FBTrace.sysout("onXULWindowAdded no context.unloadHandler");
+         var handler = context.getUnloadHandler();
+         outerDOMWindow.addEventListener("unload", bind(handler, context), false);
 
          outerDOMWindow.addEventListener("keypress", bind(Chromebug.XULAppModule.keypressToBreakIntoWindow, this, context), true);
         }
@@ -855,6 +851,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (FBTrace.DBG_CHROMEBUG)
              FBTrace.sysout("Firebug.Chromebug.shutdown set prefs w,h="+window.outerWidth+","+window.outerHeight+")\n");
+
 
 
         window.dump(window.location+ " shutdown:\n "+getStackDump());
