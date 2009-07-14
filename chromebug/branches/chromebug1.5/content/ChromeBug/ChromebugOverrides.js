@@ -458,7 +458,7 @@ Chromebug.URLSelector = {
         shouldShowContext: function(context)
         {
             if (context && context.window && context.window instanceof Window)
-                return !Firebug.Chromebug.isChromebugURL(context.window.location.toString());
+                return !Firebug.Chromebug.isChromebugURL(context.getName());
             else
                 return false;
         }
