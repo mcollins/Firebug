@@ -246,7 +246,7 @@ JSONBuilder.prototype =
     buildPage: function(context)
     {
         var page = {};
-        page.startedDateTime = (new Date()).toUTCString(); //xxxHonza: support for ISO 8601
+        page.startedDateTime = dateToJSON(new Date());
         page.id = "page_0";
         page.title = context.getTitle();
         return page;
@@ -256,7 +256,7 @@ JSONBuilder.prototype =
     {
         var entry = {};
         entry.pageref = page.id;
-        entry.startedDateTime = file.startTime;      //xxxHonza: support for ISO 8601
+        entry.startedDateTime = dateToJSON(new Date(file.startTime));
         entry.time = file.endTime - file.startTime;
         entry.sent = 0;//xxxHonza: fix when activity observer is in place.
         entry.received = file.size;
@@ -535,6 +535,24 @@ function safeGetName(request)
 
     return null;
 }
+
+function dateToJSON(date)
+{
+    function f(n, c) {
+        if (!c) c = 2;
+        var s = new String(n);
+        while (s.length < c) s = "0" + s;
+        return s;
+    }
+
+    return date.getUTCFullYear()   + '-' +
+         f(date.getUTCMonth() + 1) + '-' +
+         f(date.getUTCDate())      + 'T' +
+         f(date.getUTCHours())     + ':' +
+         f(date.getUTCMinutes())   + ':' +
+         f(date.getUTCSeconds())   + '.' +
+         f(date.getUTCMilliseconds(), 3) + 'Z';
+} 
 
 // ************************************************************************************************
 // Registration
