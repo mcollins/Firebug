@@ -64,7 +64,13 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
 
         var viewerURL = Firebug.getPref(Firebug.prefDomain, "netExport.viewerURL");
         if (viewerURL)
-            this.openViewer(viewerURL, jsonString);
+            this.ViewerOpener.openViewer(viewerURL, jsonString);
+    },
+
+    // Handle Import toolbat button.
+    importData: function(context)
+    {
+        alert("TBD");
     },
 
     // Open File Save As dialog and let the user to pick proper file location.
@@ -140,71 +146,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         }
 
         return false;
-    },
-
-    // Open online viewer for immediate preview.
-    openViewer: function(url, jsonString)
-    {
-        var result = iterateBrowserWindows("navigator:browser", function(browserWin)
-        {
-            return iterateBrowserTabs(browserWin, function(tab, currBrowser)
-            {
-                var currentUrl = currBrowser.currentURI.spec;
-                if (currentUrl.indexOf("/har/viewer") >= 0)
-                {
-                    var tabBrowser = browserWin.getBrowser();
-                    tabBrowser.selectedTab = tab;
-                    browserWin.focus();
-
-                    var win = tabBrowser.contentWindow.wrappedJSObject;
-                    var sourceEditor = win.document.getElementById("sourceEditor");
-                    sourceEditor.value = jsonString;
-                    win.SourceView.onAppendPreview();
-
-                    if (FBTrace.DBG_NETEXPORT)
-                        FBTrace.sysout("netExport.openViewer; Select an existing tab", tabBrowser);
-                    return true;
-                }
-            })
-        });
-
-        // The viewer is not opened yet so, open a new tab.
-        if (!result)
-        {
-            gBrowser.selectedTab = gBrowser.addTab(url);
-
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netExport.openViewer; Open HAR Viewer tab",
-                    gBrowser.selectedTab.linkedBrowser);
-
-            var browser = gBrowser.selectedTab.linkedBrowser;
-            browser.addEventListener("DOMContentLoaded", function(event) {
-                var win = event.currentTarget;
-                var content = win.contentDocument.getElementById("content");
-                if (FBTrace.DBG_NETEXPORT)
-                    FBTrace.sysout("netexport.DOMContentLoaded;", content);
-
-                content.addEventListener("onViewerInit", function(event) {
-                    var doc = content.ownerDocument;
-                    var win = doc.defaultView.wrappedJSObject;
-                    if (FBTrace.DBG_NETEXPORT)
-                        FBTrace.sysout("netexport.onViewerInit; HAR Viewer initialized", win);
-
-                    // Initialize input JSON box.
-                    doc.getElementById("sourceEditor").value = jsonString;
-
-                    // Switch to the Preview tab.
-                    win.SourceView.onAppendPreview();
-                }, true);
-            }, true);
-        }
-    },
-
-    // Handle Import toolbat button.
-    importData: function(context)
-    {
-        alert("TBD");
-    },
+    }
 });
 
 // ************************************************************************************************
@@ -438,7 +380,7 @@ JSONBuilder.prototype =
         cache.afterRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
 
         if (!file.fromCache)
-            cache.beforeRequest.cacheEntry = this.buildCacheEntry(file.cacheEntry);
+            cache.beforeRequest = this.buildCacheEntry(file.cacheEntry);
 
         return cache;
     },
@@ -498,6 +440,93 @@ JSONBuilder.prototype =
 }
 
 // ************************************************************************************************
+// Viewer Opener
+
+Firebug.NetMonitorSerializer.ViewerOpener =
+{
+    // Open online viewer for immediate preview.
+    openViewer: function(url, jsonString)
+    {
+        var result = iterateBrowserWindows("navigator:browser", function(browserWin)
+        {
+            return iterateBrowserTabs(browserWin, function(tab, currBrowser)
+            {
+                var currentUrl = currBrowser.currentURI.spec;
+                if (currentUrl.indexOf("/har/viewer") >= 0)
+                {
+                    var tabBrowser = browserWin.getBrowser();
+                    tabBrowser.selectedTab = tab;
+                    browserWin.focus();
+
+                    var win = tabBrowser.contentWindow.wrappedJSObject;
+                    var sourceEditor = win.document.getElementById("sourceEditor");
+                    sourceEditor.value = jsonString;
+                    win.SourceView.onAppendPreview();
+
+                    if (FBTrace.DBG_NETEXPORT)
+                        FBTrace.sysout("netExport.openViewer; Select an existing tab", tabBrowser);
+                    return true;
+                }
+            })
+        });
+
+        // The viewer is not opened yet so, open a new tab.
+        if (!result)
+        {
+            gBrowser.selectedTab = gBrowser.addTab(url);
+
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netExport.openViewer; Open HAR Viewer tab",
+                    gBrowser.selectedTab.linkedBrowser);
+
+            var self = this;
+            var browser = gBrowser.selectedTab.linkedBrowser;
+            function onContentLoad(event) {
+                browser.removeEventListener("DOMContentLoaded", onContentLoad, true);
+                self.onContentLoad(event, jsonString);
+            }
+            browser.addEventListener("DOMContentLoaded", onContentLoad, true);
+        }
+    },
+
+    onContentLoad: function(event, jsonString)
+    {
+        var win = event.currentTarget;
+        var content = win.contentDocument.getElementById("content");
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.DOMContentLoaded;", content);
+
+        var self = this;
+        function onViewerInit(event)
+        {
+            content.removeEventListener("onViewerInit", onViewerInit, true);
+
+            var doc = content.ownerDocument;
+            var win = doc.defaultView.wrappedJSObject;
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.onViewerInit; HAR Viewer initialized", win);
+
+            // Initialize input JSON box.
+            doc.getElementById("sourceEditor").value = jsonString;
+
+            // Switch to the Preview tab by clicking on the preview button.
+            self.click(doc.getElementById("appendPreview"));
+        }
+
+        content.addEventListener("onViewerInit", onViewerInit, true);
+    },
+
+    click: function(button)
+    {
+        var doc = button.ownerDocument;
+        var event = doc.createEvent("MouseEvents");
+        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
+            false, false, false, false, 0, null);
+        button.dispatchEvent(event);
+    }
+}
+
+// ************************************************************************************************
 // Helpers
 
 // xxxHonza: duplicated in net.js
@@ -552,7 +581,7 @@ function dateToJSON(date)
          f(date.getUTCMinutes())   + ':' +
          f(date.getUTCSeconds())   + '.' +
          f(date.getUTCMilliseconds(), 3) + 'Z';
-} 
+}
 
 // ************************************************************************************************
 // Registration
