@@ -177,11 +177,11 @@ JSONBuilder.prototype =
     buildLog: function(context)
     {
         var log = {};
+        log.version = "1.0";
+        log.creator = {name: "Firebug", version: Firebug.version};
+        log.browser = {name: appInfo.name, version: appInfo.version};
         log.pages = [this.buildPage(context)];
         log.entries = [];
-        log.version = "1.0";
-        log.creator =  {name: "Firebug", version: Firebug.version};
-        log.browser =  {name: appInfo.name, version: appInfo.version};
         return log;
     },
 
@@ -200,13 +200,16 @@ JSONBuilder.prototype =
         entry.pageref = page.id;
         entry.startedDateTime = dateToJSON(new Date(file.startTime));
         entry.time = file.endTime - file.startTime;
-        entry.sent = 0;//xxxHonza: fix when activity observer is in place.
-        entry.received = file.size;
         entry.overview = this.buildOverview(file);
         entry.request = this.buildRequest(file);
         entry.response = this.buildResponse(file);
         entry.cache = this.buildCache(file);
         entry.timings = this.buildTimings(file);
+
+        // Put page timings into the page object now when we have the first entry.
+        if (!page.pageTimings)
+            page.pageTimings = this.buildPageTimings(file);
+
         return entry;
     },
 
@@ -231,6 +234,9 @@ JSONBuilder.prototype =
 
         request.queryString = file.urlParams;
         request.postData = this.buildPostData(file);
+
+        request.headersSize = 0; //xxxHonza: waiting for the activityObserver.
+        request.bodySize = 0; //xxxHonza: fix when activity observer is in place.
 
         return request;
     },
@@ -346,7 +352,10 @@ JSONBuilder.prototype =
         response.headers = this.buildHeaders(file.responseHeaders);
         response.content = this.buildContent(file);
 
-        response.redirectURL = ""; // xxxHonza: display the last redirect URL.
+        response.redirectURL = findHeader(file.responseHeaders, "Location");
+
+        response.headersSize = 0; //xxxHonza: waiting for the activityObserver.
+        response.bodySize = file.size;
 
         return response;
     },
@@ -376,11 +385,13 @@ JSONBuilder.prototype =
     {
         var cache = {};
 
-        cache.beforeRequest = {};
-        cache.afterRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
+        //cache.afterRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
 
-        if (!file.fromCache)
+        if (file.fromCache)
+        {
+            cache.beforeRequest = {};
             cache.beforeRequest = this.buildCacheEntry(file.cacheEntry);
+        }
 
         return cache;
     },
@@ -397,6 +408,14 @@ JSONBuilder.prototype =
         return cache;
     },
 
+    buildPageTimings: function(file)
+    {
+        var timings = {};
+        timings.onContentLoad = file.phase.contentLoadTime - file.startTime;
+        timings.onLoad = file.phase.windowLoadTime - file.startTime;
+        return timings;
+    },
+
     buildTimings: function(file)
     {
         var timings = {};
@@ -407,6 +426,7 @@ JSONBuilder.prototype =
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
 
+        // xxxHonza: REMOVE, it's now in the page.pageTimings object.
         timings.DOMContentLoad = file.phase.contentLoadTime - file.startTime;
         timings.load = file.phase.windowLoadTime - file.startTime;
 
@@ -461,7 +481,7 @@ Firebug.NetMonitorSerializer.ViewerOpener =
                     var win = tabBrowser.contentWindow.wrappedJSObject;
                     var sourceEditor = win.document.getElementById("sourceEditor");
                     sourceEditor.value = jsonString;
-                    win.SourceView.onAppendPreview();
+                    win.HAR.Viewer.onAppendPreview();
 
                     if (FBTrace.DBG_NETEXPORT)
                         FBTrace.sysout("netExport.openViewer; Select an existing tab", tabBrowser);
@@ -552,6 +572,8 @@ function findHeader(headers, name)
         if (headers[i].name.toLowerCase() == name)
             return headers[i].value;
     }
+
+    return "";
 }
 
 function safeGetName(request)
