@@ -188,7 +188,7 @@ JSONBuilder.prototype =
     buildPage: function(context)
     {
         var page = {};
-        page.startedDateTime = dateToJSON(new Date());
+        page.startedDateTime = 0; // Computed from the first request start time.
         page.id = "page_0";
         page.title = context.getTitle();
         return page;
@@ -200,11 +200,14 @@ JSONBuilder.prototype =
         entry.pageref = page.id;
         entry.startedDateTime = dateToJSON(new Date(file.startTime));
         entry.time = file.endTime - file.startTime;
-        entry.overview = this.buildOverview(file);
         entry.request = this.buildRequest(file);
         entry.response = this.buildResponse(file);
         entry.cache = this.buildCache(file);
         entry.timings = this.buildTimings(file);
+
+        // Compute page load start time according to the first request start time.
+        if (!page.startedDateTime)
+            page.startedDateTime = entry.startedDateTime;
 
         // Put page timings into the page object now when we have the first entry.
         if (!page.pageTimings)
@@ -213,10 +216,12 @@ JSONBuilder.prototype =
         return entry;
     },
 
-    buildOverview: function(file)
+    buildPageTimings: function(file)
     {
-        var overview = [];
-        return overview;
+        var timings = {};
+        timings.onContentLoad = file.phase.contentLoadTime - file.startTime;
+        timings.onLoad = file.phase.windowLoadTime - file.startTime;
+        return timings;
     },
 
     buildRequest: function(file)
@@ -408,14 +413,6 @@ JSONBuilder.prototype =
         return cache;
     },
 
-    buildPageTimings: function(file)
-    {
-        var timings = {};
-        timings.onContentLoad = file.phase.contentLoadTime - file.startTime;
-        timings.onLoad = file.phase.windowLoadTime - file.startTime;
-        return timings;
-    },
-
     buildTimings: function(file)
     {
         var timings = {};
@@ -425,10 +422,6 @@ JSONBuilder.prototype =
         timings.send = -1; //xxxHonza;
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
-
-        // xxxHonza: REMOVE, it's now in the page.pageTimings object.
-        timings.DOMContentLoad = file.phase.contentLoadTime - file.startTime;
-        timings.load = file.phase.windowLoadTime - file.startTime;
 
         return timings;
     },
