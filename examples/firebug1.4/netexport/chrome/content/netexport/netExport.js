@@ -1,4 +1,3 @@
-/* See license.txt for terms of usage */
 
 FBL.ns(function() { with (FBL) {
 
@@ -416,9 +415,9 @@ JSONBuilder.prototype =
     buildTimings: function(file)
     {
         var timings = {};
+        timings.blocked = file.waitingForTime - file.connectingTime;
         timings.dns = file.resolvingTime - file.startTime;
         timings.connect = file.connectingTime - file.startTime;
-        timings.blocked = file.waitingForTime - file.connectingTime;
         timings.send = -1; //xxxHonza;
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
@@ -460,6 +459,7 @@ Firebug.NetMonitorSerializer.ViewerOpener =
     // Open online viewer for immediate preview.
     openViewer: function(url, jsonString)
     {
+        var self = this;
         var result = iterateBrowserWindows("navigator:browser", function(browserWin)
         {
             return iterateBrowserTabs(browserWin, function(tab, currBrowser)
@@ -472,9 +472,13 @@ Firebug.NetMonitorSerializer.ViewerOpener =
                     browserWin.focus();
 
                     var win = tabBrowser.contentWindow.wrappedJSObject;
-                    var sourceEditor = win.document.getElementById("sourceEditor");
+
+                    // Fill out the inout JSON text box.
+                    var sourceEditor = $("sourceEditor", win.document);
                     sourceEditor.value = jsonString;
-                    win.HAR.Viewer.onAppendPreview();
+
+                    // Click the Append Preview button.
+                    self.click($("appendPreview", win.document));
 
                     if (FBTrace.DBG_NETEXPORT)
                         FBTrace.sysout("netExport.openViewer; Select an existing tab", tabBrowser);
@@ -505,7 +509,7 @@ Firebug.NetMonitorSerializer.ViewerOpener =
     onContentLoad: function(event, jsonString)
     {
         var win = event.currentTarget;
-        var content = win.contentDocument.getElementById("content");
+        var content = $("content", win.contentDocument);
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.DOMContentLoaded;", content);
 
@@ -520,10 +524,10 @@ Firebug.NetMonitorSerializer.ViewerOpener =
                 FBTrace.sysout("netexport.onViewerInit; HAR Viewer initialized", win);
 
             // Initialize input JSON box.
-            doc.getElementById("sourceEditor").value = jsonString;
+            $("sourceEditor", doc).value = jsonString;
 
             // Switch to the Preview tab by clicking on the preview button.
-            self.click(doc.getElementById("appendPreview"));
+            self.click($("appendPreview", doc));
         }
 
         content.addEventListener("onViewerInit", onViewerInit, true);
