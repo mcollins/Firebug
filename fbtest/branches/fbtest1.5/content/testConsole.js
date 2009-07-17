@@ -147,6 +147,12 @@ FBTestApp.TestConsole =
             for (var i=0; i<styles.length; i++)
                 addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
 
+            // Some CSS from Firebug namespace.
+            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
+            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
+            addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
+            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/console.css"));
+
             var win = doc.defaultView.wrappedJSObject;
             if (!win.testList)
             {
@@ -474,6 +480,7 @@ var FBTest = FBTestApp.FBTest =
     {
         FBTestApp.TestRunner.testDone(false);
     },
+
     manualVerify: function(verifyMsg, instructions, cleanupHandler)
     {
         FBTestApp.TestRunner.manualVerify(verifyMsg, instructions, cleanupHandler);
@@ -600,6 +607,11 @@ var FBTest = FBTestApp.FBTest =
         event.initUIEvent("DOMFocusIn", true, true, doc.defaultView, 1);
         return node.dispatchEvent(event);
     },
+
+    exception: function(msg, err)
+    {
+        FBTestApp.TestRunner.appendResult(new FBTestApp.TestException(window, msg, err));
+    }
 };
 
 // ************************************************************************************************

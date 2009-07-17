@@ -51,17 +51,18 @@ FBTestApp.TestResultRep = domplate(
         ),
 
     manualVerifyTag:
-        TR({"class": "testResultRow testManualVerify", _repObject: "$test", onclick: "$onClickManualVerify"},
+        TR({"class": "testResultRow testManualVerify", _repObject: "$test",
+            onclick: "$onClickManualVerify"},
             TD({"class": "testResultCol", width: "100%"},
                 DIV({"class": "testResultLabel"}, "$verifyMsg"),
                 PRE({"class": "testResultLabel"}, "$instructions")
             ),
             TD({"class": "testResultCol"},
-                SPAN({class: "testLink", onclick: "$onManualPasses"},
+                SPAN({"class": "testLink", onclick: "$onManualPasses"},
                     "Pass"
                 ),
                 "&nbsp;",
-                SPAN({class: "testLink", onclick: "$onManualFails" },
+                SPAN({"class": "testLink", onclick: "$onManualFails" },
                     "Fail"
                 )
             )
@@ -104,14 +105,17 @@ FBTestApp.TestResultRep = domplate(
     {
         cancelEvent(event);
     },
+
     onManualPasses: function(event)
     {
         this.handleManualVerify(event, true, "Manual verification passed");
     },
+
     onManualFails: function(event)
     {
         this.handleManualVerify(event, false, "Manual verification failed");
     },
+
     handleManualVerify: function(event, passes, msg)
     {
         cancelEvent(event);
@@ -295,6 +299,10 @@ FBTestApp.TestResultTabView = domplate(
             A({"class": "CompareTab tab", onclick: "$onClickTab",
                 view: "Compare", $collapsed: "$result|hideCompareTab"},
                     $STR("fbtest.tab.Compare")
+            ),
+            A({"class": "ExceptionTab tab", onclick: "$onClickTab",
+                view: "Exception", $collapsed: "$result|hideExceptionTab"},
+                    $STR("fbtest.tab.Exception")
             )
         ),
 
@@ -302,7 +310,8 @@ FBTestApp.TestResultTabView = domplate(
     tabBodies:
         DIV({"class": "tabBodies"},
             DIV({"class": "tabStackBody tabBody"}),
-            DIV({"class": "tabCompareBody tabBody"})
+            DIV({"class": "tabCompareBody tabBody"}),
+            DIV({"class": "tabExceptionBody tabBody"})
         ),
 
     // Stack tab displayed within resultInfoRow
@@ -374,6 +383,11 @@ FBTestApp.TestResultTabView = domplate(
         // This is useful since sometimes the expected result is null and
         // the user wants to see it also in the UI.
         return !result.expected && !result.result;
+    },
+
+    hideExceptionTab: function(result)
+    {
+        return !result.err;
     },
 
     hideDiffGroup: function(result)
@@ -451,6 +465,15 @@ FBTestApp.TestResultTabView = domplate(
                 var diffText = diffString(clean(result.expected), clean(result.result));
                 diffNode.innerHTML = diffText;
             }
+        }
+
+        // Update Exception tab content
+        var tabExceptionBody = getElementByClass(viewBody, "tabExceptionBody");
+        if (tabName == "Exception" && !tabExceptionBody.updated)
+        {
+            tabExceptionBody.updated = true;
+            var propTree = Firebug.TraceModule.PropertyTree;
+            propTree.tag.replace({object: result.err}, tabExceptionBody, propTree);
         }
     },
 
@@ -600,6 +623,15 @@ FBTestApp.TestResult = function(win, pass, msg, expected, result)
         var lineNumber = frame.lineNumber ? frame.lineNumber : "";
         this.stack.push({fileName:fileName, lineNumber:lineNumber});
     }
+}
+
+FBTestApp.TestException = function(win, msg, err)
+{
+    FBTestApp.TestResult.call(this, win, false, msg + err);
+
+    this.err = err;
+    this.expected = null;
+    this.result = null;
 }
 
 // ************************************************************************************************

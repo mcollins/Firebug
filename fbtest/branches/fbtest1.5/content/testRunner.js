@@ -133,6 +133,7 @@ FBTestApp.TestRunner =
             this.onFinishCallback(canceled);
         this.onFinishCallback = null;
     },
+
     manualVerify: function(verifyMsg, instructions, cleanupHandler)
     {
         if (!this.currentTest)
@@ -153,7 +154,7 @@ FBTestApp.TestRunner =
 
         // If the test is currently opened, append the result directly into the UI.
         FBTestApp.TestList.expandTest(this.currentTest.row);
-        
+
         var infoBodyRow = this.currentTest.row.nextSibling;
         var table = FBL.getElementByClass(infoBodyRow, "testResultTable");
         if (!table)
