@@ -41,6 +41,7 @@ const nsIObserverService = Ci.nsIObserverService
 const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
 
+
 const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
 const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
 const directoryService = CCSV("@mozilla.org/file/directory_service;1", "nsIProperties");
@@ -485,7 +486,6 @@ observerService.addObserver(Chromebug.globalObserver, "domwindowopened", false);
 observerService.addObserver(Chromebug.globalObserver, "domwindowclosed", false);
 observerService.addObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
 
-// ************************************************************************************************
 // We register a Module so we can get initialization and shutdown signals and so we can monitor context activities
 //
 Firebug.Chromebug = extend(Firebug.Module,
@@ -571,8 +571,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.selectBrowser(context.browser);
         if (context.window)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
-        else
-            Firebug.showContext(context.browser, context);
+
+        Firebug.showContext(context.browser, context);
     },
 
     dispatchName: "chromebug",
@@ -1038,7 +1038,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         Chromebug.packageList.deleteContext(context);
         Chromebug.globalScopeInfos.destroy(context);
        // if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromeBugPanel.destroyContext ---------------------- for context:"+context.uid+" :"+context.getName()+"\n");
+        if (nextContext)
+            FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" nextContext: "+nextContext.getName());
+        else
+            FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" null nextContext with contexts.length: "+contexts.length);
 
         Firebug.Chromebug.selectContext(nextContext);
     },
