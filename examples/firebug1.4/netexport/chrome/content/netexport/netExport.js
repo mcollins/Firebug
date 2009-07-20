@@ -415,12 +415,12 @@ JSONBuilder.prototype =
     buildTimings: function(file)
     {
         var timings = {};
-        timings.blocked = 0; //xxxHonza:
         timings.dns = file.resolvingTime - file.startTime;
         timings.connect = file.connectingTime - file.startTime;
         timings.send = file.sendingTime - file.startTime - timings.connect - timings.dns;
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
+        timings.blocked = file.waitingForTime - file.startTime - timings.connect - timings.dns - timings.send;
 
         return timings;
     },
