@@ -225,9 +225,10 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
 
         var rows = a_row.parentNode;
 
-        function findRow(node) {var mr = getAncestorByClass(node, "messageRow"); FBTrace.sysout("findRow ",mr);return mr;}
+        function findRow(node) {var mr = getAncestorByClass(node, "messageRow");
+        FBTrace.sysout("findRow ",mr);return mr;}
         var search = new TextSearch(rows, findRow);
-FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
+        FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
         var logRow = search.find(text);
         if (!logRow)
             return false;
@@ -264,7 +265,7 @@ FBTrace.sysout("tracePanel search #nodes"+rows.childNodes.length, search );
 
         // The wrapper could a domplate but then the domplate expansion would be in the domplate and confuse me.
         var wrapper = this.logs.ownerDocument.createElement("tr");
-        wrapper.className = "messageRow";
+        wrapper.className = "messageRow " + message.type;
 
         var wrapperNumberCell =  this.logs.ownerDocument.createElement("td");
         wrapperNumberCell.className = "messageNameCol messageCol";

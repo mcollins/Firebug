@@ -2,7 +2,7 @@
 
 FBL.ns(function() { with (FBL) {
 
-// ***********************************************************************************
+// ************************************************************************************************
 // Shorcuts and Services
 
 const Cc = Components.classes;
@@ -11,21 +11,27 @@ const Ci = Components.interfaces;
 const nsIObserverService = Ci.nsIObserverService
 const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
-//************************************************************************************************
+// ************************************************************************************************
+
 Chromebug.globalObserver =
 {
     observe: function(subject, topic, data)
     {
-        var shout = (Chromebug.globalObserver.shoutOptionValue?"ooooooooooooooooooooooooooo>> ":"");
-        FBTrace.sysout(shout+"observe: "+topic, {subject:subject, data: data});
+        var FirebugTrace = Cc["@joehewitt.com/firebug-trace-service;1"]
+            .getService(Ci.nsISupports).wrappedJSObject.getTracer("extensions.firebug");
+
+        // Log info into the Firebug tracing console.
+        var shout = (Chromebug.globalObserver.shoutOptionValue?"globalObserver.":"");
+        FirebugTrace.sysout(shout+"observe: "+topic, {subject:subject, data: data});
+
         if (topic == 'domwindowopened')
         {
             try
             {
                 if (subject instanceof nsIDOMWindow)
                 {
-                    if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS) FBTrace.sysout("Chromebug.globalObserver found domwindowopened "+subject.location+"\n");
-
+                    if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS)
+                        FBTrace.sysout("Chromebug.globalObserver found domwindowopened "+subject.location+"\n");
                 }
             }
             catch(exc)
@@ -53,8 +59,6 @@ Chromebug.globalObserver =
     shoutOptionName: "shoutAboutObserverEvents",
     shoutOptionLabel: "Shout About Observer Events",
     shoutOptionValue: true,
-
-
 };
 
 Chromebug.globalObserver.wrappedJSObject = Chromebug.globalObserver;  // and eye of newt
@@ -74,6 +78,7 @@ Chromebug.ObserverServiceModule = extend(Firebug.Module,
         //observerService.addObserver(Chromebug.globalObserver, "domwindowclosed", false);
         //observerService.addObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
 
+        Firebug.TraceModule.addListener(this);
     },
 
     shutdown: function()
@@ -84,6 +89,8 @@ Chromebug.ObserverServiceModule = extend(Firebug.Module,
         //observerService.removeObserver(Chromebug.globalObserver, "domwindowopened", false);
         //observerService.removeObserver(Chromebug.globalObserver, "domwindowclosed", false);
         //observerService.removeObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
+
+        Firebug.TraceModule.removeListener(this);
     },
 
     initContext: function(context)  // use these to check the tracking of windows to contexts
@@ -100,6 +107,30 @@ Chromebug.ObserverServiceModule = extend(Firebug.Module,
             this.tracePanel.clear();
         else
             FBTrace("tracePanel.clearPanel no this.tracePanel");
+    },
+
+    // Firebug.TraceModule listener
+    onDump: function(message)
+    {
+        var prefix = "globalObserver.";
+        var index = message.text.indexOf(prefix);
+        if (index == 0)
+            message.type = "DBG_GLOBALOBSERVER";
+    },
+
+    addStyleSheet: function()
+    {
+        var panelType = Firebug.getPanelType("trace");
+        var doc = FirebugChrome.getPanelDocument(panelType);
+
+        // Make sure the stylesheet isn't appended twice.
+        var styleId = "globalObserver";
+        if ($(styleId, doc))
+            return;
+
+        var styleSheet = createStyleSheet(doc, "chrome://chromebug/skin/tracePanel.css");
+        styleSheet.setAttribute("id", styleId);
+        addStyleSheet(doc, styleSheet);
     },
 });
 
@@ -158,6 +189,9 @@ Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
     {
         try
         {
+            // Make sure appropriate stylesheet for Global Observer logs is included.
+            Chromebug.ObserverServiceModule.addStyleSheet();
+
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("globalObserver refresh topics "+this.topics.length, this.topics);
             clearNode(this.panelNode);
@@ -398,6 +432,8 @@ Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
 });
 
 //************************************************************************************************
+
+Firebug.registerModule(Chromebug.ObserverServiceModule);
 Firebug.registerPanel(Chromebug.ObserverServicePanel);
 
 }});
