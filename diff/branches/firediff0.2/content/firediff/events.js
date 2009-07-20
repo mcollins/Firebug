@@ -125,8 +125,12 @@ DOMChangeEvent.prototype = extend(ChangeEvent.prototype, {
         if (FBTrace.DBG_ERRORS)   FBTrace.sysout("ERROR: annotateTree: actionNode is undefined tree: " + root, tree);
       }
       actionNode[CHANGES] = this;
-      
-      return actionNode;
+
+      if (actionNode.nodeType == Node.TEXT_NODE) {
+        return this;
+      } else {
+        return actionNode;
+      }
     }
 });
 

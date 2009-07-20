@@ -56,7 +56,11 @@ function RemovedIterator(content, removed, includeFilter) {
         try {
           var ret = content.next();
           if (ret && (!includeFilter || includeFilter(ret))) {
-            return ret;
+            if (ret.nodeType == Node.TEXT_NODE && ret[FireDiff.events.AnnotateAttrs.CHANGES]) {
+              return ret[FireDiff.events.AnnotateAttrs.CHANGES];
+            } else {
+              return ret;
+            }
           }
         } catch (err) {
           // Assume this is StopIteration
