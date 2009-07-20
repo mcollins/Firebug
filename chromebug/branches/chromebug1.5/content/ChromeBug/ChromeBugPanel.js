@@ -434,57 +434,6 @@ Chromebug.ProgressListener.prototype =
         FBTrace.sysout("Chromebug.ProgressListener.onLinkIconAvailable: "+this.traceWindow(webProgress, request), aBrowser);
     },
 };
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-    // nsIObserver
-
-Chromebug.globalObserver = {
-    observe: function(subject, topic, data)
-    {
-        if (topic == 'domwindowopened')
-        {
-            try
-            {
-                if (subject instanceof nsIDOMWindow)
-                {
-                    if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS) FBTrace.sysout("Chromebug.globalObserver found domwindowopened "+subject.location+"\n");
-                    // This event comes before TabWathcer is initiatilized if the Error Console is created
-                    // by -jsconsole command line argument.
-                    // Since we are not ready to create contexts, we will need to store info for later.
-                    // ...if we really need it.
-                    //var context = Firebug.Chromebug.getContextByGlobal(subject);
-                    //if (context)
-                    //    Firebug.Chromebug.dumpStackToConsole(context, "Opener for "+subject.location);
-                    //else
-                    //    FBTrace.sysout("No context for DOM Window ", subject.location);
-                }
-            }
-            catch(exc)
-            {
-                FBTrace.sysout("Chromebug.globalObserver notify console opener FAILED ", exc);
-            }
-        }
-        else if (topic == 'domwindowclosed') // Apparently this event comes before the unload event on the DOMWindow
-        {
-            if (subject instanceof nsIDOMWindow)
-            {
-                //if (FBTrace.DBG_WINDOWS)
-                    FBTrace.sysout("Chromebug.globalObserver found domwindowclosed "+subject.location+getStackDump());
-                if (subject.location.toString() == "chrome://chromebug/content/chromebug.xul")
-                    throw new Error("Chromebug.globalObserver should not find chromebug.xul");
-            }
-        }
-        else if (topic == 'dom-window-destroyed')  // subject appears to be the nsIDOMWindow with a location that is invalid and closed == true; data null
-        {
-            if (FBTrace.DBG_WINDOWS)
-                FBTrace.sysout("Chromebug.globalObserver found dom-window-destroyed subject:", subject);
-        }
-    },
-
-};
-
-observerService.addObserver(Chromebug.globalObserver, "domwindowopened", false);
-observerService.addObserver(Chromebug.globalObserver, "domwindowclosed", false);
-observerService.addObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
 
 // We register a Module so we can get initialization and shutdown signals and so we can monitor context activities
 //
@@ -1003,7 +952,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
         {
             FBTrace.sysout("!!!! CONTEXT IS NULL !!!!!!");
-            this.setStatusText("context (unset)/"+this.contexts.length);
+            this.setStatusText("context (>> unset << )/"+this.contexts.length);
         }
     },
 

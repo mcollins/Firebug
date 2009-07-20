@@ -12,10 +12,12 @@ const nsIObserverService = Ci.nsIObserverService
 const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
 //************************************************************************************************
-Chromebug.globalObserver = 
+Chromebug.globalObserver =
 {
     observe: function(subject, topic, data)
     {
+        var shout = (Chromebug.globalObserver.shoutOptionValue?"ooooooooooooooooooooooooooo>> ":"");
+        FBTrace.sysout(shout+"observe: "+topic, {subject:subject, data: data});
         if (topic == 'domwindowopened')
         {
             try
@@ -23,7 +25,7 @@ Chromebug.globalObserver =
                 if (subject instanceof nsIDOMWindow)
                 {
                     if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS) FBTrace.sysout("Chromebug.globalObserver found domwindowopened "+subject.location+"\n");
-                    
+
                 }
             }
             catch(exc)
@@ -48,14 +50,17 @@ Chromebug.globalObserver =
         }
     },
 
+    shoutOptionName: "shoutAboutObserverEvents",
+    shoutOptionLabel: "Shout About Observer Events",
+    shoutOptionValue: true,
+
+
 };
 
-observerService.addObserver(Chromebug.globalObserver, "domwindowopened", false);
-observerService.addObserver(Chromebug.globalObserver, "domwindowclosed", false);
-observerService.addObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
+Chromebug.globalObserver.wrappedJSObject = Chromebug.globalObserver;  // and eye of newt
 
 // ************************************************************************************************
-    
+
 Chromebug.ObserverServiceModule = extend(Firebug.Module,
 {
     dispatchName: "observerService",
@@ -65,7 +70,10 @@ Chromebug.ObserverServiceModule = extend(Firebug.Module,
         if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("cb.ObserverServiceModule.initialize, prefDomain (ignored): " + prefDomain);
 
-        traceService.addObserver(this, "firebug-trace-on-message", false);
+        //?observerService.addObserver(Chromebug.globalObserver, "domwindowopened", false);
+        //observerService.addObserver(Chromebug.globalObserver, "domwindowclosed", false);
+        //observerService.addObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
+
     },
 
     shutdown: function()
@@ -73,52 +81,17 @@ Chromebug.ObserverServiceModule = extend(Firebug.Module,
         if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("cb.ObserverServiceModule.shutdown, prefDomain: " + prefDomain);
 
-        traceService.removeObserver(this, "firebug-trace-on-message");
-    }, 
-    
+        //observerService.removeObserver(Chromebug.globalObserver, "domwindowopened", false);
+        //observerService.removeObserver(Chromebug.globalObserver, "domwindowclosed", false);
+        //observerService.removeObserver(Chromebug.globalObserver, "dom-window-destroyed", false);
+    },
+
     initContext: function(context)  // use these to check the tracking of windows to contexts
     {
-        if (FBTrace.DBG_CB_CONSOLE)
-            FBTrace.sysout("cb.TraceConsoleModule.initContext; " +
-                context.getName() + " - " + context.getTitle());
-
-        if (this.tracePanel)  // one per app
-            context.setPanel(this.tracePanel.name, this.tracePanel);
-        else
-            this.tracePanel = this.createTracePanel(context);
     },
 
     destroyContext: function(context)
     {
-        if (FBTrace.DBG_CB_CONSOLE)
-            FBTrace.sysout("cb.TraceConsoleModule.destroyContext; " +
-                context.getName() + " - " + context.getTitle());
-
-        // unpoint from this context to our panel so its not destroyed.
-        if (this.tracePanel)
-            context.setPanel(this.tracePanel.name, null);
-        FBTrace.sysout("tracePanel.destroyContext unhooking from "+context.getName());
-    },
-    // nsIObserver
-    observe: function(subject, topic, data)
-    {
-        if (topic == "firebug-trace-on-message")
-        {
-            // Display messages only with "extensions.firebug" type.
-            var messageInfo = subject.wrappedJSObject;
-
-            // type is controlled by FBTrace.prefDomain in the XULWindow that sent the trace message
-            if (messageInfo.type != "extensions.firebug")  // TODO selectable
-                return;
-
-            if (this.tracePanel)
-            {
-                this.tracePanel.dump(new Firebug.TraceModule.TraceMessage(
-                        messageInfo.type, data, messageInfo.obj, messageInfo.scope));
-                return false;
-            }
-            return false;
-        }
     },
 
     clearPanel: function(context)
@@ -128,7 +101,7 @@ Chromebug.ObserverServiceModule = extend(Firebug.Module,
         else
             FBTrace("tracePanel.clearPanel no this.tracePanel");
     },
-}
+});
 
 //************************************************************************************************
 
@@ -136,7 +109,292 @@ Chromebug.ObserverServicePanel = function() {}
 
 Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
 {
-    
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // extends Panel
+
+    name: "observer",
+    title: "Observer",
+    parentPanel: "trace",
+    order: 1,
+
+    initialize: function(context, doc)
+    {
+         Firebug.Panel.initialize.apply(this, arguments);
+    },
+
+    destroy: function(state)
+    {
+        Firebug.Panel.destroy.apply(this, arguments);
+    },
+
+    initializeNode : function(oldPanelNode)
+    {
+        dispatch([Firebug.A11yModel], 'onInitializeNode', [this, this.name]);
+    },
+
+    destroyNode : function()
+    {
+        dispatch([Firebug.A11yModel], 'onDestroyNode', [this, this.name]);
+    },
+
+    show: function(state)
+    {
+          this.refresh();
+    },
+
+    supportsObject: function(object)
+    {
+        return 0;
+    },
+
+    tag:
+        DIV({onclick: "$onClick", role : 'list'},
+            FOR("topic", "$topics",
+                    DIV({class: "traceOption"}, "$topic")
+            )
+        ),
+
+    refresh: function()
+    {
+        try
+        {
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("globalObserver refresh topics "+this.topics.length, this.topics);
+            clearNode(this.panelNode);
+            this.tag.replace({topics: this.topics, onClick: bind(this.toggleTopic, this)}, this.panelNode);
+            this.updateTopics();
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("globalObserver refresh panelNode "+this.panelNode.childNodes.length, this.panelNode);
+        }
+        catch(exc)
+        {
+            if (FBTrace.DBG_ERRORS) FBTrace.sysout("globalObserver refresh FAILS "+exc, exc);
+        }
+        try
+        {
+            /*
+            //var observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            //var obs = {observe: function() {}};
+            //obs.wrappedJSObject = obs;
+            observerService.addObserver(Chromebug.globalObserver, "domwindowclosed", false);
+            var enu = observerService.enumerateObservers("domwindowclosed");
+            enu.hasMoreElements();
+            var x1 = enu.getNext()
+            if (x1.wrappedJSObject == Chromebug.globalObserver)
+                FBTrace.sysout('MATCH');
+            else
+                FBTrace.sysout("FAILS");
+                */
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("EXCEPTION "+exc);
+        }
+    },
+
+    forEachTopicElement: function(fn)
+    {
+        var topicDivs = getElementsByClass(this.panelNode, "traceOption")
+        for (var i = 0; i < topicDivs.length; i++)
+        {
+            var topicElt = topicDivs[i];
+            fn(topicElt);
+        }
+    },
+
+    updateTopics: function()
+    {
+        return;
+        var self = this;
+        this.forEachTopicElement(function setChecked(topicElt)
+        {
+            var topic = topicElt.innerHTML;
+            if (self.isObserved(topicElt))
+                topicElt.setAttribute("checked", "true");
+            else
+                topicElt.removeAttribute("checked");
+        });
+    },
+
+    allTopics: function(add)
+    {
+        var self = this;
+        this.forEachTopicElement(function addIfTrue(topicElt)
+        {
+            try
+            {
+                if (add)
+                    self.addTopic(topicElt);
+                else
+                    self.removeTopic(topicElt);
+
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("AllTopics add: "+add+" isObserved "+self.isObserved(topicElt)+" "+topicElt.innerHTML);
+            }
+            catch(exc)
+            {
+                FBTrace.sysout("globalObserver allTopics fails for "+topicElt.innerHTML+" "+exc, exc);
+            }
+        });
+    },
+
+    isObserved: function(topicElt)
+    {
+        var topic = topicElt.innerHTML;
+        var observers = observerService.enumerateObservers(topic);
+        if (!observers)
+            return false;
+        while (observers.hasMoreElements())
+        {
+            var x = observers.getNext();
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("isObserved found observer of topic "+topic+ " mine:"+(x.wrappedJSObject == Chromebug.globalObserver), x);
+            if (x.wrappedJSObject == Chromebug.globalObserver)
+                return true;
+        }
+        return false
+    },
+
+    toggleTopic: function(event)
+    {
+        if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("globalObserver panel onclick "+event.target, event);
+        var topicElt = event.target;
+        if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("globalObserver panel onclick "+topicElt.innerHTML);
+        if (!this.isObserved(topicElt))
+            this.addTopic(topicElt)
+        else
+            this.removeTopic(topicElt);
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("globalObserver panel onclick isObserved:"+this.isObserved(topicElt));
+    },
+
+    addTopic: function(node)
+    {
+        var topic = node.innerHTML;
+        observerService.addObserver(Chromebug.globalObserver, topic, false);
+        node.setAttribute("checked", "true");
+    },
+
+    removeTopic: function(node)
+    {
+        var topic = node.innerHTML;
+        observerService.removeObserver(Chromebug.globalObserver, topic);
+        node.removeAttribute("checked");
+    },
+
+    getOptionsMenuItems: function()
+    {
+        var items = [
+            {label: "All On", command: bindFixed(this.allTopics, this, true) },
+            {label: "All Off", command: bindFixed(this.allTopics, this, false) },
+            optionMenu(Chromebug.globalObserver.shoutOptionLabel, Chromebug.globalObserver.shoutOptionName),
+            ];
+        return items;
+    },
+
+    updateOption: function(name, value)
+    {
+        if (name == Chromebug.globalObserver.shoutOptionName)
+            Chromebug.globalObserver.shoutOptionValue = (value?true:false); // force to boolean
+    },
+
+    topics: [
+             "Migration:Ended",
+             "Migration:ItemAfterMigrate",
+             "Migration:ItemBeforeMigrate",
+             "Migration:Started",
+             "a11y-init-or-shutdown",
+             "accessible-event",
+             "addons-message-notification",
+             "agent-sheet-added",
+             "agent-sheet-removed",
+             "app-handler-pane-loaded",
+             "browser-search-engine-modified",
+             "browser-ui-startup-complete",
+             "browser:purge-session-history",
+             "cacheservice:empty-cache",
+             "chrome-flush-caches",
+             "chrome-flush-skin-caches",
+             "cookie-changed",
+             "cookie-rejected",
+             "cycle-collector-begin",
+             "dl-cancel",
+             "dl-start",
+             "dom-storage-changed",
+             "dom-storage-warn-quota-exceeded",
+             "domwindowclosed",
+             "domwindowopened",
+             "dom-window-destroyed",
+             "download-manager-remove-download",
+             "dummy-observer-created",
+             "dummy-observer-item-added",
+             "dummy-observer-visited",
+             "earlyformsubmit",
+             "em-action-requested",
+             "final-ui-startup",
+             "formhistory-expire-now",
+             "http-on-examine-cached-response",
+             "http-on-examine-merged-response",
+             "http-on-examine-response",
+             "http-on-modify-request",
+             "idle-daily",
+             "memory-pressure",
+             "net:clear-active-logins",
+             "network:offline-status-changed",
+             "offline-app-removed",
+             "offline-cache-update-added",
+             "offline-cache-update-completed",
+             "offline-requested",
+             "page-info-dialog-loaded",
+             "passwordmgr-found-form",
+             "passwordmgr-found-logins",
+             "passwordmgr-storage-changed",
+             "perm-changed",
+             "places-database-locked",
+             "places-init-complete",
+             "plugins-list-updated",
+             "prefservice:after-app-defaults",
+             "private-browsing",
+             "profile-after-change",
+             "profile-approve-change",
+             "profile-before-change",
+             "profile-change-net-restore",
+             "profile-change-net-teardown",
+             "profile-change-teardown",
+             "profile-do-change",
+             "quit-application",
+             "quit-application-forced",
+             "quit-application-granted",
+             "quit-application-requested",
+             "session-save",
+             "sessionstore-state-write",
+             "sessionstore-windows-restored",
+             "shell:desktop-background-changed",
+             "shutdown-cleanse",
+             "signonChanged",
+             "signonSelectUser",
+             "sleep_notification",
+             "softkb-change",
+             "system-display-dimmed-or-off",
+             "system-display-on",
+             "user-interaction-active",
+             "user-interaction-inactive",
+             "user-sheet-added",
+             "user-sheet-removed",
+             "wake_notification",
+             "xmlparser",
+             "xpcom-category-entry-added",
+             "xpcom-shutdown",
+             "xpcom-shutdown-loaders",
+             "xpcom-shutdown-threads",
+             "xpinstall-download-started",
+             "xpinstall-install-blocked",
+             "xul-window-destroyed",
+             "xul-window-registered"
+             ],
+
 });
 
 //************************************************************************************************
