@@ -228,9 +228,7 @@ JSONBuilder.prototype =
         var request = {};
 
         request.method = file.method;
-        request.path = file.request.URI.path;
-        request.prePath = file.request.URI.prePath;
-        request.port = file.request.URI.port;
+        request.url = file.request.URI.spec;
         request.httpVersion = this.getHttpVersion(file.request, true);
 
         request.cookies = this.buildRequestCookies(file);
