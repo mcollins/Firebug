@@ -593,13 +593,17 @@ function dateToJSON(date)
         return s;
     }
 
-    return date.getUTCFullYear()   + '-' +
-         f(date.getUTCMonth() + 1) + '-' +
-         f(date.getUTCDate())      + 'T' +
-         f(date.getUTCHours())     + ':' +
-         f(date.getUTCMinutes())   + ':' +
-         f(date.getUTCSeconds())   + '.' +
-         f(date.getUTCMilliseconds(), 3) + 'Z';
+    var result = date.getUTCFullYear() + '-' +
+        f(date.getUTCMonth() + 1) + '-' +
+        f(date.getUTCDate()) + 'T' +
+        f(date.getUTCHours()) + ':' +
+        f(date.getUTCMinutes()) + ':' +
+        f(date.getUTCSeconds()) + '.' +
+        f(date.getUTCMilliseconds(), 3);
+
+    var offset = date.getTimezoneOffset()/60;
+    var prettyOffset = (offset > 0 ? "+" : "-") + f(Math.abs(offset)) + ":00";
+    return result + prettyOffset;
 }
 
 // ************************************************************************************************
