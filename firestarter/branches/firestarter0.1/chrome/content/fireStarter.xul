@@ -8,7 +8,21 @@
     <!-- Extend Firebug's command set -->
     <commandset id="mainCommandSet">
         <command id="cmd_logAnnotations" oncommand="Firebug.FireStarter.Annotations.logBlackAndWhiteLists()"/>
+        <command id="cmd_OnByDefault" oncommand="Firebug.toggleOnByDefault()"/>
     </commandset>
+
+    <!-- Extend Firebug's (icon) options menu -->
+    <menupopup id="fbFirebugMenuPopup">
+        <menu id="FirebugMenu_Options">
+            <menupopup id="FirebugMenu_OptionsPopup">
+                <menuitem type="checkbox" id="menu_onByDefault2"
+                    label="fs.Firebug.menu.On By Default"
+                    oncommand="FirebugChrome.onToggleOption(this)"
+                    option="onByDefault"
+                    insertafter="menu_activateSameOrigin"/>
+             </menupopup>
+        </menu>
+    </menupopup>
 
     <!-- Extend Firefox status bar & Firebug's context menu -->
     <statusbar id="status-bar">
