@@ -1,0 +1,4 @@
+content firestarter chrome/content/
+locale  firestarter en-US chrome/locale/en-US/
+skin    firestarter classic/1.0 chrome/skin/classic/
+overlay chrome://browser/content/browser.xul    chrome://firestarter/content/fireStarter.xul
