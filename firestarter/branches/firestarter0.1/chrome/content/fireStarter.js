@@ -14,8 +14,10 @@ Firebug.FireStarter = extend(Firebug.Module,
     {
         Firebug.Module.initialize.apply(this, arguments);
 
+        this.internationalizeUI();
+
         if (FBTrace.DBG_STARTER)
-            FBTrace.sysout("starter.initialize " + prefDomain, prefNames);
+            FBTrace.sysout("starter.initialized " + prefDomain, prefNames);
     },
 
     shutdown: function()
@@ -24,6 +26,17 @@ Firebug.FireStarter = extend(Firebug.Module,
 
         if (FBTrace.DBG_STARTER)
             FBTrace.sysout("starter.shutdown");
+    },
+
+    internationalizeUI: function()
+    {
+        var elements = ["menu_logAnnotations"];
+        for (var i=0; i<elements.length; i++)
+        {
+            var element = $(elements[i]);
+            FBL.internationalize(element, "label");
+            FBL.internationalize(element, "tooltiptext");
+        }
     }
 });
 
