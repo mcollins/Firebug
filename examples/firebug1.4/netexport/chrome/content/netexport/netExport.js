@@ -245,9 +245,10 @@ JSONBuilder.prototype =
 
     buildPostData: function(file)
     {
-        var postData = {mimeType: "", text: "", params: {}};
         if (!file.postText)
-            return postData;
+            return null;
+
+        var postData = {mimeType: "", text: "", params: {}};
 
         var text = file.postText;
         if (isURLEncodedFile(file, text))
