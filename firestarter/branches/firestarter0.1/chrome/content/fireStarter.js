@@ -14,6 +14,9 @@ Firebug.FireStarter = extend(Firebug.Module,
     {
         Firebug.Module.initialize.apply(this, arguments);
 
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.addListener(this.TraceListener);
+
         if (FBTrace.DBG_STARTER)
             FBTrace.sysout("starter.initialized " + prefDomain, prefNames);
     },
@@ -21,6 +24,9 @@ Firebug.FireStarter = extend(Firebug.Module,
     shutdown: function()
     {
         Firebug.Module.shutdown.apply(this, arguments);
+
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.removeListener(this.TraceListener);
 
         if (FBTrace.DBG_STARTER)
             FBTrace.sysout("starter.shutdown");
@@ -43,15 +49,40 @@ Firebug.FireStarter = extend(Firebug.Module,
         if (FBTrace.DBG_STARTER)
             FBTrace.sysout("starter.shouldCreateContext " + url + ", " + userCommands);
 
+        var URLSelector = Firebug.URLSelector;
+        var uri = URLSelector.convertToURIKey(url);
+        if (!uri)
+            return false;
+
         // If there is no annotation for the current URL, return value of the
         // onByDefault option.
-        var selector = Firebug.URLSelector;
-        if (!selector.annotationSvc.pageHasAnnotation(uri, selector.annotationName))
+        if (!URLSelector.annotationSvc.pageHasAnnotation(uri, URLSelector.annotationName))
             return Firebug.onByDefault;
 
         return false;
     }
 });
+
+// ************************************************************************************************
+
+Firebug.FireStarter.TraceListener = 
+{
+    onLoadConsole: function(win, rootNode)
+    {
+        var doc = rootNode.ownerDocument;
+        var styleSheet = createStyleSheet(doc, 
+            "chrome://firestarter/skin/fireStarter.css");
+        styleSheet.setAttribute("id", "fireStarterLogs");
+        addStyleSheet(doc, styleSheet);
+    },
+
+    onDump: function(message)
+    {
+        var index = message.text.indexOf("starter.");
+        if (index == 0)
+            message.type = "DBG_STARTER";
+    }
+};
 
 // ************************************************************************************************
 // Registration
