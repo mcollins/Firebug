@@ -401,7 +401,6 @@ function overrideFirebugFunctions()
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
 
         Firebug.Activation = Chromebug.Activation;
-        Firebug.allOff = function () {};  // TODO: move allOff into URLSelector in Firebug
 
         Firebug.getContextType = function getChromebugContextType()
         {
