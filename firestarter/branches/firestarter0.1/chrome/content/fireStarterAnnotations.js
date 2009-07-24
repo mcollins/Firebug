@@ -13,10 +13,10 @@ const Ci = Components.interfaces;
  */
 Firebug.FireStarter.Annotations = extend(Object,
 {
-     clearAll: function()
+     clearAnnotations: function()
      {
         var self =this;
-        Firebug.URLSelector.eachURI(function remove(uri)
+        Firebug.Activation.iterateAnnotations(function remove(uri)
         {
             self.annotationSvc.removePageAnnotation(uri, self.annotationName); // unmark this URI
             if (FBTrace.DBG_STARTER)
@@ -29,10 +29,10 @@ Firebug.FireStarter.Annotations = extend(Object,
         var blacklist = [];
         var whitelist = [];
 
-        Firebug.URLSelector.eachURI(function buildLists(uri)
+        Firebug.Activation.iterateAnnotations(function buildLists(uri)
         {
-            var annotation = Firebug.URLSelector.annotationSvc.getPageAnnotation(uri,
-                Firebug.URLSelector.annotationName);
+            var annotation = Firebug.Activation.annotationSvc.getPageAnnotation(uri,
+                Firebug.Activation.annotationName);
 
             if (annotation.indexOf("closed") > 0)
                 blacklist.push(uri.spec);
@@ -45,6 +45,9 @@ Firebug.FireStarter.Annotations = extend(Object,
 
     logBlackAndWhiteLists: function()
     {
+        if (FBTrace.DBG_STARTER)
+            FBTrace.sysout("starter.logBlackAndWhiteLists");
+
         Firebug.Console.logFormatted([this.getBlackAndWhiteLists()]);
     }
 });

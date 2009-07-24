@@ -46,20 +46,23 @@ Firebug.FireStarter = extend(Firebug.Module,
     // Customization of the activation logic.
     shouldCreateContext: function(browser, url, userCommands)
     {
+        var result = false;
+
+        var Activation = Firebug.Activation;
+        var uri = Activation.convertToURIKey(url);
+        if (uri)
+        {
+            // If there is no annotation for the current URL, return value of the
+            // onByDefault option.
+            if (!Activation.annotationSvc.pageHasAnnotation(uri, Activation.annotationName))
+                result = Firebug.onByDefault;
+        }
+
         if (FBTrace.DBG_STARTER)
-            FBTrace.sysout("starter.shouldCreateContext " + url + ", " + userCommands);
+            FBTrace.sysout("starter.shouldCreateContext: " + result + ", " +
+                url + ", commands: " + userCommands);
 
-        var URLSelector = Firebug.URLSelector;
-        var uri = URLSelector.convertToURIKey(url);
-        if (!uri)
-            return false;
-
-        // If there is no annotation for the current URL, return value of the
-        // onByDefault option.
-        if (!URLSelector.annotationSvc.pageHasAnnotation(uri, URLSelector.annotationName))
-            return Firebug.onByDefault;
-
-        return false;
+        return result;
     }
 });
 
