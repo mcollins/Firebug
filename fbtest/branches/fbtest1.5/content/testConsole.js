@@ -432,9 +432,9 @@ var FBTest = FBTestApp.FBTest =
     setToKnownState: function()
     {
         FBTest.sysout("FBTestFirebug setToKnownState");
-        FBTest.FirebugWindow.Firebug.toggleAll("off");
-        FBTest.FirebugWindow.Firebug.toggleAll("none");
-        FBTest.FirebugWindow.Firebug.URLSelector.clearAll();
+        FBTest.FirebugWindow.Firebug.Activation.toggleAll("off");
+        FBTest.FirebugWindow.Firebug.Activation.toggleAll("none");
+        FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
         var filterThem = FBTest.FirebugWindow.Firebug.filterSystemURLs;
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
