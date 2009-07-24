@@ -26,8 +26,7 @@ Firebug.FireStarter.Annotations = extend(Object,
 
     getBlackAndWhiteLists: function()
     {
-        var blacklist = [];
-        var whitelist = [];
+        var lists = new Firebug.FireStarter.Lists();
 
         Firebug.Activation.iterateAnnotations(function buildLists(uri)
         {
@@ -35,12 +34,12 @@ Firebug.FireStarter.Annotations = extend(Object,
                 Firebug.Activation.annotationName);
 
             if (annotation.indexOf("closed") > 0)
-                blacklist.push(uri.spec);
+                lists.blackList.push(uri.spec);
             else
-                whitelist.push(uri.spec);
+                lists.whiteList.push(uri.spec);
         });
 
-        return {blacklist: blacklist, whitelist: whitelist};
+        return lists;
     },
 
     logBlackAndWhiteLists: function()
@@ -48,7 +47,23 @@ Firebug.FireStarter.Annotations = extend(Object,
         if (FBTrace.DBG_STARTER)
             FBTrace.sysout("starter.logBlackAndWhiteLists");
 
-        Firebug.Console.logFormatted([this.getBlackAndWhiteLists()]);
+        var lists = this.getBlackAndWhiteLists();
+
+        //xxxHonza: localization
+        this.logList("Firebug is activated for (%d):", lists.whiteList);
+        this.logList("Firebug is deactivated for (%d):", lists.blackList);
+    },
+
+    logList: function(message, list)
+    {
+        if (!list.length)
+            return;
+
+        //xxxHonza: custom template should be defined.
+        Firebug.Console.openGroup([message, list.length]);
+        for (var i=0; i<list.length; i++)
+            Firebug.Console.logFormatted([list[i]]);
+        Firebug.Console.closeGroup();
     }
 });
 

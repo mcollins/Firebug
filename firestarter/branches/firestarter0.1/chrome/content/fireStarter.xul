@@ -4,6 +4,7 @@
     <!-- FireStarter file implementation -->
     <script src="chrome://firestarter/content/fireStarter.js" type="application/x-javascript"/>
     <script src="chrome://firestarter/content/fireStarterAnnotations.js" type="application/x-javascript"/>
+    <script src="chrome://firestarter/content/fireStarterLists.js" type="application/x-javascript"/>
 
     <!-- Extend Firebug's command set -->
     <commandset id="mainCommandSet">
