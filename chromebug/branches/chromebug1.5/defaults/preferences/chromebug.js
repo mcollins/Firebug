@@ -31,7 +31,7 @@ pref("extensions.chromebug.defaultPanelName", "html");
 pref("extensions.chromebug.throttleMessages", true);
 pref("extensions.chromebug.textSize", 0);
 pref("extensions.chromebug.showInfoTips", true);
-pref("extensions.firebug.previousPlacement", 0);
+pref("extensions.chromebug.previousPlacement", 0);
 pref("extensions.chromebug.largeCommandLine", false);
 pref("extensions.chromebug.textWrapWidth", 100);
 pref("extensions.chromebug.openInWindow", false);
