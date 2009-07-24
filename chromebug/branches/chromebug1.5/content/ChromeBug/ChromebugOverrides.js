@@ -400,7 +400,7 @@ function overrideFirebugFunctions()
         Firebug.suspendFirebug = ChromeBugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
 
-        Firebug.URLSelector = Chromebug.URLSelector;
+        Firebug.Activation = Chromebug.Activation;
         Firebug.allOff = function () {};  // TODO: move allOff into URLSelector in Firebug
 
         Firebug.getContextType = function getChromebugContextType()
@@ -445,24 +445,34 @@ function panelSupportsObject(panelType, object)
     return 0;
 }
 
-Chromebug.URLSelector = {
-        initialize: function()
-        {
-            return;
-        },
-        shouldCreateContext: function(browser, url, userCommands)  //
-        {
-            FBTrace.sysout("Chromebug.URLSelector "+url, browser);
-            return !Firebug.Chromebug.isChromebugURL(url);
-        },
-        shouldShowContext: function(context)
-        {
-            if (context && context.window && context.window instanceof Window)
-                return !Firebug.Chromebug.isChromebugURL(context.getName());
-            else
-                return false;
-        }
-    };
+//*************************************************************************************************
+// Override Firebug.Activation module logic
+
+Chromebug.Activation =
+{
+    initialize: function()
+    {
+    },
+
+    allOff: function()
+    {
+        
+    },
+
+    shouldCreateContext: function(browser, url, userCommands)
+    {
+        FBTrace.sysout("Chromebug.Activation "+url, browser);
+        return !Firebug.Chromebug.isChromebugURL(url);
+    },
+
+    shouldShowContext: function(context)
+    {
+        if (context && context.window && context.window instanceof Window)
+            return !Firebug.Chromebug.isChromebugURL(context.getName());
+        else
+            return false;
+    }
+};
 
 overrideFirebugFunctions();
 }});
