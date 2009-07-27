@@ -205,53 +205,17 @@ StartupObserver.prototype =
 
                if (!frame.callingFrame) // then top-level
                {
-                   var scope = frame.scope;
-                   if (scope)
-                   {
-                       while(scope.jsParent) // walk to the oldest scope
-                           scope = scope.jsParent;
-
-                       var frameGlobal = scope.getWrappedValue();
-                       var frameGlobalTag = cb.globals.indexOf(frameGlobal);
-                       if (frameGlobalTag < 0)
-                       {
-                           cb.globals.push(frameGlobal);
-                           frameGlobalTag = cb.globals.indexOf(frameGlobal);
-                       }
-
-                       var scopeName = getLocationSafe(frameGlobal);
-                       if (!scopeName)
-                       {
-                           var globalName = getGlobalName(frameGlobal);
-                           if (globalName)
-                               scopeName = "noWindow://"+globalName;
-                       }
-                       gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName, frame.script.tag, frameGlobalTag);
-                       if (!scopeName || !jsdState.avoidSelf(scopeName)) // then the scopeName is undefined or not self
-                       {
-                           if (trace) Components.utils.reportError("assigning "+frameGlobalTag+" to "+frame.script.fileName+"\n");
-                           cb.globalTagByScriptTag[frame.script.tag] = frameGlobalTag;
-                           cb.globalTagByScriptFileName[frame.script.fileName] = frameGlobalTag;
-                           // add the unassigned innerscripts
-                           for (var i = 0; i < cb.innerScripts.length; i++)
-                           {
-                               var script = cb.innerScripts[i];
-                               if (script.fileName != frame.script.fileName)  // so what frameGlobalTag then?
-                                   if (trace) Components.utils.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
-                               cb.globalTagByScriptTag[script.tag] = frameGlobalTag;
-                           }
-                       }
-                       else
-                       {
-                           if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
-                       }
-                       cb.innerScripts = [];
-                   }
-                   else // looks like this is where command line handlers end up
+                   if (frame.scope)
+                       analyzeScope(cb, frame, jsdState);
+                   else // no scope, looks like this is where command line handlers end up
                        if (trace) Components.utils.reportError("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
                }
                else // looks like .xml/.xul ends up here.
+               {
                    if (trace) Components.utils.reportError("callingFrame for "+frame.script.fileName+"\n");
+                   if ( reXUL.test(script.fileName) )
+                       analyzeScope(cb, frame, jsdState);
+               }
                return Ci.jsdIExecutionHook.RETURN_CONTINUE;
            }
        };
@@ -448,6 +412,50 @@ function safeToString(ob)
     }
     return "[object has no toString() function]";
 };
+
+function analyzeScope(cb, frame, jsdState)
+{
+    var scope = frame.scope;
+    while(scope.jsParent) // walk to the oldest scope
+        scope = scope.jsParent;
+
+    var frameGlobal = scope.getWrappedValue();
+    var frameGlobalTag = cb.globals.indexOf(frameGlobal);
+    if (frameGlobalTag < 0)
+    {
+        cb.globals.push(frameGlobal);
+        frameGlobalTag = cb.globals.indexOf(frameGlobal);
+    }
+
+    var scopeName = getLocationSafe(frameGlobal);
+    if (!scopeName)
+    {
+        var globalName = getGlobalName(frameGlobal);
+        if (globalName)
+            scopeName = "noWindow://"+globalName;
+    }
+    gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName, frame.script.tag, frameGlobalTag);
+    if (!scopeName || !jsdState.avoidSelf(scopeName)) // then the scopeName is undefined or not self
+    {
+        if (trace) Components.utils.reportError("assigning "+frameGlobalTag+" to "+frame.script.fileName+"\n");
+        cb.globalTagByScriptTag[frame.script.tag] = frameGlobalTag;
+        cb.globalTagByScriptFileName[frame.script.fileName] = frameGlobalTag;
+        // add the unassigned innerscripts
+        for (var i = 0; i < cb.innerScripts.length; i++)
+        {
+            var script = cb.innerScripts[i];
+            if (script.fileName != frame.script.fileName)  // so what frameGlobalTag then?
+                if (trace) Components.utils.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
+            cb.globalTagByScriptTag[script.tag] = frameGlobalTag;
+        }
+    }
+    else
+    {
+        if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
+    }
+    cb.innerScripts = [];
+}
+
 // ************************************************************************************************
 // Service factory
 
