@@ -42,6 +42,7 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabWatcher.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/traceModule.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/activation.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabContext.js"/>

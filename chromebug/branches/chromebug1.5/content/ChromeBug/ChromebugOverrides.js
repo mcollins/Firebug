@@ -400,7 +400,8 @@ function overrideFirebugFunctions()
         Firebug.suspendFirebug = ChromeBugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromeBugOverrides.resumeFirebug;
 
-        Firebug.Activation = Chromebug.Activation;
+        for (var p in Chromebug.Activation)
+            Firebug.Activation[p] = Chromebug.Activation[p];
 
         Firebug.getContextType = function getChromebugContextType()
         {
@@ -455,7 +456,7 @@ Chromebug.Activation =
 
     allOff: function()
     {
-        
+
     },
 
     shouldCreateContext: function(browser, url, userCommands)
