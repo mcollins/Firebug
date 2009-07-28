@@ -4,7 +4,7 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
   <Description about="urn:mozilla:install-manifest">
-    <em:id>netexport@firebug.com</em:id>
+    <em:id>netexport@getfirebug.com</em:id>
     <em:version>@VERSION@@RELEASE@</em:version>
 
     <!-- Firefox -->
