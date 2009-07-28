@@ -247,7 +247,7 @@ JSONBuilder.prototype =
     buildPostData: function(file)
     {
         if (!file.postText)
-            return null;
+            return;
 
         var postData = {mimeType: "", text: "", params: {}};
 
