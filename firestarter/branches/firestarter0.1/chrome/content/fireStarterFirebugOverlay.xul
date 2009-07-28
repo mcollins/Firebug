@@ -4,8 +4,8 @@
     <!-- Extend options menu in the detached Firebug window -->
     <menu id="FirebugMenu_Options">
         <menupopup id="FirebugMenu_OptionsPopup">
-            <menuitem type="checkbox" id="menu_onByDefault2"
-                label="fs.Firebug.menu.On By Default"
+            <menuitem type="checkbox" id="menu_onByDefault"
+                label="fs.firebug.menu.On By Default"
                 oncommand="FirebugChrome.onToggleOption(this)"
                 option="onByDefault"
                 insertafter="menu_enableA11y"/>

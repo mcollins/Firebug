@@ -34,7 +34,7 @@ Firebug.FireStarter = extend(Firebug.Module,
 
     internationalizeUI: function(doc)
     {
-        var elements = ["menu_logAnnotations", "menu_onByDefault2"];
+        var elements = ["menu_logAnnotations", "menu_onByDefault"];
         for (var i=0; i<elements.length; i++)
         {
             var element = $(elements[i], doc);
