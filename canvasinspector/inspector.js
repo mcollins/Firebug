@@ -56,14 +56,7 @@ Firebug.Inspector = extend(Firebug.Module,
         Firebug.chrome.setGlobalAttribute("cmd_toggleInspecting", "checked", "true");
         this.attachInspectListeners(context);
 
-        // Remember the previous panel and bar state so we can revert if the user cancels
-        this.previousPanelName = context.panelName;
-        this.previousSidePanelName = context.sidePanelName;
-        this.previouslyCollapsed = $("fbContentBox").collapsed;
-        this.previouslyFocused = Firebug.isDetached() && Firebug.chrome.isFocused();
-
-        var htmlPanel = Firebug.chrome.selectPanel("html");
-        this.previousObject = htmlPanel.selection;
+        var htmlPanel = Firebug.chrome.switchToPanel(context, "html");
 
         if (Firebug.isDetached())
             Firebug.chrome.focus();
@@ -93,7 +86,7 @@ Firebug.Inspector = extend(Firebug.Module,
             delete this.inspectTimeout;
         }
 
-        this.highlightObject(node, context);
+        this.highlightObject(node, context, "frame");
 
         this.inspectingNode = node;
 
@@ -127,26 +120,7 @@ Firebug.Inspector = extend(Firebug.Module,
 
         this.inspecting = false;
 
-        var htmlPanel = context.getPanel("html");
-
-        if (this.previouslyFocused)
-            Firebug.chrome.focus();
-
-        if (cancelled)
-        {
-            if (this.previouslyCollapsed)
-                Firebug.showBar(false);
-
-            if (this.previousPanelName == "html")
-                Firebug.chrome.select(this.previousObject);
-            else
-                Firebug.chrome.selectPanel(this.previousPanelName, this.previousSidePanelName);
-        }
-        else
-        {
-            Firebug.chrome.select(htmlPanel.selection);
-            Firebug.chrome.getSelectedPanel().panelNode.focus();
-        }
+        var htmlPanel = Firebug.chrome.unswitchToPanel(context, "html", cancelled);
 
         htmlPanel.stopInspecting(htmlPanel.selection, cancelled);
 
@@ -184,11 +158,16 @@ Firebug.Inspector = extend(Firebug.Module,
             beep();
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
     attachInspectListeners: function(context)
     {
         var win = context.window;
         if (!win || !win.document)
             return;
+
+        if (FBTrace.DBG_INSPECT)
+            FBTrace.sysout("inspector.attacheInspectListeners to alls subWindows of "+win.location);
 
         var chrome = Firebug.chrome;
 
@@ -202,6 +181,8 @@ Firebug.Inspector = extend(Firebug.Module,
 
         iterateWindows(win, bind(function(subWin)
         {
+            if (FBTrace.DBG_INSPECT)
+                FBTrace.sysout("inspector.attacheInspectListeners to "+subWin.location+" subWindow of "+win.location);
             subWin.document.addEventListener("mouseover", this.onInspectingMouseOver, true);
             subWin.document.addEventListener("mousedown", this.onInspectingMouseDown, true);
             subWin.document.addEventListener("click", this.onInspectingClick, true);
@@ -245,7 +226,7 @@ Firebug.Inspector = extend(Firebug.Module,
     onInspectingMouseOver: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.dumpEvent("onInspecting event", event);
+           FBTrace.sysout("onInspectingMouseOver event", event);
         this.inspectNode(event.target);
         cancelEvent(event);
     },
@@ -253,7 +234,7 @@ Firebug.Inspector = extend(Firebug.Module,
     onInspectingMouseDown: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.dumpEvent("onInspecting event", event);
+           FBTrace.sysout("onInspectingMouseDown event", event);
         this.stopInspecting(false, true);
         cancelEvent(event);
     },
@@ -261,11 +242,10 @@ Firebug.Inspector = extend(Firebug.Module,
     onInspectingClick: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-            FBTrace.dumpEvent("onInspecting event", event);
+            FBTrace.sysout("onInspectingClick event", event);
         var win = event.currentTarget.defaultView;
         if (win)
         {
-            this.stopInspecting(true);
             win = getRootWindow(win);
             this.detachClickInspectListeners(win);
         }
@@ -283,7 +263,7 @@ Firebug.Inspector = extend(Firebug.Module,
         this.onInspectingMouseDown = bind(this.onInspectingMouseDown, this);
         this.onInspectingClick = bind(this.onInspectingClick, this);
 
-        this.updateOption();
+        this.updateOption("shadeBoxModel", Firebug.shadeBoxModel);
     },
 
     initContext: function(context)
@@ -339,10 +319,13 @@ Firebug.Inspector = extend(Firebug.Module,
         //Firebug.chrome.setGlobalAttribute("menu_firebugInspect", "disabled", "false");
     },
 
-    updateOption: function()
+    updateOption: function(name, value)
     {
-        this.highlightObject(null);
-        this.defaultHighlighter = getHighlighter("boxModel");
+        if (name == "shadeBoxModel")
+        {
+            this.highlightObject(null);
+            this.defaultHighlighter = value ? getHighlighter("boxModel") : getHighlighter("frame");
+        }
     },
 
     getObjectByURL: function(context, url)
@@ -350,6 +333,12 @@ Firebug.Inspector = extend(Firebug.Module,
         var styleSheet = getStyleSheetByHref(url, context);
         if (styleSheet)
             return styleSheet;
+
+        /*var path = getURLPath(url);
+        var xpath = "//*[contains(@src, '" + path + "')]";
+        var elements = getElementsByXPath(context.window.document, xpath);
+        if (elements.length)
+            return elements[0];*/
     }
 });
 
@@ -393,7 +382,7 @@ PopupHighlighter.prototype =
         if (FBTrace.DBG_INSPECT)
         {
             FBTrace.sysout("PopupHighlighter for "+element.tagName, " at ("+element.boxObject.screenX+","+element.boxObject.screenY+")");
-            FBTrace.dumpProperties("PopupHighlighter popup=", popup);
+            FBTrace.sysout("PopupHighlighter popup=", popup);
         }
     },
 
