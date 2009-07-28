@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>firestarter@getfirebug.com</em:id>
-    <em:version>0.1</em:version>
+    <em:version>@VERSION@@RELEASE@</em:version>
     <em:type>2</em:type>
 
     <!-- Firefox -->
