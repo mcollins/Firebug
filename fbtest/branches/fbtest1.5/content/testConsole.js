@@ -12,6 +12,7 @@ var Ci = Components.interfaces;
 var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
 var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
+var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
@@ -27,7 +28,10 @@ var gFindBar;
 FBTestApp.TestConsole =
 {
     // These are set when a testList.html is loaded.
-    baseURI: null,
+    testListPath: null, // full path to the test list, eg a URL for the testList.html
+    baseURI: null,  // base for test drivers, must be a secure location, chrome or https
+    testcaseServerPath: null,  // base for testcase pages. These are normal web pages
+
     groups: null,
 
     initialize: function()
@@ -45,13 +49,18 @@ FBTestApp.TestConsole =
             this.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
             this.setHaltOnFailedTestButton();
 
+            document.getElementById("testListUrlBar").testLabel = "Test List:";
+            document.getElementById("testSourceUrlBar").testLabel = "Testcase Server:";
+
+            observerService.notifyObservers(this, "fbtest", "initialize");
+
             // Load all tests from the default test list file (testList.html).
             // The file usually defines two variables:
             // testList: array with individual test objects.
             // baseURI: base directory for the test server (http://localhost:7080)
             //          if this variable isn't specified, the parent directory of the
             //          test list file is used.
-            this.loadTestList(this.getDefaultTestList());
+            this.loadTestList(this.getDefaultTestList(), this.getDefaultTestcaseServer());
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
@@ -82,6 +91,23 @@ FBTestApp.TestConsole =
 
         return defaultTestList;
     },
+
+    getDefaultTestcaseServer: function()
+    {
+        // 1) The default test list (suite) can be specified on the command line.
+        var defaultTestcaseServer = FBTestApp.defaultTestcaseServer;
+
+        // 2) The list from the last time (stored in preferences) can be also used.
+        if (!defaultTestcaseServer)
+            defaultTestcaseServer = Firebug.getPref(FBTestApp.prefDomain, "defaultTestcaseServer");
+
+        // 3) If no list is specified, use the default from currently installed Firebug.
+        if (!defaultTestcaseServer)
+            defaultTestcaseServer = "chrome://fbtests/content/";
+
+        return defaultTestcaseServer;
+    },
+
 
     internationalizeUI: function()
     {
@@ -114,7 +140,7 @@ FBTestApp.TestConsole =
 
     shutdown: function()
     {
-        FBTestApp.TestServer.stop();
+        observerService.notifyObservers(this, "fbtest", "shutdown");
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestSuite", this.testListPath);
 
         if (Firebug.TraceModule)
@@ -126,14 +152,23 @@ FBTestApp.TestConsole =
         Firebug.unregisterRep(FBTestApp.TestResultRep);
     },
 
-    loadTestList: function(testListPath)
+    updatePaths: function()
     {
-//        if (/^chrome:/.test(testListPath))
-//            testListPath = TestServer.chromeToUrl(testListPath, false);
-//        else if (!/^file:/.test(testListPath))
-//            testListPath = TestServer.pathToUrl(testListPath);
+        this.testListPath = document.getElementById("testListUrlBar").testURL;
+        this.testcaseServerPath = document.getElementById("testSourceUrlBar").testURL;
+    },
 
+    setAndLoadTestList: function()
+    {
+        this.updatePaths();
+        this.loadTestList(this.testListPath, this.testcaseServerPath);
+    },
+
+    loadTestList: function(testListPath, testcaseServerPath)
+    {
         this.testListPath = testListPath;
+        if (testcaseServerPath)
+            this.testcaseServerPath = testcaseServerPath;
 
         var self = this;
         var consoleFrame = $("consoleFrame");
@@ -162,12 +197,17 @@ FBTestApp.TestConsole =
             }
             else
             {
-                self.baseURI = win.baseURI;
-
-                // If the baseURI isn't provided use the directory where testList.html
-                // file is located.
-                if (!self.baseURI)
+                if (win.baseURI)
+                    self.baseURI = win.baseURI;
+                else
+                {
+                    // If the baseURI isn't provided use the directory where testList.html
+                    // file is located.
                     self.baseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
+                }
+
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("baseURI "+self.baseURI);
 
                 // Create group list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
@@ -191,24 +231,13 @@ FBTestApp.TestConsole =
                         test.desc, test.category, test.testPage));
                 }
 
-                // Restart server with new home directory using a file: url
-                var serverBaseURI = FBTestApp.TestServer.chromeToUrl(self.baseURI, true);
-                if (!serverBaseURI)
-                {
-                    alert("Cannot access test files via baseURI conversion to http URL. " +
-                        "Verify 'baseURI' in the config file and that it points to a valid directory!\n\n" +
-                        "current config file: " + testListPath + "\n" +
-                        "baseURI: " + self.baseURI + "\n");
-                    return;
-                }
-
-                FBTestApp.TestServer.restart(serverBaseURI);
+                observerService.notifyObservers(this, 'fbtest', "restart")
 
                 // Build new test list UI.
                 self.refreshTestList();
 
                 // Remember sucessfully loaded test within test history.
-                self.appendToHistory(testListPath);
+                self.appendToHistory(testListPath, testcaseServerPath);
 
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
@@ -227,6 +256,10 @@ FBTestApp.TestConsole =
         // Update test list URL box.
         var urlBar = $("testListUrlBar");
         urlBar.testURL = testListPath;
+
+        // Update test source URL box.
+        var urlBar = $("testSourceUrlBar");
+        urlBar.testSourceURL = testcaseServerPath;
     },
 
     refreshTestList: function()
@@ -303,20 +336,26 @@ FBTestApp.TestConsole =
         return null;
     },
 
-    appendToHistory: function(testListPath)
+    appendToHistory: function(testListPath, testcaseServer)
     {
-        var history = Firebug.getPref(FBTestApp.prefDomain, "history");
+        this.appendNVPairToHistory("history", testListPath);
+        this.appendNVPairToHistory("serverHistory", testcaseServer);
+    },
+
+    appendNVPairToHistory: function(name, value)
+    {
+        var history = Firebug.getPref(FBTestApp.prefDomain, name);
         var arr = history.split(",");
 
         // Avoid duplicities.
         for (var i=0; i<arr.length; i++) {
-            if (arr[i] == testListPath)
+            if (arr[i] == value)
                 return;
         }
 
         // Store in preferences.
-        arr.push(testListPath);
-        Firebug.setPref(FBTestApp.prefDomain, "history", arr.join(","));
+        arr.push(value);
+        Firebug.setPref(FBTestApp.prefDomain, name, arr.join(","));
     },
 
     // UI Commands
@@ -358,14 +397,15 @@ FBTestApp.TestConsole =
                 .createInstance(Ci.nsIFileProtocolHandler)
                 .getURLSpecFromFile(filePicker.file);
 
-            this.loadTestList(testListUrl);
+            this.loadTestList(testListUrl, this.testcaseServerPath);
         }
     },
 
     onRefreshTestList: function()
     {
         $("consoleFrame").setAttribute("src", "about:blank");
-        this.loadTestList(this.testListPath);
+        this.updatePaths();
+        this.loadTestList(this.testListPath, this.testcaseServerPath);
     },
 
     onToggleHaltOnFailedTest: function()
@@ -413,7 +453,6 @@ FBTestApp.TestConsole.TraceListener =
         {
             message.text = message.text.substr("fbtest.".length);
             message.text = trimLeft(message.text);
-            message.type = "DBG_FBTEST";
         }
     }
 };
@@ -434,7 +473,7 @@ var FBTest = FBTestApp.FBTest =
         FBTest.sysout("FBTestFirebug setToKnownState");
         FBTest.FirebugWindow.Firebug.Activation.toggleAll("off");
         FBTest.FirebugWindow.Firebug.Activation.toggleAll("none");
-        FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
+        //FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
         var filterThem = FBTest.FirebugWindow.Firebug.filterSystemURLs;
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
@@ -550,7 +589,7 @@ var FBTest = FBTestApp.FBTest =
 
     getHTTPURLBase: function()
     {
-        return FBTestApp.TestServer.path;
+        return FBTestApp.TestConsole.testcaseServerPath
     },
 
     getLocalURLBase: function()

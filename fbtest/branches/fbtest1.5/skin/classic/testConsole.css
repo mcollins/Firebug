@@ -41,23 +41,23 @@ body {
 /************************************************************************************************/
 /* Test List URL Bar */
 
-#testListUrlBar textbox {
+.testUrlBar textbox {
     height: 20px;
     border: 1px solid gray;
 }
 
-#testListUrlBar > toolbarbutton {
+.testUrlBar > toolbarbutton {
     list-style-image: url(chrome://browser/skin/Search-glass.png);
     -moz-image-region: rect(0px, 16px, 16px, 0px);
 }
 
-#testListUrlBar > toolbarbutton:hover {
+.testUrlBar > toolbarbutton:hover {
     -moz-image-region: rect(0px 32px 16px 16px);
 }
 
 /************************************************************************************************/
-/* Statusbar */ 
- 
+/* Statusbar */
+
 #passingTests {
     color: green;
     padding-top: 3px;

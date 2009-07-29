@@ -12,6 +12,7 @@ var Ci = Components.interfaces;
 var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
 var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
+var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // Global variables
 var serverPort = 7080;
@@ -179,8 +180,37 @@ FBTestApp.TestServer =
         {
             throw new Error("urlToPath fails for "+aPath+ " because of "+e);
         }
-    }
+    },
+    // *************************************************************************************
+
+    observe: function(subject, topic, data)
+    {
+        if (topic == "fbtest")
+        {
+            if (data=="shutdown")
+                FBTestApp.TestServer.stop();
+            else if (data=="restart")
+            {
+                // Restart server with new home directory using a file: url
+                var serverBaseURI = FBTestApp.TestServer.chromeToUrl(subject.baseURI, true);
+                if (!serverBaseURI)
+                {
+                    alert("Cannot access test files via baseURI conversion to http URL. " +
+                        "Verify 'baseURI' in the config file and that it points to a valid directory!\n\n" +
+                        "current config file: " + testListPath + "\n" +
+                        "baseURI: " + subject.baseURI + "\n");
+                    return;
+                }
+
+                FBTestApp.TestServer.restart(serverBaseURI);
+            }
+
+        }
+    },
+
 };
+
+observerService.addObserver(FBTestApp.TestServer, "fbtest", false);
 
 // ************************************************************************************************
 }});

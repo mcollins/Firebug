@@ -18,7 +18,7 @@
 
     <content>
         <xul:toolbaritem>
-            <xul:label value="Test Suite:" />
+            <xul:label anonid="testLabel" value="Test Suite:" />
         </xul:toolbaritem>
         <xul:toolbaritem flex="1">
             <xul:textbox anonid="textBox" flex="1" enablehistory="true"
@@ -33,11 +33,15 @@
     <implementation>
         <constructor><![CDATA[
             this.mTextBox = document.getAnonymousElementByAttribute(this, "anonid", "textBox");
-
+            this.mLabel = document.getAnonymousElementByAttribute(this, "anonid", "testLabel");
             // Internationalize UI
             var picker = document.getAnonymousElementByAttribute(this, "anonid", "testListPicker");
             FBL.internationalize(picker, "tooltiptext");
         ]]></constructor>
+
+        <property name="testLabel"
+            onget="return this.mLabel.value;"
+            onset="this.mLabel.value = val; return val;"/>
 
         <property name="testURL"
             onget="return this.mTextBox.value;"
@@ -45,14 +49,14 @@
 
         <method name="handleCommand">
             <body><![CDATA[
-                FBTestApp.TestConsole.loadTestList(this.mTextBox.value);
+                FBTestApp.TestConsole.setAndLoadTestList();
             ]]></body>
         </method>
     </implementation>
 
     <handlers>
         <handler event="keypress" keycode="VK_RETURN"><![CDATA[
-            FBTestApp.TestConsole.loadTestList(this.mTextBox.value);
+            FBTestApp.TestConsole.setAndLoadTestList();
         ]]></handler>
     </handlers>
 </binding>

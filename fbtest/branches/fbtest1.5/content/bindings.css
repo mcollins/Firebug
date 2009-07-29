@@ -3,3 +3,7 @@
 #testListUrlBar {
     -moz-binding: url("chrome://fbtest/content/bindings.xml#urlbar");
 }
+
+#testSourceUrlBar {
+    -moz-binding: url("chrome://fbtest/content/bindings.xml#urlbar");
+}
