@@ -5,7 +5,7 @@ FBL.ns(function() { with (FBL) {
 // ************************************************************************************************
 // Constants
 
-const inspectDelay = 100;
+const inspectDelay = 10;
 
 const edgeSize = 2;
 
@@ -416,6 +416,7 @@ inspectorCanvas =
     "mouseY": 0,
     "offsetX": 0,
     "offsetY": 0,
+    "prevNode": null,
     "htmlTimer": null,
     
     "mousemove": function(event, context)
@@ -443,7 +444,12 @@ inspectorCanvas =
             htmlPanel = Firebug.chrome.selectPanel("html"),
             win = context.window,
             doc = win.document;
-            
+
+        if(this.prevNode == eventOrElt && boxModel == false)
+            return;
+        else
+            this.prevNode = elt;
+
         this.show(context, true, null, boxModel);
 
         if(eventOrElt.constructor == MouseEvent)
@@ -627,16 +633,7 @@ inspectorCanvas =
             {
                 this.highlightElement(elt, false, "", "#3875d7");
 
-                if(htmlPanel.selection != elt)
-                {
-                    if(this.htmlTimer)
-                        clearTimeout(this.htmlTimer);
-                    
-                    this.htmlTimer = setTimeout(function()
-                    {
-                        htmlPanel.select(elt, true);
-                    }, inspectDelay);
-                }
+                htmlPanel.select(elt, true);
             }
         }
     },
@@ -756,16 +753,7 @@ inspectorCanvas =
             {
                 htmlPanel = Firebug.chrome.selectPanel("html");
 
-                if(htmlPanel.selection != currentArea)
-                {
-                    if(this.htmlTimer)
-                        clearTimeout(this.htmlTimer);
-                    
-                    this.htmlTimer = setTimeout(function()
-                    {
-                        htmlPanel.select(currentArea || image);
-                    }, inspectDelay);
-                }
+                htmlPanel.select(currentArea || image, true);
             }
             
             if(currentArea)
@@ -918,7 +906,7 @@ inspectorCanvas =
             this.ctx = canvas.getContext("2d");
             this.ctx.strokeStyle = "#FF0000";
             this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(1,1,w,h);
+            this.ctx.strokeRect(1,1,w-2,h-2);
 
             popup.openPopupAtScreen(appContent.boxObject.screenX, appContent.boxObject.screenY + content.tabContainer.boxObject.height, false);
         }
