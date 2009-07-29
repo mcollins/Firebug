@@ -303,7 +303,7 @@ JSONBuilder.prototype =
     {
         var cookie = new Object();
         var pairs = string.split("; ");
-        
+
         for (var i=0; i<pairs.length; i++)
         {
             var option = pairs[i].split("=");
@@ -315,7 +315,6 @@ JSONBuilder.prototype =
             else
             {
                 var name = option[0].toLowerCase();
-                name = (name == "domain") ? "host" : name;
                 if (name == "httponly")
                 {
                     cookie.httpOnly = true;
