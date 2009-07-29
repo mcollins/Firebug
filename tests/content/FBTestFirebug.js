@@ -489,8 +489,12 @@ this.getSourceLineNode = function(lineNo, chrome)
     }
 
     if (!row)
-        FBTest.sysout("DId not find "+lineNumberAsString);
-
+        FBTest.sysout("getSourceLineNode did not find "+lineNumberAsString);
+    else
+    {
+        FBTest.sysout("getSourceLineNode found "+lineNumberAsString+" "+rows[i].innerHTML);
+        FBTest.sysout("getSourceLineNode found "+lineNumberAsString+" "+row.innerHTML);
+    }
     return row;
 }
 
@@ -567,7 +571,8 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
         FBTest.compare("true", exeline, "The row must be marked as the execution line.");
 
         var bp = row.getAttribute('breakpoint');
-           FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set");
+        if (!FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set"))
+            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
         FBTest.progress("Remove breakpoint");
         var panel = chrome.getSelectedPanel();
