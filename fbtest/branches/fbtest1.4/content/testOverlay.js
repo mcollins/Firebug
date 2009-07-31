@@ -20,6 +20,11 @@ this.initialize = function()
 {
     window.removeEventListener("load", FBTestFirebugOverlay.initialize, false);
 
+    // abandon ship if we are loaded by chromebug
+    var winURL = window.location.toString();
+    if (winURL == "chrome://chromebug/content/chromebug.xul")
+        return;
+
     // Open console if the command line says so of if the pref says so.
     var cmd = cmdLineHandler.wrappedJSObject;
     if (cmd.runFBTests)
@@ -42,7 +47,7 @@ this.open = function(testListURI)
     };
 
     // Try to connect an existing trace-console window first.
-    if (consoleWindow) 
+    if (consoleWindow)
     {
         if ("initWithParams" in consoleWindow)
             consoleWindow.initWithParams(args);
@@ -56,8 +61,8 @@ this.open = function(testListURI)
         "chrome,resizable,scrollbars=auto,minimizable,dialog=no",
         args);
 
-    if (FBTrace.DBG_FBTEST)
-        FBTrace.sysout("fbtest.TestConsoleOverlay.open", consoleWindow);
+   // if (FBTrace.DBG_FBTEST)
+        FBTrace.sysout("fbtest.TestConsoleOverlay.open on FirebugWindow: "+window.location, consoleWindow);
 };
 
 // Register load listener for command line arguments handling.

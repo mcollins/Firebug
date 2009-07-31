@@ -85,7 +85,7 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList", "testListPicker"];
+        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList"];
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);
@@ -201,6 +201,9 @@ FBTestApp.TestConsole =
                 // Build new test list UI.
                 self.refreshTestList();
 
+                // Remember sucessfully loaded test within test history.
+                self.appendToHistory(testListPath);
+
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
                         testListPath, doc);
@@ -216,8 +219,8 @@ FBTestApp.TestConsole =
         consoleFrame.setAttribute("src", testListPath);
 
         // Update test list URL box.
-        var testListURLBox = $("testListURL");
-        testListURLBox.value = testListPath;
+        var urlBar = $("testListUrlBar");
+        urlBar.testURL = testListPath;
     },
 
     refreshTestList: function()
@@ -294,6 +297,22 @@ FBTestApp.TestConsole =
         return null;
     },
 
+    appendToHistory: function(testListPath)
+    {
+        var history = Firebug.getPref(FBTestApp.prefDomain, "history");
+        var arr = history.split(",");
+
+        // Avoid duplicities.
+        for (var i=0; i<arr.length; i++) {
+            if (arr[i] == testListPath)
+                return;
+        }
+
+        // Store in preferences.
+        arr.push(testListPath);
+        Firebug.setPref(FBTestApp.prefDomain, "history", arr.join(","));
+    },
+
     // UI Commands
     onRunAll: function(onFinishCallback)
     {
@@ -301,6 +320,9 @@ FBTestApp.TestConsole =
         var testQueue = [];
         for (var i=0; i<this.groups.length; i++)
             testQueue.push.apply(testQueue, this.groups[i].tests);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.runAll; Number of tests: " + testQueue.length);
 
         // ... and execute them as one test suite.
         FBTestApp.TestRunner.runTests(testQueue, onFinishCallback);
@@ -391,23 +413,6 @@ FBTestApp.TestConsole.TraceListener =
 };
 
 // ************************************************************************************************
-// Test List URL Bar
-
-FBTestApp.TestListURLBar =
-{
-    onKeyDown: function(event)
-    {
-        //FBTrace.sysout("FBTestApp.TestListURLBar.onKeyDown", event);
-
-        if (event.keyCode == 13) // Return
-        {
-            var testListURLBox = $("testListURL");
-            FBTestApp.TestConsole.loadTestList(testListURLBox.value);
-        }
-    }
-};
-
-// ************************************************************************************************
 // FBTest
 
 /**
@@ -427,6 +432,9 @@ var FBTest = FBTestApp.FBTest =
         var filterThem = FBTest.FirebugWindow.Firebug.filterSystemURLs;
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
+
+    // *************************************************************************************************
+    // These functions cause the time-out timer to be reset
 
     progress: function(msg)
     {
@@ -450,11 +458,6 @@ var FBTest = FBTestApp.FBTest =
         return pass;
     },
 
-    testDone: function()
-    {
-        FBTestApp.TestRunner.testDone(false);
-    },
-
     compare: function(expected, actual, msg)
     {
         FBTest.sysout("compare "+((expected == actual)?"passes":"**** FAILS ****")+" "+msg);
@@ -465,11 +468,22 @@ var FBTest = FBTestApp.FBTest =
         return (expected == actual);
     },
 
+    // *************************************************************************************************
+
+    testDone: function()
+    {
+        FBTestApp.TestRunner.testDone(false);
+    },
+    manualVerify: function(verifyMsg, instructions, cleanupHandler)
+    {
+        FBTestApp.TestRunner.manualVerify(verifyMsg, instructions, cleanupHandler);
+    },
+
     onFailure: function(msg)
     {
         if (FBTestApp.TestConsole.haltOnFailedTest)
         {
-            FBTestApp.TestRunner.resetTestTimeout();
+            FBTestApp.TestRunner.clearTestTimeout();
             FBTest.sysout("Test failed, dropping into debugger "+msg);
             debugger;
         }
@@ -488,6 +502,17 @@ var FBTest = FBTestApp.FBTest =
 
         var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
         event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
+            false, false, false, false, 0, null);
+        return node.dispatchEvent(event);
+    },
+
+    dblclick: function(node)
+    {
+        if (!node)
+            FBTrace.sysout("testConsole click node is null");
+
+        var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
+        event.initMouseEvent("click", true, true, doc.defaultView, 2, 0, 0, 0, 0,
             false, false, false, false, 0, null);
         return node.dispatchEvent(event);
     },
@@ -557,7 +582,10 @@ var FBTest = FBTestApp.FBTest =
             false,            //  in boolean metaKeyArg,
             keyCode,          //  in unsigned long keyCodeArg,
             0);               //  in unsigned long charCodeArg);
-        if (eltID)
+
+        if (eltID && eltID instanceof Node)
+            doc.eltID.dispatchEvent(keyEvent)
+        else if (eltID)
             doc.getElementById(eltID).dispatchEvent(keyEvent);
         else
             doc.documentElement.dispatchEvent(keyEvent);
@@ -584,10 +612,11 @@ var FBTest = FBTestApp.FBTest =
 FBTestApp.FBTestWrapper = function(win)
 {
     var original = FBTestApp.FBTest;
+    var reseters = ['ok', 'compare', 'progress'];
     for (prop in original)
     {
         var obj = original[prop];
-        if (obj instanceof Function)
+        if (reseters.indexOf(prop) != -1 && obj instanceof Function)
         {
             // Make sure the scope is correct (double function)
             var wrapper = function(funcName) {

@@ -78,24 +78,27 @@ FBTestApp.TestRunner =
 
     testDone: function(canceled)
     {
-        if (!this.currentTest)
-            return;
+        // testDone maybe called in an event handler which may need to complete before we clean up
+        var self = this;
+        setTimeout( function delayTestDone(){self.testDoneOnDelay.apply(self, [canceled]);} );
+    },
 
-        if (FBTrace.DBG_FBTEST)
+    testDoneOnDelay: function(canceled)
+    {
+        if (this.currentTest)
         {
             FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
-                this.currentTest);
-
-            if (canceled)
-                FBTrace.sysout("fbtest.TestRunner.CANCELED");
+                    this.currentTest);
+            this.currentTest.end = this.currentTest.isManual ? this.currentTest.end : (new Date()).getTime();
+            this.currentTest.onTestDone();
+            this.currentTest = null;
         }
 
-        this.currentTest.end = (new Date()).getTime();
-        this.currentTest.onTestDone();
-        this.currentTest = null;
+        if (canceled)
+            FBTrace.sysout("fbtest.TestRunner.CANCELED");
 
         // Test is done so, clear the break-timeout.
-        this.resetTestTimeout();
+        FBTestApp.TestRunner.cleanUp();
 
         // If there are tests in the queue, execute them.
         if (this.testQueue && this.testQueue.length)
@@ -108,7 +111,7 @@ FBTestApp.TestRunner =
         // Otherwise the test-suite (could be also a single test) is finished.
         FBTestApp.TestProgress.stop();
 
-        // Show ellapsed time when running more than one test (entire suite or group of tests).
+        // Show elapsed time when running more than one test (entire suite or group of tests).
         if (this.startTime)
         {
             this.endTime = (new Date()).getTime();
@@ -130,6 +133,39 @@ FBTestApp.TestRunner =
             this.onFinishCallback(canceled);
         this.onFinishCallback = null;
     },
+    manualVerify: function(verifyMsg, instructions, cleanupHandler)
+    {
+        if (!this.currentTest)
+            return;
+
+        if (FBTrace.DBG_FBTEST)
+        {
+            FBTrace.sysout("fbtest.TestRunner.Test manualVerify: " + verifyMsg + " " + this.currentTest.path,
+                this.currentTest);
+        }
+
+        // Test is done so, clear the break-timeout.
+        this.clearTestTimeout();
+
+        this.currentTest.isManual = true;
+        this.currentTest.cleanupHandler = cleanupHandler;
+        this.currentTest.end = (new Date()).getTime();
+
+        // If the test is currently opened, append the result directly into the UI.
+        FBTestApp.TestList.expandTest(this.currentTest.row);
+        
+        var infoBodyRow = this.currentTest.row.nextSibling;
+        var table = FBL.getElementByClass(infoBodyRow, "testResultTable");
+        if (!table)
+            table = FBTestApp.TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
+
+        var tbody = table.firstChild;
+        var verify = FBTestApp.TestResultRep.manualVerifyTag.insertRows(
+            {test: this.currentTest, verifyMsg: verifyMsg, instructions: instructions}, tbody.lastChild ? tbody.lastChild : tbody)[0];
+        scrollIntoCenterView(verify);
+
+        this.currentTest.onManualVerify(verifyMsg, instructions);
+    },
 
     getNextTest: function()
     {
@@ -149,14 +185,7 @@ FBTestApp.TestRunner =
         var outerWindow =  testFrame.contentWindow;
         var doc = outerWindow.document;
 
-        // Clean up previous test if any.
-        var testCaseIframe = null;
-        var frames = doc.getElementsByTagName("iframe");
-        for (var i = 0; i < frames.length; i++)
-        {
-            testCaseIframe = frames[i];
-            testCaseIframe.parentNode.removeChild(testCaseIframe);
-        }
+        FBTestApp.TestRunner.removePreviousFrames(doc);
 
         // Create a new frame for this test.
         testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
@@ -169,8 +198,8 @@ FBTestApp.TestRunner =
         FBTestApp.FBTest.testTimeout = this.getDefaultTestTimeout();
 
         // Now hook the load event, so the next src= will trigger it.
-        testCaseIframe.addEventListener("load", this.onLoadTestFrame, true);
-
+        testCaseIframe.addEventListener("load", FBTestApp.TestRunner.onLoadTestFrame, true);
+        testCaseIframe.addEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
 
@@ -179,6 +208,38 @@ FBTestApp.TestRunner =
             var docShell = this.getDocShellByDOMWindow(testCaseIframe);
             FBTrace.sysout("iframe.docShell for "+testURL, docShell);
         }
+    },
+
+    removePreviousFrames: function(doc)
+    {
+        // Clean up previous test if any.
+        var testCaseIframe = null;
+        var frames = doc.getElementsByTagName("iframe");
+        for (var i = 0; i < frames.length; i++)
+        {
+            testCaseIframe = frames[i];
+            var event = testCaseIframe.contentDocument.createEvent("Event");
+            event.initEvent("FBTestCleanup", true, false); // bubbles and not cancelable
+
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("Firing FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
+
+            testCaseIframe.contentDocument.dispatchEvent(event);
+
+            if (FBTrace.DBG_FBTEST)
+            {
+                FBTrace.sysout("Fired FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
+                FBTrace.sysout("Removing testCaseIFrame "+testCaseIframe, testCaseIframe);
+            }
+
+            testCaseIframe.parentNode.removeChild(testCaseIframe);
+        }
+    },
+
+    onUnloadTestFrame: function(event)
+    {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("onUnloadTestFrame ", event);
     },
 
     getDefaultTestTimeout: function()
@@ -198,14 +259,11 @@ FBTestApp.TestRunner =
         var testDoc = event.target;
         var win = testDoc.defaultView;
 
-        // Helper wrapper for all FBTest APIs so, every function call can be monitored.
+        // Helper wrapper for all FBTest APIs to reset the timeout timer.
         var fbTestWrapper = new FBTestApp.FBTestWrapper(win);
 
         // Inject FBTest object into the test page.
-        if (win.wrappedJSObject)
-            win.wrappedJSObject.FBTest = fbTestWrapper;
-        else
-            win.FBTest = fbTestWrapper;
+        win.FBTest = fbTestWrapper;
 
         // As soon as the window is loaded, execute a "runTest" method, that must be
         // implemented within the test file.
@@ -219,7 +277,7 @@ FBTestApp.TestRunner =
 
         win.removeEventListener('load', FBTestApp.TestRunner.runTestCase, true);
 
-        // Start timeout that breaks stucked tests.
+        // Start timeout that breaks stuck tests.
         FBTestApp.TestRunner.setTestTimeout(win);
 
         // Initialize start time.
@@ -236,14 +294,30 @@ FBTestApp.TestRunner =
         catch (exc)
         {
             FBTestApp.FBTest.sysout("runTest FAILS "+exc, exc);
-            FBTestApp.TestRunner.resetTestTimeout();
+            FBTestApp.FBTest.ok(false, "runTest FAILS "+exc);
+            FBTestApp.TestRunner.cleanUp();
+        }
+        // If we don't get an exception the test should call testDone() or the testTimeout will fire
+    },
+
+    cleanUp: function()
+    {
+        try
+        {
+            FBTestApp.TestRunner.clearTestTimeout();
+            var doc = $("testFrame").contentWindow.document;
+            FBTestApp.TestRunner.removePreviousFrames(doc);
+        }
+        catch(e)
+        {
+            FBTrace.sysout("testRunner.cleanUp FAILS "+e, e);
         }
     },
 
     setTestTimeout: function(win)
     {
         if (this.testTimeoutID)
-            this.resetTestTimeout();
+            this.clearTestTimeout();
 
         // Use test timeout from the test driver window if any. This is how
         // a test can override the default value.
@@ -264,10 +338,15 @@ FBTestApp.TestRunner =
 
            FBTestApp.TestRunner.testDone(false);
         }, FBTestApp.FBTest.testTimeout);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("TestRunner set   testTimeoutID "+this.testTimeoutID);
     },
 
-    resetTestTimeout: function()
+    clearTestTimeout: function()
     {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("TestRunner clear testTimeoutID "+this.testTimeoutID);
         if (this.testTimeoutID)
         {
             clearTimeout(this.testTimeoutID);
@@ -293,6 +372,7 @@ FBTestApp.TestRunner =
         {
             FBTrace.sysout("test result came in after testDone!", result);
             $("progressMessage").value = "test result came in after testDone!";
+            FBTestApp.TestRunner.cleanUp();
             return;
         }
 

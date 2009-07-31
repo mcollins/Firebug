@@ -493,6 +493,11 @@ FBTestApp.Test.prototype =
         timeNode.setAttribute("title", elapsedTime + "ms");
     },
 
+    onManualVerify: function(verifyMsg, instructions)
+    {
+        removeClass(this.row, "running");
+    },
+
     getErrors: function()
     {
         if (!this.error)

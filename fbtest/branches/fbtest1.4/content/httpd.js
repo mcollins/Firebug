@@ -73,10 +73,11 @@ function NS_ASSERT(cond, msg)
     dumpn("###!!! ASSERTION" + (msg ? ": " + msg : "!"));
     dumpn("###!!! Stack follows:");
 
-    var stack = new Error().stack.split(/\n/);
+    var theError = new Error(msg);
+    var stack = theError.stack.split(/\n/);
     dumpn(stack.map(function(val) { return "###!!!   " + val; }).join("\n"));
-    
-    throw Cr.NS_ERROR_ABORT;
+
+    throw theError;
   }
 }
 
@@ -169,7 +170,7 @@ const SJS_TYPE = "sjs";
 /** dump(str) with a trailing "\n" -- only outputs if DEBUG */
 function dumpn(str)
 {
-  if (DEBUG)
+  if (FBTrace.DBG_NET)
     dump(str + "\n");
 }
 
@@ -261,7 +262,7 @@ function toDateString(date)
   {
     var hrs = date.getUTCHours();
     var rv  = (hrs < 10) ? "0" + hrs : hrs;
-    
+
     var mins = date.getUTCMinutes();
     rv += ":";
     rv += (mins < 10) ? "0" + mins : mins;
@@ -583,7 +584,7 @@ nsHttpServer.prototype =
     return this._socketClosed && !this._handler.hasPendingRequests();
   },
 
-  
+
   // PRIVATE IMPLEMENTATION
 
   /**
@@ -641,7 +642,7 @@ const HOST_REGEX =
                // toplabel
                "[a-z](?:[a-z0-9-]*[a-z0-9])?" +
              "|" +
-               // IPv4 address 
+               // IPv4 address
                "\\d+\\.\\d+\\.\\d+\\.\\d+" +
              ")$",
              "i");
@@ -778,7 +779,7 @@ ServerIdentity.prototype =
   add: function(scheme, host, port)
   {
     this._validate(scheme, host, port);
-    
+
     var entry = this._locations["x" + host];
     if (!entry)
       this._locations["x" + host] = entry = {};
@@ -824,7 +825,7 @@ ServerIdentity.prototype =
     return "x" + host in this._locations &&
            scheme === this._locations["x" + host][port];
   },
-  
+
   //
   // see nsIHttpServerIdentity.has
   //
@@ -838,7 +839,7 @@ ServerIdentity.prototype =
 
     return entry[port] || "";
   },
-  
+
   //
   // see nsIHttpServerIdentity.setPrimary
   //
@@ -907,7 +908,7 @@ function Connection(input, output, server, port)
 
   /** The port on which the server is running. */
   this.port = port;
-  
+
   /** State variables for debugging. */
   this._closed = this._processed = false;
 }
@@ -1251,7 +1252,7 @@ RequestReader.prototype =
         this._handleResponse();
         return true;
       }
-      
+
       return false;
     }
     catch (e)
@@ -1892,7 +1893,7 @@ function maybeAddHeaders(file, metadata, response)
         code = status.substring(0, space);
         description = status.substring(space + 1, status.length);
       }
-    
+
       response.setStatusLine(metadata.httpVersion, parseInt(code, 10), description);
 
       line.value = "";
@@ -1969,7 +1970,7 @@ function ServerHandler(server)
    * @see ServerHandler.prototype._defaultPaths
    */
   this._overridePaths = {};
-  
+
   /**
    * Custom request handlers for the error handlers in the server in which this
    * resides.  Path-handler pairs are stored as property-value pairs in this
@@ -2407,7 +2408,7 @@ ServerHandler.prototype =
       catch (e) { /* lastModifiedTime threw, ignore */ }
 
       response.setHeader("Content-Type", type, false);
-  
+
       var fis = new FileInputStream(file, PR_RDONLY, 0444,
                                     Ci.nsIFileInputStream.CLOSE_ON_EOF);
 
@@ -2415,10 +2416,10 @@ ServerHandler.prototype =
       {
         offset = offset || 0;
         count  = count || file.fileSize;
-  
+
         NS_ASSERT(offset == 0 || offset < file.fileSize, "bad offset");
         NS_ASSERT(count >= 0, "bad count");
-  
+
         if (offset != 0)
         {
           // Read and discard data up to offset so the data sent to
@@ -2432,7 +2433,7 @@ ServerHandler.prototype =
       {
         fis.close();
       }
-      
+
       maybeAddHeaders(file, metadata, response);
     }
   },
@@ -2660,7 +2661,7 @@ ServerHandler.prototype =
       connection.close();
       connection.server.stop();
     }
-  }, 
+  },
 
   /**
    * Handles a request which generates the given error code, using the
@@ -3082,7 +3083,7 @@ ServerHandler.prototype =
 
       if (metadata.queryString)
         body +=  "?" + metadata.queryString;
-        
+
       body += " HTTP/" + metadata.httpVersion + "\r\n";
 
       var headEnum = metadata.headers;
@@ -3239,10 +3240,8 @@ Response.prototype =
     this._ensureAlive();
 
     if (!(code >= 0 && code < 1000))
-      throw Cr.NS_ERROR_INVALID_ARG;
+      throw new Error('httpd.js setStatusLine code out of range [0,1000) '+code);
 
-    try
-    {
       var httpVer;
       // avoid version construction for the most common cases
       if (!httpVersion || httpVersion == "1.1")
@@ -3251,11 +3250,6 @@ Response.prototype =
         httpVer = nsHttpVersion.HTTP_1_0;
       else
         httpVer = new nsHttpVersion(httpVersion);
-    }
-    catch (e)
-    {
-      throw Cr.NS_ERROR_INVALID_ARG;
-    }
 
     // Reason-Phrase = *<TEXT, excluding CR, LF>
     // TEXT          = <any OCTET except CTLs, but including LWS>
@@ -3266,7 +3260,7 @@ Response.prototype =
       description = "";
     for (var i = 0; i < description.length; i++)
       if (isCTL(description.charCodeAt(i)) && description.charAt(i) != "\t")
-        throw Cr.NS_ERROR_INVALID_ARG;
+        throw new Error("http.js setStatusLine Reason-Phrase cannot contain CTLs, failure at i="+i+" charCode: "+description.charCodeAt(i));
 
     // set the values only after validation to preserve atomicity
     this._httpDescription = description;
@@ -3460,7 +3454,7 @@ Response.prototype =
   _ensureAlive: function()
   {
     if (this._destroyed)
-      throw Cr.NS_ERROR_FAILURE;
+      throw new Error("httpd.js _ensureAlive this._destroyed");
   }
 };
 
@@ -3484,15 +3478,12 @@ const headerUtils =
   normalizeFieldName: function(fieldName)
   {
     if (fieldName == "")
-      throw Cr.NS_ERROR_INVALID_ARG;
+      throw new Error("httpd.js normalizeFieldName fieldName has no characters");
 
     for (var i = 0, sz = fieldName.length; i < sz; i++)
     {
       if (!IS_TOKEN_ARRAY[fieldName.charCodeAt(i)])
-      {
-        dumpn(fieldName + " is not a valid header field name!");
-        throw Cr.NS_ERROR_INVALID_ARG;
-      }
+        throw new Error("httpd.js normalizeFieldName "+ fieldName + " is not a valid header field name!");
     }
 
     return fieldName.toLowerCase();
@@ -3672,17 +3663,17 @@ nsHttpHeaders.prototype =
     var value = headerUtils.normalizeFieldValue(fieldValue);
 
     // The following three headers are stored as arrays because their real-world
-    // syntax prevents joining individual headers into a single header using 
+    // syntax prevents joining individual headers into a single header using
     // ",".  See also <http://hg.mozilla.org/mozilla-central/diff/9b2a99adc05e/netwerk/protocol/http/src/nsHttpHeaderArray.cpp#l77>
     if (merge && name in this._headers)
     {
       if (name === "www-authenticate" ||
           name === "proxy-authenticate" ||
-          name === "set-cookie") 
+          name === "set-cookie")
       {
         this._headers[name].push(value);
       }
-      else 
+      else
       {
         this._headers[name][0] += "," + value;
         NS_ASSERT(this._headers[name].length === 1,
@@ -3705,8 +3696,8 @@ nsHttpHeaders.prototype =
    * @returns string
    *   the field value for the given header, possibly with non-semantic changes
    *   (i.e., leading/trailing whitespace stripped, whitespace runs replaced
-   *   with spaces, etc.) at the option of the implementation; multiple 
-   *   instances of the header will be combined with a comma, except for 
+   *   with spaces, etc.) at the option of the implementation; multiple
+   *   instances of the header will be combined with a comma, except for
    *   the three headers noted in the description of getHeaderValues
    */
   getHeader: function(fieldName)
@@ -3903,7 +3894,10 @@ Request.prototype =
   //
   get httpVersion()
   {
-    return this._httpVersion.toString();
+      if (this._httpVersion)
+          return this._httpVersion.toString();
+      else
+          FBTrace.sysout("httpd.js get httpVersion FAILS ", this);
   },
 
   //
@@ -3968,12 +3962,12 @@ Request.prototype =
   //
   // see nsIPropertyBag.getProperty
   //
-  getProperty: function(name) 
+  getProperty: function(name)
   {
     this._ensurePropertyBag();
     return this._bag.getProperty(name);
   },
-  
+
   /** Ensures a property bag has been created for ad-hoc behaviors. */
   _ensurePropertyBag: function()
   {
@@ -3996,7 +3990,7 @@ function makeFactory(ctor)
     if (outer != null)
       throw Components.results.NS_ERROR_NO_AGGREGATION;
     return (new ctor()).QueryInterface(iid);
-  } 
+  }
 
   return {
            createInstance: ci,
@@ -4027,7 +4021,7 @@ const module =
   registerSelf: function(compMgr, fileSpec, location, type)
   {
     compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-    
+
     for (var key in this._objects)
     {
       var obj = this._objects[key];
@@ -4055,7 +4049,7 @@ const module =
       if (cid.equals(this._objects[key].CID))
         return this._objects[key].factory;
     }
-    
+
     throw Cr.NS_ERROR_NO_INTERFACE;
   },
   canUnload: function(compMgr)
