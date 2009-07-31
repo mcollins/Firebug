@@ -25,7 +25,7 @@ function fireTest(win)
         checkConsoleLogMessage(elt, "This is an error from an iframe!", null);
         setTimeout(function allowCleanup()
         {
-            FBTest.testDone("872.done");
+            FBTestFirebug.testDone("872.done");
         });
     });
 

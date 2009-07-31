@@ -21,7 +21,7 @@ function fireTest(win, ith)
 
     if (ith >= buttons.length)
     {
-        FBTest.testDone("testErrors.done");
+        FBTestFirebug.testDone("testErrors.done");
         return;
     }
 

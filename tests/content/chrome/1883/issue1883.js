@@ -48,7 +48,7 @@ function runTest()
             rowTag.tag.insertRows({ test: 10 }, rows[rows.length-1] );
             checkResults(11);
 
-            FBTest.testDone();
+            FBTestFirebug.testDone();
         }}
     });
 }

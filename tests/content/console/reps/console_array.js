@@ -25,7 +25,7 @@ function waitForLogEvent(event)
         var shouldBe = elt.firstChild;
 
         if (shouldBe.innerHTML == "DONE")
-            FBTest.testDone("console_array.done");
+            FBTestFirebug.testDone("console_array.done");
 
         var desc = shouldBe.nextSibling;
 

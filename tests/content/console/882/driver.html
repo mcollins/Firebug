@@ -54,7 +54,7 @@ function checkConsoleSourceLinks(elt)
     sourceLineHighlight.onRecognize(function sawHighlight(elt)
         {
             FBTest.compare("sourceRow jumpHighlight", elt.getAttribute("class"), "Line is highlighted");  // shown in the Test Console
-            FBTest.testDone("882 DONE");
+            FBTestFirebug.testDone("882 DONE");
         });
 
     FBTest.progress("Click the 'external' source link");

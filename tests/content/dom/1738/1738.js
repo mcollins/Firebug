@@ -46,7 +46,7 @@ function fireTest(win)
                  {
                      var foundOtherThing = (elt.textContent.indexOf(otherThing) != -1);
                      FBTest.ok(foundOtherThing, "The new value+"+otherThing+" should be set");
-                     FBTest.testDone("1738 DONE");
+                     FBTestFirebug.testDone("1738 DONE");
                  });
                  FBTest.progress("Changed the value, now hit return key");
                  FBTest.pressKey(13);

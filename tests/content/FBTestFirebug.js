@@ -88,6 +88,7 @@ this.testDone = function(message)
     setTimeout(function cleanUpLater(){
         self.closeFirebug();
         self.cleanUpTestTabs();
+        FBTest.sysout("testDone DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
         if (message)
             FBTest.progress(message);
         FBTest.testDone();
@@ -373,6 +374,7 @@ this.listenerCleanups = [];
 this.cleanUpListeners = function()
 {
     var c = FBTestFirebug.listenerCleanups;
+    FBTest.sysout("ccccccccccccccccccccccccc cleaning listeners ccccccccccccccccccccccccccccccc");
     while(c.length)
         c.shift().call();
 }
