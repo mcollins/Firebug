@@ -52,6 +52,10 @@ FBTestApp.TestConsole =
             document.getElementById("testListUrlBar").testLabel = "Test List:";
             document.getElementById("testSourceUrlBar").testLabel = "Testcase Server:";
 
+            var serverHistory = this.getHistory("serverHistory");
+            if (serverHistory)
+                document.getElementById("testSourceUrlBar").testURL = serverHistory[serverHistory.length - 1];
+
             observerService.notifyObservers(this, "fbtest", "initialize");
 
             // Load all tests from the default test list file (testList.html).
@@ -101,9 +105,9 @@ FBTestApp.TestConsole =
         if (!defaultTestcaseServer)
             defaultTestcaseServer = Firebug.getPref(FBTestApp.prefDomain, "defaultTestcaseServer");
 
-        // 3) If no list is specified, use the default from currently installed Firebug.
+        // 3) If no list is specified, use the default from getfirebug
         if (!defaultTestcaseServer)
-            defaultTestcaseServer = "chrome://fbtests/content/";
+            defaultTestcaseServer = "http://getfirebug.com/tests/content/";
 
         return defaultTestcaseServer;
     },
@@ -342,10 +346,19 @@ FBTestApp.TestConsole =
         this.appendNVPairToHistory("serverHistory", testcaseServer);
     },
 
-    appendNVPairToHistory: function(name, value)
+    getHistory: function(name)
     {
         var history = Firebug.getPref(FBTestApp.prefDomain, name);
         var arr = history.split(",");
+        return arr;
+    },
+
+    appendNVPairToHistory: function(name, value)
+    {
+        var arr = this.getHistory(name);
+
+        if (!value)
+            return arr;
 
         // Avoid duplicities.
         for (var i=0; i<arr.length; i++) {
@@ -471,9 +484,17 @@ var FBTest = FBTestApp.FBTest =
     setToKnownState: function()
     {
         FBTest.sysout("FBTestFirebug setToKnownState");
-        FBTest.FirebugWindow.Firebug.Activation.toggleAll("off");
-        FBTest.FirebugWindow.Firebug.Activation.toggleAll("none");
-        //FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
+        if(FBTest.FirebugWindow.Firebug.Activation)
+        {
+            FBTest.FirebugWindow.Firebug.Activation.toggleAll("off");
+            FBTest.FirebugWindow.Firebug.Activation.toggleAll("none");
+            FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
+        }
+        else
+        {
+            FBTest.FirebugWindow.Firebug.toggleAll("off");
+            FBTest.FirebugWindow.Firebug.toggleAll("none");
+        }
         var filterThem = FBTest.FirebugWindow.Firebug.filterSystemURLs;
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
