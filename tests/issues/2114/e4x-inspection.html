@@ -1,0 +1,32 @@
+<html><head>
+<title>E4X Inspection fails in FB 1.4.0</title>
+</head><body>
+
+<script type="text/javascript">
+
+
+var aE4X = <one><two>hi</two></one>;
+var two = aE4X; // set breakpoint here and mouseover aE4X
+
+document.write('<textarea>' + aE4X.toString() + '</textarea>');
+
+var props = "";
+for (var p in aE4X)
+    props += p + "="+ aE4X[p]+"  ";
+
+document.write('<textarea>' + props + '</textarea>');
+document.write('<textarea>' + "typeof: "+typeof(aE4X) + '</textarea>');
+document.write('<textarea>' + "prototype: "+typeof(aE4X.prototype) + '</textarea>');
+
+aE4X.prototype = new Object();
+document.write('<textarea>' + aE4X.toString() + '</textarea>');
+
+aE4X.foo = 5;
+document.write('<textarea>' + aE4X["foo"] + '</textarea>');
+
+aE4X.constructor = new Object();
+document.write('<textarea>' + aE4X.toString() + '</textarea>');
+
+</script>
+
+</body></html>
