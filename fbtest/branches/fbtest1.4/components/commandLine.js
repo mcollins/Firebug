@@ -136,7 +136,7 @@ var CommandLineModule =
 
     unregisterSelf: function(compMgr, location, type)
     {
-        compMgr.QueryInterface(nsIComponentRegistrar);
+        compMgr.QueryInterface(Ci.nsIComponentRegistrar);
         compMgr.unregisterFactoryLocation(CLASS_ID, location);
 
         categoryManager.deleteCategoryEntry("command-line-handler", CLD_CATEGORY);
