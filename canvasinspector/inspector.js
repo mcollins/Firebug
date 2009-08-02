@@ -5,10 +5,8 @@ FBL.ns(function() { with (FBL) {
 // ************************************************************************************************
 // Constants
 
-const inspectDelay = 10;
-
+const inspectDelay = 100;
 const edgeSize = 2;
-
 const defaultPrimaryPanel = "html";
 const defaultSecondaryPanel = "dom";
 
@@ -411,12 +409,13 @@ StandardHighlighter.prototype =
 
 inspectorCanvas =
 {
+    "canvas": null,
     "ctx": null,
     "mouseX": 0,
     "mouseY": 0,
     "offsetX": 0,
     "offsetY": 0,
-    "prevNode": null,
+    "nodeFrame": null,
     "htmlTimer": null,
     
     "mousemove": function(event, context)
@@ -424,7 +423,6 @@ inspectorCanvas =
         this.mouseX = event.layerX;
         this.mouseY = event.layerY;
         this.highlight(context, event, false);
-        this.showInfo(context);
     },
     
     "mouseout": function(event, context)
@@ -437,43 +435,93 @@ inspectorCanvas =
         this.show(context, false);
         Firebug.Inspector.stopInspecting(false, true);
     },
-    
+
+    "getCanvas": function(context)
+    {
+        var canvas = this.canvas;
+
+        if(canvas)
+            return canvas;
+        else
+        {
+            this.show(context, true);
+            return this.canvas;
+        }
+    },
+
+    "getContext": function(context)
+    {
+        var canvas,
+            ctx = this.ctx;
+
+        if(ctx)
+            return ctx;
+        else
+        {
+            canvas = this.getCanvas(context);
+            this.ctx = canvas.getContext("2d");
+            return this.ctx;
+        }
+    },
+
+    "clear": function()
+    {
+        var canvas = this.getCanvas();
+        this.getContext().clearRect(0, 0, canvas.width, canvas.height);
+    },
+
     "highlight": function(context, eventOrElt, boxModel, boxFrame)
     {
-        var i, elt, rect, popup, canvas,
+        var i, elt, rect, canvas, ctx,
             htmlPanel = Firebug.chrome.selectPanel("html"),
             win = context.window,
-            doc = win.document;
-
-        if(this.prevNode == eventOrElt && boxModel == false)
-            return;
-        else
-            this.prevNode = elt;
-
-        this.show(context, true, null, boxModel);
+            doc = win.document,
+            framesLen;
 
         if(eventOrElt.constructor == MouseEvent)
         {
+            // Frame Style
             this.mouseX = eventOrElt.layerX;
             this.mouseY = eventOrElt.layerY;
 
             elt = doc.elementFromPoint(this.mouseX, this.mouseY);
+//FBTrace.sysout(elt.nodeName+" - "+/frame$/i.test(elt.nodeName));
 
-            if(/^frame$/i.test(elt.nodeName))
+            this.offsetX = 0;
+            this.offsetY = 0;
+
+            while(/frame$/i.test(elt.nodeName))
             {
                 rect = elt.getBoundingClientRect();
-                this.offsetX = rect.left;
-                this.offsetY = rect.top;
-                elt = elt.contentDocument.elementFromPoint(this.mouseX - this.offsetX, this.mouseY - this.offsetY);
+                this.offsetX += rect.left;
+                this.offsetY += rect.top;
+                if(elt.nodeName=="HTML")
+                    elt = elt.elementFromPoint(this.mouseX-this.offsetX, this.mouseY-this.offsetY);
+                else
+                    elt = elt.contentDocument.elementFromPoint(this.mouseX-this.offsetX, this.mouseY-this.offsetY);
+            }
+
+            if(this.nodeFrame == elt && !elt.useMap)
+            {
+                return;
+            }
+            else
+            {
+                this.clear();
+                this.nodeFrame = elt;
+                this.showInfo(elt, context);
             }
         }
         else
         {
+            // Box Style
+            this.show(context, true);
             elt = eventOrElt;
+            framesLen = win.frames.length;
 
-            if(win.frames.length > 0)
+            if(framesLen > 0)
             {
-                for(i=0; i<win.frames.length; i++)
+                for(i=0; i<framesLen; i++)
                 {
                     try
                     {
@@ -482,29 +530,24 @@ inspectorCanvas =
                             rect = win.frames[i].frameElement.getBoundingClientRect();
                             this.offsetX = rect.left;
                             this.offsetY = rect.top;
-                            break;
                         }
                     }
                     catch(e) {}
                 }
             }
         }
-
         if(/(html)|(frameset)/i.test(elt.nodeName.toUpperCase()))
             return;
-        else if(/area/i.test(elt.nodeName) || (!boxModel && elt.useMap))
+        else if(/^area/i.test(elt.nodeName) || (!boxModel && elt.useMap))
             this.highlightImageMap(context, elt, boxModel);
         else
         {
-            popup = document.getElementById("autoscroller");
-            canvas = document.getElementById("firebugCanvas");
-
+            canvas = this.getCanvas(context);
+            ctx = this.getContext(context);
+            
             rect = getRectTRBLWH(elt);
             rect.left += this.offsetX;
             rect.top += this.offsetY;
-            
-            if(!this.ctx)
-                this.ctx = canvas.getContext("2d");
 
             if(boxModel)
             {
@@ -519,7 +562,7 @@ inspectorCanvas =
                     w = elt.offsetWidth - (styles.paddingLeft + styles.paddingRight + styles.borderLeft + styles.borderRight),
                     h = elt.offsetHeight - (styles.paddingTop + styles.paddingBottom + styles.borderTop + styles.borderBottom);
 
-                this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+                this.clear();
 
                 parentRect.left += this.offsetX;
                 parentRect.top += this.offsetY;
@@ -529,59 +572,59 @@ inspectorCanvas =
                 top = y;
                 width = rect.width + 2 * styles.marginRight;
                 height = rect.height + 2 * styles.marginBottom;
-                this.ctx.fillStyle = "rgba(237, 255, 100, 0.8)";
-                this.ctx.clearRect(left, top, width, height);
-                this.ctx.fillRect(left, top, width, height);
+                ctx.fillStyle = "rgba(237, 255, 100, 0.8)";
+                ctx.clearRect(left, top, width, height);
+                ctx.fillRect(left, top, width, height);
 
                 // border - grey rgb(102, 102, 102)
                 left = rect.left;
                 top = rect.top;
                 width = rect.width;
                 height = rect.height;
-                this.ctx.fillStyle = "rgba(102, 102, 102, 0.8)";
-                this.ctx.clearRect(left, top, width, height);
-                this.ctx.fillRect(left, top, width, height);
+                ctx.fillStyle = "rgba(102, 102, 102, 0.8)";
+                ctx.clearRect(left, top, width, height);
+                ctx.fillRect(left, top, width, height);
                         
                 // padding - SlateBlue rgb(53, 126, 199)
                 left = rect.left + styles.borderLeft;
                 top = rect.top + styles.borderTop;
                 width = rect.width - 2 * styles.borderRight;
                 height = rect.height - 2 * styles.borderBottom;
-                this.ctx.fillStyle = "rgba(53, 126, 199, 0.8)";
-                this.ctx.clearRect(left, top, width, height);
-                this.ctx.fillRect(left, top, width, height);
+                ctx.fillStyle = "rgba(53, 126, 199, 0.8)";
+                ctx.clearRect(left, top, width, height);
+                ctx.fillRect(left, top, width, height);
 
                 // content - SkyBlue rgba(130, 202, 255)
                 left = rect.left + styles.borderLeft + styles.paddingLeft;
                 top = rect.top + styles.borderTop + styles.paddingTop;
                 width = rect.width - 2 * (styles.borderRight + styles.paddingRight);
                 height = rect.height - 2 * (styles.borderBottom + styles.paddingBottom);
-                this.ctx.fillStyle = "rgba(130, 202, 255, 0.8)";
-                this.ctx.clearRect(left, top, width, height);
-                this.ctx.fillRect(left, top, width, height);
+                ctx.fillStyle = "rgba(130, 202, 255, 0.8)";
+                ctx.clearRect(left, top, width, height);
+                ctx.fillRect(left, top, width, height);
 
                 // Rulers & guides
                 if(boxFrame && Firebug.showRulers)
                 {
-                    this.ctx.strokeStyle = "#FF0000";
-                    this.ctx.lineWidth = 1;
-                    this.ctx.beginPath();
+                    ctx.strokeStyle = "#FF0000";
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
                     
                     // Outline parent
-                    this.ctx.strokeRect(parentRect.left, parentRect.top, parentRect.width, parentRect.height);
+                    ctx.strokeRect(parentRect.left, parentRect.top, parentRect.width, parentRect.height);
                     
                     // Rulers
-                    this.ctx.globalAlpha = 0.8;
+                    ctx.globalAlpha = 0.8;
                     img = new Image();
                     img.src = "chrome://firebug/skin/rulerH.png";
-                    this.ctx.drawImage(img, 1, 1, parentRect.width, 14, parentRect.left, parentRect.top, parentRect.width, 14);
+                    ctx.drawImage(img, 1, 1, parentRect.width, 14, parentRect.left, parentRect.top, parentRect.width, 14);
 
                     img.src = "chrome://firebug/skin/rulerV.png";
-                    this.ctx.drawImage(img, 1, 1, 14, parentRect.height, parentRect.left, parentRect.top, 14, parentRect.height);
+                    ctx.drawImage(img, 1, 1, 14, parentRect.height, parentRect.left, parentRect.top, 14, parentRect.height);
                     
                     // Guides
-                    this.ctx.globalAlpha = 1;
-                    this.ctx.strokeStyle = "#000000";
+                    ctx.globalAlpha = 1;
+                    ctx.strokeStyle = "#000000";
                     
                     switch(boxFrame)
                     {
@@ -611,78 +654,73 @@ inspectorCanvas =
                     }
 
                     //top
-                    this.ctx.moveTo(1, top);
-                    this.ctx.lineTo(canvas.width, top);
+                    ctx.moveTo(1, top);
+                    ctx.lineTo(canvas.width, top);
                     
                     // right
-                    this.ctx.moveTo(left + width, 1);
-                    this.ctx.lineTo(left + width, canvas.height);
+                    ctx.moveTo(left + width, 1);
+                    ctx.lineTo(left + width, canvas.height);
                     
                     //bottom
-                    this.ctx.moveTo(1, top + height);
-                    this.ctx.lineTo(canvas.width, top + height);
+                    ctx.moveTo(1, top + height);
+                    ctx.lineTo(canvas.width, top + height);
                   
                     // left
-                    this.ctx.moveTo(left, 1);
-                    this.ctx.lineTo(left, canvas.height);
+                    ctx.moveTo(left, 1);
+                    ctx.lineTo(left, canvas.height);
                     
-                    this.ctx.stroke();
+                    ctx.stroke();
                 }
             }
             else
             {
-                this.highlightElement(elt, false, "", "#3875d7");
+                this.highlightElement(elt, false, "", "#3875d7", null, context);
 
-                htmlPanel.select(elt, true);
+                clearTimeout(this.htmlTimer);
+                this.htmlTimer = setTimeout(function(){htmlPanel.select(elt, true);}, inspectDelay);
             }
         }
     },
     
-    "highlightElement": function(elt, clearCanvas, fillStyle, strokeStyle, lineWidth)
+    "highlightElement": function(elt, clearCanvas, fillStyle, strokeStyle, lineWidth, context)
     {
-        var canvas = document.getElementById("firebugCanvas");
+        var ctx = this.getContext(context);
         
-        if(!this.ctx)
-            this.ctx = canvas.getContext("2d");
-
         if(fillStyle == 'default')
-            this.ctx.fillStyle = "rgba(135, 206, 235, 0.7)";
+            ctx.fillStyle = "rgba(135, 206, 235, 0.7)";
         else
-            this.ctx.fillStyle = fillStyle;
+            ctx.fillStyle = fillStyle;
 
         if(strokeStyle == 'default')
-            this.ctx.strokeStyle = "rgb(29, 55, 95)";
+            ctx.strokeStyle = "rgb(29, 55, 95)";
         else
-            this.ctx.strokeStyle = strokeStyle;
+            ctx.strokeStyle = strokeStyle;
 
-        this.ctx.lineWidth = lineWidth || 2;
+        ctx.lineWidth = lineWidth || 2;
 
         if(clearCanvas)
-            this.ctx.clearRect(0,0,canvas.width,canvas.height);
+            this.clear();
 
         rect = getRectTRBLWH(elt);
         rect.left += this.offsetX;
         rect.top += this.offsetY;
 
         if(fillStyle.length>0)
-            this.ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
         
         if(strokeStyle.length>0)
-            this.ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
+            ctx.strokeRect(rect.left, rect.top, rect.width, rect.height);
     },
     
-    "showInfo": function(context)
+    "showInfo": function(elt, context)
     {
-        var rect,
+        var rect, ownerDocActiveEl,
             top = 5,
             left = 5,
-            canvas = document.getElementById("firebugCanvas"),
-            win = context.window,
-            doc = win.document,
-            elt = doc.elementFromPoint(this.mouseX, this.mouseY),
+            ctx = this.getContext(context),
             rect = getRectTRBLWH(elt);
         
-        if(this.ctx.fillText)
+        if(ctx.fillText)
         {
             if(/^frame$/i.test(elt.nodeName))
             {
@@ -691,95 +729,112 @@ inspectorCanvas =
                 elt = elt.contentDocument.elementFromPoint(this.mouseX - this.offsetX, this.mouseY - this.offsetY);
             }
 
+            ownerDocActiveEl = elt.ownerDocument.activeElement;
+
             if(this.mouseX <= 150 && this.mouseY <= 110)
                 left = elt.ownerDocument.activeElement.offsetWidth - 155;
             
-            if(!this.ctx)
-                this.ctx = canvas.getContext("2d");
-
-            this.ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-            this.ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
+            ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.95)";
+            ctx.textBaseline = "top";
             
-            this.ctx.textBaseline = "top";
-            
-            this.ctx.fillRect(left, top, 150, 110);
-            this.ctx.strokeRect(left, top, 150, 110);
+            ctx.fillRect(left, top, 150, 110);
+            ctx.strokeRect(left, top, 150, 110);
 
             left += 5;
             
-            this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
-            this.ctx.fillText("Type: "+elt.nodeName, left, top+5, 140);
-            this.ctx.fillText("id: "+elt.id, left, top+20, 140);
-            this.ctx.fillText("name: "+elt.name, left, top+35, 140);
-            this.ctx.fillText("top: "+(rect.top + elt.ownerDocument.activeElement.scrollTop), left, top+50, 140);
-            this.ctx.fillText("left: "+(rect.left + elt.ownerDocument.activeElement.scrollLeft), left, top+65, 140);
-            this.ctx.fillText("width: "+rect.width, left, top+80, 140);
-            this.ctx.fillText("height: "+rect.height, left, top+95, 140);
+            ctx.fillStyle = "rgba(0, 0, 0, 1)";
+            ctx.fillText("Type: "+elt.nodeName, left, top+5, 140);
+            ctx.fillText("id: "+elt.id, left, top+20, 140);
+            ctx.fillText("name: "+elt.name, left, top+35, 140);
+            ctx.fillText("top: "+(rect.top + ownerDocActiveEl.scrollTop), left, top+50, 140);
+            ctx.fillText("left: "+(rect.left + ownerDocActiveEl.scrollLeft), left, top+65, 140);
+            ctx.fillText("width: "+rect.width, left, top+80, 140);
+            ctx.fillText("height: "+rect.height, left, top+95, 140);
         }
     },
     
     "highlightImageMap": function(context, image, boxModel)
     {
-        var i, v, images, tempArea, currentArea;
+        var i, v, areas, areasLen, images, imagesLen, map, mapLen, mapName, tempArea, currentArea;
             
-        if (image)
+        if(image)
         {
             if(image.useMap && !boxModel)
             {
-                var mapName = image.useMap.replace('#',""),
-                    map = image.ownerDocument.getElementById(mapName),
-                    areas = map.areas;
+                mapName = image.useMap.replace('#',"");
+                map = image.ownerDocument.getElementById(mapName);
 
-                this.highlightElement(image, true, "default", "");
-
-                for(i=0;i<areas.length;i++)
+                if(!map)
                 {
-                    tempArea = this.highlightImageMapArea(image, areas[i], false, "", "default");
+                    // No id ... get map by name or tagname instead
+                    map = image.ownerDocument.getElementsByName(mapName)
+                    if(map && map.length > 0)
+                        map = map[0];
+                    else
+                    {
+                        // No name? get map by tagname instead
+                        map = image.ownerDocument.getElementsByTagName("AREA");
+                        if(map && map.length > 0)
+                            map = map[0];
+                        else
+                        {
+                            // Image map is missing or unobtainable
+                            return;
+                        }
+                    }
+                }
+
+                areas = map.areas;
+
+                this.highlightElement(image, true, "default", "", null, context);
+
+                for(i=0, areasLen = areas.length; i < areasLen; i++)
+                {
+                    tempArea = this.highlightImageMapArea(image, areas[i], false, "", "default", null, context);
                     currentArea = tempArea || currentArea;
                 }
             }
             else
             {
                 images = this.getImages(context, "#"+image.parentNode.name, boxModel, image.ownerDocument);
-                
-                if(images.length===0)
+                imagesLen = images.length;
+
+                if(imagesLen===0)
                     images[0] = image;
                 
-                for(i=0;i<images.length;i++)
-                    this.highlightImageMapArea(images[i], image, i==0, "default", "default");
+                for(i=0; i < imagesLen; i++)
+                    this.highlightImageMapArea(images[i], image, i==0, "default", "default", null, context);
             }
             
             if(!boxModel)
             {
                 htmlPanel = Firebug.chrome.selectPanel("html");
-
                 htmlPanel.select(currentArea || image, true);
             }
             
             if(currentArea)
-                this.highlightImageMapArea(image, currentArea, false, "rgba(255, 0, 0, 0.2)", "default", 2, true);
+                this.highlightImageMapArea(image, currentArea, false, "rgba(255, 0, 0, 0.2)", "default", 2, context);
         }
     },
     
-    "highlightImageMapArea": function(image, area, clearCanvas, fillStyle, strokeStyle, lineWidth)
+    "highlightImageMapArea": function(image, area, clearCanvas, fillStyle, strokeStyle, lineWidth, context)
     {
-        var i, v, rect,
-            canvas = document.getElementById("firebugCanvas");
-
-        if(!this.ctx)
-            this.ctx = canvas.getContext("2d");
+        var i, v, vLen, rect,
+            canvas = this.getCanvas(context),
+            ctx = this.getContext(context);
 
         if(fillStyle == 'default')
-            this.ctx.fillStyle = "rgba(135, 206, 235, 0.7)";
+            ctx.fillStyle = "rgba(135, 206, 235, 0.7)";
         else
-            this.ctx.fillStyle = fillStyle;
+            ctx.fillStyle = fillStyle;
 
         if(strokeStyle == 'default')
-            this.ctx.strokeStyle = "rgb(29, 55, 95)";
+            ctx.strokeStyle = "rgb(29, 55, 95)";
         else
-            this.ctx.strokeStyle = strokeStyle;
+            ctx.strokeStyle = strokeStyle;
 
-        this.ctx.lineWidth = lineWidth || 2;
+        ctx.lineWidth = lineWidth || 2;
        
         rect = getRectTRBLWH(image);
         rect.left += this.offsetX;
@@ -787,43 +842,39 @@ inspectorCanvas =
         
         v = area.coords.split(",");
         
-        this.ctx.beginPath();
+        ctx.beginPath();
 
         if(clearCanvas)
-            this.ctx.clearRect(0,0,canvas.width,canvas.height);
+            this.clear();
         
         if (area.shape.toLowerCase() === 'rect')
-        {
-            this.ctx.rect(rect.left+parseInt(v[0],10), rect.top+parseInt(v[1],10), v[2]-v[0], v[3]-v[1]);
-        }
+            ctx.rect(rect.left+parseInt(v[0],10), rect.top+parseInt(v[1],10), v[2]-v[0], v[3]-v[1]);
         else if (area.shape.toLowerCase() === 'circle')
-        {
-            this.ctx.arc(rect.left+parseInt(v[0],10) + this.ctx.lineWidth / 2, rect.top+parseInt(v[1],10) + this.ctx.lineWidth / 2, v[2], 0, Math.PI / 180 * 360, false);
-        }
+            ctx.arc(rect.left+parseInt(v[0],10) + this.ctx.lineWidth / 2, rect.top+parseInt(v[1],10) + this.ctx.lineWidth / 2, v[2], 0, Math.PI / 180 * 360, false);
         else
         {
-            this.ctx.moveTo(rect.left+parseInt(v[0],10), rect.top+parseInt(v[1],10));
-            for(i=2;i<v.length;i+=2)
+            ctx.moveTo(rect.left+parseInt(v[0],10), rect.top+parseInt(v[1],10));
+            for(i=2,vLen=v.length;i<vLen;i+=2)
             {
-                this.ctx.lineTo(rect.left+parseInt(v[i],10), rect.top+parseInt(v[i+1],10));
+                ctx.lineTo(rect.left+parseInt(v[i],10), rect.top+parseInt(v[i+1],10));
             }
         }
 
-        this.ctx.closePath();
+        ctx.closePath();
 
         if(fillStyle.length>0)
-            this.ctx.fill();
+            ctx.fill();
         
         if(strokeStyle.length>0)
-            this.ctx.stroke();
+            ctx.stroke();
             
-        if(this.ctx.isPointInPath(this.mouseX, this.mouseY))
+        if(ctx.isPointInPath(this.mouseX, this.mouseY))
             return area;
     },
     
     "getImages": function(context, mapName, boxModel, doc)
     {
-        var i,
+        var i, eltsLen,
             elts = [],
             images = [],
             elts2 = doc.getElementsByTagName("img"),
@@ -837,16 +888,14 @@ inspectorCanvas =
        
         if(elts)
         {
-            for(i=0;i<elts.length;i++)
+            for(i = 0, eltsLen = elts.length; i < eltsLen; i++)
             {
                 if(elts[i].getAttribute('usemap') == mapName)
                 {
                     rect=elts[i].getBoundingClientRect();
 
                     if(boxModel)
-                    {
                         images.push(elts[i]);
-                    }
                     else if(rect.left <= mx && rect.right >= mx && rect.top <= my && rect.bottom >= my)
                     {
                         images[0]=elts[i];
@@ -873,6 +922,7 @@ inspectorCanvas =
             if(!popup)
             {
                 popup = context.browser._createAutoScrollPopup();
+                popup.addEventListener("popuphidden", function(){_this.show(context, false);alert("hidden");}, false);
                 context.browser._autoScrollNeedsCleanup = true;
             }
 
@@ -886,6 +936,7 @@ inspectorCanvas =
                 canvas.addEventListener("mouseout", function(event){_this.mouseout(event, context);}, false);
                 canvas.addEventListener("mousedown", function(){_this.mousedown(context);}, false);
                 popup.appendChild(canvas);
+                this.canvas = canvas;
             }
 
             w = context.window.innerWidth;
@@ -906,14 +957,12 @@ inspectorCanvas =
             this.ctx = canvas.getContext("2d");
             this.ctx.strokeStyle = "#FF0000";
             this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(1,1,w-2,h-2);
+            this.ctx.strokeRect(1, 1, w-2, h-2);
 
             popup.openPopupAtScreen(appContent.boxObject.screenX, appContent.boxObject.screenY + content.tabContainer.boxObject.height, false);
         }
         else
         {
-            var canvas = document.getElementById("firebugCanvas");
-            
             if(canvas)
             {
                 if(!event || event.layerX === 0 || event.layerX >= canvas.width || event.layerY === 0 || event.layerY >= canvas.height)
@@ -921,15 +970,18 @@ inspectorCanvas =
                 else
                     return;
             }
-            
+            else
+                return;
+
             popup.style.backgroundImage = "";
-            popup.style.margin = "";
+            popup.style.margin = "0 0";
             popup.sizeTo(0, 0);
             popup.hidePopup();
             
             this.offsetX = 0;
             this.offsetY = 0;
             this.ctx = null;
+            this.canvas = null;
         }
     }
 }
