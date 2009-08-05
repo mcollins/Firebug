@@ -1,3 +1,4 @@
 function test() {
-    alert('Function Test()');
+    window.dump('test function in page2.js');
+    syntax error!
 }
