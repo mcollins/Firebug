@@ -22,6 +22,8 @@ pref("extensions.chromebug.DBG_CB_CONSOLE", true);      // /*@explore*/
 pref("extensions.chromebug.defaultScriptPanelLocation", "");
 pref("extensions.chromebug.previousContext", "");
 
+pref("extensions.chromebug.shoutAboutObserverEvents", false);
+
 pref("extensions.chromebug.enableTraceConsole", true);
 // Global
 pref("extensions.chromebug.disabledAlways", false);
