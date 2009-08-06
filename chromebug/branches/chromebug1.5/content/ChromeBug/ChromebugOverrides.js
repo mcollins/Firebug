@@ -459,6 +459,11 @@ Chromebug.Activation =
 
     },
 
+    updateAllPagesActivation: function()
+    {
+
+    },
+
     shouldCreateContext: function(browser, url, userCommands)
     {
         FBTrace.sysout("Chromebug.Activation "+url, browser);
