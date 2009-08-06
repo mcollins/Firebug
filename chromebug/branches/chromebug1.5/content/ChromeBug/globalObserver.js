@@ -21,14 +21,14 @@ Chromebug.globalObserver =
             .getService(Ci.nsISupports).wrappedJSObject.getTracer("extensions.firebug");
 
         // Log info into the Firebug tracing console.
-        var shout = (Chromebug.globalObserver.shoutOptionValue?"globalObserver.":"");
+        var shout = (Chromebug.globalObserver.shoutOptionValue?"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG globalObserver.":"");
         FirebugTrace.sysout(shout+"observe: "+topic, {subject:subject, data: data});
 
         if (topic == 'domwindowopened')
         {
             try
             {
-                if (subject instanceof nsIDOMWindow)
+                if (subject instanceof Ci.nsIDOMWindow)
                 {
                     if (FBTrace.DBG_CHROMEBUG || FBTrace.DBG_WINDOWS)
                         FBTrace.sysout("Chromebug.globalObserver found domwindowopened "+subject.location+"\n");
@@ -41,7 +41,7 @@ Chromebug.globalObserver =
         }
         else if (topic == 'domwindowclosed') // Apparently this event comes before the unload event on the DOMWindow
         {
-            if (subject instanceof nsIDOMWindow)
+            if (subject instanceof Ci.nsIDOMWindow)
             {
                 //if (FBTrace.DBG_WINDOWS)
                     FBTrace.sysout("Chromebug.globalObserver found domwindowclosed "+subject.location+getStackDump());
@@ -206,7 +206,7 @@ Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
         }
         try
         {
-            /*
+/*
             //var observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             //var obs = {observe: function() {}};
             //obs.wrappedJSObject = obs;
@@ -277,22 +277,29 @@ Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
         var topic = topicElt.innerHTML;
         var observers = observerService.enumerateObservers(topic);
         if (!observers)
+        {
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("isObserved no observers of topic "+topic);
+
             return false;
+        }
         while (observers.hasMoreElements())
         {
             var x = observers.getNext();
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("isObserved found observer of topic "+topic+ " mine:"+(x.wrappedJSObject == Chromebug.globalObserver), x);
             if (x.wrappedJSObject == Chromebug.globalObserver)
+            {
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("isObserved found Chromebug.globaleObserver of topic "+topic, x);
                 return true;
+            }
         }
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("isObserved no observers of topic "+topic+" match Chromebug.globalObserver");
         return false
     },
 
     toggleTopic: function(event)
     {
-        if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("globalObserver panel onclick "+event.target, event);
         var topicElt = event.target;
         if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("globalObserver panel onclick "+topicElt.innerHTML);
@@ -309,6 +316,8 @@ Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
         var topic = node.innerHTML;
         observerService.addObserver(Chromebug.globalObserver, topic, false);
         node.setAttribute("checked", "true");
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("addObserver "+topic);
     },
 
     removeTopic: function(node)
@@ -316,6 +325,8 @@ Chromebug.ObserverServicePanel.prototype = extend(Firebug.Panel,
         var topic = node.innerHTML;
         observerService.removeObserver(Chromebug.globalObserver, topic);
         node.removeAttribute("checked");
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("removeObserver "+topic);
     },
 
     getOptionsMenuItems: function()
