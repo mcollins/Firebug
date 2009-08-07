@@ -114,9 +114,9 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         (
             function delaySyncToolbar()
             {
-                 FBTrace.sysout("scanningTimeout context.window:"+ context.window.location);
+                FBTrace.sysout("scanningTimeout context.window:"+ (context?context.getName():"no context"));
                 if (context)
-                    Firebug.Chromebug.syncToolBarToContext(context);
+                    Firebug.Chromebug.selectContext(context);
             },
             100
         );

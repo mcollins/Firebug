@@ -377,6 +377,14 @@ function overrideFirebugFunctions()
         top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
 
+        // Override with added function: set the toolbar to match FirebugContext
+        ChromeBugOverrides.setFirebugContext = top.Firebug.chrome.setFirebugContext;
+        top.Firebug.chrome.setFirebugContext = function(context)
+        {
+            ChromeBugOverrides.setFirebugContext(context);
+            Chromebug.contextList.setCurrentLocation( context );
+        }
+
         Firebug.Chromebug.syncResumeBox = Firebug.chrome.syncResumeBox;
         top.Firebug.chrome.syncResumeBox = function(context) { if (context) Firebug.Chromebug.syncResumeBox(context); }
 

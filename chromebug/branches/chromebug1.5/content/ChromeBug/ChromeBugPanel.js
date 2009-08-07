@@ -515,13 +515,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
     },
 
-    selectContext: function(context)
+    selectContext: function(context)  // this operation is similar to a user picking a tab in Firefox, but for chromebug
     {
-        this.selectBrowser(context.browser);
+        Firebug.Chromebug.selectBrowser(context.browser);
         if (context.window)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
-        Firebug.showContext(context.browser, context);
+        Firebug.showContext(context.browser, context);  // sets FirebugContext and syncs the tool bar
     },
 
     dispatchName: "chromebug",
@@ -754,9 +754,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     setDefaultContext: function()
     {
-        if (!FirebugContext)
-            FirebugContext = Firebug.Chromebug.contexts[0];
-        Firebug.Chromebug.selectContext(FirebugContext);
+        Firebug.Chromebug.selectContext(Firebug.Chromebug.contexts[0]);
     },
 
     initializeDebugger: function()
@@ -933,7 +931,6 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         if (context)
         {
-            Firebug.Chromebug.syncToolBarToContext(context);
             for( var i = 0; i < this.contexts.length; i++)
             {
                 if (context == this.contexts[i])
@@ -1279,7 +1276,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                                 var context = d.context;
                                 if (context)
                                 {
-                                    Firebug.Chromebug.syncToolBarToContext(context);
+                                    Firebug.Chromebug.selectContext(context);
                                     FBTrace.sysout("onLoadConsole.eventListener found matching description: "+d+" context set to "+context.getName(), message);
                                     var line = event.target.getAttribute("lineNumber");
                                     var link = new SourceLink(filename, line, "js" );
@@ -1306,19 +1303,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
     },
     //******************************************************************************
-
-    syncToolBarToContext: function(context)
-    {
-        if (context)
-        {
-            Chromebug.contextList.setCurrentLocation( context );
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("Firebug.Chromebug.syncToolBarToContext set location bar to "+context.getName());
-        }
-
-        if (context != FirebugContext)
-            FirebugContext = context;
-    },
 
     formatLists: function(header, lists)
     {
@@ -1940,7 +1924,7 @@ Chromebug.contextList =
         return cbContextList.repObject;
     },
 
-    setCurrentLocation: function(context) // call from Firebug.Chromebug.syncToolBarToContext(context);
+    setCurrentLocation: function(context) // call from Firebug.Chromebug.selectContext(context);
     {
         cbContextList.location = context;
     },
@@ -2251,7 +2235,6 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
             FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+description.href, description);
             Firebug.Chromebug.selectContext(context);
 
-            Firebug.Chromebug.syncToolBarToContext(context);
             FirebugChrome.select(sourceFile, "script", "watch", true);  // SourceFile
             this.setCurrentLocation(description);
         }
@@ -2727,6 +2710,7 @@ Chromebug.jsContextList = {
                 }
                 else
                 {
+                    FBTrace.sysout("onSelectLocation no context, showing global");
                     FirebugChrome.select(global, "DOM", null, true);
                 }
             }
