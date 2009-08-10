@@ -22,7 +22,7 @@
         </xul:toolbaritem>
         <xul:toolbaritem flex="1">
             <xul:textbox anonid="textBox" flex="1" enablehistory="true"
-                type="autocomplete" autocompletesearch="FBTestHistory"
+                type="autocomplete" xbl:inherits="autocompletesearch"
                 ontextentered="this.parentNode.parentNode.handleCommand();"/>
         </xul:toolbaritem>
         <xul:toolbarbutton anonid="testListPicker"

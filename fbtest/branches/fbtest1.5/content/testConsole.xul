@@ -83,8 +83,10 @@
                 command="cmd_refreshTestList"/>
         </toolbar>
 
-        <toolbar id="testListUrlBar" class="testURLBar" align="center" />
-        <toolbar id="testSourceUrlBar" class="testURLBar" align="center" />
+        <toolbar id="testListUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestHistory"/>
+        <toolbar id="testSourceUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBServerHistory"/>
     </toolbox>
 
     <popupset id="mainPopupSet">

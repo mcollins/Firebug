@@ -342,6 +342,9 @@ FBTestApp.TestConsole =
 
     appendToHistory: function(testListPath, testcaseServer)
     {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.appendToHistory; " + testListPath + ", " + testcaseServer);
+
         this.appendNVPairToHistory("history", testListPath);
         this.appendNVPairToHistory("serverHistory", testcaseServer);
     },

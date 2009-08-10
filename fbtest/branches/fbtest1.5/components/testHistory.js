@@ -3,9 +3,15 @@
 // ************************************************************************************************
 // Constants
 
-const CLASS_ID = Components.ID("{3008FA55-C12F-4992-9930-B9D52F0CF037}");
-const CLASS_NAME = "FBTest History";
-const CONTRACT_ID = "@mozilla.org/autocomplete/search;1?name=FBTestHistory";
+// Test list history
+const TEST_CLASS_ID = Components.ID("{3008FA55-C12F-4992-9930-B9D52F0CF037}");
+const TEST_CLASS_NAME = "FBTest: Test List History";
+const TEST_CONTRACT_ID = "@mozilla.org/autocomplete/search;1?name=FBTestHistory";
+
+// Source server list history
+const SERVER_CLASS_ID = Components.ID("{B37D6564-77D9-4613-B088-324389E1A8F3}");
+const SERVER_CLASS_NAME = "FBTest: Source Server History";
+const SERVER_CONTRACT_ID = "@mozilla.org/autocomplete/search;1?name=FBServerHistory";
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -18,7 +24,12 @@ var FBTrace = null;
 // ************************************************************************************************
 // Test URL History, nsIAutoCompleteSearch
 
-var History =
+function History(pref)
+{
+    this.pref = pref;
+}
+
+History.prototype =
 {
     /* nsISupports */
     QueryInterface: function(iid)
@@ -35,11 +46,12 @@ var History =
     startSearch: function(searchString, searchParam, previousResult, listener)
     {
         // Get all test-lists from preferences.
-        var history = prefs.getCharPref("extensions.fbtest.history");
+        var history = prefs.getCharPref(this.pref);
         var arr = history.split(",");
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.History; startSearch '" + searchString + "'", arr);
+            FBTrace.sysout("fbtest.History; startSearch " + this.pref +
+                " '" + searchString + "'", arr);
 
         var map = {};
         var results = [];
@@ -81,6 +93,9 @@ var History =
     }
 };
 
+var testHistory = new History("extensions.fbtest.history");
+var serverHistory = new History("extensions.fbtest.serverHistory");
+
 // ************************************************************************************************
 // Module implementation
 
@@ -98,8 +113,10 @@ var HistoryModule =
     /* nsIModule */
     getClassObject: function(compMgr, cid, iid)
     {
-        if (cid.equals(CLASS_ID))
-            return History.QueryInterface(iid);
+        if (cid.equals(TEST_CLASS_ID))
+            return testHistory.QueryInterface(iid);
+        else if (cid.equals(SERVER_CLASS_ID))
+            return serverHistory.QueryInterface(iid);
 
         throw Cr.NS_ERROR_NOT_REGISTERED;
     },
@@ -107,14 +124,17 @@ var HistoryModule =
     registerSelf: function(compMgr, fileSpec, location, type)
     {
         compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.registerFactoryLocation(CLASS_ID, CLASS_NAME,
-            CONTRACT_ID, fileSpec, location, type);
+        compMgr.registerFactoryLocation(TEST_CLASS_ID, TEST_CLASS_NAME,
+            TEST_CONTRACT_ID, fileSpec, location, type);
+        compMgr.registerFactoryLocation(SERVER_CLASS_ID, SERVER_CLASS_NAME,
+            SERVER_CONTRACT_ID, fileSpec, location, type);
       },
 
     unregisterSelf: function(compMgr, location, type)
     {
         compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.unregisterFactoryLocation(CLASS_ID, location);
+        compMgr.unregisterFactoryLocation(TEST_CLASS_ID, location);
+        compMgr.unregisterFactoryLocation(SERVER_CLASS_ID, location);
     },
 
     canUnload: function(compMgr)
