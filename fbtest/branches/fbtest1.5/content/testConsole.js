@@ -49,12 +49,12 @@ FBTestApp.TestConsole =
             this.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
             this.setHaltOnFailedTestButton();
 
-            document.getElementById("testListUrlBar").testLabel = "Test List:";
-            document.getElementById("testSourceUrlBar").testLabel = "Testcase Server:";
+            $("testListUrlBar").testLabel = "Test List:";
+            $("testSourceUrlBar").testLabel = "Testcase Server:";
 
             var serverHistory = this.getHistory("serverHistory");
             if (serverHistory)
-                document.getElementById("testSourceUrlBar").testURL = serverHistory[serverHistory.length - 1];
+                $("testSourceUrlBar").testURL = serverHistory[serverHistory.length - 1];
 
             observerService.notifyObservers(this, "fbtest", "initialize");
 
@@ -69,7 +69,7 @@ FBTestApp.TestConsole =
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
 
-            gFindBar = document.getElementById("FindToolbar");
+            gFindBar = $("FindToolbar");
         }
         catch (e)
         {
@@ -158,8 +158,8 @@ FBTestApp.TestConsole =
 
     updatePaths: function()
     {
-        this.testListPath = document.getElementById("testListUrlBar").testURL;
-        this.testcaseServerPath = document.getElementById("testSourceUrlBar").testURL;
+        this.testListPath = $("testListUrlBar").testURL;
+        this.testcaseServerPath = $("testSourceUrlBar").testURL;
     },
 
     setAndLoadTestList: function()
@@ -445,7 +445,7 @@ FBTestApp.TestConsole.TraceListener =
     // Called when console window is loaded.
     onLoadConsole: function(win, rootNode)
     {
-        var consoleFrame = win.document.getElementById("consoleFrame");
+        var consoleFrame = $("consoleFrame", win.document);
         this.addStyleSheet(consoleFrame.contentDocument,
             "chrome://fbtest/skin/traceConsole.css",
             "fbTestStyles");
