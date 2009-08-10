@@ -78,29 +78,30 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
 
         var domWindow = node.ownerDocument.defaultView;
         if (domWindow == this.scanningDOMWindow)  // we did not cross windows,
+        {
+            if (FBTrace.DBG_INSPECT)
+                FBTrace.sysout("scanDocuments tag:"+tagName+" still scanning window "+(this.scanningDOMWindow?this.scanningDOMWindow.location:"none"));
             return true;                          // carry on with inspect
+        }
 
         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (!context)
         {
              if (FBTrace.DBG_INSPECT)
-                FBTrace.sysout("No chrome context for "+domWindow.location+"\n");
+                 FBTrace.sysout("scanDocuments tag:"+tagName+" no context! "+domWindow.location);
 
             //this.scanningContext.hoverNode = nodeAsScanned;
             return false;  // we crossed windows, don't inspect here
         }
+        if (this.scanningContext != context)
+            Firebug.Chromebug.selectContext(context);
+
         this.scanningContext = context;
 
         if (FBTrace.DBG_INSPECT)
-            FBTrace.sysout("scanDocuments has new domWindow for ", node.tagName + " in "+domWindow.location);
+            FBTrace.sysout("scanDocuments tag:"+tagName+" new context, scanning "+this.scanningContext.getName());
 
-        if (this.scanningTimeout)  // then don't bother we are changing again
-        {
-            context.clearTimeout(this.scanningTimeout);
-            delete this.scanningTimeout;
-        }
-
-        Firebug.Inspector.stopInspecting(false, false);  // on old window
+                 Firebug.Inspector.stopInspecting(false, false);  // on old window
 
         this.scanningDOMWindow = domWindow;
         context.hoverNode = node;  // tell inspect where to start
@@ -110,16 +111,6 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         if (FBTrace.DBG_INSPECT)
                 FBTrace.sysout("ScanDocuments startInspecting new context "+context.window.location);
 
-        this.scanningTimeout = context.setTimeout
-        (
-            function delaySyncToolbar()
-            {
-                FBTrace.sysout("scanningTimeout context.window:"+ (context?context.getName():"no context"));
-                if (context)
-                    Firebug.Chromebug.selectContext(context);
-            },
-            100
-        );
         return true; // do inspect
     },
 
@@ -178,12 +169,6 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             return;
 
         var context = this.scanningContext;
-
-        if (this.scanningTimeout)
-        {
-            context.clearTimeout(this.scanningTimeout);
-            delete this.scanningTimeout;
-        }
 
         this.detachInspectListeners();
         if (!waitForClick)
