@@ -84,9 +84,9 @@
         </toolbar>
 
         <toolbar id="testListUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBTestHistory"/>
+            autocompletesearch="FBTestHistory" disablePicker="false"/>
         <toolbar id="testSourceUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBServerHistory"/>
+            autocompletesearch="FBServerHistory" disablePicker="true"/>
     </toolbox>
 
     <popupset id="mainPopupSet">

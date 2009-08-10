@@ -166,6 +166,7 @@ FBTestApp.TestConsole =
     {
         this.updatePaths();
         this.loadTestList(this.testListPath, this.testcaseServerPath);
+        FBTestApp.TestSummary.clear();
     },
 
     loadTestList: function(testListPath, testcaseServerPath)

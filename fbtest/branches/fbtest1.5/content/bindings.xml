@@ -25,7 +25,8 @@
                 type="autocomplete" xbl:inherits="autocompletesearch"
                 ontextentered="this.parentNode.parentNode.handleCommand();"/>
         </xul:toolbaritem>
-        <xul:toolbarbutton anonid="testListPicker"
+        <xul:toolbarbutton anonid="testListPicker" label="..."
+            xbl:inherits="disabled=disablePicker"
             command="cmd_openTestList"
             tooltiptext="fbtest.cmd.tip.Browse For Test List" />
     </content>
