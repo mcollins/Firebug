@@ -253,7 +253,7 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         if (!this.logs)
             return;
 
-        var scrolledToBottom = isScrolledToBottom(this.logs);
+        var scrolledToBottom = isScrolledToBottom(this.getScrollingNode());
 
         var index = message.text.indexOf("ERROR");
         if (index != -1)
@@ -295,7 +295,7 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         wrapper.appendChild(wrapperData);
         this.logs.firstChild.appendChild(wrapper);
         if (scrolledToBottom)
-            scrollToBottom(this.logs);
+            scrollToBottom(this.getScrollingNode());
     },
 
     unWrapMessage: function(event)
@@ -322,6 +322,12 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         }
         Firebug.TraceModule.MessageTemplate.toggleRow(theUnwrapped);
     },
+
+    getScrollingNode: function()
+    {
+        return this.panelNode;
+    },
+
 });
 
 // ************************************************************************************************
