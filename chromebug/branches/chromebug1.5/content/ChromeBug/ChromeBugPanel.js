@@ -938,7 +938,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     var sources = 0;
                     for (var s in context.sourceFileMap)
                         sources++;
-                    this.setStatusText("context "+(i+1)+"/"+this.contexts.length+"; "+sources+" sources");
+                    this.setStatusText("context: "+context.getName()+", "+(i+1)+"/"+this.contexts.length+"; "+sources+" sources");
                     return;
                 }
             }
