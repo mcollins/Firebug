@@ -49,8 +49,8 @@ FBTestApp.TestConsole =
             this.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
             this.setHaltOnFailedTestButton();
 
-            $("testListUrlBar").testLabel = "Test List:";
-            $("testSourceUrlBar").testLabel = "Testcase Server:";
+            $("testListUrlBar").testLabel = $STR("fbtest.urlbar.Test List") + ":";
+            $("testSourceUrlBar").testLabel = $STR("fbtest.urlbar.Test Server") + ":";
 
             var serverHistory = this.getHistory("serverHistory");
             if (serverHistory)
