@@ -5,6 +5,12 @@ FBL.ns(function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+// Fire Starter preferences.
+const fsPrefNames =
+[
+    "onByDefault"
+];
+
 // ************************************************************************************************
 // Module implementation
 
@@ -13,6 +19,10 @@ Firebug.FireStarter = extend(Firebug.Module,
     initialize: function(prefDomain, prefNames)
     {
         Firebug.Module.initialize.apply(this, arguments);
+
+        // Initialize FireStarter preferences in Firebug global object.
+        for (var i=0; i<fsPrefNames.length; i++)
+            Firebug[fsPrefNames[i]] = Firebug.getPref(prefDomain, fsPrefNames[i]);
 
         if (Firebug.TraceModule)
             Firebug.TraceModule.addListener(this.TraceListener);
