@@ -1281,7 +1281,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                                     var line = event.target.getAttribute("lineNumber");
                                     var link = new SourceLink(filename, line, "js" );
                                     FBTrace.sysout("Chromebug click on traceConsole isAStackFrame SourceLink:"+(link instanceof SourceLink), {target: event.target, href: filename, lineNo:line, link:link});
-                                    Firebug.chrome.select(link);
+                                    Firebug.chrome.select(link, "script");
                                     return true;
                                 }
                                 else
@@ -2126,6 +2126,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
                     return rc;
             }
         });
+        return rc;
     },
 
     setFilter: function(fnTakesDescription)  // outsider can set filter, eg in onSetLocation

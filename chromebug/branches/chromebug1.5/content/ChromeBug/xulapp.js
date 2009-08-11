@@ -569,7 +569,7 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
         if (object instanceof Ci.nsIXULWindow)
             return 10;
         else
-            return 1; // just agree to support everything but not agressively.
+            return 0;
     },
 
     getDefaultSelection: function()
