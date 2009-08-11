@@ -306,8 +306,22 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         var index = message.wrapperIndex - 1; // somewhere in the domplate expansion a one is added.
 
         // expand the domplate into the end of parent
+        var self = this;
+        var outputNodes =
+        {
+            getScrollingNode: function()
+            {
+                window.dump("unWrapMessage getScrollingNode self.panelNode "+self.panelNode+"\n");
+                return self.panelNode;
+            },
+            getTargetNode: function()
+            {
+                return wrapper.parentNode;
+            },
+        }
 
-        var result = Firebug.TraceModule.MessageTemplate.dump(message, wrapper.parentNode, index);
+
+        var result = Firebug.TraceModule.MessageTemplate.dump(message, outputNodes, index);
 
         // move the new row over the wrapper
 
@@ -323,10 +337,20 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         Firebug.TraceModule.MessageTemplate.toggleRow(theUnwrapped);
     },
 
+
+    // ********************************************************************************************
+    // Interface to the output nodes, going by the name outputNodes
+
     getScrollingNode: function()
     {
         return this.panelNode;
     },
+
+    getTargetNode: function()
+    {
+        return this.logs.firstChild;
+    },
+    // ********************************************************************************************
 
 });
 
