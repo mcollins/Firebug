@@ -191,7 +191,7 @@ FBTestApp.TestRunner =
         FBTestApp.TestRunner.removePreviousFrames(doc);
 
         // Create a new frame for this test.
-        testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
+        var testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
         testCaseIframe.setAttribute("src", "about:blank");
         testCaseIframe.setAttribute("id", "testFrame");
         var body = doc.getElementsByTagName("body")[0];
