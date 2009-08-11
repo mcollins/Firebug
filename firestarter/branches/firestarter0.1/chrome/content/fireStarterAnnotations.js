@@ -49,12 +49,14 @@ Firebug.FireStarter.Annotations = extend(Object,
 
         var lists = this.getBlackAndWhiteLists();
 
+        // Open Firebug UI and select the Console panel.
+        Firebug.toggleBar(true);
+        Firebug.chrome.selectPanel("console");
+
+        // Log black and white lists into the Console panel.
         //xxxHonza: localization
         this.logList("Firebug is activated for (%d):", lists.whiteList);
         this.logList("Firebug is deactivated for (%d):", lists.blackList);
-
-        // Activate the Console panel so, the log is immediately visible.
-        Firebug.chrome.selectPanel("console");
     },
 
     logList: function(message, list)
