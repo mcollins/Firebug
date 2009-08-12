@@ -366,8 +366,7 @@ JSONBuilder.prototype =
     buildContent: function(file)
     {
         var content = {};
-        content.contentLength = file.responseText ? file.responseText.length : file.size;
-        content.compression = ""; //xxxHonza: does activity-observer provide compression info?
+        content.size = file.responseText ? file.responseText.length : file.size;
 
         try
         {
@@ -404,7 +403,6 @@ JSONBuilder.prototype =
         var cache = {};
         cache.expires = findHeader(cacheEntry, "Expires");
         cache.lastModification = findHeader(cacheEntry, "Last Modified");
-        cache.lastCacheUpdate = ""; //xxxHonza
         cache.lastAccess = findHeader(cacheEntry, "Last Fetched");
         cache.eTag = ""; //xxxHonza
         cache.hitCount = findHeader(cacheEntry, "Fetch Count");
@@ -416,7 +414,12 @@ JSONBuilder.prototype =
         var timings = {};
         timings.dns = file.resolvingTime - file.startTime;
         timings.connect = file.connectingTime - file.startTime;
-        timings.send = file.sendingTime - file.startTime - timings.connect - timings.dns;
+
+        if (file.sendingTime)
+            timings.send = file.sendingTime - file.startTime - timings.connect - timings.dns;
+        else
+            timings.send = -1;
+ 
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
         timings.blocked = file.waitingForTime - file.startTime - timings.connect - timings.dns - timings.send;
