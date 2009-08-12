@@ -397,15 +397,17 @@ Chromebug.ProgressListener.prototype =
     traceWindow: function(webProgress, request)
     {
         var name = this.safeName(request);
-        var progress = "\"" + webProgress.DOMWindow.document.title +"\" ("+ webProgress.DOMWindow.location.href+") -> ";
+        var progress = "\"" + webProgress.DOMWindow.document.title +"\" ("+ webProgress.DOMWindow.location.href+") in XUL window ";
         return progress + "\""+this.outerDOMWindow.document.title+"\" ("+this.outerDOMWindow.location.href+") "+(name?name:"no-name")+" ";
     },
     stateIsRequest: false,
     onLocationChange: function(webProgress, request, uri)
     {
-        if (FBTrace.DBG_WINDOWS)
-            FBTrace.sysout("Chromebug.ProgressListener.onLocationChange "+this.traceWindow(webProgress, request)+" to uri=\'"                                        /*@explore*/
-                                          +(uri?uri.spec:"null location")+"\'\n");                                     /*@explore*/
+            if (FBTrace.DBG_WINDOWS)
+                FBTrace.sysout("Chromebug.ProgressListener.onLocationChange "+this.traceWindow(webProgress, request)+" to uri=\'"                                        /*@explore*/
+                                          +(uri?uri.spec:"null location")+"\'\n");  
+            
+            
     },
     onStateChange : function(webProgress, request, flags, status)
     {

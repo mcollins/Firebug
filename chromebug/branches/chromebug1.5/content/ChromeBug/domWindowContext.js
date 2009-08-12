@@ -65,8 +65,11 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
             if (domWindow == outerDOMWindow)
             {
+                var oldName = this.getName();
+                delete this.name; // remove the cache
+
                 if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location);
+                    FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location+" tried context rename: "+oldName+" -> "+this.getName());
                 return;
             }
 
@@ -77,7 +80,10 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             if (context)
             {
                 // then we had one, say from a Frame
+                var oldName = context.getName();
+                delete context.name;
                  if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
+                 if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
                 Chromebug.globalScopeInfos.remove(context.globalScope);
             }
             else

@@ -381,6 +381,8 @@ function overrideFirebugFunctions()
         ChromeBugOverrides.setFirebugContext = top.Firebug.chrome.setFirebugContext;
         top.Firebug.chrome.setFirebugContext = function(context)
         {
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("setFirebugContext to "+(context?context.getName():"NULL"));
             ChromeBugOverrides.setFirebugContext(context);
             Chromebug.contextList.setCurrentLocation( context );
         }

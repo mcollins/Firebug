@@ -13,6 +13,9 @@ const docShellTypeNames = ["Chrome", "Content", "ContentWrapper", "ChromeWrapper
 var windowMediator = Cc["@mozilla.org/appshell/window-mediator;1"]
         .getService(Ci.nsIWindowMediator);
 
+var windowWatcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]
+                       .getService(Ci.nsIWindowWatcher);
+
 var panelName = "window";
 
 // ***********************************************************************************
@@ -983,6 +986,7 @@ Chromebug.XULAppModule.CacheEntry = function(url, lines)
     this.lines = lines;
     this.size = (lines && lines.length) ? lines.join("").length : 0;
 }
+
 
 // ************************************************************************************************
 // Registration
