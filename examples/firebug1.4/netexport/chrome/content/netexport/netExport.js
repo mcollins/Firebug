@@ -366,7 +366,7 @@ JSONBuilder.prototype =
     buildContent: function(file)
     {
         var content = {};
-        content.size = file.responseText ? file.responseText.length : file.size;
+        content.size = file.size ? file.size : file.responseText.length;
 
         try
         {
@@ -385,15 +385,16 @@ JSONBuilder.prototype =
 
     buildCache: function(file)
     {
+        if (!file.fromCache)
+            return;
+
         var cache = {};
+        //cache.beforeRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
 
-        //cache.afterRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
-
-        if (file.fromCache)
-        {
-            cache.beforeRequest = {};
-            cache.beforeRequest = this.buildCacheEntry(file.cacheEntry);
-        }
+        if (file.cacheEntry)
+            cache.afterRequest = this.buildCacheEntry(file.cacheEntry);
+        else
+            cache.afterRequest = null;
 
         return cache;
     },
