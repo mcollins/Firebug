@@ -379,7 +379,10 @@ JSONBuilder.prototype =
         }
 
         content.encodingScheme = ""; //xxxHonza
-        content.text = file.responseText ? file.responseText : "";
+
+        if (file.responseText)
+            content.text = file.responseText;
+
         return content;
     },
 
