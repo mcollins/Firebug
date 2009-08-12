@@ -247,16 +247,23 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         var enumerator = windowMediator.getXULWindowEnumerator(null);  // null means all
         while(enumerator.hasMoreElements()) {
              var xul_window = enumerator.getNext();
-             if (xul_window.docShell)
+             if (xul_window instanceof Ci.nsIXULWindow)
              {
-                 var domWindow = this.getDOMWindowByDocShell(xul_window.docShell);
-                 var familyTree = this.getDOMWindowTreeByDocShell(xul_window.docShell);  // recurse
+                 if (xul_window.docShell)
+                 {
+                     var domWindow = this.getDOMWindowByDocShell(xul_window.docShell);
+                     var familyTree = this.getDOMWindowTreeByDocShell(xul_window.docShell);  // recurse
 
-                 var key = this.getKeyByDOMWindow(domWindow, domWindowsByURL);
-                 domWindowsByURL[key] = familyTree; // either a window or a table
+                     var key = this.getKeyByDOMWindow(domWindow, domWindowsByURL);
+                     domWindowsByURL[key] = familyTree; // either a window or a table
+                 }
+                 else
+                     FBTrace.sysout("A XUL Window without a docShell??", xul_window);
              }
              else
-                 FBTrace.sysout("A XUL Window without a docShell??", xul_window);
+             {
+                 FBTrace.sysout("getXULWindowEnumerator gave element that was not nsIXULWindow!", xul_window);
+             }
          }
         return domWindowsByURL;
     },
