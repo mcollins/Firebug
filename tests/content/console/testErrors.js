@@ -32,21 +32,22 @@ function fireTest(win, ith)
     lookForLogRow.onRecognize(function sawLogRow(elt)
     {
         FBTest.progress("matched logRow-errorMessage with "+ith, elt);
-        checkConsoleLogMessage(elt, titles[ith], sources[ith]);
+        checkConsoleLogMessage(buttons[ith], elt, titles[ith], sources[ith]);
         setTimeout(function bindArgs() { return fireTest(win, ith+1); });
     });
+    FBTest.progress("waiting for "+lookForLogRow.getDescription());
 
     var button = win.document.getElementById(buttons[ith]);
-    FBTest.progress("testing "+button.getAttribute('id'));
+    FBTest.progress("clicking "+button.getAttribute('id'));
     FBTest.click(button);
 }
 
-function checkConsoleLogMessage(log, expectedTitle, expectedSource)
+function checkConsoleLogMessage(button, log, expectedTitle, expectedSource)
 {
     var title = FW.FBL.getElementByClass(log, "errorTitle");
     var source = FW.FBL.getElementByClass(log, "errorSource");
 
-    FBTest.compare(expectedTitle, title.textContent, "The error message must be correct.");
+    FBTest.compare(expectedTitle, title.textContent, "The "+button+" error message must be correct.");
     if (expectedSource)
-        FBTest.compare(expectedSource, source.textContent, "The error source must be correct.");
+        FBTest.compare(expectedSource, source.textContent, "The "+button+" error source must be correct.");
 }
