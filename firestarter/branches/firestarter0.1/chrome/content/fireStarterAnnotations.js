@@ -13,30 +13,21 @@ const Ci = Components.interfaces;
  */
 Firebug.FireStarter.Annotations = extend(Object,
 {
-     clearAnnotations: function()
-     {
-        var self =this;
-        Firebug.Activation.iterateAnnotations(function remove(uri)
-        {
-            self.annotationSvc.removePageAnnotation(uri, self.annotationName); // unmark this URI
-            if (FBTrace.DBG_STARTER)
-                FBTrace.sysout("starter.Annotations.clearAll untagged " + uri.spec);
-        });
+    clearAnnotations: function()
+    {
+        Firebug.Activation.clearAnnotations();
     },
 
     getBlackAndWhiteLists: function()
     {
         var lists = new Firebug.FireStarter.Lists();
 
-        Firebug.Activation.iterateAnnotations(function buildLists(uri)
+        Firebug.Activation.iterateAnnotations(function buildLists(uri, annotation)
         {
-            var annotation = Firebug.Activation.annotationSvc.getPageAnnotation(uri,
-                Firebug.Activation.annotationName);
-
             if (annotation.indexOf("closed") > 0)
-                lists.blackList.push(uri.spec);
+                lists.blackList.push(uri);
             else
-                lists.whiteList.push(uri.spec);
+                lists.whiteList.push(uri);
         });
 
         return lists;
