@@ -499,7 +499,7 @@ var FBTest = FBTestApp.FBTest =
             FBTest.FirebugWindow.Firebug.toggleAll("off");
             FBTest.FirebugWindow.Firebug.toggleAll("none");
         }
-        var filterThem = FBTest.FirebugWindow.Firebug.filterSystemURLs;
+
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
 
