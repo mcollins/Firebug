@@ -5,7 +5,7 @@ function runTest()
     FBTest.sysout("issue846.START");
 
     // Server side handler.
-    FBTest.registerPathHandler("/net/846/issue846.php", function (metadata, response)
+    FBTest.registerPathHandler("/net/846/Issue846.php", function (metadata, response)
     {
         response.setHeader("Content-type", "text/plain", false);
 
@@ -13,7 +13,7 @@ function runTest()
         response.write(responseText);
     });
 
-    FBTestFirebug.openNewTab(basePath + "net/846/issue846.htm", function(win)
+    FBTestFirebug.openNewTab(basePath + "net/846/Issue846.htm", function(win)
     {
         // Disable XHR spy.
         var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
