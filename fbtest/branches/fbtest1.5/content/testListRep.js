@@ -385,7 +385,8 @@ FBTestApp.TestList = domplate(
 
     onOpenTestPage: function(test)
     {
-        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(FBTestApp.TestServer.path + test.testPage);
+        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(
+            FBTestApp.TestConsole.testcaseServerPath + test.testPage);
     }
 });
 
