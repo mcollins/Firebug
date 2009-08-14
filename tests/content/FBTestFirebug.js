@@ -788,6 +788,12 @@ var MutationRecognizer = function(win, tagName, attributes, text)
     this.characterData = text;
 };
 
+MutationRecognizer.prototype.getDescription = function()
+{
+    var obj = { tagName: this.tagName, attributes: this.attributes, characterData: this.characterData};
+   return JSON.stringify(obj);
+};
+
 MutationRecognizer.prototype.onRecognize = function(handler)
 {
     return new MutationEventFilter(this, handler);
@@ -979,8 +985,8 @@ MutationEventFilter.prototype.watchWindow = function(win)
      win.addEventListener("unload", filter.cleanUp, true);
      window.addEventListener("unload", filter.cleanUp, true);
      document.addEventListener("FBTestCleanup", filter.cleanUp, true);
-     window.FBTest.progress("added MutationWatcher to "+doc.location+" and FBTestCleanup to "+document.location);
-     window.FBTest.progress("added FBTestCleanup "+filterInstance+" to "+document.location);
+     //window.FBTest.progress("added MutationWatcher to "+doc.location+" and FBTestCleanup to "+document.location);
+     //window.FBTest.progress("added FBTestCleanup "+filterInstance+" to "+document.location);
 }
 
 MutationEventFilter.prototype.unwatchWindow = function(win)
