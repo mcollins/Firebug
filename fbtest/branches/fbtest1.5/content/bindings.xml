@@ -54,12 +54,6 @@
             ]]></body>
         </method>
     </implementation>
-
-    <handlers>
-        <handler event="keypress" keycode="VK_RETURN"><![CDATA[
-            FBTestApp.TestConsole.setAndLoadTestList();
-        ]]></handler>
-    </handlers>
 </binding>
 
 </bindings>
