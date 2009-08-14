@@ -179,6 +179,15 @@ FBTestApp.TestConsole =
             FBTrace.sysout("fbtest.setAndLoadTestList; " + this.testListPath + ", " +
                 this.testcaseServerPath);
 
+        // Append the test-case server into the history immediately. If the test list is
+        // already loaded it wouldn't be done at the "successful load" moment.
+        this.appendToHistory("", this.testcaseServerPath);
+
+        // xxxHonza: this is a workaround, the test-case server isn't stored into the
+        // preferences in shutdown when the Firefox is restared by "Restart Firefox"
+        // button in the FBTrace console.
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestcaseServer", this.testcaseServerPath);
+
         this.loadTestList(this.testListPath, this.testcaseServerPath);
 
         FBTestApp.TestSummary.clear();
@@ -366,11 +375,11 @@ FBTestApp.TestConsole =
         testListPath = trimLeft(testListPath);
         testcaseServer = trimLeft(testcaseServer);
 
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.appendToHistory; " + testListPath + ", " + testcaseServer);
+        if (testListPath)
+            this.appendNVPairToHistory("history", testListPath);
 
-        this.appendNVPairToHistory("history", testListPath);
-        this.appendNVPairToHistory("serverHistory", testcaseServer);
+        if (testcaseServer)
+            this.appendNVPairToHistory("serverHistory", testcaseServer);
     },
 
     getHistory: function(name)
