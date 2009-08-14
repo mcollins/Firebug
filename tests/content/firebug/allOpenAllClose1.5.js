@@ -29,8 +29,14 @@ function allOpened()
     if (FBTest.FirebugWindow.FirebugContext)
     {
         var contextName = FBTest.FirebugWindow.FirebugContext.getName();
-        FBTest.ok(true, "chromeWindow.FirebugContext "+contextName);
-        FBTest.ok(contextName == allOpenAllCloseURL, "FirebugContext set to "+allOpenAllCloseURL);
+        /*
+        var cL = contextName.length;
+        var aL =  allOpenAllCloseURL.length;
+        FBTest.compare(aL+"", cL+"", "chromeWindow.FirebugContext has same length"+contextName);
+        for (var i = 0; i < allOpenAllCloseURL.length; i++)
+            if ( allOpenAllCloseURL[i] != contextName[i] ) FBTest.progress("compare fails at "+i+" "+ allOpenAllCloseURL[i]);
+            */
+        FBTest.compare(allOpenAllCloseURL+"", contextName+"", "FirebugContext set to "+allOpenAllCloseURL);
     }
     else
         FBTest.ok(false, "no FirebugContext");
@@ -68,10 +74,7 @@ function alsoOpened(win)
 
     FW.Firebug.Activation.toggleAll("none");
 
-    var toolTip = statusbarIcon.getAttribute("tooltiptext");
-    var expectedText = "all pages";
-    var all = (new RegExp(expectedText)).exec(toolTip);
-    FBTest.compare(expectedText, all, "Should be All pages info");
+
 
     FBTestFirebug.testDone("allOpenAllClose.DONE");
 }
