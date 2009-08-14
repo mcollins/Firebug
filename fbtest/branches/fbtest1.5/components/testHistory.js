@@ -57,7 +57,7 @@ History.prototype =
         var results = [];
         for (var i=0; i<arr.length; i++)
         {
-            var url = arr[i];
+            var url = trimSpaces(arr[i]);
             if (url && !map[url] && (!searchString || url.indexOf(searchString) > 0))
             {
                 map[url] = true;
@@ -92,6 +92,11 @@ History.prototype =
     {
     }
 };
+
+function trimSpaces(text)
+{
+    return text.replace(/^\s*|\s*$/g,"");
+}
 
 var testHistory = new History("extensions.fbtest.history");
 var serverHistory = new History("extensions.fbtest.serverHistory");
