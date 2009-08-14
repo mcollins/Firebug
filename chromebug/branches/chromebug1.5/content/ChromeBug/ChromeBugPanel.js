@@ -405,9 +405,9 @@ Chromebug.ProgressListener.prototype =
     {
             if (FBTrace.DBG_WINDOWS)
                 FBTrace.sysout("Chromebug.ProgressListener.onLocationChange "+this.traceWindow(webProgress, request)+" to uri=\'"                                        /*@explore*/
-                                          +(uri?uri.spec:"null location")+"\'\n");  
-            
-            
+                                          +(uri?uri.spec:"null location")+"\'\n");
+
+
     },
     onStateChange : function(webProgress, request, flags, status)
     {
@@ -520,7 +520,8 @@ Firebug.Chromebug = extend(Firebug.Module,
     selectContext: function(context)  // this operation is similar to a user picking a tab in Firefox, but for chromebug
     {
         Firebug.Chromebug.selectBrowser(context.browser);
-        if (context.window)
+FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+context.window);
+        if (context.window && context.window instanceof Ci.nsIDOMWindow)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
         Firebug.showContext(context.browser, context);  // sets FirebugContext and syncs the tool bar
@@ -976,6 +977,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         for (var i = contexts.length; i--; i)
         {
             nextContext = contexts[i - 1];
+            if (nextContext.window && nextContext.window.closed)
+                continue;
             if (nextContext != context)
                 break;
         }

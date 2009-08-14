@@ -388,11 +388,16 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 {
                     if (FBTrace.DBG_CHROMEBUG)
                         FBTrace.sysout("XULAppModule.onclose: removing getXULWindowIndex="+mark+"\n");
-                    Firebug.Chromebug.eachContext( function findContextsInXULWindow(context)
+                    setTimeout(function checkForCleanedUp()
                     {
-                        if (context.xul_window == xul_win)
-                            TabWatcher.unwatchTopWindow(context.window);
-                    });
+                        Firebug.Chromebug.eachContext( function findContextsInXULWindow(context)
+                        {
+                            if (context.xul_window == xul_win)
+                                FBTrace.sysout("XULAppModule found context attached to dead XUL window! "+context.getName(), xul_window);
+                                //TabWatcher.unwatchTopWindow(context.window);
+                        });
+                    }, 5555);
+
                     var tag = this.xulWindowTags[mark];
                     this.xulWindows.splice(mark,1);
                     this.xulWindowTags.splice(mark,1);

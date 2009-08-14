@@ -383,8 +383,16 @@ function overrideFirebugFunctions()
         {
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("setFirebugContext to "+(context?context.getName():"NULL"));
-            ChromeBugOverrides.setFirebugContext(context);
-            Chromebug.contextList.setCurrentLocation( context );
+            if (context)
+            {
+                ChromeBugOverrides.setFirebugContext(context);
+                Chromebug.contextList.setCurrentLocation( context );
+            }
+            else
+            {
+                var context = Chromebug.contextList.getDefaultLocation();
+                Firebug.Chromebug.selectContext(context);
+            }
         }
 
         Firebug.Chromebug.syncResumeBox = Firebug.chrome.syncResumeBox;
@@ -482,10 +490,11 @@ Chromebug.Activation =
 
     shouldShowContext: function(context)
     {
-        if (context && context.window && context.window instanceof Window)
+        // Don't show chromebug's own windows.
+        if (context && context.window && context.window instanceof Ci.nsIDOMWindow)
             return !Firebug.Chromebug.isChromebugURL(context.getName());
         else
-            return false;
+            return true;  // show non-window contexts
     }
 };
 
