@@ -13,13 +13,13 @@ function runTest(request)
                 FBTestFirebug.expandElements(panelNode, "netInfoPostTab");
 
                 // The post text must be displayed.
-                var postBody = FW.FBL.getElementByClass(panelNode, "netInfoPostText", 
-                    "netInfoText");
-
-                FBTest.ok(postBody, "Post tab must exist.");
-                if (postBody)
-                    FBTest.compare(win.wrappedJSObject.xml, postBody.textContent, 
+                var postBody = FW.FBL.getElementByClass(panelNode, "netInfoPostTable");
+                if (FBTest.ok(postBody, "Post tab must exist."))
+                {
+                    var row = postBody.firstChild.childNodes[2];
+                    FBTest.compare(win.wrappedJSObject.xml, row.textContent, 
                         "Post tab body content verified");
+                }
 
                 // Finish test
                 FBTestFirebug.testDone("issue372.DONE");
