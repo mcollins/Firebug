@@ -1,0 +1,4 @@
+<?php
+header("Content-Type: video/x-flv");
+?>
+onScriptLoaded();
