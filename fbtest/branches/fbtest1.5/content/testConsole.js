@@ -52,11 +52,7 @@ FBTestApp.TestConsole =
             $("testListUrlBar").testLabel = $STR("fbtest.urlbar.Test List") + ":";
             $("testSourceUrlBar").testLabel = $STR("fbtest.urlbar.Test Server") + ":";
 
-            var serverHistory = this.getHistory("serverHistory");
-            if (serverHistory)
-                $("testSourceUrlBar").testURL = serverHistory[serverHistory.length - 1];
-
-            observerService.notifyObservers(this, "fbtest", "initialize");
+            this.notifyObservers(this, "fbtest", "initialize");
 
             // Load all tests from the default test list file (testList.html).
             // The file usually defines two variables:
@@ -65,6 +61,8 @@ FBTestApp.TestConsole =
             //          if this variable isn't specified, the parent directory of the
             //          test list file is used.
             this.loadTestList(this.getDefaultTestList(), this.getDefaultTestcaseServer());
+
+            $("testSourceUrlBar").testURL = this.testcaseServerPath;
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
@@ -93,6 +91,9 @@ FBTestApp.TestConsole =
         if (!defaultTestList)
             defaultTestList = "chrome://firebug/content/testList.html";
 
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestConsole.getDefaultTestList; " + defaultTestList);
+
         return defaultTestList;
     },
 
@@ -108,6 +109,9 @@ FBTestApp.TestConsole =
         // 3) If no list is specified, use the default from getfirebug
         if (!defaultTestcaseServer)
             defaultTestcaseServer = "http://getfirebug.com/tests/content/";
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestConsole.getDefaultTestcaseServer; " + defaultTestcaseServer);
 
         return defaultTestcaseServer;
     },
@@ -144,8 +148,10 @@ FBTestApp.TestConsole =
 
     shutdown: function()
     {
-        observerService.notifyObservers(this, "fbtest", "shutdown");
+        this.notifyObservers(this, "fbtest", "shutdown");
+
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestSuite", this.testListPath);
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestcaseServer", this.testcaseServerPath);
 
         if (Firebug.TraceModule)
             Firebug.TraceModule.removeListener(this.TraceListener);
@@ -154,6 +160,9 @@ FBTestApp.TestConsole =
         Firebug.unregisterRep(FBTestApp.GroupList);
         Firebug.unregisterRep(FBTestApp.TestList);
         Firebug.unregisterRep(FBTestApp.TestResultRep);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestConsole.shutdown;");
     },
 
     updatePaths: function()
@@ -165,7 +174,13 @@ FBTestApp.TestConsole =
     setAndLoadTestList: function()
     {
         this.updatePaths();
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.setAndLoadTestList; " + this.testListPath + ", " +
+                this.testcaseServerPath);
+
         this.loadTestList(this.testListPath, this.testcaseServerPath);
+
         FBTestApp.TestSummary.clear();
     },
 
@@ -236,7 +251,7 @@ FBTestApp.TestConsole =
                         test.desc, test.category, test.testPage));
                 }
 
-                observerService.notifyObservers(this, 'fbtest', "restart")
+                self.notifyObservers(self, "fbtest", "restart")
 
                 // Build new test list UI.
                 self.refreshTestList();
@@ -264,7 +279,12 @@ FBTestApp.TestConsole =
 
         // Update test source URL box.
         var urlBar = $("testSourceUrlBar");
-        urlBar.testSourceURL = testcaseServerPath;
+        urlBar.testURL = testcaseServerPath;
+    },
+
+    notifyObservers: function(subject, topic, data)
+    {
+        observerService.notifyObservers({wrappedJSObject: this}, topic, data);
     },
 
     refreshTestList: function()

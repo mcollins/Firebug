@@ -185,10 +185,14 @@ FBTestApp.TestServer =
 
     observe: function(subject, topic, data)
     {
+        subject = subject.wrappedJSObject;
+
         if (topic == "fbtest")
         {
             if (data=="shutdown")
+            {
                 FBTestApp.TestServer.stop();
+            }
             else if (data=="restart")
             {
                 // Restart server with new home directory using a file: url
