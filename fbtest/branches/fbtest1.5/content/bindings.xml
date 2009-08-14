@@ -35,9 +35,28 @@
         <constructor><![CDATA[
             this.mTextBox = document.getAnonymousElementByAttribute(this, "anonid", "textBox");
             this.mLabel = document.getAnonymousElementByAttribute(this, "anonid", "testLabel");
+
             // Internationalize UI
             var picker = document.getAnonymousElementByAttribute(this, "anonid", "testListPicker");
             FBL.internationalize(picker, "tooltiptext");
+
+            // Get context menu of the textBox.
+            var inputBox = this.mTextBox.inputField.parentNode;
+            var menuPopup = document.getAnonymousElementByAttribute(inputBox,
+                "anonid", "input-box-contextmenu");
+
+            // Create additional item into the context menu.
+            var resetHistory = document.createElement("menuitem");
+            resetHistory.setAttribute("label", "Reset History List"); // xxxHonza: localization
+
+            var self = this;
+            resetHistory.addEventListener("command", function() {
+                FBTestApp.TestConsole.resetHistoryList(self);
+            }, false);
+
+            // Append into the menu.
+            menuPopup.appendChild(document.createElement("menuseparator"));
+            menuPopup.appendChild(resetHistory);
         ]]></constructor>
 
         <property name="testLabel"

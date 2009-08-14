@@ -193,6 +193,18 @@ FBTestApp.TestConsole =
         FBTestApp.TestSummary.clear();
     },
 
+    resetHistoryList: function(urlBar)
+    {
+        var type = urlBar.getAttribute("autocompletesearch");
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.resetHistoryList; " + type);
+
+        if (type == "FBTestHistory")
+            Firebug.clearPref(FBTestApp.prefDomain, "history");
+        else if (type == "FBServerHistory")
+            Firebug.clearPref(FBTestApp.prefDomain, "serverHistory");
+    },
+
     loadTestList: function(testListPath, testcaseServerPath)
     {
         this.testListPath = testListPath;
