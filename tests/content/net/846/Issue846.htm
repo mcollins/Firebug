@@ -31,7 +31,8 @@
     var status = document.getElementById("Status");
     var button = document.getElementById("Button");
     var callback = null;
-    
+    var responses = [];
+
     function runTest(callb)
     {
         callback = callb;
@@ -49,6 +50,8 @@
         {
             if (request.readyState == 4 && request.status == 200) 
             {
+                responses.push(request.responseText);
+
                 if (counter < 4) 
                 {
                     counter++;
@@ -62,7 +65,7 @@
 
                     if (callback) {
                         setTimeout(function() {
-                            callback(request);
+                            callback(responses);
                         }, 300);
                     }
                 }

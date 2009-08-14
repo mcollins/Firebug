@@ -4,16 +4,12 @@ function runTest()
 {
     FBTest.sysout("issue846.START");
 
-    // Cache with responses
-    var responses = [];
-
     // Server side handler.
     FBTest.registerPathHandler("/net/846/issue846.php", function (metadata, response)
     {
         response.setHeader("Content-type", "text/plain", false);
 
         var responseText = "<div>" + (new Date()).getTime() + "</div>";
-        responses.push(responseText);
         response.write(responseText);
     });
 
@@ -26,9 +22,9 @@ function runTest()
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win)
         {
-            win.wrappedJSObject.runTest(function(request)
+            win.wrappedJSObject.runTest(function(responses)
             {
-                FBTest.sysout("issue846.onRunTest", request);
+                FBTest.sysout("issue846.onRunTest", responses);
 
                 // Expand all requests and select respnose bodies.
                 var panel = FW.FirebugChrome.selectPanel("net");
