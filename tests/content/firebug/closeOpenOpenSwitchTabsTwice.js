@@ -6,6 +6,9 @@ function runTest()
     FBTestFirebug.enableAllPanels();
     FBTestFirebug.closeFirebugOnAllTabs(); // use the existing tab as the "no Firebug tab"
 
+    FW.Firebug.activateSameOrigin = false;
+    FBTest.progress("The Activate Same Origin Option is false for this test");
+
     var tabbrowser = FW.getBrowser();
     var noFirebugTab = tabbrowser.selectedTab;
 
@@ -23,6 +26,8 @@ function runTest()
             FBTestFirebug.openFirebug();
 
             var theFirebuggedTab = tabbrowser.selectedTab;
+
+            FBTest.ok(FBTestFirebug.isFirebugOpen(), "Firebug UI must be open.");
 
             FBTest.progress("Switch back to the first tab.");
             tabbrowser.selectedTab = noFirebugTab;
