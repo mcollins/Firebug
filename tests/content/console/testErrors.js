@@ -6,6 +6,7 @@ function runTest()
         FBTestFirebug.selectPanel("console");
         FBTestFirebug.enableConsolePanel(function(win) // causes reload
         {
+           FBTestFirebug.selectPanel("console");
            fireTest(win, 0);
         });
     });
