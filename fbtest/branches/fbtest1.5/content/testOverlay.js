@@ -61,8 +61,9 @@ this.open = function(testListURI)
         "chrome,resizable,scrollbars=auto,minimizable,dialog=no",
         args);
 
-   // if (FBTrace.DBG_FBTEST)
-        FBTrace.sysout("fbtest.TestConsoleOverlay.open on FirebugWindow: "+window.location, consoleWindow);
+    if (FBTrace.DBG_FBTEST)
+        FBTrace.sysout("fbtest.TestConsoleOverlay.open on FirebugWindow: " +
+            window.location, consoleWindow);
 };
 
 // Register load listener for command line arguments handling.

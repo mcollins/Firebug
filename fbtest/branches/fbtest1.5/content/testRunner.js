@@ -81,7 +81,9 @@ FBTestApp.TestRunner =
         // testDone maybe called in an event handler which may need to complete before we clean up
         var self = this;
         setTimeout( function delayTestDone(){self.testDoneOnDelay.apply(self, [canceled]);} );
-        FBTrace.sysout("fbtest.TestRunner.testDone: " + this.currentTest.path,
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestRunner.testDone: " + this.currentTest.path,
                 this.currentTest);
     },
 
@@ -89,8 +91,10 @@ FBTestApp.TestRunner =
     {
         if (this.currentTest)
         {
-            FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
                     this.currentTest);
+
             this.currentTest.end = this.currentTest.isManual ? this.currentTest.end : (new Date()).getTime();
             this.currentTest.onTestDone();
             this.currentTest = null;
@@ -289,7 +293,7 @@ FBTestApp.TestRunner =
         try
         {
             // Initialize test environment.
-            FBTestApp.FBTest.setToKnownState();
+            win.FBTest.setToKnownState();
 
             // Execute test's entry point.
             win.runTest();
