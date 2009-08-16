@@ -209,12 +209,6 @@ FBTestApp.TestRunner =
         testCaseIframe.addEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
         // Load or reload the test page
         testCaseIframe.setAttribute("src", testURL);
-
-        if (FBTrace.DBG_FBTEST)
-        {
-            var docShell = this.getDocShellByDOMWindow(testCaseIframe);
-            FBTrace.sysout("iframe.docShell for "+testURL, docShell);
-        }
     },
 
     removePreviousFrames: function(doc)
@@ -403,28 +397,6 @@ FBTestApp.TestRunner =
     sysout: function(msg, obj)
     {
         FBTrace.sysout(msg, obj);
-    },
-
-    getDocShellByDOMWindow: function(domWindow)
-    {
-        if (domWindow instanceof Ci.nsIInterfaceRequestor)
-        {
-            var navi = domWindow.getInterface(Ci.nsIWebNavigation);
-            if (navi instanceof Ci.nsIDocShellTreeItem)
-            {
-                return navi;
-            }
-            else if (FBTrace.DBG_FBTEST)
-            {
-                FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
-            }
-        }
-        else if (FBTrace.DBG_FBTEST)
-        {
-            FBTrace.sysout("Chromebug getDocShellByDOMWindow, window notA nsIInterfaceRequestor:", domWindow);
-            FBTrace.sysout("getDocShellByDOMWindow domWindow.location:"+domWindow.location, " isA nsIDOMWindow: "+
-                (domWindow instanceof Ci.nsIDOMWindow));
-        }
     },
 };
 

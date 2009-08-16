@@ -63,7 +63,7 @@ this.open = function(testListURI)
 
     if (FBTrace.DBG_FBTEST)
         FBTrace.sysout("fbtest.TestConsoleOverlay.open on FirebugWindow: " +
-            window.location, consoleWindow);
+            window.location);
 };
 
 // Register load listener for command line arguments handling.

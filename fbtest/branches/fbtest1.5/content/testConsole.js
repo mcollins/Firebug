@@ -292,7 +292,7 @@ FBTestApp.TestConsole =
 
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
-                        testListPath + ", " + testcaseServerPath, doc);
+                        testListPath + ", " + testcaseServerPath);
 
                 // Finally run all tests if the browser has been launched with
                 // -runFBTests argument on the command line.
