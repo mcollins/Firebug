@@ -116,6 +116,16 @@ FBTestApp.TestConsole =
         return defaultTestcaseServer;
     },
 
+    getHTTPURLBase: function()
+    {
+        var url = this.testcaseServerPath;
+
+        // Make sure the path ends properly.
+        if (url && url.charAt(url.length-1) != "/")
+            url += "/";
+
+        return url;
+    },
 
     internationalizeUI: function()
     {
@@ -480,7 +490,6 @@ FBTestApp.TestConsole =
     {
         $('haltOnFailedTest').setAttribute('checked', this.haltOnFailedTest?'true':'false');
     },
-
 };
 
 // ************************************************************************************************
@@ -658,7 +667,7 @@ var FBTest = FBTestApp.FBTest =
 
     getHTTPURLBase: function()
     {
-        return FBTestApp.TestConsole.testcaseServerPath
+        return FBTestApp.TestConsole.getHTTPURLBase();
     },
 
     getLocalURLBase: function()
