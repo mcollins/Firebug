@@ -100,7 +100,7 @@ FBTestApp.TestRunner =
             this.currentTest = null;
         }
 
-        if (canceled)
+        if (FBTrace.DBG_FBTEST && canceled)
             FBTrace.sysout("fbtest.TestRunner.CANCELED");
 
         // Test is done so, clear the break-timeout.

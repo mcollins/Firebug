@@ -181,6 +181,21 @@ FBTestApp.TestConsole =
         this.testcaseServerPath = $("testSourceUrlBar").testURL;
     },
 
+    updateURLBars: function()
+    {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.updateURLBars; " + this.testListPath + ", " +
+                this.testcaseServerPath);
+
+        // Update test list URL box.
+        var urlBar = $("testListUrlBar");
+        urlBar.testURL = this.testListPath;
+
+        // Update test source URL box.
+        var urlBar = $("testSourceUrlBar");
+        urlBar.testURL = this.testcaseServerPath;
+    },
+
     setAndLoadTestList: function()
     {
         this.updatePaths();
@@ -249,7 +264,9 @@ FBTestApp.TestConsole =
             else
             {
                 if (win.baseURI)
+                {
                     self.baseURI = win.baseURI;
+                }
                 else
                 {
                     // If the baseURI isn't provided use the directory where testList.html
@@ -257,8 +274,14 @@ FBTestApp.TestConsole =
                     self.baseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
                 }
 
+                if (win.serverURI)
+                    self.testcaseServerPath = win.serverURI;
+                else
+                    self.testcaseServerPath = "http://getfirebug.com/tests/content/";
+
                 if (FBTrace.DBG_FBTEST)
-                    FBTrace.sysout("baseURI "+self.baseURI);
+                    FBTrace.sysout("fbtest.loadTestList; baseURI " + self.baseURI +
+                        ", serverURI " + self.testcaseServerPath);
 
                 // Create group list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
@@ -288,11 +311,13 @@ FBTestApp.TestConsole =
                 self.refreshTestList();
 
                 // Remember sucessfully loaded test within test history.
-                self.appendToHistory(testListPath, testcaseServerPath);
+                self.appendToHistory(testListPath, self.testcaseServerPath);
+
+                self.updateURLBars();
 
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
-                        testListPath + ", " + testcaseServerPath);
+                        testListPath + ", " + self.testcaseServerPath);
 
                 // Finally run all tests if the browser has been launched with
                 // -runFBTests argument on the command line.
@@ -304,13 +329,7 @@ FBTestApp.TestConsole =
         consoleFrame.addEventListener("load", onTestFrameLoaded, true);
         consoleFrame.setAttribute("src", testListPath);
 
-        // Update test list URL box.
-        var urlBar = $("testListUrlBar");
-        urlBar.testURL = testListPath;
-
-        // Update test source URL box.
-        var urlBar = $("testSourceUrlBar");
-        urlBar.testURL = testcaseServerPath;
+        this.updateURLBars();
     },
 
     notifyObservers: function(subject, topic, data)
