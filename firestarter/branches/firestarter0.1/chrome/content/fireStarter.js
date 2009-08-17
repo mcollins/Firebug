@@ -50,6 +50,9 @@ Firebug.FireStarter = extend(Firebug.Module,
 
     internationalizeUI: function(doc)
     {
+        if (FBTrace.DBG_STARTER)
+            FBTrace.sysout("starter.internationalizeUI");
+
         var elements = ["menu_logAnnotations", "menu_onByDefault"];
         for (var i=0; i<elements.length; i++)
         {
@@ -106,6 +109,7 @@ Firebug.FireStarter.TraceListener =
 // ************************************************************************************************
 // Registration
 
+Firebug.registerStringBundle("chrome://firestarter/locale/fireStarter.properties");
 Firebug.registerModule(Firebug.FireStarter);
 
 // ************************************************************************************************
