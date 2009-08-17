@@ -27,6 +27,12 @@ Firebug.FireStarter = extend(Firebug.Module,
         if (Firebug.TraceModule)
             Firebug.TraceModule.addListener(this.TraceListener);
 
+        // Disable "On for All Web Pages", functionality. FireStarter replaces this 
+        // by "On By Default" and white/black listing.
+        var allOnItem = $("menu_AllOn");
+        allOnItem.parentNode.removeChild(allOnItem);
+        Firebug.allPagesActivation = "none";
+
         if (FBTrace.DBG_STARTER)
             FBTrace.sysout("starter.initialized " + prefDomain, prefNames);
     },

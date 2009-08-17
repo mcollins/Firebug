@@ -28,9 +28,8 @@
     <!-- Extend Firefox status bar & Firebug's context menu -->
     <statusbar id="status-bar">
         <menupopup id="fbStatusContextMenu" onpopupshowing="FirebugChrome.onOptionsShowing(this)">
-            <menuitem id="menu_logAnnotations" label="fs.firebug.menu.Log Activation URIs"
-                command="cmd_logAnnotations" insertafter="menu_disablePanels"/>
-            <menuseparator id="menu_logAnnotationsSeparator" insertafter="menu_disablePanels"/>
+            <menuitem id="menu_logAnnotations" label="fs.firebug.menu.Log Activation List"
+                command="cmd_logAnnotations"/>
         </menupopup>
     </statusbar>
 
