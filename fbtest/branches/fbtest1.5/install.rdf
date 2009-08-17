@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
  xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>fbtest@mozilla.com</em:id>
     <em:name>FBTest</em:name>
-    <em:version>1.4</em:version>
+    <em:version>1.5</em:version>
     <em:creator>Honza</em:creator>
 
     <em:description>Firebug Unit Test Console</em:description>
