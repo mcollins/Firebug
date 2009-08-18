@@ -251,17 +251,18 @@ FBTestApp.TestConsole =
         {
             consoleFrame.removeEventListener("load", onTestFrameLoaded, true);
 
-            // Append proper styles.
             var doc = event.target;
-            var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
-            for (var i=0; i<styles.length; i++)
-                addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
 
             // Some CSS from Firebug namespace.
             addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
             addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
             addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
             addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/console.css"));
+
+            // Append specific FBTest CSS.
+            var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
+            for (var i=0; i<styles.length; i++)
+                addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
 
             var win = doc.defaultView.wrappedJSObject;
             if (!win.testList)
@@ -355,7 +356,21 @@ FBTestApp.TestConsole =
         }
 
         var frame = $("consoleFrame");
-        var consoleNode = $("testList", frame.contentDocument);
+        var doc = frame.contentDocument;
+        var consoleNode = $("testList", doc);
+        if (!consoleNode)
+        {
+            consoleNode = doc.createElement("div");
+            consoleNode.setAttribute("id", "testList");
+            var body = getBody(doc);
+            if (!body)
+            {
+                FBTrace.sysout("fbtest.refreshTestList; ERROR There is no <body> element.");
+                return;
+            }
+            body.appendChild(consoleNode);
+        }
+
         var table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, consoleNode);
         var row = table.firstChild.firstChild;
 

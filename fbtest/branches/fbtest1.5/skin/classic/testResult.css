@@ -25,6 +25,7 @@
     overflow: hidden;
     min-width: 70px;
     padding: 1px 0 2px 18px !important;
+    font-size: 11px;
 }
 
 .opened > .testResultCol > .testResultMessage {
@@ -132,11 +133,16 @@
     padding: 5px 0 5px 10px;
 }
 
+.testResultStackInfoBody {
+    font-size: 11px;
+}
+
 /************************************************************************************************/
 
 /* Styles for Compare tab */
 .testResultCompareInfoBody {
     width: 100%;
+    font-size: 11px;
 }
 
 .testResultCompareTitle > TD {
