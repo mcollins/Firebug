@@ -972,29 +972,36 @@ FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+con
 
     destroyContext: function(context)
     {
-        // Pick a new context to be selected.
-        var contexts = TabWatcher.contexts;
-        for (var i = contexts.length; i--; i)
-        {
-            nextContext = contexts[i - 1];
-            if (nextContext.window && nextContext.window.closed)
-                continue;
-            if (nextContext != context)
-                break;
-        }
-
         if (context.browser)
             delete context.browser.detached;
 
         Chromebug.packageList.deleteContext(context);
         Chromebug.globalScopeInfos.destroy(context);
-       // if (FBTrace.DBG_CHROMEBUG)
-        if (nextContext)
-            FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" nextContext: "+nextContext.getName());
-        else
-            FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" null nextContext with contexts.length: "+contexts.length);
 
-        Firebug.Chromebug.selectContext(nextContext);
+        var currectSelection = Chromebug.contextList.getCurrentLocation();
+        if (currentSelection == context)
+        {
+         // Pick a new context to be selected.
+            var contexts = TabWatcher.contexts;
+            for (var i = contexts.length; i--; i)
+            {
+                nextContext = contexts[i - 1];
+                if (nextContext.window && nextContext.window.closed)
+                    continue;
+                if (nextContext != context)
+                    break;
+            }
+
+           if (FBTrace.DBG_CHROMEBUG)
+           {
+               if (nextContext)
+                   FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" nextContext: "+nextContext.getName());
+               else
+                   FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" null nextContext with contexts.length: "+contexts.length);
+           }
+
+            Firebug.Chromebug.selectContext(nextContext);
+        }
     },
 
 
@@ -1894,14 +1901,7 @@ Chromebug.packageList = extend(new Firebug.Listener(),
         if (filteredContext)
         {
             var context = filteredContext.context;
-            if (!FirebugContext)
-                FirebugContext = context;
-
-            //if (FBTrace.DBG_LOCATIONS)
-                FBTrace.sysout("Chromebug.packageList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
-
             Firebug.Chromebug.selectContext(context);
-
             Chromebug.packageList.setCurrentLocation(filteredContext);
        }
        else
@@ -1931,7 +1931,7 @@ Chromebug.contextList =
 
     setCurrentLocation: function(context) // call from Firebug.Chromebug.selectContext(context);
     {
-        cbContextList.location = context;
+        cbContextList.location = context;  // in binding.xml, both the location and repObject are changed in the setter.
     },
 
     getLocationList: function()  // list of contextDescriptions
