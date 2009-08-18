@@ -393,7 +393,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                         Firebug.Chromebug.eachContext( function findContextsInXULWindow(context)
                         {
                             if (context.xul_window == xul_win)
-                                FBTrace.sysout("XULAppModule found context attached to dead XUL window! "+context.getName(), xul_window);
+                                FBTrace.sysout("XULAppModule found context attached to dead XUL window! "+context.getName(), xul_win);
                                 //TabWatcher.unwatchTopWindow(context.window);
                         });
                     }, 5555);
