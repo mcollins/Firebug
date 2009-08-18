@@ -7,3 +7,7 @@
 #testSourceUrlBar {
     -moz-binding: url("chrome://fbtest/content/bindings.xml#urlbar");
 }
+
+#testDriverUrlBar {
+    -moz-binding: url("chrome://fbtest/content/bindings.xml#urlbar");
+}

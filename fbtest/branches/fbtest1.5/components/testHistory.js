@@ -8,10 +8,15 @@ const TEST_CLASS_ID = Components.ID("{3008FA55-C12F-4992-9930-B9D52F0CF037}");
 const TEST_CLASS_NAME = "FBTest: Test List History";
 const TEST_CONTRACT_ID = "@mozilla.org/autocomplete/search;1?name=FBTestHistory";
 
-// Source server list history
+// Test case history
 const SERVER_CLASS_ID = Components.ID("{B37D6564-77D9-4613-B088-324389E1A8F3}");
 const SERVER_CLASS_NAME = "FBTest: Source Server History";
 const SERVER_CONTRACT_ID = "@mozilla.org/autocomplete/search;1?name=FBServerHistory";
+
+// Test driver history
+const DRIVER_CLASS_ID = Components.ID("{3882FC1B-D32A-4722-B935-FA82142808A5}");
+const DRIVER_CLASS_NAME = "FBTest: Test Driver URL History";
+const DRIVER_CONTRACT_ID = "@mozilla.org/autocomplete/search;1?name=FBTestDriverHistory";
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -100,6 +105,7 @@ function trimSpaces(text)
 
 var testHistory = new History("extensions.fbtest.history");
 var serverHistory = new History("extensions.fbtest.serverHistory");
+var testDriverHistory = new History("extensions.fbtest.testDriverHistory");
 
 // ************************************************************************************************
 // Module implementation
@@ -122,6 +128,8 @@ var HistoryModule =
             return testHistory.QueryInterface(iid);
         else if (cid.equals(SERVER_CLASS_ID))
             return serverHistory.QueryInterface(iid);
+        else if (cid.equals(DRIVER_CLASS_ID))
+            return testDriverHistory.QueryInterface(iid);
 
         throw Cr.NS_ERROR_NOT_REGISTERED;
     },
@@ -129,10 +137,13 @@ var HistoryModule =
     registerSelf: function(compMgr, fileSpec, location, type)
     {
         compMgr.QueryInterface(Ci.nsIComponentRegistrar);
+
         compMgr.registerFactoryLocation(TEST_CLASS_ID, TEST_CLASS_NAME,
             TEST_CONTRACT_ID, fileSpec, location, type);
         compMgr.registerFactoryLocation(SERVER_CLASS_ID, SERVER_CLASS_NAME,
             SERVER_CONTRACT_ID, fileSpec, location, type);
+        compMgr.registerFactoryLocation(DRIVER_CLASS_ID, DRIVER_CLASS_NAME,
+            DRIVER_CONTRACT_ID, fileSpec, location, type);
       },
 
     unregisterSelf: function(compMgr, location, type)
@@ -140,6 +151,7 @@ var HistoryModule =
         compMgr.QueryInterface(Ci.nsIComponentRegistrar);
         compMgr.unregisterFactoryLocation(TEST_CLASS_ID, location);
         compMgr.unregisterFactoryLocation(SERVER_CLASS_ID, location);
+        compMgr.unregisterFactoryLocation(DRIVER_CLASS_ID, location);
     },
 
     canUnload: function(compMgr)

@@ -63,7 +63,7 @@
     </keyset>
 
     <toolbox id="consoleToolbox">
-        <toolbar id="consoleToolbar" align="center">
+        <toolbar id="consoleToolbar" align="center" context="consoleToolbarContextMenu">
             <toolbarbutton id="runAll"
                 label="fbtest.cmd.Run All" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.tip.Run All Tests"
@@ -83,11 +83,38 @@
                 command="cmd_refreshTestList"/>
         </toolbar>
 
+        <!-- Bar with testList.hmtl URL (e.g. chrome://firebug/content/testList.html -->
         <toolbar id="testListUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBTestHistory" disablePicker="false"/>
+            autocompletesearch="FBTestHistory" disablePicker="false"
+            coollapsed="false" label="fbtest.urlbar.label.Test List"
+            barTooltiptext="fbtest.urlbar.tooltip.URL of the Test List file"
+            pickerTooltiptext="fbtest.cmd.tip.Browse For Test List"/>
+
+        <!-- Bar with test cases root URL (e.g. http://getfirebug.com/tests/content/) -->
         <toolbar id="testSourceUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBServerHistory" disablePicker="true"/>
+            autocompletesearch="FBServerHistory" disablePicker="true"
+            collapsed="true" label="fbtest.urlbar.label.Test_Cases"
+            barTooltiptext="fbtest.urlbar.tooltip.URL of the root directory with Test Cases"/>
+
+        <!-- Bar with test drivers root URL (e.g. http://getfirebug.com/tests/content/) -->
+        <toolbar id="testDriverUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestDriverHistory" disablePicker="false"
+            collapsed="true" label="fbtest.urlbar.label.Test_Drivers"
+            barTooltiptext="fbtest.urlbar.tooltip.URL of the root directory with Test Drivers"/>
     </toolbox>
+
+    <popup id="consoleToolbarContextMenu"
+        onpopupshowing="FBTestApp.TestConsole.onViewToolbarsPopupShowing(event);">
+        <menuitem id="menu_showTestListURLBar" type="checkbox" checked="true"
+            label="fbtest.urlbar.name.Test List URL Bar" toolbar="testListUrlBar"
+            oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
+        <menuitem id="menu_showTestCaseURLBar" type="checkbox" checked="false"
+            label="fbtest.urlbar.name.Test Cases URL Bar" toolbar="testSourceUrlBar"
+            oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
+        <menuitem id="menu_showTestDriverURLBar" type="checkbox" checked="false"
+            label="fbtest.urlbar.name.Test Drivers URL Bar" toolbar="testDriverUrlBar"
+            oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
+    </popup>
 
     <popupset id="mainPopupSet">
         <popup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />

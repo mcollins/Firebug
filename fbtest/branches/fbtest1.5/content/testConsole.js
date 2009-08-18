@@ -49,9 +49,6 @@ FBTestApp.TestConsole =
             this.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
             this.setHaltOnFailedTestButton();
 
-            $("testListUrlBar").testLabel = $STR("fbtest.urlbar.Test List") + ":";
-            $("testSourceUrlBar").testLabel = $STR("fbtest.urlbar.Test Server") + ":";
-
             this.notifyObservers(this, "fbtest", "initialize");
 
             // Load all tests from the default test list file (testList.html).
@@ -129,12 +126,17 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList"];
+        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList",
+            "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
+            "testListUrlBar", "testSourceUrlBar", "testDriverUrlBar"];
+
         for (var i=0; i<buttons.length; i++)
         {
             var element = $(buttons[i]);
             FBL.internationalize(element, "label");
             FBL.internationalize(element, "tooltiptext");
+            FBL.internationalize(element, "pickerTooltiptext");
+            FBL.internationalize(element, "barTooltiptext");
         }
     },
 
@@ -179,21 +181,26 @@ FBTestApp.TestConsole =
     {
         this.testListPath = $("testListUrlBar").testURL;
         this.testcaseServerPath = $("testSourceUrlBar").testURL;
+        this.testDriverPath = $("testDriverUrlBar").testURL;
     },
 
     updateURLBars: function()
     {
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.updateURLBars; " + this.testListPath + ", " +
-                this.testcaseServerPath);
+                this.testcaseServerPath + ", " + this.baseURI);
 
         // Update test list URL box.
         var urlBar = $("testListUrlBar");
         urlBar.testURL = this.testListPath;
 
         // Update test source URL box.
-        var urlBar = $("testSourceUrlBar");
+        urlBar = $("testSourceUrlBar");
         urlBar.testURL = this.testcaseServerPath;
+
+        // Update test driver URL box.
+        urlBar = $("testDriverUrlBar");
+        urlBar.testURL = this.baseURI;
     },
 
     setAndLoadTestList: function()
@@ -202,7 +209,7 @@ FBTestApp.TestConsole =
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.setAndLoadTestList; " + this.testListPath + ", " +
-                this.testcaseServerPath);
+                this.testcaseServerPath + ", " + this.baseURI);
 
         // Append the test-case server into the history immediately. If the test list is
         // already loaded it wouldn't be done at the "successful load" moment.
@@ -509,6 +516,28 @@ FBTestApp.TestConsole =
     {
         $('haltOnFailedTest').setAttribute('checked', this.haltOnFailedTest?'true':'false');
     },
+
+    onViewToolbarsPopupShowing: function(event)
+    {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.onViewToolbarsPopupShowing;");
+
+        var popup = event.target;
+        for (var i=0; i<popup.childNodes.length; i++)
+        {
+            var menuItem = popup.childNodes[i];
+            var toolbar = $(menuItem.getAttribute("toolbar"));
+            menuItem.setAttribute("checked", toolbar.collapsed ? "false" : "true");
+        }
+    },
+
+    showURLBar: function(event)
+    {
+        var menuItem = event.originalTarget;
+        var toolbar = $(menuItem.getAttribute("toolbar"));
+        toolbar.collapsed = menuItem.getAttribute("checked") != "true";
+        document.persist(toolbar.id, "collapsed");
+    }
 };
 
 // ************************************************************************************************

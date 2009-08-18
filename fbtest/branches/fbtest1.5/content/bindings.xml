@@ -17,28 +17,23 @@
     </resources>
 
     <content>
-        <xul:toolbaritem>
-            <xul:label anonid="testLabel" value="Test Suite:" />
+        <xul:toolbaritem xbl:inherits="tooltiptext=barTooltiptext">
+            <xul:label anonid="testLabel" xbl:inherits="value=label"/>
         </xul:toolbaritem>
-        <xul:toolbaritem flex="1">
+        <xul:toolbaritem flex="1" xbl:inherits="tooltiptext=barTooltiptext">
             <xul:textbox anonid="textBox" flex="1" enablehistory="true"
                 type="autocomplete" xbl:inherits="autocompletesearch"
                 ontextentered="this.parentNode.parentNode.handleCommand();"/>
         </xul:toolbaritem>
         <xul:toolbarbutton anonid="testListPicker" label="..."
-            xbl:inherits="disabled=disablePicker"
-            command="cmd_openTestList"
-            tooltiptext="fbtest.cmd.tip.Browse For Test List" />
+            xbl:inherits="disabled=disablePicker,tooltiptext=pickerTooltiptext"
+            command="cmd_openTestList" />
     </content>
 
     <implementation>
         <constructor><![CDATA[
             this.mTextBox = document.getAnonymousElementByAttribute(this, "anonid", "textBox");
             this.mLabel = document.getAnonymousElementByAttribute(this, "anonid", "testLabel");
-
-            // Internationalize UI
-            var picker = document.getAnonymousElementByAttribute(this, "anonid", "testListPicker");
-            FBL.internationalize(picker, "tooltiptext");
 
             // Get context menu of the textBox.
             var inputBox = this.mTextBox.inputField.parentNode;
