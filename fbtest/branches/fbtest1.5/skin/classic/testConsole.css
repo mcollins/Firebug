@@ -43,7 +43,7 @@ body {
 
 /* Use IDs as the selector so, the height attribute is applied. Class selector doesn't work */
 #testListUrlBar textbox,
-#testSourceUrlBar textbox,
+#testCaseUrlBar textbox,
 #testDriverUrlBar textbox {
     height: 20px;
     border: 1px solid gray;

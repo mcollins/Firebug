@@ -91,8 +91,8 @@
             pickerTooltiptext="fbtest.cmd.tip.Browse For Test List"/>
 
         <!-- Bar with test cases root URL (e.g. http://getfirebug.com/tests/content/) -->
-        <toolbar id="testSourceUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBServerHistory" disablePicker="true"
+        <toolbar id="testCaseUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestCaseHistory" disablePicker="true"
             collapsed="true" label="fbtest.urlbar.label.Test_Cases"
             barTooltiptext="fbtest.urlbar.tooltip.URL of the root directory with Test Cases"/>
 
@@ -109,7 +109,7 @@
             label="fbtest.urlbar.name.Test List URL Bar" toolbar="testListUrlBar"
             oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
         <menuitem id="menu_showTestCaseURLBar" type="checkbox" checked="false"
-            label="fbtest.urlbar.name.Test Cases URL Bar" toolbar="testSourceUrlBar"
+            label="fbtest.urlbar.name.Test Cases URL Bar" toolbar="testCaseUrlBar"
             oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
         <menuitem id="menu_showTestDriverURLBar" type="checkbox" checked="false"
             label="fbtest.urlbar.name.Test Drivers URL Bar" toolbar="testDriverUrlBar"

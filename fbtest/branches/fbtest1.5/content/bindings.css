@@ -4,7 +4,7 @@
     -moz-binding: url("chrome://fbtest/content/bindings.xml#urlbar");
 }
 
-#testSourceUrlBar {
+#testCaseUrlBar {
     -moz-binding: url("chrome://fbtest/content/bindings.xml#urlbar");
 }
 

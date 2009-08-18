@@ -30,7 +30,7 @@ FBTestApp.TestConsole =
     // These are set when a testList.html is loaded.
     testListPath: null, // full path to the test list, eg a URL for the testList.html
     baseURI: null,  // base for test drivers, must be a secure location, chrome or https
-    testcaseServerPath: null,  // base for testcase pages. These are normal web pages
+    testCasePath: null,  // base for testcase pages. These are normal web pages
 
     groups: null,
 
@@ -57,9 +57,9 @@ FBTestApp.TestConsole =
             // baseURI: base directory for the test server (http://localhost:7080)
             //          if this variable isn't specified, the parent directory of the
             //          test list file is used.
-            this.loadTestList(this.getDefaultTestList(), this.getDefaultTestcaseServer());
+            this.loadTestList(this.getDefaultTestList(), this.getDefaultTestCasePath());
 
-            $("testSourceUrlBar").testURL = this.testcaseServerPath;
+            $("testCaseUrlBar").testURL = this.testCasePath;
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initialized");
@@ -94,28 +94,28 @@ FBTestApp.TestConsole =
         return defaultTestList;
     },
 
-    getDefaultTestcaseServer: function()
+    getDefaultTestCasePath: function()
     {
         // 1) The default test list (suite) can be specified on the command line.
-        var defaultTestcaseServer = FBTestApp.defaultTestcaseServer;
+        var defaultTestCaseServer = FBTestApp.defaultTestCaseServer;
 
         // 2) The list from the last time (stored in preferences) can be also used.
-        if (!defaultTestcaseServer)
-            defaultTestcaseServer = Firebug.getPref(FBTestApp.prefDomain, "defaultTestcaseServer");
+        if (!defaultTestCaseServer)
+            defaultTestCaseServer = Firebug.getPref(FBTestApp.prefDomain, "defaultTestCaseServer");
 
         // 3) If no list is specified, use the default from getfirebug
-        if (!defaultTestcaseServer)
-            defaultTestcaseServer = "http://getfirebug.com/tests/content/";
+        if (!defaultTestCaseServer)
+            defaultTestCaseServer = "http://getfirebug.com/tests/content/";
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestConsole.getDefaultTestcaseServer; " + defaultTestcaseServer);
+            FBTrace.sysout("fbtest.TestConsole.getDefaultTestCasePath; " + defaultTestCaseServer);
 
-        return defaultTestcaseServer;
+        return defaultTestCaseServer;
     },
 
     getHTTPURLBase: function()
     {
-        var url = this.testcaseServerPath;
+        var url = this.testCasePath;
 
         // Make sure the path ends properly.
         if (url && url.charAt(url.length-1) != "/")
@@ -128,7 +128,7 @@ FBTestApp.TestConsole =
     {
         var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
-            "testListUrlBar", "testSourceUrlBar", "testDriverUrlBar"];
+            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -163,7 +163,7 @@ FBTestApp.TestConsole =
         this.notifyObservers(this, "fbtest", "shutdown");
 
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestSuite", this.testListPath);
-        Firebug.setPref(FBTestApp.prefDomain, "defaultTestcaseServer", this.testcaseServerPath);
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestCaseServer", this.testCasePath);
 
         if (Firebug.TraceModule)
             Firebug.TraceModule.removeListener(this.TraceListener);
@@ -180,7 +180,7 @@ FBTestApp.TestConsole =
     updatePaths: function()
     {
         this.testListPath = $("testListUrlBar").testURL;
-        this.testcaseServerPath = $("testSourceUrlBar").testURL;
+        this.testCasePath = $("testCaseUrlBar").testURL;
         this.testDriverPath = $("testDriverUrlBar").testURL;
     },
 
@@ -188,15 +188,15 @@ FBTestApp.TestConsole =
     {
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.updateURLBars; " + this.testListPath + ", " +
-                this.testcaseServerPath + ", " + this.baseURI);
+                this.testCasePath + ", " + this.baseURI);
 
         // Update test list URL box.
         var urlBar = $("testListUrlBar");
         urlBar.testURL = this.testListPath;
 
         // Update test source URL box.
-        urlBar = $("testSourceUrlBar");
-        urlBar.testURL = this.testcaseServerPath;
+        urlBar = $("testCaseUrlBar");
+        urlBar.testURL = this.testCasePath;
 
         // Update test driver URL box.
         urlBar = $("testDriverUrlBar");
@@ -209,18 +209,18 @@ FBTestApp.TestConsole =
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.setAndLoadTestList; " + this.testListPath + ", " +
-                this.testcaseServerPath + ", " + this.baseURI);
+                this.testCasePath + ", " + this.baseURI);
 
         // Append the test-case server into the history immediately. If the test list is
         // already loaded it wouldn't be done at the "successful load" moment.
-        this.appendToHistory("", this.testcaseServerPath);
+        this.appendToHistory("", this.testCasePath);
 
         // xxxHonza: this is a workaround, the test-case server isn't stored into the
         // preferences in shutdown when the Firefox is restared by "Restart Firefox"
         // button in the FBTrace console.
-        Firebug.setPref(FBTestApp.prefDomain, "defaultTestcaseServer", this.testcaseServerPath);
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestCaseServer", this.testCasePath);
 
-        this.loadTestList(this.testListPath, this.testcaseServerPath);
+        this.loadTestList(this.testListPath, this.testCasePath);
 
         FBTestApp.TestSummary.clear();
     },
@@ -233,15 +233,17 @@ FBTestApp.TestConsole =
 
         if (type == "FBTestHistory")
             Firebug.clearPref(FBTestApp.prefDomain, "history");
-        else if (type == "FBServerHistory")
-            Firebug.clearPref(FBTestApp.prefDomain, "serverHistory");
+        else if (type == "FBTestCaseHistory")
+            Firebug.clearPref(FBTestApp.prefDomain, "testCaseHistory");
+        else if (type == "FBTestDriverHistory")
+            Firebug.clearPref(FBTestApp.prefDomain, "testDriverHistory");
     },
 
-    loadTestList: function(testListPath, testcaseServerPath)
+    loadTestList: function(testListPath, testCasePath)
     {
         this.testListPath = testListPath;
-        if (testcaseServerPath)
-            this.testcaseServerPath = testcaseServerPath;
+        if (testCasePath)
+            this.testCasePath = testCasePath;
 
         var self = this;
         var consoleFrame = $("consoleFrame");
@@ -282,13 +284,13 @@ FBTestApp.TestConsole =
                 }
 
                 if (win.serverURI)
-                    self.testcaseServerPath = win.serverURI;
+                    self.testCasePath = win.serverURI;
                 else
-                    self.testcaseServerPath = "http://getfirebug.com/tests/content/";
+                    self.testCasePath = "http://getfirebug.com/tests/content/";
 
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.loadTestList; baseURI " + self.baseURI +
-                        ", serverURI " + self.testcaseServerPath);
+                        ", serverURI " + self.testCasePath);
 
                 // Create group list from the provided test list. Also clone all JS objects
                 // (tests) since they come from untrusted content.
@@ -318,13 +320,13 @@ FBTestApp.TestConsole =
                 self.refreshTestList();
 
                 // Remember sucessfully loaded test within test history.
-                self.appendToHistory(testListPath, self.testcaseServerPath);
+                self.appendToHistory(testListPath, self.testCasePath);
 
                 self.updateURLBars();
 
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
-                        testListPath + ", " + self.testcaseServerPath);
+                        testListPath + ", " + self.testCasePath);
 
                 // Finally run all tests if the browser has been launched with
                 // -runFBTests argument on the command line.
@@ -427,7 +429,7 @@ FBTestApp.TestConsole =
             this.appendNVPairToHistory("history", testListPath);
 
         if (testcaseServer)
-            this.appendNVPairToHistory("serverHistory", testcaseServer);
+            this.appendNVPairToHistory("testCaseHistory", testcaseServer);
     },
 
     getHistory: function(name)
@@ -494,7 +496,7 @@ FBTestApp.TestConsole =
                 .createInstance(Ci.nsIFileProtocolHandler)
                 .getURLSpecFromFile(filePicker.file);
 
-            this.loadTestList(testListUrl, this.testcaseServerPath);
+            this.loadTestList(testListUrl, this.testCasePath);
         }
     },
 
@@ -502,7 +504,7 @@ FBTestApp.TestConsole =
     {
         $("consoleFrame").setAttribute("src", "about:blank");
         this.updatePaths();
-        this.loadTestList(this.testListPath, this.testcaseServerPath);
+        this.loadTestList(this.testListPath, this.testCasePath);
     },
 
     onToggleHaltOnFailedTest: function()
