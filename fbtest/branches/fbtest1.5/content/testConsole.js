@@ -460,6 +460,14 @@ FBTestApp.TestConsole =
     // UI Commands
     onRunAll: function(onFinishCallback)
     {
+        // Make sure that current URLs for test list & test case root directory
+        // is used (could be edited by the user). Notice that if the test list
+        // path is edited without pressing and entry (or picking the URI of the
+        // test list from the history), no new list is loaded so, the current
+        // is executed.
+        this.testCasePath = $("testCaseUrlBar").testURL;
+        this.testDriverPath = $("testDriverUrlBar").testURL;
+
         // Join all tests from all groups.
         var testQueue = [];
         for (var i=0; i<this.groups.length; i++)
