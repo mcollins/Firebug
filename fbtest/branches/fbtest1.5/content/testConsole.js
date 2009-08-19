@@ -105,7 +105,7 @@ FBTestApp.TestConsole =
 
         // 3) If no list is specified, use the default from getfirebug
         if (!defaultTestCaseServer)
-            defaultTestCaseServer = "http://getfirebug.com/tests/content/";
+            defaultTestCaseServer = "https://getfirebug.com/tests/content/";
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestConsole.getDefaultTestCasePath; " + defaultTestCaseServer);
@@ -287,7 +287,7 @@ FBTestApp.TestConsole =
                 if (win.serverURI)
                     self.testCasePath = win.serverURI;
                 else
-                    self.testCasePath = "http://getfirebug.com/tests/content/";
+                    self.testCasePath = "https://getfirebug.com/tests/content/";
 
                 if (FBTrace.DBG_FBTEST)
                     FBTrace.sysout("fbtest.loadTestList; baseURI " + self.baseURI +

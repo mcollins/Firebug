@@ -90,13 +90,13 @@
             barTooltiptext="fbtest.urlbar.tooltip.URL of the Test List file"
             pickerTooltiptext="fbtest.cmd.tip.Browse For Test List"/>
 
-        <!-- Bar with test cases root URL (e.g. http://getfirebug.com/tests/content/) -->
+        <!-- Bar with test cases root URL (e.g. https://getfirebug.com/tests/content/) -->
         <toolbar id="testCaseUrlBar" class="testURLBar" align="center"
             autocompletesearch="FBTestCaseHistory" disablePicker="true"
             collapsed="true" label="fbtest.urlbar.label.Test_Cases"
             barTooltiptext="fbtest.urlbar.tooltip.URL of the root directory with Test Cases"/>
 
-        <!-- Bar with test drivers root URL (e.g. http://getfirebug.com/tests/content/) -->
+        <!-- Bar with test drivers root URL (e.g. https://getfirebug.com/tests/content/) -->
         <toolbar id="testDriverUrlBar" class="testURLBar" align="center"
             autocompletesearch="FBTestDriverHistory" disablePicker="false"
             collapsed="true" label="fbtest.urlbar.label.Test_Drivers"
