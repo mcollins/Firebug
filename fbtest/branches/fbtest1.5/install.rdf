@@ -4,7 +4,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>fbtest@mozilla.com</em:id>
     <em:name>FBTest</em:name>
-    <em:version>1.5</em:version>
+    <em:version>1.5a1</em:version>
     <em:creator>Honza</em:creator>
 
     <em:description>Firebug Unit Test Console</em:description>
