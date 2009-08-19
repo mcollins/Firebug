@@ -323,7 +323,7 @@ JSONBuilder.prototype =
                 {
                     var value = option[1];
                     value = value.replace(/-/g, " ");
-                    cookie[name] = Date.parse(value) / 1000;
+                    cookie[name] = dateToJSON(new Date(value.replace(/-/g, " ")));
                 }
                 else
                 {
@@ -600,15 +600,15 @@ function dateToJSON(date)
     }
 
     var result = date.getUTCFullYear() + '-' +
-        f(date.getUTCMonth() + 1) + '-' +
-        f(date.getUTCDate()) + 'T' +
-        f(date.getUTCHours()) + ':' +
-        f(date.getUTCMinutes()) + ':' +
-        f(date.getUTCSeconds()) + '.' +
-        f(date.getUTCMilliseconds(), 3);
+        f(date.getMonth() + 1) + '-' +
+        f(date.getDate()) + 'T' +
+        f(date.getHours()) + ':' +
+        f(date.getMinutes()) + ':' +
+        f(date.getSeconds()) + '.' +
+        f(date.getMilliseconds(), 3);
 
     var offset = date.getTimezoneOffset()/60;
-    var prettyOffset = (offset > 0 ? "+" : "-") + f(Math.abs(offset)) + ":00";
+    var prettyOffset = (offset > 0 ? "-" : "+") + f(Math.abs(offset)) + ":00";
     return result + prettyOffset;
 }
 
