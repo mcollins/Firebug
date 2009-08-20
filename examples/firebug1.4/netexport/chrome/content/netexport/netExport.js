@@ -59,7 +59,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         if (!jsonString)
             return;
 
-        if (!this.saveToFile(file, jsonString))
+        if (!this.saveToFile(file, jsonString, context))
             return;
 
         var viewerURL = Firebug.getPref(Firebug.prefDomain, "netExport.viewerURL");
@@ -126,7 +126,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
     },
 
     // Save JSON string into a file.
-    saveToFile: function(file, jsonString)
+    saveToFile: function(file, jsonString, context)
     {
         try
         {
@@ -134,7 +134,18 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
                 .createInstance(Ci.nsIFileOutputStream);
             foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
 
-            var data = jsonString;//convertToUnicode(jsonString);
+            var conv = CCSV("@mozilla.org/intl/scriptableunicodeconverter",
+                "nsIScriptableUnicodeConverter");
+
+            // Convert using the current page charset. 
+            var doc = context.window.document;
+            conv.charset = doc.characterSet ? doc.characterSet : "UTF-8";
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.exportData; Convert output from " + conv.charset);
+
+            var data = conv.ConvertFromUnicode(jsonString);
+
+            // Write JSON data.
             foStream.write(data, data.length);
             foStream.close();
 
