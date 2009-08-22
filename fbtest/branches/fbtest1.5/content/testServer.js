@@ -168,7 +168,7 @@ FBTestApp.TestServer =
     {
         try
         {
-            if (!aPath || /^file:/.test(aPath))
+            if (!aPath || !(/^file:/.test(aPath)))
                 return aPath;
 
             var uri = ios.newURI(aPath, "UTF-8", null);
@@ -187,28 +187,36 @@ FBTestApp.TestServer =
     {
         subject = subject.wrappedJSObject;
 
-        if (topic == "fbtest")
+        if (topic != "fbtest")
+            return;
+
+        if (data == "initialize")
         {
-            if (data=="shutdown")
+            // Some initialization steps for extensions.
+        }
+        if (data == "shutdown")
+        {
+            FBTestApp.TestServer.stop();
+        }
+        else if (data == "restart")
+        {
+            // Don't start httpd.js server if the baseURI is already using http protocol
+            if (subject.baseURI.indexof("http") == 0)
+                return;
+
+            // Restart server with new home directory using a file: url
+            var serverBaseURI = FBTestApp.TestServer.chromeToUrl(subject.baseURI, true);
+            if (!serverBaseURI)
             {
                 FBTestApp.TestServer.stop();
-            }
-            else if (data=="restart")
-            {
-                // Restart server with new home directory using a file: url
-                var serverBaseURI = FBTestApp.TestServer.chromeToUrl(subject.baseURI, true);
-                if (!serverBaseURI)
-                {
-                    alert("Cannot access test files via baseURI conversion to http URL. " +
-                        "Verify 'baseURI' in the config file and that it points to a valid directory!\n\n" +
-                        "current config file: " + testListPath + "\n" +
-                        "baseURI: " + subject.baseURI + "\n");
-                    return;
-                }
-
-                FBTestApp.TestServer.restart(serverBaseURI);
+                FBTrace.sysout("Cannot access test files via baseURI conversion to http URL. " +
+                    "Verify 'baseURI' in the config file and that it points to a valid directory!\n\n" +
+                    "current config file: " + subject.testListPath + "\n" +
+                    "baseURI: " + subject.baseURI + "\n");
+                return;
             }
 
+            FBTestApp.TestServer.restart(serverBaseURI);
         }
     },
 

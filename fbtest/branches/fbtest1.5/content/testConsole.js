@@ -162,8 +162,14 @@ FBTestApp.TestConsole =
     {
         this.notifyObservers(this, "fbtest", "shutdown");
 
+        // Update history
+        this.updatePaths();
+        this.appendToHistory(this.testListPath, this.testCasePath, this.baseURI);
+
+        // Store defaults to preferences.
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestSuite", this.testListPath);
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestCaseServer", this.testCasePath);
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestDriverServer", this.baseURI);
 
         if (Firebug.TraceModule)
             Firebug.TraceModule.removeListener(this.TraceListener);
@@ -181,7 +187,7 @@ FBTestApp.TestConsole =
     {
         this.testListPath = $("testListUrlBar").testURL;
         this.testCasePath = $("testCaseUrlBar").testURL;
-        this.testDriverPath = $("testDriverUrlBar").testURL;
+        this.baseURI = $("testDriverUrlBar").testURL;
     },
 
     updateURLBars: function()
@@ -213,7 +219,7 @@ FBTestApp.TestConsole =
 
         // Append the test-case server into the history immediately. If the test list is
         // already loaded it wouldn't be done at the "successful load" moment.
-        this.appendToHistory("", this.testCasePath);
+        this.appendToHistory("", this.testCasePath, this.baseURI);
 
         // xxxHonza: this is a workaround, the test-case server isn't stored into the
         // preferences in shutdown when the Firefox is restared by "Restart Firefox"
@@ -321,7 +327,7 @@ FBTestApp.TestConsole =
                 self.refreshTestList();
 
                 // Remember sucessfully loaded test within test history.
-                self.appendToHistory(testListPath, self.testCasePath);
+                self.appendToHistory(testListPath, self.testCasePath, self.baseURI);
 
                 self.updateURLBars();
 
@@ -435,16 +441,29 @@ FBTestApp.TestConsole =
         return null;
     },
 
-    appendToHistory: function(testListPath, testcaseServer)
+    appendToHistory: function(testListPath, testCaseServer, baseURI)
     {
-        testListPath = trimLeft(testListPath);
-        testcaseServer = trimLeft(testcaseServer);
-
         if (testListPath)
+        {
+            testListPath = trimLeft(testListPath);
             this.appendNVPairToHistory("history", testListPath);
+        }
 
-        if (testcaseServer)
-            this.appendNVPairToHistory("testCaseHistory", testcaseServer);
+        if (testCaseServer)
+        {
+            testCaseServer = trimLeft(testCaseServer);
+            this.appendNVPairToHistory("testCaseHistory", testCaseServer);
+        }
+
+        if (baseURI)
+        {
+            baseURI = trimLeft(baseURI);
+            this.appendNVPairToHistory("testDriverHistory", baseURI);
+        }
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.appendToHistory; " + testListPath + ", " +
+                testCaseServer + ", " + baseURI);
     },
 
     getHistory: function(name)
@@ -470,19 +489,14 @@ FBTestApp.TestConsole =
         // Store in preferences.
         arr.push(value);
         Firebug.setPref(FBTestApp.prefDomain, name, arr.join(","));
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.appendNVPairToHistory; " + name + "=" + value, arr);
     },
 
     // UI Commands
     onRunAll: function(onFinishCallback)
     {
-        // Make sure that current URLs for test list & test case root directory
-        // is used (could be edited by the user). Notice that if the test list
-        // path is edited without pressing and entry (or picking the URI of the
-        // test list from the history), no new list is loaded so, the current
-        // is executed.
-        this.testCasePath = $("testCaseUrlBar").testURL;
-        this.testDriverPath = $("testDriverUrlBar").testURL;
-
         // Join all tests from all groups.
         var testQueue = [];
         for (var i=0; i<this.groups.length; i++)

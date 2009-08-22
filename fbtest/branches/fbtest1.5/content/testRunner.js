@@ -24,6 +24,15 @@ FBTestApp.TestRunner =
 
     runTests: function(tests, onFinishCallback)
     {
+        // Get current URLs from the UI. The user could change it after
+        // the test has been loaded.
+        FBTestApp.TestConsole.updatePaths();
+
+        // Update history
+        FBTestApp.TestConsole.appendToHistory(null,
+            FBTestApp.TestConsole.testCasePath,
+            FBTestApp.TestConsole.baseURI);
+
         tests = cloneArray(tests);
 
         FBTestApp.Preferences.save();
@@ -357,9 +366,13 @@ FBTestApp.TestRunner =
         if (!this.wrapAJSFile)
             this.wrapAJSFile = getResource("chrome://fbtest/content/wrapAJSFile.html");
 
-        var testURL = getDataURLForContent(new String(this.wrapAJSFile).replace("__replaceme__", jsURL), jsURL);
+        var wrapAJSFile = new String(this.wrapAJSFile);
+        var temp = wrapAJSFile.replace("__TestDriverURL__", jsURL).
+            replace("__FBTestFirebugURL__", FBTestApp.TestConsole.baseURI + "FBTestFirebug.js");
+
+        var testURL = getDataURLForContent(temp, jsURL);
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("wrapJS converted "+jsURL, testURL);
+            FBTrace.sysout("wrapJS converted "+jsURL, unescape(testURL));
 
         return testURL;
     },
