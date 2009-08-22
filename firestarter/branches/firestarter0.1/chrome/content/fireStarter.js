@@ -73,7 +73,7 @@ Firebug.FireStarter = extend(Firebug.Module,
         {
             // If there is no annotation for the current URL, return value of the
             // onByDefault option.
-            if (!Activation.annotationSvc.pageHasAnnotation(uri, Activation.annotationName))
+            if (!Activation.getAnnotationService().pageHasAnnotation(uri, Activation.annotationName))
                 result = Firebug.onByDefault;
         }
 
