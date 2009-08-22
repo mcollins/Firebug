@@ -126,15 +126,23 @@ this.openNewTab = function(url, callback)
     var onLoadURLInNewTab = function(event)
     {
         browser.removeEventListener("load", onLoadURLInNewTab, true);
-        setTimeout(
-            function() {
-                try {
-                    callback(browser.contentWindow);
-                } catch (exc) {
-                    FBTest.sysout("runTest FAILS "+exc, exc);
-                    FBTest.ok(false, "runTest FAILS "+exc);
-                }
-            }, 100);
+        setTimeout(function() {
+            try
+            {
+                var win = browser.contentWindow;
+
+                // This is a workaround for missing wrappedJSObject property,
+                // if the test case comes from http (and not from chrome)
+                if (!win.wrappedJSObject)
+                    win.wrappedJSObject = win;
+                callback(win);
+            }
+            catch (exc)
+            {
+                FBTest.sysout("runTest FAILS "+exc, exc);
+                FBTest.ok(false, "runTest FAILS "+exc);
+            }
+        }, 100);
     }
     browser.addEventListener("load", onLoadURLInNewTab, true);
     return newTab;
@@ -152,7 +160,13 @@ this.openURL = function(url, callback)
         browser.removeEventListener("load", onLoadURL, true);
         setTimeout(function()
         {
-            callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+            var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
+
+            // This is a workaround for missing wrappedJSObject property,
+            // if the test case comes from http (and not from chrome)
+            if (!win.wrappedJSObject)
+                win.wrappedJSObject = win;
+            callback(win);
         }, 10);
     }
     browser.addEventListener("load", onLoadURL, true);
@@ -173,7 +187,13 @@ this.reload = function(callback)
         browser.removeEventListener("load", onLoadURL, true);
         setTimeout(function()
         {
-            callback(tabbrowser.selectedBrowser.contentDocument.defaultView);
+            var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
+
+            // This is a workaround for missing wrappedJSObject property,
+            // if the test case comes from http (and not from chrome)
+            if (!win.wrappedJSObject)
+                win.wrappedJSObject = win;
+            callback(win);
         }, 10);
     }
     browser.addEventListener("load", onLoadURL, true);
