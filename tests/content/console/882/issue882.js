@@ -1,10 +1,3 @@
-<html>
-<head>
-<title>Firebug Test Driver for Issue 882</title>
-<script type="application/x-javascript" src="chrome://firebugTests/content/FBTestFirebug.js"></script>
-<script type="application/x-javascript">
-
-
 function runTest() // special function name used by FBTest
 {
     FBTest.sysout("882.START");  // These messages are shown in the trace console if DBG_TESTCASE is true
@@ -15,7 +8,7 @@ function runTest() // special function name used by FBTest
         var panelWindow = FBTestFirebug.getPanelDocument().defaultView;
 
         // Use Chromebug to inspect the Firebug UI for elements you want to verify
-        var lookForLogRow = new MutationRecognizer(panelWindow, 'span', {class: "objectBox-text"}, "external");
+        var lookForLogRow = new MutationRecognizer(panelWindow, 'span', {"class": "objectBox-text"}, "external");
 
         lookForLogRow.onRecognize(function sawLogRow(elt)
         {
@@ -31,7 +24,6 @@ function runTest() // special function name used by FBTest
         });
     });
 }
-
 
 function checkConsoleSourceLinks(elt)
 {
@@ -49,7 +41,7 @@ function checkConsoleSourceLinks(elt)
 
     // Now set a new recognizer for the highlight in the script panel
     var panelWindow = FBTestFirebug.getPanelDocument().defaultView;
-    var sourceLineHighlight = new MutationRecognizer(panelWindow, 'div', {class: "jumpHighlight"});
+    var sourceLineHighlight = new MutationRecognizer(panelWindow, 'div', {"class": "jumpHighlight"});
 
     sourceLineHighlight.onRecognize(function sawHighlight(elt)
         {
@@ -60,11 +52,3 @@ function checkConsoleSourceLinks(elt)
     FBTest.progress("Click the 'external' source link");
     FBTest.click(externalLink);  // click the source link to test the highlighting
 }
-
-
-</script>
-</head>
-<body>
-<span id="firebugTestElement"></span>
-</body>
-</html>
