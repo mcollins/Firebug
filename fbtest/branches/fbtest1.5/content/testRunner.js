@@ -306,7 +306,10 @@ FBTestApp.TestRunner =
             FBTestApp.FBTest.sysout("runTest FAILS "+exc, exc);
             FBTestApp.FBTest.ok(false, "runTest FAILS "+exc);
             FBTestApp.TestRunner.cleanUp();
+
+            FBTestApp.TestRunner.testDone(true);
         }
+
         // If we don't get an exception the test should call testDone() or the testTimeout will fire
     },
 
