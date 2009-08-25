@@ -25,6 +25,14 @@ function runTest()
             var chrome = FW.Firebug.chrome;
             FBTestFirebug.listenForBreakpoint(chrome, lineNo, function hitBP()
             {
+                FBTest.progress("Remove breakpoint now");
+                var panel = chrome.getSelectedPanel();
+                panel.toggleBreakpoint(lineNo);
+
+                var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+                if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set"))
+                    FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
+
                 checkWatchPanel();
                 var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
                 FBTest.ok(canContinue, "The continue button is pushable");
