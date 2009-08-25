@@ -29,7 +29,7 @@ FBTestApp.TestConsole =
 {
     // These are set when a testList.html is loaded.
     testListPath: null, // full path to the test list, eg a URL for the testList.html
-    baseURI: null,  // base for test drivers, must be a secure location, chrome or https
+    driverBaseURI: null,  // base for test drivers, must be a secure location, chrome or https
     testCasePath: null,  // base for testcase pages. These are normal web pages
 
     groups: null,
@@ -54,7 +54,7 @@ FBTestApp.TestConsole =
             // Load all tests from the default test list file (testList.html).
             // The file usually defines two variables:
             // testList: array with individual test objects.
-            // baseURI: base directory for the test server (http://localhost:7080)
+            // driverBaseURI: base directory for the test server (http://localhost:7080)
             //          if this variable isn't specified, the parent directory of the
             //          test list file is used.
             this.loadTestList(this.getDefaultTestList(), this.getDefaultTestCasePath());
@@ -164,12 +164,12 @@ FBTestApp.TestConsole =
 
         // Update history
         this.updatePaths();
-        this.appendToHistory(this.testListPath, this.testCasePath, this.baseURI);
+        this.appendToHistory(this.testListPath, this.testCasePath, this.driverBaseURI);
 
         // Store defaults to preferences.
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestSuite", this.testListPath);
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestCaseServer", this.testCasePath);
-        Firebug.setPref(FBTestApp.prefDomain, "defaultTestDriverServer", this.baseURI);
+        Firebug.setPref(FBTestApp.prefDomain, "defaultTestDriverServer", this.driverBaseURI);
 
         if (Firebug.TraceModule)
             Firebug.TraceModule.removeListener(this.TraceListener);
@@ -187,14 +187,14 @@ FBTestApp.TestConsole =
     {
         this.testListPath = $("testListUrlBar").testURL;
         this.testCasePath = $("testCaseUrlBar").testURL;
-        this.baseURI = $("testDriverUrlBar").testURL;
+        this.driverBaseURI = $("testDriverUrlBar").testURL;
     },
 
     updateURLBars: function()
     {
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.updateURLBars; " + this.testListPath + ", " +
-                this.testCasePath + ", " + this.baseURI);
+                this.testCasePath + ", " + this.driverBaseURI);
 
         // Update test list URL box.
         var urlBar = $("testListUrlBar");
@@ -206,7 +206,7 @@ FBTestApp.TestConsole =
 
         // Update test driver URL box.
         urlBar = $("testDriverUrlBar");
-        urlBar.testURL = this.baseURI;
+        urlBar.testURL = this.driverBaseURI;
     },
 
     setAndLoadTestList: function()
@@ -215,11 +215,11 @@ FBTestApp.TestConsole =
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.setAndLoadTestList; " + this.testListPath + ", " +
-                this.testCasePath + ", " + this.baseURI);
+                this.testCasePath + ", " + this.driverBaseURI);
 
         // Append the test-case server into the history immediately. If the test list is
         // already loaded it wouldn't be done at the "successful load" moment.
-        this.appendToHistory("", this.testCasePath, this.baseURI);
+        this.appendToHistory("", this.testCasePath, this.driverBaseURI);
 
         // xxxHonza: this is a workaround, the test-case server isn't stored into the
         // preferences in shutdown when the Firefox is restared by "Restart Firefox"
@@ -279,15 +279,15 @@ FBTestApp.TestConsole =
             }
             else
             {
-                if (win.baseURI)
+                if (win.driverBaseURI)
                 {
-                    self.baseURI = win.baseURI;
+                    self.driverBaseURI = win.driverBaseURI;
                 }
                 else
                 {
-                    // If the baseURI isn't provided use the directory where testList.html
+                    // If the driverBaseURI isn't provided use the directory where testList.html
                     // file is located.
-                    self.baseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
+                    self.driverBaseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
                 }
 
                 if (win.serverURI)
@@ -296,7 +296,7 @@ FBTestApp.TestConsole =
                     self.testCasePath = "https://getfirebug.com/tests/content/";
 
                 if (FBTrace.DBG_FBTEST)
-                    FBTrace.sysout("fbtest.loadTestList; baseURI " + self.baseURI +
+                    FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + self.driverBaseURI +
                         ", serverURI " + self.testCasePath);
 
                 // Create group list from the provided test list. Also clone all JS objects
@@ -327,7 +327,7 @@ FBTestApp.TestConsole =
                 self.refreshTestList();
 
                 // Remember sucessfully loaded test within test history.
-                self.appendToHistory(testListPath, self.testCasePath, self.baseURI);
+                self.appendToHistory(testListPath, self.testCasePath, self.driverBaseURI);
 
                 self.updateURLBars();
 
@@ -441,7 +441,7 @@ FBTestApp.TestConsole =
         return null;
     },
 
-    appendToHistory: function(testListPath, testCaseServer, baseURI)
+    appendToHistory: function(testListPath, testCaseServer, driverBaseURI)
     {
         if (testListPath)
         {
@@ -455,15 +455,15 @@ FBTestApp.TestConsole =
             this.appendNVPairToHistory("testCaseHistory", testCaseServer);
         }
 
-        if (baseURI)
+        if (driverBaseURI)
         {
-            baseURI = trimLeft(baseURI);
-            this.appendNVPairToHistory("testDriverHistory", baseURI);
+            driverBaseURI = trimLeft(driverBaseURI);
+            this.appendNVPairToHistory("testDriverHistory", driverBaseURI);
         }
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.appendToHistory; " + testListPath + ", " +
-                testCaseServer + ", " + baseURI);
+                testCaseServer + ", " + driverBaseURI);
     },
 
     getHistory: function(name)
@@ -749,7 +749,7 @@ var FBTest = FBTestApp.FBTest =
 
     loadScript: function(scriptURI, scope)
     {
-        return loader.loadSubScript(FBTestApp.TestConsole.baseURI + scriptURI, scope);
+        return loader.loadSubScript(FBTestApp.TestConsole.driverBaseURI + scriptURI, scope);
     },
 
     getHTTPURLBase: function()
@@ -759,7 +759,7 @@ var FBTest = FBTestApp.FBTest =
 
     getLocalURLBase: function()
     {
-        return FBTestApp.TestServer.chromeToUrl(FBTestApp.TestConsole.baseURI, true);
+        return FBTestApp.TestServer.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
     },
 
     registerPathHandler: function(path, handler)

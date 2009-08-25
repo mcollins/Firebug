@@ -45,7 +45,7 @@ function defineSingleStepping()
 
         FBTest.progress("Listen for exeline true, meaning the breakOnNext hit");
 
-        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkBreakOnNext);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkBreakOnNext);
 
         var testPageButton = singleStepping.window.document.getElementById("clicker");
         FBTest.click(testPageButton);
@@ -61,7 +61,7 @@ function defineSingleStepping()
 
     singleStepping.stepInto = function()
     {
-        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkStepInto);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkStepInto);
 
         FBTest.progress("Press single step button");
         var singleStepButton = FW.document.getElementById("fbStepIntoButton");
@@ -76,7 +76,7 @@ function defineSingleStepping()
     {
         var panel = FBTestFirebug.getSelectedPanel();
         var name = panel.location.getObjectDescription().name;
-        FBTest.compare(singleStepping.stepIntoFileName, name, "Step into should land in "+singleStepping.stepIntoFileName);
+        FBTest.compare(singleStepping.stepIntoFileName, name, "StepInto should land in "+singleStepping.stepIntoFileName);
 
         var row = FBTestFirebug.getSourceLineNode(singleStepping.stepIntoLineNo);
         FBTest.ok(row, "Row "+singleStepping.stepIntoLineNo+" must be found");
@@ -86,7 +86,7 @@ function defineSingleStepping()
 
     singleStepping.stepOver = function()
     {
-        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkStepOver);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkStepOver);
 
         FBTest.progress("Press single over button");
         var singleStepButton = FW.document.getElementById("fbStepOverButton");
@@ -101,7 +101,7 @@ function defineSingleStepping()
     {
         var panel = FBTestFirebug.getSelectedPanel();
         var name = panel.location.getObjectDescription().name;
-        FBTest.compare(singleStepping.stepOverFileName, name, "Step into should land in "+singleStepping.stepOverFileName);
+        FBTest.compare(singleStepping.stepOverFileName, name, "StepOver should land in "+singleStepping.stepOverFileName);
 
         var row = FBTestFirebug.getSourceLineNode(singleStepping.stepOverLineNo);
         FBTest.ok(row, "Row "+singleStepping.stepOverLineNo+" must be found");
@@ -111,11 +111,11 @@ function defineSingleStepping()
 
     singleStepping.stepOut = function()
     {
-        FBTestFirebug.waitForBreakInDebugger(singleStepping.checkstepOut);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkstepOut);
 
-        FBTest.progress("Press single over button");
-        var singleStepButton = FW.document.getElementById("fbStepOutButton");
-        FBTest.click(singleStepButton);  // WHY doesn't this work???
+        FBTest.progress("Press single StepOut button");
+        var stepOutButton = FW.document.getElementById("fbStepOutButton");
+        FBTest.click(stepOutButton);  // WHY doesn't this work???
 
         FW.Firebug.Debugger.stepOut(FW.FirebugContext);
     };
@@ -126,10 +126,13 @@ function defineSingleStepping()
     {
         var panel = FBTestFirebug.getSelectedPanel();
         var name = panel.location.getObjectDescription().name.split('/')[0];
-
-        FBTest.compare(singleStepping.stepOutFileName, name, "Step into should land in "+singleStepping.stepOutFileName);
+FBTest.sysout("panel.location.getObjectDescription().name: "+panel.location.getObjectDescription().name, panel.location.getObjectDescription());
+        FBTest.compare(singleStepping.stepOutFileName, name, "StepOut should land in "+singleStepping.stepOutFileName);
 
         var row = FBTestFirebug.getSourceLineNode(singleStepping.stepOutLineNo);
+        if (!row)
+            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row);
+
         FBTest.ok(row, "Row "+singleStepping.stepOutLineNo+" must be found");
 
         var canContinue = FBTestFirebug.clickContinueButton(false);

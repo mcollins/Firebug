@@ -200,19 +200,20 @@ FBTestApp.TestServer =
         }
         else if (data == "restart")
         {
-            // Don't start httpd.js server if the baseURI is already using http protocol
-            if (subject.baseURI.indexof("http") == 0)
+            // Don't start httpd.js server if the driverBaseURI is already using http protocol
+            FBTrace.sysout("testServer "+subject.driverBaseURI, subject);
+            if (subject.driverBaseURI.indexof("http") == 0)
                 return;
 
             // Restart server with new home directory using a file: url
-            var serverBaseURI = FBTestApp.TestServer.chromeToUrl(subject.baseURI, true);
+            var serverBaseURI = FBTestApp.TestServer.chromeToUrl(subject.driverBaseURI, true);
             if (!serverBaseURI)
             {
                 FBTestApp.TestServer.stop();
                 FBTrace.sysout("Cannot access test files via baseURI conversion to http URL. " +
-                    "Verify 'baseURI' in the config file and that it points to a valid directory!\n\n" +
+                    "Verify 'driverBaseURI' in the config file and that it points to a valid directory!\n\n" +
                     "current config file: " + subject.testListPath + "\n" +
-                    "baseURI: " + subject.baseURI + "\n");
+                    "driverBaseURI: " + subject.driverBaseURI + "\n");
                 return;
             }
 

@@ -4,6 +4,246 @@
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+
+/*
+ * var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {class: "logRow-errorMessage"});
+
+   lookForLogRow.onRecognize(function sawLogRow(elt)
+   {
+       checkConsoleLogMessage(elt, titles[ith], sources[ith]);  // deeper analysis if needed
+       setTimeout(function bindArgs() { return fireTest(win, ith+1); }); // run next UI event on a new top level
+   });
+   // now fire a UI event
+ */
+var MutationRecognizer = function(win, tagName, attributes, text)
+{
+   this.win = win;
+   this.tagName = tagName;
+   this.attributes = attributes;
+   this.characterData = text;
+};
+
+MutationRecognizer.prototype.getDescription = function()
+{
+   var obj = { tagName: this.tagName, attributes: this.attributes, characterData: this.characterData};
+  return JSON.stringify(obj);
+};
+
+MutationRecognizer.prototype.onRecognize = function(handler)
+{
+   return new MutationEventFilter(this, handler);
+}
+MutationRecognizer.prototype.getWindow = function()
+{
+   return this.win;
+}
+
+MutationRecognizer.prototype.matches = function(elt)
+{
+   // Note Text nodes have no tagName
+   if (this.tagName == "Text")
+   {
+       if (elt.data.indexOf(this.characterData) != -1)
+       {
+           FBTest.sysout("MutationRecognizer matches Text character data "+this.characterData);
+           return true;
+       }
+       else
+       {
+           FBTest.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data);
+           return false;
+       }
+   }
+
+   if ( !(elt instanceof Element) )
+   {
+       FBTest.sysout("MutationRecognizer Node not an Element ", elt);
+       return false;
+   }
+
+   if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
+   {
+       FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), elt);
+       return false;
+   }
+
+   for (var p in this.attributes)
+   {
+       if (this.attributes.hasOwnProperty(p))
+       {
+           var eltP = elt.getAttribute(p);
+           if (!eltP)
+           {
+               FBTest.sysout("MutationRecognizer no attribute "+p);
+               return false;
+           }
+           if (this.attributes[p] != null)
+           {
+               if (p == 'class')
+               {
+                   if (eltP.indexOf(this.attributes[p]) < 0)
+                   {
+                       FBTest.sysout("MutationRecognizer no match for class "+this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class')+" indexOf: "+eltP.indexOf(this.attributes[p]));
+                       return false;
+                   }
+               }
+               else if (eltP != this.attributes[p])
+               {
+                   FBTest.sysout("MutationRecognizer no match for attribute "+p+": "+this.attributes[p]+" vs "+eltP);
+                   return false;
+               }
+           }
+       }
+   }
+
+   if (this.characterData)
+   {
+       if (elt.textContent.indexOf(this.characterData) < 0)
+       {
+           FBTest.sysout("MutationRecognizer no match for characterData "+this.characterData+" vs "+elt.textContent);
+           return false;
+       }
+   }
+   // tagName and all attributes match
+   FBTest.sysout("MutationRecognizer tagName and all attributes match "+elt, elt);
+   return true;
+}
+
+function MutationEventFilter(recognizer, handler)
+{
+   this.recognizer = recognizer;
+
+   this.winName = new String(window.location.toString());
+   var filter = this;
+   this.onMutateAttr = function handleAttrMatches(event)
+   {
+       if (window.closed)
+           throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
+
+       if (!recognizer.attributes)
+           return; // we don't care about attribute mutation
+
+       FBTest.sysout("onMutateAttr "+event.attrName+"=>"+event.newValue+" on "+event.target+" in "+event.target.ownerDocument.location, event.target);
+
+       // We care about some attribute mutation.
+       if (!recognizer.attributes.hasOwnProperty(event.attrName))
+       {
+           FBTest.sysout("onMutateAttr not interested in "+event.attrName+"=>"+event.newValue+" on "+event.target+" in "+event.target.ownerDocument.location, event.target);
+           return;  // but not the one that changed.
+       }
+
+       if (filter.checkElement(event.target))
+           handler(event.target);
+   }
+
+   // the matches() function could be tuned to each kind of mutation for improved efficiency
+   this.onMutateNode = function handleNodeMatches(event)
+   {
+       if (window.closed)
+           throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
+
+       FBTest.sysout("onMutateNode "+event.target+" in "+event.target.ownerDocument.location, event.target);
+
+       if (filter.checkElementDeep(event.target))
+           handler(event.target);
+   }
+
+   this.onMutateText = function handleTextMatches(event)
+   {
+       if (window.closed)
+           throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
+
+       if (!recognizer.characterData)
+           return; // we don't care about text
+
+       // We care about text and the text for this element mutated.  If it matches we must have hit.
+       FBTest.sysout("onMutateText =>"+event.newValue+" on "+event.target.ownerDocument.location, event.target);
+
+       if (filter.checkElement(event.target))  // target is CharacterData node
+           handler(event.target);
+   }
+
+   filter.checkElement = function(elt)
+   {
+       if (recognizer.matches(elt))
+       {
+           filter.unwatchWindow(recognizer.getWindow())
+           return true;
+       }
+       return false;
+   }
+
+   filter.checkElementDeep = function(elt)
+   {
+       if (filter.checkElement(elt))
+           return true;
+       else
+       {
+           var child = elt.firstChild;
+           for (; child; child = child.nextSibling)
+           {
+               if (this.checkElementDeep(child))
+                   return true;
+           }
+       }
+       return false;
+   }
+
+   filter.watchWindow(recognizer.win);
+}
+
+var filterInstance = 1;
+var activeFilters = {};
+MutationEventFilter.prototype.watchWindow = function(win)
+{
+    var doc = win.document;
+    doc.addEventListener("DOMAttrModified", this.onMutateAttr, false);
+    doc.addEventListener("DOMCharacterDataModified", this.onMutateText, false);
+    doc.addEventListener("DOMNodeInserted", this.onMutateNode, false);
+    // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
+
+    var filter = this;
+    filterInstance++;
+    activeFilters[filterInstance] = filter;
+    this.filterInstance = filterInstance;
+
+    filter.cleanUp = function(event) {
+        try
+        {
+            if (window.closed)
+            {
+                throw new Error("Filter cleanup in window.closed event.target:"+event.target);
+            }
+            FBTest.sysout("Filter.cleanup "+filter.filterInstance);
+            filter.unwatchWindow(win);
+            document.removeEventListener("FBTestCleanup", filter.cleanUp, true);
+        }
+        catch (e)
+        {
+          FBTest.sysout("Filter.cleanup FAILS "+e, e);
+        }
+    }
+    win.addEventListener("unload", filter.cleanUp, true);
+    window.addEventListener("unload", filter.cleanUp, true);
+    document.addEventListener("FBTestCleanup", filter.cleanUp, true);
+    //window.FBTest.progress("added MutationWatcher to "+doc.location+" and FBTestCleanup to "+document.location);
+    //window.FBTest.progress("added FBTestCleanup "+filterInstance+" to "+document.location);
+}
+
+MutationEventFilter.prototype.unwatchWindow = function(win)
+{
+    var doc = win.document;
+
+    doc.removeEventListener("DOMAttrModified", this.onMutateAttr, false);
+    doc.removeEventListener("DOMCharacterDataModified", this.onMutateText, false);
+    doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
+    win.removeEventListener("unload", this.cleanUp, true);
+    window.removeEventListener("unload", this.cleanUp, true);
+    window.FBTest.sysout("unwatchWindow removed MutationWatcher "+this.filterInstance+" from "+doc.location);
+    delete activeFilters[this.filterInstance];
+}
+
+
 var FBTestFirebug = function() {
 
 // ************************************************************************************************
@@ -520,42 +760,19 @@ this.getSourceLineNode = function(lineNo, chrome)
     return row;
 }
 
-this.waitForBreakInDebugger = function(callback) // TODO replace with listenForBreakpoint below
+this.waitForBreakInDebugger = function(chrome, callback) // TODO replace with listenForBreakpoint below
 {
-    var panel = FBTestFirebug.getSelectedPanel();
+    FBTest.progress("WaitForBreakInDebugger exeline true, meaning we stopped in "+chrome.window.location);
+
+    var panel = chrome.getSelectedPanel();
     var doc = panel.panelNode.ownerDocument; // panel.html
 
-    window.addEventListener("unload", function squeal()
+    var lookBP = new MutationRecognizer(doc.defaultView, 'div', {class: "sourceRow", exeline: "true"});
+
+    lookBP.onRecognize(function sawBP(elt)
     {
-        FBTest.sysout("xoxoxoxoxoxo test driver window unloaded oxoxoxoxoxox");
-    }, true);
-
-    FBTestFirebug.handleDOMAttrModified = function(event)
-    {
-        if (event.attrName == "exeline" && event.newValue == "true")
-        {
-            window.dump("window is "+(window.closed?"closed":window.location)+ "\n");
-
-            if (window.closed)
-                return;
-
-            doc.removeEventListener("DOMAttrModified", FBTestFirebug.handleDOMAttrModified, FBTestFirebug.handleDOMAttrModified.capturing);
-            window.FBTest.progress("Hit BP, exeline set, check exeline");
-            var panel = FBTestFirebug.getSelectedPanel();
-            FBTest.compare("script", panel.name, "The script panel should be selected");
-
-            callback();
-        }
-    }
-    FBTestFirebug.handleDOMAttrModified.capturing = false;
-    doc.addEventListener("DOMAttrModified", FBTestFirebug.handleDOMAttrModified, FBTestFirebug.handleDOMAttrModified.capturing);
-
-    doc.defaultView.addEventListener("unload", function cleanUp()
-    {
-        window.dump("clean up "+window.location+"\n");
-        doc.removeEventListener("DOMAttrModified", FBTestFirebug.handleDOMAttrModified, FBTestFirebug.handleDOMAttrModified.capturing);
-    }
-    , true);
+        callback();
+    });
 }
 
 this.listenForBreakpoint = function(chrome, lineNo, callback)
@@ -565,18 +782,9 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
     var panel = chrome.getSelectedPanel();
     var doc = panel.panelNode.ownerDocument; // panel.html
 
-    var hits = {};
-    function isBreakpointAttr(event)
-    {
-        FBTest.sysout("DOMAttrModified "+event.attrName+"="+event.newValue);
-        if (event.attrName == "breakpoint" && event.newValue == "true")
-            hits.breakpoint = true;
-        if (event.attrName == "exeline" && event.newValue == "true")
-            hits.exeline = true;
-        return (hits.breakpoint && hits.exeline);
-    }
+    var lookBP = new MutationRecognizer(doc.defaultView, 'div', {class: "sourceRow", exeline: "true", breakpoint: "true"});
 
-    function onBreakPoint(event)
+    lookBP.onRecognize(function sawBP(elt)
     {
         FBTest.progress("Hit BP, exeline set, check breakpoint");
         var panel = chrome.getSelectedPanel();
@@ -596,18 +804,9 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
         if (!FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set"))
             FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
-        FBTest.progress("Remove breakpoint");
-        var panel = chrome.getSelectedPanel();
-        panel.toggleBreakpoint(lineNo);
-
-        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
-        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set"))
-            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
-
         callback();
-    }
+    });
 
-    new FBTestFirebug.UntilHandler(doc, "DOMAttrModified", isBreakpointAttr, onBreakPoint, false);
 
 }
 
@@ -789,238 +988,6 @@ this.TestHandlers.prototype =
 
 // ************************************************************************************************
 };
-
- /*
-  * var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {class: "logRow-errorMessage"});
-
-    lookForLogRow.onRecognize(function sawLogRow(elt)
-    {
-        checkConsoleLogMessage(elt, titles[ith], sources[ith]);  // deeper analysis if needed
-        setTimeout(function bindArgs() { return fireTest(win, ith+1); }); // run next UI event on a new top level
-    });
-    // now fire a UI event
-  */
-var MutationRecognizer = function(win, tagName, attributes, text)
-{
-    this.win = win;
-    this.tagName = tagName;
-    this.attributes = attributes;
-    this.characterData = text;
-};
-
-MutationRecognizer.prototype.getDescription = function()
-{
-    var obj = { tagName: this.tagName, attributes: this.attributes, characterData: this.characterData};
-   return JSON.stringify(obj);
-};
-
-MutationRecognizer.prototype.onRecognize = function(handler)
-{
-    return new MutationEventFilter(this, handler);
-}
-MutationRecognizer.prototype.getWindow = function()
-{
-    return this.win;
-}
-
-MutationRecognizer.prototype.matches = function(elt)
-{
-    // Note Text nodes have no tagName
-    if (this.tagName == "Text")
-    {
-        if (elt.data.indexOf(this.characterData) != -1)
-        {
-            FBTest.sysout("MutationRecognizer matches Text character data "+this.characterData);
-            return true;
-        }
-        else
-        {
-            FBTest.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data);
-            return false;
-        }
-    }
-
-    if ( !(elt instanceof Element) )
-    {
-        FBTest.sysout("MutationRecognizer Node not an Element ", elt);
-        return false;
-    }
-
-    if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
-    {
-        FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), elt);
-        return false;
-    }
-
-    for (var p in this.attributes)
-    {
-        if (this.attributes.hasOwnProperty(p))
-        {
-            var eltP = elt.getAttribute(p);
-            if (!eltP)
-            {
-                FBTest.sysout("MutationRecognizer no attribute "+p);
-                return false;
-            }
-            if (this.attributes[p] != null)
-            {
-                if (p == 'class')
-                {
-                    if (eltP.indexOf(this.attributes[p]) < 0)
-                    {
-                        FBTest.sysout("MutationRecognizer no match for class "+this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class')+" indexOf: "+eltP.indexOf(this.attributes[p]));
-                        return false;
-                    }
-                }
-                else if (eltP != this.attributes[p])
-                {
-                    FBTest.sysout("MutationRecognizer no match for attribute "+p+": "+this.attributes[p]+" vs "+eltP);
-                    return false;
-                }
-            }
-        }
-    }
-
-    if (this.characterData)
-    {
-        if (elt.textContent.indexOf(this.characterData) < 0)
-        {
-            FBTest.sysout("MutationRecognizer no match for characterData "+this.characterData+" vs "+elt.textContent);
-            return false;
-        }
-    }
-    // tagName and all attributes match
-    FBTest.sysout("MutationRecognizer tagName and all attributes match");
-    return true;
-}
-
-function MutationEventFilter(recognizer, handler)
-{
-    this.recognizer = recognizer;
-    this.handler = handler;
-
-    this.winName = new String(window.location.toString());
-    var filter = this;
-    this.onMutateAttr = function handleAttrMatches(event)
-    {
-        if (window.closed)
-            throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
-
-        if (!recognizer.attributes)
-            return; // we don't care about attribute mutation
-
-        FBTest.sysout("onMutateAttr "+event.attrName+"=>"+event.newValue+" on "+event.target+" in "+event.target.ownerDocument.location);
-
-        if (filter.checkElement(event.target))
-            return;
-    }
-
-    // the matches() function could be tuned to each kind of mutation for improved efficiency
-    this.onMutateNode = function handleNodeMatches(event)
-    {
-        if (window.closed)
-            throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
-
-        FBTest.sysout("onMutateNode "+event.target+" in "+event.target.ownerDocument.location, event.target);
-
-        if (filter.checkElementDeep(event.target))
-            return;
-    }
-
-    this.onMutateText = function handleTextMatches(event)
-    {
-        if (window.closed)
-            throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
-
-        if (!recognizer.characterData)
-            return; // we don't care about text
-
-        FBTest.sysout("onMutateText =>"+event.newValue+" on "+event.target.ownerDocument.location);
-
-        if (filter.checkElement(event.target))  // target is CharacterData node
-            return;
-    }
-
-    filter.checkElement = function(elt)
-    {
-        if (recognizer.matches(elt))
-        {
-            filter.unwatchWindow(recognizer.getWindow())
-            handler(elt);
-            return true;
-        }
-        return false;
-    }
-
-    filter.checkElementDeep = function(elt)
-    {
-        if (filter.checkElement(elt))
-            return true;
-        else
-        {
-            var child = elt.firstChild;
-            for (; child; child = child.nextSibling)
-            {
-                if (this.checkElementDeep(child))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    filter.watchWindow(recognizer.win);
-}
-
-var filterInstance = 1;
-var activeFilters = {};
-MutationEventFilter.prototype.watchWindow = function(win)
-{
-     var doc = win.document;
-     doc.addEventListener("DOMAttrModified", this.onMutateAttr, false);
-     doc.addEventListener("DOMCharacterDataModified", this.onMutateText, false);
-     doc.addEventListener("DOMNodeInserted", this.onMutateNode, false);
-     // doc.addEventListener("DOMNodeRemoved", this.onMutateNode, false);
-
-     var filter = this;
-     filterInstance++;
-     activeFilters[filterInstance] = filter;
-     this.filterInstance = filterInstance;
-
-     filter.cleanUp = function(event) {
-         try
-         {
-             if (window.closed)
-             {
-                 throw new Error("Filter cleanup in window.closed event.target:"+event.target);
-             }
-             FBTest.sysout("Filter.cleanup "+filter.filterInstance);
-             filter.unwatchWindow(win);
-             document.removeEventListener("FBTestCleanup", filter.cleanUp, true);
-         }
-         catch (e)
-         {
-           FBTest.sysout("Filter.cleanup FAILS "+e, e);
-         }
-     }
-     win.addEventListener("unload", filter.cleanUp, true);
-     window.addEventListener("unload", filter.cleanUp, true);
-     document.addEventListener("FBTestCleanup", filter.cleanUp, true);
-     //window.FBTest.progress("added MutationWatcher to "+doc.location+" and FBTestCleanup to "+document.location);
-     //window.FBTest.progress("added FBTestCleanup "+filterInstance+" to "+document.location);
-}
-
-MutationEventFilter.prototype.unwatchWindow = function(win)
-{
-     var doc = win.document;
-
-     doc.removeEventListener("DOMAttrModified", this.onMutateAttr, false);
-     doc.removeEventListener("DOMCharacterDataModified", this.onMutateText, false);
-     doc.removeEventListener("DOMNodeInserted", this.onMutateNode, false);
-     win.removeEventListener("unload", this.cleanUp, true);
-     window.removeEventListener("unload", this.cleanUp, true);
-     window.FBTest.sysout("unwatchWindow removed MutationWatcher "+this.filterInstance+" from "+doc.location);
-     delete activeFilters[this.filterInstance];
-}
 
 // Initialization
 function initializeFBTestFirebug()

@@ -31,7 +31,7 @@ FBTestApp.TestRunner =
         // Update history
         FBTestApp.TestConsole.appendToHistory(null,
             FBTestApp.TestConsole.testCasePath,
-            FBTestApp.TestConsole.baseURI);
+            FBTestApp.TestConsole.driverBaseURI);
 
         tests = cloneArray(tests);
 
@@ -63,7 +63,7 @@ FBTestApp.TestRunner =
 
             // Start the test after the parent group is expanded so the row
             // exists and can reflect the UI state.
-            this.currentTest.onStartTest(FBTestApp.TestConsole.baseURI);
+            this.currentTest.onStartTest(FBTestApp.TestConsole.driverBaseURI);
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
@@ -371,7 +371,7 @@ FBTestApp.TestRunner =
 
         var wrapAJSFile = new String(this.wrapAJSFile);
         var temp = wrapAJSFile.replace("__TestDriverURL__", jsURL).
-            replace("__FBTestFirebugURL__", FBTestApp.TestConsole.baseURI + "FBTestFirebug.js");
+            replace("__FBTestFirebugURL__", FBTestApp.TestConsole.driverBaseURI + "FBTestFirebug.js");
 
         var testURL = getDataURLForContent(temp, jsURL);
         if (FBTrace.DBG_FBTEST)

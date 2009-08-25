@@ -74,6 +74,15 @@ function runTest()
 
                     FBTestFirebug.listenForBreakpoint(detachedFW.FirebugChrome, issue1483.lineNo, function closeOut()
                     {
+                        FBTest.progress("Remove breakpoint");
+                        var panel = detachedFW.FirebugChrome.getSelectedPanel();
+                        panel.toggleBreakpoint(lineNo);
+
+                        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+                        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set"))
+                            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
+
+
                         var canContinue = FBTestFirebug.clickContinueButton(false, detachedFW.FirebugChrome);
                         FBTest.ok(canContinue, "The continue button is pushed");
 
