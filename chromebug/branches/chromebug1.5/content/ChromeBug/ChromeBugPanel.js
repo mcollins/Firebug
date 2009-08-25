@@ -467,11 +467,11 @@ Firebug.Chromebug = extend(Firebug.Module,
              outerDOMWindow.addEventListener("DOMContentLoaded", Firebug.Chromebug.stateReloader, true);
 
          // 'true' for capturing, so all of the sub-window loads also trigger
-         var handler = context.getLoadHandler();
-         outerDOMWindow.addEventListener("DOMContentLoaded", bind(handler, context), true);
+         context.onLoad = bind(context.loadHandler, context);
+         outerDOMWindow.addEventListener("DOMContentLoaded", context.onLoad, true);
 
-         var handler = context.getUnloadHandler();
-         outerDOMWindow.addEventListener("unload", bind(handler, context), false);
+         context.onUnload = bind(context.unloadHandler, context)
+         outerDOMWindow.addEventListener("unload", context.onUnload, true);
 
          outerDOMWindow.addEventListener("keypress", bind(Chromebug.XULAppModule.keypressToBreakIntoWindow, this, context), true);
         }
@@ -966,7 +966,7 @@ FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+con
     unwatchWindow: function(context, win)
     {
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromeBugPanel.unwatchWindow NOOP for context:"+context.uid+" isChromeBug:"+context.isChromeBug+"\n");
+            FBTrace.sysout("ChromeBugPanel.unwatchWindow for context:"+context.getName()+"(uid="+context.uid+") isChromeBug:"+context.isChromeBug+"\n");
 
     },
 
@@ -979,7 +979,7 @@ FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+con
         Chromebug.globalScopeInfos.destroy(context);
 
         var currectSelection = Chromebug.contextList.getCurrentLocation();
-        if (currentSelection == context)
+        if ((currentSelection && currentSelection == context) || (!currentSelection) )
         {
          // Pick a new context to be selected.
             var contexts = TabWatcher.contexts;

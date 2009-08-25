@@ -55,56 +55,58 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
     },
     // *************************************************************************************************
 
-    getLoadHandler: function()
+    loadHandler: function(event)  // this is bound to a XULWindow's outerDOMWindow (only)
     {
-        return function loadHandler(event)  // this is bound to a XULWindow's outerDOMWindow (only)
+        // We've just loaded all of the content for an outer nsIDOMWindow for a XUL window. We need to create a context for it.
+        var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
+        var domWindow = event.target.defaultView;
+
+        if (domWindow == outerDOMWindow)
         {
-            // We've just loaded all of the content for an outer nsIDOMWindow for a XUL window. We need to create a context for it.
-            var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
-            var domWindow = event.target.defaultView;
-
-            if (domWindow == outerDOMWindow)
-            {
-                var oldName = this.getName();
-                delete this.name; // remove the cache
-
-                if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location+" tried context rename: "+oldName+" -> "+this.getName());
-                return;
-            }
+            var oldName = this.getName();
+            delete this.name; // remove the cache
 
             if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
-
-            var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
-            if (context)
-            {
-                // then we had one, say from a Frame
-                var oldName = context.getName();
-                delete context.name;
-                 if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
-                 if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
-                Chromebug.globalScopeInfos.remove(context.globalScope);
-            }
-            else
-            {
-                var context = Firebug.Chromebug.getOrCreateContext(domWindow); // subwindow
-                if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
-            }
-            var gs = new Chromebug.ContainedDocument(context.xul_window, context);
-            Chromebug.globalScopeInfos.add(context, gs);
+                FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location+" tried context rename: "+oldName+" -> "+this.getName());
+            return;
         }
+
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
+
+        var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
+        if (context)
+        {
+            // then we had one, say from a Frame
+            var oldName = context.getName();
+            delete context.name;
+             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
+             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
+            Chromebug.globalScopeInfos.remove(context.globalScope);
+        }
+        else
+        {
+            var context = Firebug.Chromebug.getOrCreateContext(domWindow); // subwindow
+
+            if (!context.onUnload)
+                context.onUnload = bind(context.unloadHandler, context)
+            domWindow.addEventListener("unload", context.onUnload, true);
+
+            if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
+        }
+        var gs = new Chromebug.ContainedDocument(context.xul_window, context);
+        Chromebug.globalScopeInfos.add(context, gs);
     },
 
-    getUnloadHandler: function()
+    unloadHandler: function(event)
     {
-        return function unloadeHandler(event)
+        try
         {
             FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location, event);
             var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
             var domWindow = event.target.defaultView;
 
-             if (!domWindow)
+            if (!domWindow)
             {
                 FBTrace.sysout("ChromeBug unloadHandler found no DOMWindow for event.target", event.target);
                 return;
@@ -123,8 +125,13 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 Chromebug.globalScopeInfos.remove(context.globalScope);
             }
             else
+            {
                 FBTrace.sysout("ChromeBug unloadHandler found no context for domWindow:"+domWindow.location);
-            return;
+            }
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("domwindowContext.unloadHandler FAILS "+exc, exc);
         }
     },
 
