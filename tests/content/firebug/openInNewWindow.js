@@ -74,12 +74,15 @@ function runTest()
 
                     FBTestFirebug.listenForBreakpoint(detachedFW.FirebugChrome, issue1483.lineNo, function closeOut()
                     {
-                        FBTest.progress("Remove breakpoint");
+                        FBTest.progress("Remove breakpoint from "+detachedFW.location);
                         var panel = detachedFW.FirebugChrome.getSelectedPanel();
-                        panel.toggleBreakpoint(lineNo);
+                        FBTest.progress("Remove breakpoint by toggle, from selected panel "+panel.name);
+                        panel.toggleBreakpoint(issue1483.lineNo);
 
-                        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
-                        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ lineNo+" should NOT have a breakpoint set"))
+                        FBTest.progress("Removed breakpoint from selected panel "+panel.name);
+                        var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo, detachedFW.FirebugChrome);
+
+                        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ issue1483.lineNo+" should NOT have a breakpoint set"))
                             FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
 
