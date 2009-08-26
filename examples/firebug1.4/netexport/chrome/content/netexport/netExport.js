@@ -377,7 +377,8 @@ JSONBuilder.prototype =
     buildContent: function(file)
     {
         var content = {};
-        content.size = file.responseText ? file.responseText.length : file.size;
+        content.size = file.responseText ? file.responseText.length :
+            (file.size >= 0 ? file.size : 0);
 
         try
         {
