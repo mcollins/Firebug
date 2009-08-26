@@ -18,7 +18,7 @@ function fireTest(win, ith)
     var buttons = ["syntaxError", "shallowError", "deepError", "throw", "uncaughtException1891"];
     var titles = ["missing ; before statement", "foops is not defined",
                   "B3 is not defined", "uncaught exception: hi", 'String contains an invalid character"  code: "5'];
-    var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();\\r\\n", "", ""];
+    var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();\n", "", ""];
 
     if (ith >= buttons.length)
     {
@@ -50,5 +50,26 @@ function checkConsoleLogMessage(button, log, expectedTitle, expectedSource)
 
     FBTest.compare(expectedTitle, title.textContent, "The "+button+" error message must be correct.");
     if (expectedSource)
-        FBTest.compare(expectedSource, source.textContent, "The "+button+" error source must be correct.");
+    {
+        var isCorrect = FBTest.compare(expectedSource, source.textContent, "The "+button+" error source must be correct.");
+        if (!isCorrect)
+        {
+            var min = expectedSource.length < source.textContent.length ? expectedSource.length : source.textContent.length;
+            for (var i = 0; i < min; i++)
+            {
+                var expected = expectedSource.charAt(i);
+                var was = source.textContent.charAt(i);
+                if (expected != was) FBTest.progress(" source differs at "+i+" |"+expected+"| vs |"+was+"|");
+            }
+
+            if (expectedSource.length < source.textContent.length)
+                FBTest.progress("The error source has "+source.textContent.length+" characters, next charCodeAt is |"+source.textContent.charAt(min)+"|("+source.textContent.charCodeAt(min)+")");
+            if (expectedSource.length > source.textContent.length)
+                FBTest.progress("The expected source has "+expectedSource.length+" characters, next charCodeAt is |"+expectedSource.charAt(min)+"|("+expectedSource.charCodeAt(min)+")");
+
+        }
+        else
+            FBTest.progress("expectedSource is correct");
+    }
+
 }
