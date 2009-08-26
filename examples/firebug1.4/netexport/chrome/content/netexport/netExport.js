@@ -134,20 +134,14 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
                 .createInstance(Ci.nsIFileOutputStream);
             foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
 
-            var conv = CCSV("@mozilla.org/intl/scriptableunicodeconverter",
-                "nsIScriptableUnicodeConverter");
-
-            // Convert using the current page charset. 
             var doc = context.window.document;
-            conv.charset = doc.characterSet ? doc.characterSet : "UTF-8";
-            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("netexport.exportData; Convert output from " + conv.charset);
-
-            var data = conv.ConvertFromUnicode(jsonString);
+            var convertor = Cc["@mozilla.org/intl/converter-output-stream;1"]
+                .createInstance(Ci.nsIConverterOutputStream);
 
             // Write JSON data.
-            foStream.write(data, data.length);
-            foStream.close();
+            convertor.init(foStream, "UTF-8", 0, 0);
+            convertor.writeString(jsonString);
+            convertor.close(); // this closes foStream
 
             return true;
         }
