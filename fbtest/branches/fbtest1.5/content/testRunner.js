@@ -269,11 +269,8 @@ FBTestApp.TestRunner =
         var testDoc = event.target;
         var win = testDoc.defaultView;
 
-        // Helper wrapper for all FBTest APIs to reset the timeout timer.
-        var fbTestWrapper = new FBTestApp.FBTestWrapper(win);
-
         // Inject FBTest object into the test page.
-        win.FBTest = fbTestWrapper;
+        win.FBTest = FBTestApp.FBTest;
 
         // As soon as the window is loaded, execute a "runTest" method, that must be
         // implemented within the test file.
@@ -282,6 +279,7 @@ FBTestApp.TestRunner =
 
     runTestCase: function(event)
     {
+        FBTrace.sysout("testRunner driverBaseURI:"+FBTestApp.TestConsole.driverBaseURI+" testCasePath: "+FBTestApp.TestConsole.testCasePath)
         var testDoc = event.target;
         var win = testDoc.defaultView;
 
@@ -334,7 +332,7 @@ FBTestApp.TestRunner =
 
         // Use test timeout from the test driver window if any. This is how
         // a test can override the default value.
-        if (typeof(win.FBTestTimeout) != "undefined")
+        if (win && typeof(win.FBTestTimeout) != "undefined")
             FBTestApp.FBTest.testTimeout = win.FBTestTimeout;
 
         this.testTimeoutID = window.setTimeout(function()

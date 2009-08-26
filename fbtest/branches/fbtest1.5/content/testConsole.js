@@ -287,7 +287,7 @@ FBTestApp.TestConsole =
                 {
                     // If the driverBaseURI isn't provided use the directory where testList.html
                     // file is located.
-                    self.driverBaseURI = testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
+                    self.driverBaseURI = "https://getfirebug.com/tests/content/"; //testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
                 }
 
                 if (win.serverURI)
@@ -651,6 +651,7 @@ var FBTest = FBTestApp.FBTest =
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
         FBTestApp.TestSummary.setMessage(msg);
         FBTest.sysout("FBTest progress: ------------- "+msg+" -------------");
+        FBTestApp.TestRunner.setTestTimeout();
     },
 
     ok: function(pass, msg)
@@ -664,6 +665,8 @@ var FBTest = FBTestApp.FBTest =
 
         if (!pass)
             this.onFailure(msg);
+        else
+            FBTestApp.TestRunner.setTestTimeout();
 
         return pass;
     },
@@ -675,6 +678,9 @@ var FBTest = FBTestApp.FBTest =
             expected == actual, msg, expected, actual));
         if (expected != actual)
             FBTest.onFailure(msg);
+        else
+            FBTestApp.TestRunner.setTestTimeout();
+
         return (expected == actual);
     },
 
@@ -817,38 +823,6 @@ var FBTest = FBTestApp.FBTest =
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestException(window, msg, err));
     }
 };
-
-// ************************************************************************************************
-
-/**
- * Helper wrapper for FBTest API object. When a test calls any of the FBTest
- * APIs the test timout is re-executed since we know that the test is still alive.
- * This wrapper is passed into the test scope as a proxy to the original object.
- */
-FBTestApp.FBTestWrapper = function(win)
-{
-    var original = FBTestApp.FBTest;
-    var reseters = ['ok', 'compare', 'progress'];
-    for (prop in original)
-    {
-        var obj = original[prop];
-        if (reseters.indexOf(prop) != -1 && obj instanceof Function)
-        {
-            // Make sure the scope is correct (double function)
-            var wrapper = function(funcName) {
-                return function() {
-                    FBTestApp.TestRunner.setTestTimeout(win);
-                    return original[funcName].apply(original, arguments);
-                }
-            };
-            this[prop] = wrapper(prop);
-        }
-        else
-        {
-            this[prop] = obj;
-        }
-    }
-}
 
 // ************************************************************************************************
 }});
