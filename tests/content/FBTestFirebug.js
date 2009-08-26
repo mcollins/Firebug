@@ -74,7 +74,7 @@ MutationRecognizer.prototype.matches = function(elt)
            var eltP = elt.getAttribute(p);
            if (!eltP)
            {
-               FBTest.sysout("MutationRecognizer no attribute "+p);
+               FBTest.sysout("MutationRecognizer no attribute "+p+" in "+FW.FBL.getElementHTML(elt), elt);
                return false;
            }
            if (this.attributes[p] != null)
@@ -425,6 +425,7 @@ this.reload = function(callback)
     var onLoadURL = function(event)
     {
         browser.removeEventListener("load", onLoadURL, true);
+
         setTimeout(function()
         {
             var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
@@ -435,6 +436,7 @@ this.reload = function(callback)
                 win.wrappedJSObject = win;
             callback(win);
         }, 10);
+
     }
     browser.addEventListener("load", onLoadURL, true);
 
@@ -802,9 +804,16 @@ this.listenForBreakpoint = function(chrome, lineNo, callback)
 
         var bp = row.getAttribute('breakpoint');
         if (!FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set"))
-            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
+            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row);
 
-        callback();
+        try
+        {
+            callback();
+        }
+        catch(exc)
+        {
+            FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
+        }
     });
 
 
