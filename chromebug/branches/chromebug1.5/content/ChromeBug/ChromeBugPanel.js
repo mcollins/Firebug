@@ -520,8 +520,9 @@ Firebug.Chromebug = extend(Firebug.Module,
     selectContext: function(context)  // this operation is similar to a user picking a tab in Firefox, but for chromebug
     {
         Firebug.Chromebug.selectBrowser(context.browser);
-FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+context.window);
-        if (context.window && context.window instanceof Ci.nsIDOMWindow)
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+context.window);
+        if (context.window && context.window instanceof Ci.nsIDOMWindow && !context.window.closed)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
         Firebug.showContext(context.browser, context);  // sets FirebugContext and syncs the tool bar
