@@ -64,22 +64,26 @@ var ChromeBugOverrides = {
         {
             if (!parentNode.localName)
             {
-                if (FBTrace.DBG_HTML) FBTrace.sysout("ChromeBugPanel.getParentObject null localName must be window\n");
+                if (FBTrace.DBG_HTML)
+                    FBTrace.sysout("ChromeBugPanel.getParentObject null localName must be window\n");
                 return null;
             }
-            if (FBTrace.DBG_HTML) FBTrace.sysout("ChromeBugPanel.getParentObject if(parentNode):"+(parentNode?parentNode.localName:"null-or-false")+"\n");
+            if (FBTrace.DBG_HTML)
+                FBTrace.sysout("ChromeBugPanel.getParentObject if(parentNode):"+(parentNode?parentNode.localName:"null-or-false")+"\n");
             if (parentNode.nodeType == 9) // then parentNode is Document element
             {
                 if (this.embeddedBrowserParents)
                 {
                     var skipParent = this.embeddedBrowserParents[node];  // better be HTML element, could be iframe
-                    if (FBTrace.DBG_HTML) FBTrace.sysout("ChromeBugPanel.getParentObject skipParent:"+(skipParent?skipParent.localName:"none")+"\n");                  /*@explore*/
+                    if (FBTrace.DBG_HTML)
+                        FBTrace.sysout("ChromeBugPanel.getParentObject skipParent:"+(skipParent?skipParent.localName:"none")+"\n");                  /*@explore*/
                     if (skipParent)
                         return skipParent;
                 }
                 if (parentNode.defaultView)
                 {
-                    if (FBTrace.DBG_HTML) FBTrace.sysout("ChromeBugPanel.getParentObject parentNode.nodeType 9, frameElement:"+parentNode.defaultView.frameElement+"\n");                  /*@explore*/
+                    if (FBTrace.DBG_HTML)
+                        FBTrace.sysout("ChromeBugPanel.getParentObject parentNode.nodeType 9, frameElement:"+parentNode.defaultView.frameElement+"\n");                  /*@explore*/
                     return parentNode.defaultView.frameElement;
                 }
                 else // parent is document element, but no window at defaultView.

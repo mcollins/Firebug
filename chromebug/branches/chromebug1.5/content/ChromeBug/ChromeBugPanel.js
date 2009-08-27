@@ -980,6 +980,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Chromebug.globalScopeInfos.destroy(context);
 
         var currectSelection = Chromebug.contextList.getCurrentLocation();
+
         if ((currentSelection && currentSelection == context) || (!currentSelection) )
         {
          // Pick a new context to be selected.
