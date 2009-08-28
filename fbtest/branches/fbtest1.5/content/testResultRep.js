@@ -434,9 +434,6 @@ FBTestApp.TestResultTabView = domplate(
 
     updateTabBody: function(viewBody, tabName)
     {
-        if (FBTrace.DBG_FBTRACE)
-            FBTrace.sysout("test.TestResultRep.onUpdateTabBody: " + tabName);
-
         var tab = viewBody.selectedTab;
         var infoRow = getAncestorByClass(viewBody, "testResultInfoRow");
         var result = infoRow.repObject;
