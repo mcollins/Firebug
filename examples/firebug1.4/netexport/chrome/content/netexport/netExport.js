@@ -428,7 +428,7 @@ JSONBuilder.prototype =
         if (file.sendingTime)
             timings.send = file.sendingTime - file.startTime - timings.connect - timings.dns;
         else
-            timings.send = -1;
+            timings.send = 0;   //  Waiting for activity observer.
  
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
