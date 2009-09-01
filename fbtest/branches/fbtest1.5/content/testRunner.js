@@ -499,6 +499,12 @@ FBTestApp.TestSummary =
         $("passingTests").value = "";
         $("failingTests").value = "";
         $("progressMessage").value = "";
+    },
+
+    dumpSummary: function()
+    {
+        FBTestApp.FBTest.sysout("Passed: " + this.passingTests.passing);
+        FBTestApp.FBTest.sysout("Failed: " + this.passingTests.failing);
     }
 }
 

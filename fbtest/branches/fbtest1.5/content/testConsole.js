@@ -413,14 +413,14 @@ FBTestApp.TestConsole =
                         FBTestApp.defaultTest);
 
                 if (test)
-                    FBTestApp.TestRunner.runTests([test]);
+                    FBTestApp.TestRunner.runTests([test], goQuitApplication);
             }
             else
             {
                 FBTestApp.TestConsole.onRunAll(function(canceled)
                 {
-                    var allPassed = FBTestApp.TestSummary.passingTests.failing == 0;
-                    if (!canceled && allPassed)
+                    FBTestApp.TestSummary.dumpSummary();
+                    if (!canceled)
                         goQuitApplication();
                 });
             }
@@ -657,9 +657,9 @@ var FBTest = FBTestApp.FBTest =
     ok: function(pass, msg)
     {
         if (!pass)
-            FBTest.sysout("FBTest **** FAILS **** "+msg);
+            FBTest.sysout("FBTest **** FAILS **** " + msg);
         else
-            FBTest.sysout("FBTest ok "+msg);
+            FBTest.sysout("FBTest ok " + msg);
 
         FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, pass, msg));
 
