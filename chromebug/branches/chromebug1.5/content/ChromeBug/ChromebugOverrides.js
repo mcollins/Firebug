@@ -137,12 +137,14 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
                 {
                     if (node.__walkingAnonymousChildren) // then we are done walking anonymous
                     {
-                        FBTrace.sysout("ChromeBugPanel.getChildObject done anonymous \n");
+                        if (FBTrace.DBG_HTML)
+                            FBTrace.sysout("ChromeBugPanel.getChildObject done anonymous \n");
                         delete node.__walkingAnonymousChildren;
                     }
                     else
                     {
-                        FBTrace.sysout("ChromeBugPanel.getChildObject starting on anonymous "+anonymousChildren.length+"\n");
+                        if (FBTrace.DBG_HTML)
+                            FBTrace.sysout("ChromeBugPanel.getChildObject starting on anonymous "+anonymousChildren.length+"\n");
                         node.__walkingAnonymousChildren = true;
                         return echo(header, anonymousChildren[0]);
                     }
