@@ -8,6 +8,11 @@ function getDriverBaseURI()
 
 window.addEventListener("load", function showPage()
 {
+    // If the file is loaded into the Firebug test console don't 
+    // generate the web UI. 
+    if (document.getElementById("testList"))
+        return;
+
     var d = document.getElementById("driverURI");
     if (d)
         d.innerHTML = driverBaseURI;
@@ -16,7 +21,7 @@ window.addEventListener("load", function showPage()
     if (t)
         t.innerHTML = serverURI;
 
-    var cases = document.getElementById("testList");
+    var cases = document.getElementById("tests");
     var currentGroup = null;
     for(var i = 0; i < testList.length; i++)
     {
