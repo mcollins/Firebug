@@ -1,11 +1,18 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
 <html>
 <head>
+    <title>Firebug 1.5 Test List</title>
     <script type="text/javascript" src="testListUtils.js"></script>
+    <link rel="stylesheet" href="testList.css" type="text/css"/>
 </head>
 <body>
+<h1>Firebug 1.5 Test List</h1>
+<div><span>Test driver base URI: </span><span id="driverURI"></span></div>
+<div<span>Test case base URI: </span><span id="testcaseURI"></span></div>
+<h2>Test Groups</h2>
+<div id="testList"></div>
+
 <script type="text/javascript">
 /**
  * Root directory of the test tree. If it's empty, the parent directory of this file
@@ -78,12 +85,6 @@ var testList = [
     {group: "examples", uri: "examples/exampleNetTest.js",             desc: "Example of a Net panel test." },
 ];
 </script>
-
-<h1>Firebug 1.5 Test List</h1>
-<div><span>Test driver base URI: </span><span id="driverURI"></span></div>
-<div<span>Test case base URI: </span><span id="testcaseURI"></span></div>
-<h2>Tests</h2>
-<div id="testList"></div>
 
 </body>
 </html>
