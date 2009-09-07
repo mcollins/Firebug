@@ -25,7 +25,7 @@ window.addEventListener("load", function showPage()
         {
             currentGroup = testCase.group;
             var h3 = document.createElement('h3');
-            h3.innerHTML = currentGroup;
+            h3.innerHTML = currentGroup.charAt(0).toUpperCase() + currentGroup.substr(1).toLowerCase();
             cases.appendChild(h3);
         }
         var entry = document.createElement('div');
