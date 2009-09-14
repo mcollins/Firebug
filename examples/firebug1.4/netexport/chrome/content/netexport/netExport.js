@@ -394,10 +394,11 @@ JSONBuilder.prototype =
 
     buildCache: function(file)
     {
-        if (!file.fromCache)
-            return;
-
         var cache = {};
+
+        if (!file.fromCache)
+            return cache;
+
         //cache.beforeRequest = {}; //xxxHonza: There is no such info yet in the Net panel.
 
         if (file.cacheEntry)
