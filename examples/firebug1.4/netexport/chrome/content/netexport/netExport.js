@@ -614,8 +614,12 @@ function dateToJSON(date)
         f(date.getSeconds()) + '.' +
         f(date.getMilliseconds(), 3);
 
-    var offset = date.getTimezoneOffset()/60;
-    var prettyOffset = (offset > 0 ? "-" : "+") + f(Math.abs(offset)) + ":00";
+    var offset = date.getTimezoneOffset();
+    var offsetHours = Math.floor(offset / 60);
+    var offsetMinutes = Math.floor(offset % 60);
+    var prettyOffset = (offset > 0 ? "-" : "+") +
+        f(Math.abs(offsetHours)) + ":" + f(Math.abs(offsetMinutes));
+
     return result + prettyOffset;
 }
 
