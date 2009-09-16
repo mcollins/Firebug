@@ -387,8 +387,6 @@ JSONBuilder.prototype =
                 FBTrace.sysout("netexport.buildContent EXCEPTION", e);
         }
 
-        content.encodingScheme = ""; //xxxHonza
-
         if (file.responseText)
             content.text = file.responseText;
 
@@ -416,7 +414,6 @@ JSONBuilder.prototype =
     {
         var cache = {};
         cache.expires = findHeader(cacheEntry, "Expires");
-        cache.lastModification = findHeader(cacheEntry, "Last Modified");
         cache.lastAccess = findHeader(cacheEntry, "Last Fetched");
         cache.eTag = ""; //xxxHonza
         cache.hitCount = findHeader(cacheEntry, "Fetch Count");
