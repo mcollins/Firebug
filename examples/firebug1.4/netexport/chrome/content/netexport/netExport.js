@@ -254,7 +254,7 @@ JSONBuilder.prototype =
         if (!file.postText)
             return;
 
-        var postData = {mimeType: "", text: "", params: {}};
+        var postData = {mimeType: "", text: "", params: []};
 
         var text = file.postText;
         if (isURLEncodedFile(file, text))
@@ -267,7 +267,10 @@ JSONBuilder.prototype =
         {
             postData.text = text;
         }
-        
+
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.buildPostData; ", postData);
+
         return postData;
     },
 
