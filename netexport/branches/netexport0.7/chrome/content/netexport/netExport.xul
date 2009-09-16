@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
+    <script src="chrome://netexport/content/json2.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/netExport.js" type="application/x-javascript"/>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_netExport" oncommand="Firebug.NetMonitorSerializer.exportData(FirebugContext)"/>
+        <command id="cmd_netImport" oncommand="Firebug.NetMonitorSerializer.importData(FirebugContext)"/>
+    </commandset>
+
+    <toolbar id="fbToolbar" align="center" role="toolbar">
+        <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
+            <hbox id="fbNetButtons" collapsed="true">
+                <hbox id="fbNetButtonsFilter" class="noTabStop">
+                    <toolbarbutton label="Export" class="toolbar-text-button"
+                        insertbefore="fbNetFilter-all"
+                        tooltiptext="Export HTTP Tracing" command="cmd_netExport"/>
+                    <!--<toolbarbutton label="Import" class="toolbar-text-button"
+                        insertbefore="fbNetFilter-all"
+                        tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>-->
+                    <toolbarseparator insertbefore="fbNetFilter-all"/>
+                </hbox>
+            </hbox>
+        </hbox>
+    </toolbar>
+</overlay>
