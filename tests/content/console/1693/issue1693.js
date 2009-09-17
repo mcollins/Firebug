@@ -30,7 +30,7 @@ function runTest()
 
                 // Get response body element and check its content. Note that the displayed text
                 // is limited in case of large responses.
-                var limit = FBTestFirebug.getPref("net.displayedResponseLimit");
+                var limit = FBTestFirebug.getPref("netDisplayedResponseLimit");
                 var responseBody = FW.FBL.getElementsByClass(panelNode,
                     "netInfoResponseText", "netInfoText");
 
