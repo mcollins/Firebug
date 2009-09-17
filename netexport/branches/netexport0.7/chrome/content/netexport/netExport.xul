@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<?xml-stylesheet href="chrome://netexport/content/bindings.css"?>
+
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
     <script src="chrome://netexport/content/json2.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/netExport.js" type="application/x-javascript"/>
@@ -12,9 +16,20 @@
         <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
             <hbox id="fbNetButtons" collapsed="true">
                 <hbox id="fbNetButtonsFilter" class="noTabStop">
-                    <toolbarbutton label="Export" class="toolbar-text-button"
-                        insertbefore="fbNetFilter-all"
-                        tooltiptext="Export HTTP Tracing" command="cmd_netExport"/>
+                    <toolbarbutton id="netExport" type="menu-button"
+                        class="toolbar-text-button fbmenubutton"
+                        insertbefore="fbNetFilter-all" command="cmd_netExport"
+                        label="netexport.button.label.Export"
+                        buttontooltiptext="netexport.button.tooltip.Export HTTP Tracing"
+                        tooltiptext="netexport.menu.tooltip.Export Options">
+                        <menupopup>
+                            <menuitem id="netExportCompress" type="checkbox"
+                                label="netexport.menu.label.Compress" 
+                                tooltiptext="netexport.menu.tooltip.Compress Exported Data"
+                                oncommand="Firebug.NetMonitorSerializer.onToggleOption(event, this)"
+                                option="netexport.compress"/>
+                        </menupopup>
+                    </toolbarbutton>
                     <!--<toolbarbutton label="Import" class="toolbar-text-button"
                         insertbefore="fbNetFilter-all"
                         tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>-->

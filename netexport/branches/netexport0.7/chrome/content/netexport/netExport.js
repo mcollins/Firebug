@@ -28,6 +28,21 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         Firebug.Module.shutdown.apply(this, arguments);
     },
 
+    internationalizeUI: function(doc)
+    {
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.internationalizeUI");
+
+        var elements = ["netExport", "netExportCompress"];
+        for (var i=0; i<elements.length; i++)
+        {
+            var element = $(elements[i], doc);
+            FBL.internationalize(element, "label");
+            FBL.internationalize(element, "tooltiptext");
+            FBL.internationalize(element, "buttontooltiptext");
+        }
+    },
+
     // Handle Export toolbar button.
     exportData: function(context)
     {
@@ -107,7 +122,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
 
             if (!jsonData.log.entries.length)
             {
-                alert($STR("Nothing to export"));
+                alert($STR("netexport.message.Nothing to export"));
                 return null;
             }
 
@@ -151,6 +166,15 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         }
 
         return false;
+    },
+
+    onToggleOption: function(event, menuitem)
+    {
+        FirebugChrome.onToggleOption(menuitem);
+
+        // Don't bubble up so, the main command (executed when the menu-button
+        // iself is pressed) is not fired.
+        cancelEvent(event);
     }
 });
 
@@ -626,6 +650,7 @@ function dateToJSON(date)
 // ************************************************************************************************
 // Registration
 
+Firebug.registerStringBundle("chrome://netexport/locale/netExport.properties");
 Firebug.registerModule(Firebug.NetMonitorSerializer);
 
 // ************************************************************************************************
