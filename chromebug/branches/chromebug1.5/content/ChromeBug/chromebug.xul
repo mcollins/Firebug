@@ -48,6 +48,9 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabContext.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabCache.js"/>
+
+    <script type="application/x-javascript" src="chrome://fb4cb/content/lib/htmlLib.js"/>
+
     <script type="application/x-javascript" src="chrome://fb4cb/content/reps.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/editor.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/infotip.js"/>
