@@ -770,9 +770,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("initializeDebugger start, enabled: "+fbs.enabled+" ******************************\n");
 
-        // we are not going to count down the contexts, just leave it at one
-        fbs.countContext(true); // connect to firebug-service
-
         Firebug.Debugger.isChromeDebugger = true;
         Firebug.Debugger.wrappedJSObject = Firebug.Debugger;
         Firebug.Debugger.addListener(this);
