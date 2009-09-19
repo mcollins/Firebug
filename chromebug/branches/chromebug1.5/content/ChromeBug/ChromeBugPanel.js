@@ -52,7 +52,6 @@ const prefs = PrefService.getService(nsIPrefBranch2);
 const nsIPrefService = Components.interfaces.nsIPrefService;
 const prefService = PrefService.getService(nsIPrefService);
 
-const reChromeBug = /^chrome:\/\/chromebug\//;
 const reComponents = /:\/(.*)\/components\//; // chrome:/ or file:/
 const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
 const reResource = /resource:\/\/([^\/]*)\//;
@@ -519,6 +518,9 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     selectContext: function(context)  // this operation is similar to a user picking a tab in Firefox, but for chromebug
     {
+        if (!context)
+            return;
+
         Firebug.Chromebug.selectBrowser(context.browser);
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+context.window);
@@ -610,7 +612,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         window.addEventListener("unload", function whyIsThis(event)
         {
-            FBTrace.sysout(window.location+ " unload "+getStackDump(), event);
+            FBTrace.sysout("unloading " + window.location, getStackDump());
         }, true);
     },
 
@@ -803,8 +805,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_CHROMEBUG)
              FBTrace.sysout("Firebug.Chromebug.shutdown set prefs w,h="+window.outerWidth+","+window.outerHeight+")\n");
 
-
-
         window.dump(window.location+ " shutdown:\n "+getStackDump());
 
         Firebug.shutdown();
@@ -952,7 +952,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         else
         {
-            FBTrace.sysout("!!!! CONTEXT IS NULL !!!!!!");
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("!!!! CONTEXT IS NULL !!!!!!");
             this.setStatusText("context (>> unset << )/"+this.contexts.length);
         }
     },
@@ -979,15 +980,17 @@ Firebug.Chromebug = extend(Firebug.Module,
         Chromebug.packageList.deleteContext(context);
         Chromebug.globalScopeInfos.destroy(context);
 
-        var currectSelection = Chromebug.contextList.getCurrentLocation();
+        var currentSelection = Chromebug.contextList.getCurrentLocation();
 
         if ((currentSelection && currentSelection == context) || (!currentSelection) )
         {
          // Pick a new context to be selected.
             var contexts = TabWatcher.contexts;
-            for (var i = contexts.length; i--; i)
+            for (var i = contexts.length; i; i--)
             {
                 nextContext = contexts[i - 1];
+                if (!nextContext)
+                    FBTrace.sysout("Chromebug destroycontext TabWatcher.contexts has an undefined value at i-1 "+(i-1)+"/"+TabWatcher.contexts.length);
                 if (nextContext.window && nextContext.window.closed)
                     continue;
                 if (nextContext != context)

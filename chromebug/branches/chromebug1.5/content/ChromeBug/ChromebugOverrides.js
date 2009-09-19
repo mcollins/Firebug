@@ -19,7 +19,8 @@ var ChromeBugOverrides = {
         window.document.title = "ChromeBug";
         if (window.Application)
             window.document.title += " in " + Application.name + " " +Application.version;
-        FBTrace.sysout("Chromebug syncTitle"+window.document.title+"\n");
+        if(FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("Chromebug syncTitle "+window.document.title+"\n");
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -326,13 +327,15 @@ var header = "ChromeBugPanel.getChildObject, node:"+node.localName+" index="+ind
     suspendFirebug: function()
     {
         // TODO if possible.
-        FBTrace.sysout("ChromebugPanel.suspendFirebug\n");
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("ChromebugPanel.suspendFirebug\n");
     },
 
     resumeFirebug: function()
     {
         // TODO if possible.
-        FBTrace.sysout("ChromebugPanel.resumeFirebug\n");
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("ChromebugPanel.resumeFirebug\n");
     },
 
 
@@ -342,13 +345,15 @@ ChromeBugOverrides.commandLine = {
 
         isAttached: function(context)
         {
-    FBTrace.sysout("ChromebugOverride isAttached for "+context.window, context.window);
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("ChromebugOverride isAttached for "+context.window, context.window);
             return context && context.window && context.window._FirebugCommandLine;
         },
 
         evaluate: function(expr, context, thisValue, targetWindow, successConsoleFunction, exceptionFunction)
         {
-            FBTrace.sysout('ChromebugOverrides.commandLine context.window '+context.window.location+" targetWindow "+targetWindow);
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout('ChromebugOverrides.commandLine context.window '+context.window.location+" targetWindow "+targetWindow);
 
             var halter = context.window.document.getElementById("chromebugHalter");
             if (halter)

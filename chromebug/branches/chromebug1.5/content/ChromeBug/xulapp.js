@@ -18,6 +18,8 @@ var windowWatcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]
 
 var panelName = "window";
 
+const reChromeBug = /^chrome:\/\/chromebug\//;
+
 // ***********************************************************************************
 // Chromebug XULApp Module
 
@@ -405,6 +407,9 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 else
                 {
                     var outerDOMWindow = this.getDOMWindowByDocShell(xul_win.docShell);
+                    var url = new String(outerDOMWindow.location);
+                    if (reChromebug.test(url))
+                        return; // ignore self
                     FBTrace.sysout("XULAppModule.onclose: xul_window is unknown to us at location "+outerDOMWindow.location+"\n"+getStackDump());
                     throw "NO, do not exit";
                 }

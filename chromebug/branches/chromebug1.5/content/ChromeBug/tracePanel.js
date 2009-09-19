@@ -58,7 +58,6 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
         // unpoint from this context to our panel so its not destroyed.
         if (this.tracePanel)
             context.setPanel(this.tracePanel.name, null);
-        FBTrace.sysout("tracePanel.destroyContext unhooking from "+context.getName());
     },
 
     createTracePanel: function(context)
