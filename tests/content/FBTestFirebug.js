@@ -381,7 +381,8 @@ this.openNewTab = function(url, callback)
     var onLoadURLInNewTab = function(event)
     {
         browser.removeEventListener("load", onLoadURLInNewTab, true);
-        setTimeout(function() {
+        setTimeout(function()
+        {
             try
             {
                 var win = browser.contentWindow;
@@ -399,7 +400,10 @@ this.openNewTab = function(url, callback)
             }
         }, 100);
     }
-    browser.addEventListener("load", onLoadURLInNewTab, true);
+
+    if (callback)
+        browser.addEventListener("load", onLoadURLInNewTab, true);
+
     return newTab;
 }
 
@@ -424,7 +428,9 @@ this.openURL = function(url, callback)
             callback(win);
         }, 10);
     }
-    browser.addEventListener("load", onLoadURL, true);
+
+    if (callback)
+        browser.addEventListener("load", onLoadURL, true);
 
     // Reload content of the selected tab.
     tabbrowser.selectedBrowser.contentDocument.defaultView.location.href = url;
