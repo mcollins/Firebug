@@ -75,7 +75,7 @@ a {
 /************************************************************************************************/
 
 .reportIssue {
-    margin-left: 480px;
+    margin-left: 430px;
 }
 
 /************************************************************************************************/
@@ -148,11 +148,16 @@ td.attributes, .fixedFont
     line-height: 15px;
 }
 
+.description {
+    line-height: 17px !important;
+}
+
 .summaryTable td.nameDescription, .description
 {
     line-height: 15px;
     padding: 4px;
     padding-left: 4px;
+    font-size: 12px;
 }
 
 .summaryTable { margin-bottom: 8px; }

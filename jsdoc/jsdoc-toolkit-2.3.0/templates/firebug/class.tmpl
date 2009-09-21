@@ -27,7 +27,8 @@
         </div>
 
         <div id="content">
-            <a class="reportIssue" href="http://code.google.com/p/fbug/issues/entry?template=API Reference Report">Report a doc issue</a>
+            <a class="reportIssue"
+                href="http://code.google.com/p/fbug/issues/entry?template=API Reference Report">Report Documentation Issue</a>
 <!-- ============================== class title ============================ -->
             <h1 class="classTitle">
                 {!
@@ -69,7 +70,7 @@
                     +}.<br />
                 </if>
                 {+resolveLinks(data.classDesc)+}
-
+                <br />
                 <if test="!data.isBuiltin()">{# isn't defined in any file #}
                     <br /><i>Defined in: </i> {+new Link().toSrc(data.srcFile)+}.
                 </if>
