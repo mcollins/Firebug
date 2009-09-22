@@ -59,15 +59,6 @@ function runTest()
 
 function executeTest(testId, lineNo, nextTest)
 {
-    waitForBreak(lineNo, nextTest);
-
-    // Execute a method with debuggger; keyword in it. This is done
-    // asynchronously since it stops the execution context.
-    FBTest.click(win.wrappedJSObject.document.getElementById(testId));
-}
-
-function waitForBreak(lineNo, nextTest)
-{
     var chrome = FW.Firebug.chrome;
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
@@ -78,4 +69,8 @@ function waitForBreak(lineNo, nextTest)
         else 
             FBTestFirebug.testDone("debuggerKeyword.DONE");
     });
+
+    // Execute a method with debuggger; keyword in it. This is done
+    // asynchronously since it stops the execution context.
+    FBTest.click(win.wrappedJSObject.document.getElementById(testId));
 }
