@@ -1,28 +1,7 @@
 var win = null;             // Reference to the target window.
 var testSuite = null;       // List of tests within this test.
 
-var listeners = [];
-
 function runTest()
-{
-    try
-    {
-        doRunRun();
-    }
-    catch(exc)
-    {
-        FBTest.sysout("testDriver fails "+exc, exc);
-    }
-    finally
-    {
-        for (var i = 0; i < listeners.length; i++)
-        {
-            FW.Firebug.Debugger.removeListener(listeners[i]);
-        }
-    }
-}
-
-function doRunRun()
 {
     FBTest.sysout("debuggerKeyword.START");
 
@@ -36,7 +15,9 @@ function doRunRun()
         FBTestFirebug.openFirebug();
         FBTestFirebug.clearCache();
         FBTestFirebug.selectPanel("script");
-        FBTestFirebug.enableScriptPanel(function(testWindow) {
+
+        FBTestFirebug.enableScriptPanel(function(testWindow)
+        {
             win = testWindow;
             testSuite.fire("debuggerSimple");
         });
@@ -45,126 +26,56 @@ function doRunRun()
     // Test 1: debugger simple
     testSuite.add(function debuggerSimple(event)
     {
-        executeTestAsync(win.wrappedJSObject.debuggerSimple, "@debuggerSimpleRow", "debuggerShallow");
+        executeTest("debuggerSimple", 29, "debuggerShallow");
     });
 
     // Test 2: debugger shallow
     testSuite.add(function debuggerShallow(event)
     {
-        executeTestAsync(win.wrappedJSObject.debuggerShallow, "@debuggerShallowRow", "debuggerDeep");
+        executeTest("debuggerShallow", 35, "debuggerDeep");
     });
 
     // Test 3: debugger deep
     testSuite.add(function debuggerDeep(event)
     {
-        executeTestAsync(win.wrappedJSObject.debuggerDeep, "@debuggerDeepRow", "debuggerInXHR");
+        executeTest("debuggerDeep", 61, "debuggerInXHR");
     });
 
     // Test 4: debugger in XHR
     testSuite.add(function debuggerInXHR(event)
     {
-        win.wrappedJSObject.setTimeout(function()
-        {
-            // Execute XHR and eval the response, there is debugger; keyword in it.
-            win.wrappedJSObject.loadXHRDebugger(function(request)
-            {
-                listeners.push(new DebuggerListener("@debuggerXHRRow", "debuggerInScript"));
-                FW.Firebug.Debugger.addListener(listeners[listeners.length-1]);
-            });
-        }, 1);
+        executeTest("debuggerInXHR", 14, "debuggerInScript");
     });
 
     // Test 5: debugger in script
     testSuite.add(function debuggerInScript(event)
     {
-        win.wrappedJSObject.setTimeout(function()
-        {
-            win.wrappedJSObject.loadScriptDebugger(function()
-            {
-                listeners.push(new DebuggerListener("@debuggerScriptRow"));
-                FW.Firebug.Debugger.addListener(listeners[listeners.length-1]);
-            });
-        }, 1);
+        executeTest("debuggerInScript", 16);
     });
 
     // Start all test cases.
     testSuite.fireOnNewPage("onNewPage", basePath + "script/debuggerKeyword/testPage.html");
 }
 
-function executeTestAsync(testMethod, debuggerKeywordId, nextTest)
+function executeTest(testId, lineNo, nextTest)
 {
-    listeners.push(new DebuggerListener(debuggerKeywordId, nextTest));
-    FW.Firebug.Debugger.addListener(listeners[listeners.length-1]);
+    waitForBreak(lineNo, nextTest);
 
     // Execute a method with debuggger; keyword in it. This is done
     // asynchronously since it stops the execution context.
-    win.wrappedJSObject.setTimeout(testMethod, 1);
+    FBTest.click(win.wrappedJSObject.document.getElementById(testId));
 }
 
-function DebuggerListener(debuggerKeywordId, nextTest)
+function waitForBreak(lineNo, nextTest)
 {
-    this.onStop = function(context, frame, type, rv)
+    var chrome = FW.Firebug.chrome;
+    FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
-        if (window.closed)
-            throw new Error("testDriver DebugggerListener onStop window is closed");
-        
-        FBTest.sysout("debuggerKeyword.DebuggerListener.onStop " + debuggerKeywordId);
+        FBTestFirebug.clickContinueButton();
 
-        FW.Firebug.Debugger.removeListener(this);
-        window.setTimeout(function() {
-            executeTest(debuggerKeywordId, nextTest)
-        }, 400);
-    }
-}
-
-function executeTest(debuggerKeywordId, nextTest)
-{
-    if (!verifyExeLine(debuggerKeywordId))
-        return FBTestFirebug.testDone();
-
-    if (nextTest)
-        testSuite.fire(nextTest);
-    else
-        FBTestFirebug.testDone("debuggerKeyword.DONE");
-
-    return true;
-}
-
-function verifyExeLine(rowId)
-{
-    var row = getScriptRow(rowId);
-    FBTest.ok(row, "The row (" + rowId + ") must exist.");
-    if (!row)
-        return false;
-
-    FBTest.sysout("debuggerKeyword.verifyExeLine", row);
-
-    var exeline = row.getAttribute("exeline");
-    FBTest.compare(exeline, "true", "The row must be marked as the execution line.");
-
-    var panel = FBTestFirebug.getPanel("script");
-    var sourceLine = FW.FBL.getChildByClass(row, "sourceLine");
-    FBTest.compare(sourceLine.textContent, panel.executionLineNo,
-        "The execution line must be correct");
-
-    // Continue debugger
-    FBTestFirebug.clickContinueButton();
-    return true;
-}
-
-function getScriptRow(rowId)
-{
-    var panel = FBTestFirebug.getPanel("script");
-    var sourceBox = panel.getSourceBoxByURL(panel.location.href);
-    var sourceViewport = FW.FBL.getChildByClass(sourceBox, "sourceViewport");
-    var rows = sourceViewport.childNodes;
-
-    for (var i=0; i<rows.length; i++)
-    {
-        var source = FW.FBL.getChildByClass(rows[i], "sourceRowText");
-        if (source.textContent.indexOf(rowId) > 0)
-            return rows[i];
-    }
-
-    return null;
+        if (nextTest) 
+            setTimeout(function() { testSuite.fire(nextTest) }, 100);
+        else 
+            FBTestFirebug.testDone("debuggerKeyword.DONE");
+    });
 }

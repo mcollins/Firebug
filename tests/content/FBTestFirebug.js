@@ -746,6 +746,7 @@ this.getSourceLineNode = function(lineNo, chrome)
 {
     if (!chrome)
         chrome = FW.Firebug.chrome;
+
     var panel = chrome.getSelectedPanel();
     var sourceBox = panel.getSourceBoxByURL(panel.location.href);
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
@@ -759,25 +760,24 @@ this.getSourceLineNode = function(lineNo, chrome)
     FBTest.sysout("getSourceLineNode has sourceViewport with "+rows.length+" childNodes");
 
     // Look for line
-    var lineNumberAsString = lineNo +"";
     var row = null;
     for (var i=0; i < rows.length; i++)
     {
         var line = FW.FBL.getChildByClass(rows[i], 'sourceLine');
-        if (line.textContent == lineNumberAsString) {
+        if (parseInt(line.textContent, 10) == lineNo) {
             row = rows[i];
             break;
         }
         else
-            FBTest.sysout("tried row "+i+" "+line.textContent+"=?="+lineNumberAsString);
+            FBTest.sysout("tried row "+i+" "+line.textContent+"=?="+lineNo);
     }
 
     if (!row)
-        FBTest.sysout("getSourceLineNode did not find "+lineNumberAsString);
+        FBTest.sysout("getSourceLineNode did not find "+lineNo);
     else
     {
-        FBTest.sysout("getSourceLineNode found "+lineNumberAsString+" "+rows[i].innerHTML);
-        FBTest.sysout("getSourceLineNode found "+lineNumberAsString+" "+row.innerHTML);
+        FBTest.sysout("getSourceLineNode found "+lineNo+" "+rows[i].innerHTML);
+        FBTest.sysout("getSourceLineNode found "+lineNo+" "+row.innerHTML);
     }
     return row;
 }
