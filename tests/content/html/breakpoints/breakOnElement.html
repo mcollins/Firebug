@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for Mutation Breakpoints II.</title>
+</head>
+<body>
+<div id="content"></div>
+
+<h1>Test Case for Mutation Breakpoints</h1>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+
+<p>This test is intended to verify <i>Mutation Breakpoints</i> support within the
+HTML panel. This features allows to debug following mutation events:
+<ul>
+    <li><i>DOMAttrModified</i></li>
+    <li><i>DOMCharacterDataModified</i></li>
+    <li><i>DOMNodeInserted</i></li>
+    <li><i>DOMNodeRemoved</i></li>
+</ul>
+</p>
+
+<ol>
+<li>Open Firebug and select the HTML panel.</li>
+<li>Expand <code>body</code> element</li>
+<li>Right-click on the <code>content</code> element</li>
+<li>Step by step pick: 
+    <ul>
+        <li>Break on Attribute Change</li>
+        <li>Break on Child Addition or Removal</li>
+        <li>Break on Element Removal</li>
+    </ul>
+</li>
+<li>Use button below to fire appropriate changes and check that Firebug
+always breaks at the proper location.</li>
+</ol>
+
+
+<button id="breakOnAttrModified" onclick="breakOnAttrModified()">Break on Attribute Modified</button>
+<button id="breakOnNodeInserted" onclick="breakOnNodeInserted()">Break on Node Inserted</button>
+<button id="breakOnNodeRemoved" onclick="breakOnNodeRemoved()">Break on Node Removed</button>
+
+<script type="text/javascript">
+var content = document.getElementById("content");
+function breakOnAttrModified()
+{
+    var now = (new Date()).getTime();
+    content.setAttribute("test", now); 
+}
+
+function breakOnNodeInserted()
+{
+    content.appendChild(document.createElement("div")); 
+}
+
+function breakOnNodeRemoved()
+{
+    if (content.firstChild) 
+        content.removeChild(content.firstChild);
+    else
+        alert("You have to append a node first. Use 'Break on Node Inserted'."); 
+}
+
+</script>
+  
+</body>
+</html>
