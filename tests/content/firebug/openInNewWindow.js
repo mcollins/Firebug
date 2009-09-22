@@ -72,7 +72,8 @@ function runTest()
                     FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
                     setBreakpoint(detachedFW);
 
-                    FBTestFirebug.listenForBreakpoint(detachedFW.FirebugChrome, issue1483.lineNo, function closeOut()
+                    FBTestFirebug.waitForBreakInDebugger(detachedFW.FirebugChrome,
+                        issue1483.lineNo, true, function closeOut()
                     {
                         FBTest.progress("Remove breakpoint from "+detachedFW.location);
                         var panel = detachedFW.FirebugChrome.getSelectedPanel();
@@ -94,7 +95,7 @@ function runTest()
 
                     FBTest.progress("Now reload");
 
-                    FBTestFirebug.reload(function ()  // listenForBreakpoint should hit first
+                    FBTestFirebug.reload(function ()  // waitForBreakInDebugger should hit first
                     {
                         FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
                         var panel = detachedFW.FirebugChrome.getSelectedPanel();

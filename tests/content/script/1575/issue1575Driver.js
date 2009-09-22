@@ -23,7 +23,7 @@ function runTest()
 
 
             var chrome = FW.Firebug.chrome;
-            FBTestFirebug.listenForBreakpoint(chrome, lineNo, function hitBP()
+            FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, true, function hitBP()
             {
                 FBTest.progress("Remove breakpoint now");
                 var panel = chrome.getSelectedPanel();

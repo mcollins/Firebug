@@ -45,7 +45,9 @@ function defineSingleStepping()
 
         FBTest.progress("Listen for exeline true, meaning the breakOnNext hit");
 
-        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkBreakOnNext);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome,
+            singleStepping.breakOnNextLineNo, false,
+            singleStepping.checkBreakOnNext);
 
         var testPageButton = singleStepping.window.document.getElementById("clicker");
         FBTest.click(testPageButton);
@@ -53,15 +55,14 @@ function defineSingleStepping()
 
     singleStepping.checkBreakOnNext = function()
     {
-        var row = FBTestFirebug.getSourceLineNode(singleStepping.breakOnNextLineNo);
-        FBTest.ok(row, "Row "+singleStepping.breakOnNextLineNo+" must be found");
-
         singleStepping.stepInto();
     };
 
     singleStepping.stepInto = function()
     {
-        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkStepInto);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome,
+            singleStepping.stepIntoLineNo, false,
+            singleStepping.checkStepInto);
 
         FBTest.progress("Press single step button");
         var singleStepButton = FW.document.getElementById("fbStepIntoButton");
@@ -76,17 +77,17 @@ function defineSingleStepping()
     {
         var panel = FBTestFirebug.getSelectedPanel();
         var name = panel.location.getObjectDescription().name;
-        FBTest.compare(singleStepping.stepIntoFileName, name, "StepInto should land in "+singleStepping.stepIntoFileName);
-
-        var row = FBTestFirebug.getSourceLineNode(singleStepping.stepIntoLineNo);
-        FBTest.ok(row, "Row "+singleStepping.stepIntoLineNo+" must be found");
+        FBTest.compare(singleStepping.stepIntoFileName, name, "StepInto should land in " +
+            singleStepping.stepIntoFileName);
 
         singleStepping.stepOver();
     };
 
     singleStepping.stepOver = function()
     {
-        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkStepOver);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome,
+            singleStepping.stepOverLineNo, false,
+            singleStepping.checkStepOver);
 
         FBTest.progress("Press single over button");
         var singleStepButton = FW.document.getElementById("fbStepOverButton");
@@ -101,17 +102,17 @@ function defineSingleStepping()
     {
         var panel = FBTestFirebug.getSelectedPanel();
         var name = panel.location.getObjectDescription().name;
-        FBTest.compare(singleStepping.stepOverFileName, name, "StepOver should land in "+singleStepping.stepOverFileName);
-
-        var row = FBTestFirebug.getSourceLineNode(singleStepping.stepOverLineNo);
-        FBTest.ok(row, "Row "+singleStepping.stepOverLineNo+" must be found");
+        FBTest.compare(singleStepping.stepOverFileName, name, "StepOver should land in " +
+            singleStepping.stepOverFileName);
 
         singleStepping.stepOut();
     };
 
     singleStepping.stepOut = function()
     {
-        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome, singleStepping.checkstepOut);
+        FBTestFirebug.waitForBreakInDebugger(FW.Firebug.chrome,
+            singleStepping.stepOutLineNo, false,
+            singleStepping.checkstepOut);
 
         FBTest.progress("Press single StepOut button");
         var stepOutButton = FW.document.getElementById("fbStepOutButton");
@@ -126,24 +127,23 @@ function defineSingleStepping()
     {
         var panel = FBTestFirebug.getSelectedPanel();
         var name = panel.location.getObjectDescription().name.split('/')[0];
-FBTest.sysout("panel.location.getObjectDescription().name: "+panel.location.getObjectDescription().name, panel.location.getObjectDescription());
-        FBTest.compare(singleStepping.stepOutFileName, name, "StepOut should land in "+singleStepping.stepOutFileName);
+        FBTest.sysout("panel.location.getObjectDescription().name: " +
+            panel.location.getObjectDescription().name, panel.location.getObjectDescription());
+        FBTest.compare(singleStepping.stepOutFileName, name, "StepOut should land in " +
+            singleStepping.stepOutFileName);
 
         var row = FBTestFirebug.getSourceLineNode(singleStepping.stepOutLineNo);
         if (!row)
             FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row);
-
-        FBTest.ok(row, "Row "+singleStepping.stepOutLineNo+" must be found");
 
         var canContinue = FBTestFirebug.clickContinueButton(false);
         FBTest.ok(canContinue, "The continue button was pushable");
 
         FBTestFirebug.testDone("singleStepping.DONE");
     };
-
 }
 
-//------------------------------------------------------------------------
+// ************************************************************************************************
 // Auto-run test
 
 function runTest()

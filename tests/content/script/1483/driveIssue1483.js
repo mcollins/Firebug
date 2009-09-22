@@ -49,7 +49,7 @@ function defineIssue1483()
 
     issue1483.secondReload = function(chrome)
     {
-        FBTestFirebug.listenForBreakpoint(chrome, issue1483.lineNo, function wereDone()
+        FBTestFirebug.waitForBreakInDebugger(chrome, issue1483.lineNo, true, function wereDone()
         {
             FBTest.progress("Remove breakpoint");
             var panel = chrome.getSelectedPanel();

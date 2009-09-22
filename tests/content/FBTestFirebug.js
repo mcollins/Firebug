@@ -712,9 +712,6 @@ this.getPref = function(pref)
 
 this.clickContinueButton = function(breakOnNext, chrome)
 {
-    // xxxHonza: why the click doesn't work? Is is because the execution context
-    // is stopped at a breakpoint?
-    // xxxJJB: I guess because the continue button is not active that the time of the call.
     if (!chrome)
         chrome = FW.FirebugChrome;
 
@@ -726,7 +723,7 @@ this.clickContinueButton = function(breakOnNext, chrome)
         if (button.getAttribute("breakable") == "true")
         {
             FBTest.sysout("FBTestFirebug breakable true, resuming should arm break on next");
-            FW.Firebug.Debugger.resume(chrome.window.FirebugContext);
+            FW.FirebugChrome.resume(chrome.window.FirebugContext);
             FBTest.sysout("FBTestFirebug breakable true, armed break on next");
             return true;
         }
@@ -737,7 +734,7 @@ this.clickContinueButton = function(breakOnNext, chrome)
     if (button.getAttribute("breakable") == "off")
     {
         FBTest.sysout("FBTestFirebug breakable off, resuming debugger in "+chrome.window.location+" for context "+chrome.window.FirebugContext);
-        FW.Firebug.Debugger.resume(chrome.window.FirebugContext);
+        FW.FirebugChrome.resume(chrome.window.FirebugContext);
         FBTest.sysout("FBTestFirebug breakable off, resumed debugger");
         return true;
     }
@@ -785,63 +782,52 @@ this.getSourceLineNode = function(lineNo, chrome)
     return row;
 }
 
-this.waitForBreakInDebugger = function(chrome, callback) // TODO replace with listenForBreakpoint below
+/**
+ * Registers handler for break in Debugger.
+ * @param {Object} chrome Current Firebug's chrome object (e.g. FW.Firebug.chrome)
+ * @param {Number} lineNo Expected source line number where the break should happen.
+ * @param {Object} breakpoint Set to true if breakpoint should be displayed in the UI.
+ * @param {Object} callback Handeler that should be called when break happens.
+ */
+this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
 {
-    FBTest.progress("WaitForBreakInDebugger exeline true, meaning we stopped in "+chrome.window.location);
+    FBTest.progress("fbTestFirebug.waitForBreakInDebugger; " + chrome.window.location);
 
+    // Get document of Firebug's panel.html
     var panel = chrome.getSelectedPanel();
-    var doc = panel.panelNode.ownerDocument; // panel.html
+    var doc = panel.panelNode.ownerDocument;
 
-    var lookBP = new MutationRecognizer(doc.defaultView, 'div', {class: "sourceRow", exeline: "true"});
+    // Complete attributes that must be set on sourceRow element.
+    var attributes = {"class": "sourceRow", exeline: "true"};
+    if (breakpoint)
+        attributes.breakpoint = breakpoint ? "true" : "false";
 
-    lookBP.onRecognize(function sawBP(elt)
+    // Wait for the UI modification that shows the source line where break happend.
+    var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
+    lookBP.onRecognize(function onBreak(sourceRow)
     {
-        callback();
-    });
-}
+        FBTest.progress("fbTestFirebug.onBreak; check source line number, exeline" +
+            (breakpoint ? " and breakpoint" : ""));
 
-this.listenForBreakpoint = function(chrome, lineNo, callback)
-{
-    FBTest.progress("Listen for exeline true, meaning the breakpoint hit in "+chrome.window.location);
-
-    var panel = chrome.getSelectedPanel();
-    var doc = panel.panelNode.ownerDocument; // panel.html
-
-    var lookBP = new MutationRecognizer(doc.defaultView, 'div', {class: "sourceRow", exeline: "true", breakpoint: "true"});
-
-    lookBP.onRecognize(function sawBP(elt)
-    {
-        FBTest.progress("Hit BP, exeline set, check breakpoint");
         var panel = chrome.getSelectedPanel();
         FBTest.compare("script", panel.name, "The script panel should be selected");
 
         var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
-        if (!row)
-        {
-            FBTest.ok(false, "Row "+ lineNo+" must be found");
-            return;
-        }
+        FBTest.ok(row, "Row " + lineNo + " must be found");
 
-        var exeline = row.getAttribute("exeline");
-        FBTest.compare("true", exeline, "The row must be marked as the execution line.");
-
-        var bp = row.getAttribute('breakpoint');
-        if (!FBTest.compare("true", bp, "Line "+ lineNo+" should have a breakpoint set"))
-            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row);
+        var currentLineNo = parseInt(sourceRow.firstChild.textContent, 10);
+        FBTest.compare(lineNo, currentLineNo, "The break must be on " + lineNo + " line.");
 
         try
         {
-            callback();
+            callback(sourceRow);
         }
         catch(exc)
         {
             FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
         }
     });
-
-
 }
-
 
 // ************************************************************************************************
 // Error handling

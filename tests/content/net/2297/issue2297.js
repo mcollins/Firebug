@@ -10,7 +10,7 @@ function runTest()
 {
     FBTest.sysout("issue2297.START");
 
-    // must be set to false in this test, but the original value is reverted.
+    // Enable showing network errors, the original value is reverted.
     var prefOrigValue = FBTestFirebug.getPref("showNetworkErrors");
     FBTestFirebug.setPref("showNetworkErrors", true);
 
