@@ -62,7 +62,7 @@ MutationRecognizer.prototype.matches = function(elt)
         }
         else
         {
-            FBTest.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data);
+            FBTest.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data,{element: elt, recogizer: this});
             return false;
         }
     }
@@ -75,7 +75,7 @@ MutationRecognizer.prototype.matches = function(elt)
 
    if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
    {
-       FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), elt);
+       FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), {element: elt, recogizer: this});
        return false;
    }
 
@@ -86,7 +86,7 @@ MutationRecognizer.prototype.matches = function(elt)
             var eltP = elt.getAttribute(p);
             if (!eltP)
             {
-                FBTest.sysout("MutationRecognizer no attribute "+p+" in "+FW.FBL.getElementHTML(elt), elt);
+                FBTest.sysout("MutationRecognizer no attribute "+p+" in "+FW.FBL.getElementHTML(elt), {element: elt, recogizer: this});
                 return false;
             }
             if (this.attributes[p] != null)
@@ -101,7 +101,7 @@ MutationRecognizer.prototype.matches = function(elt)
                 }
                 else if (eltP != this.attributes[p])
                 {
-                    FBTest.sysout("MutationRecognizer no match for attribute "+p+": "+this.attributes[p]+" vs "+eltP);
+                    FBTest.sysout("MutationRecognizer no match for attribute "+p+": "+this.attributes[p]+" vs "+eltP,{element: elt, recogizer: this});
                     return false;
                 }
             }
@@ -112,7 +112,7 @@ MutationRecognizer.prototype.matches = function(elt)
     {
         if (elt.textContent.indexOf(this.characterData) < 0)
         {
-            FBTest.sysout("MutationRecognizer no match for characterData "+this.characterData+" vs "+elt.textContent);
+            FBTest.sysout("MutationRecognizer no match for characterData "+this.characterData+" vs "+elt.textContent, {element: elt, recogizer: this});
             return false;
         }
     }
@@ -144,8 +144,15 @@ function MutationEventFilter(recognizer, handler)
             return;  // but not the one that changed.
         }
 
-        if (filter.checkElement(event.target))
-            handler(event.target);
+        try
+        {
+            if (filter.checkElement(event.target))
+                handler(event.target);
+        }
+        catch(exc)
+        {
+            FBTest.sysout("onMutateNode FAILS "+exc, exc);
+        }
     }
 
     // the matches() function could be tuned to each kind of mutation for improved efficiency
@@ -156,8 +163,15 @@ function MutationEventFilter(recognizer, handler)
 
         FBTest.sysout("onMutateNode "+event.target+" in "+event.target.ownerDocument.location, event.target);
 
-        if (filter.checkElementDeep(event.target))
-            handler(event.target);
+        try
+        {
+            if (filter.checkElementDeep(event.target))
+                handler(event.target);
+        }
+        catch(exc)
+        {
+            FBTest.sysout("onMutateNode FAILS "+exc, exc);
+        }
     }
 
     this.onMutateText = function handleTextMatches(event)
@@ -171,8 +185,15 @@ function MutationEventFilter(recognizer, handler)
         // We care about text and the text for this element mutated.  If it matches we must have hit.
         FBTest.sysout("onMutateText =>"+event.newValue+" on "+event.target.ownerDocument.location, event.target);
 
-        if (filter.checkElement(event.target))  // target is CharacterData node
-            handler(event.target);
+        try
+        {
+            if (filter.checkElement(event.target))  // target is CharacterData node
+                handler(event.target);
+        }
+        catch(exc)
+        {
+            FBTest.sysout("onMutateNode FAILS "+exc, exc);
+        }
     }
 
     filter.checkElement = function(elt)
@@ -748,7 +769,10 @@ this.getSourceLineNode = function(lineNo, chrome)
         chrome = FW.Firebug.chrome;
 
     var panel = chrome.getSelectedPanel();
-    var sourceBox = panel.getSourceBoxByURL(panel.location.href);
+    var sourceBox = panel.selectedSourceBox;
+    if (!sourceBox)
+        throw new Error("getSourceLineNode no selectedSourceBox in panel "+panel.name);
+
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
     if (!sourceViewport)
     {
@@ -806,7 +830,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
     lookBP.onRecognize(function onBreak(sourceRow)
     {
-        FBTest.progress("fbTestFirebug.onBreak; check source line number, exeline" +
+        FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exeline" +
             (breakpoint ? " and breakpoint" : ""));
 
         var panel = chrome.getSelectedPanel();
