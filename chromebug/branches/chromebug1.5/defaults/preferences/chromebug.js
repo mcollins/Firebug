@@ -83,6 +83,7 @@ pref("extensions.chromebug.showDOMConstants", false);
 // Layout
 pref("extensions.chromebug.showAdjacentLayout", false);
 pref("extensions.chromebug.showRulers", true);
+pref("extensions.chromebug.showBoundingClientRect", true);
 
 // Script
 pref("extensions.chromebug.script.enableLocalFiles", "enable");
