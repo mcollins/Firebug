@@ -414,6 +414,11 @@ function overrideFirebugFunctions()
         top.Firebug.HTMLPanel.prototype.getParentObject = ChromeBugOverrides.getParentObject;
         top.Firebug.HTMLPanel.prototype.getChildObject = ChromeBugOverrides.getChildObject;
         top.Firebug.HTMLPanel.prototype.getAnonymousChildObject = ChromeBugOverrides.getAnonymousChildObject;
+
+        top.Firebug.Inspector.FrameHighlighter.prototype.doNotHighlight = function(element)
+        {
+             return false;
+        };
         top.Firebug.Debugger.supportsWindow = ChromeBugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromeBugOverrides.supportsGlobal;
         top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromeBugOverrides.showThisSourceFile;
