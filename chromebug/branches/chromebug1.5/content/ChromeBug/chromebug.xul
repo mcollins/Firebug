@@ -40,6 +40,7 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/sourceFile.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceBox.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabWatcher.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/traceModule.js"/>
