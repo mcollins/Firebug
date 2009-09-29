@@ -1151,7 +1151,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 if (!sourceFile)
                 {
-                    sourceFile = new FBL.EnumeratedSourceFile(url);
+                    sourceFile = new Firebug.EnumeratedSourceFile(url);
                     context.addSourceFile(sourceFile);
                 }
                 if (FBTrace.DBG_SOURCEFILES)
@@ -1344,7 +1344,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             var sourceFile = sourceFileMap[url];
             if (!sourceFile)
             {
-                sourceFile = new FBL.EnumeratedSourceFile(url);
+                sourceFile = new Firebug.EnumeratedSourceFile(url);
                 sourceFileMap[url] = sourceFile;
                 if (FBTrace.DBG_SOURCEFILES)
                     FBTrace.sysout("Firebug.Chromebug.createSourceFile script.fileName="+url+"\n");
@@ -1363,7 +1363,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var sourceFile = sourceFileMap[url];
                 if (!sourceFile)
                 {
-                    sourceFile = new FBL.EnumeratedSourceFile(url);
+                    sourceFile = new Firebug.EnumeratedSourceFile(url);
                     sourceFileMap[url] = sourceFile;
                     var name = c[1];
                     sourceFile.component = name;
