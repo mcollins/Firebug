@@ -77,7 +77,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         if (!this.saveToFile(file, jsonString, context))
             return;
 
-        var viewerURL = Firebug.getPref(Firebug.prefDomain, "netExport.viewerURL");
+        var viewerURL = Firebug.getPref(Firebug.prefDomain, "netexport.viewerURL");
         if (viewerURL)
             this.ViewerOpener.openViewer(viewerURL, jsonString);
     },
