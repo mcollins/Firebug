@@ -40,6 +40,83 @@ Firebug.Platform.ComponentInterfaceCrashers = ["IDispatch"];
 
 const theCrashers = Firebug.Platform.ComponentClassCrashers;
 
+Firebug.Platform.XPConnectWrappedRep = domplate(Firebug.Rep,
+{
+    tag:
+        FirebugReps.OBJECTLINK(
+                SPAN({class: "objectTitle", _repObject: "$object|getWrappedValue"}, "$object|getTitle")
+            ),
+
+    className: "XPConnectWrapper",
+
+    reXPConnect: /\[xpconnect wrapped ([^\]]*)\]/,
+
+    supportsObject: function(object, type)
+    {
+        try
+        {
+            var p = safeToString( object );
+            if (p.indexOf('[xpconnect wrapped') == 0)
+                return 2;
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("XPConnectWrappedRep FAILS "+exc, exc);
+        }
+        return 0;
+    },
+
+    getTitle: function(object)
+    {
+        try
+        {
+            var p = safeToString(object);
+            var m = this.reXPConnect.exec(p);
+            return m[1];
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("XPConnectWrappedRep FAILS "+exc, exc);
+        }
+    },
+
+    getWrappedValue: function(object)
+    {
+        return object.wrappedJSObject ? object.wrappedJSObject : object;
+    },
+
+});
+
+Firebug.Platform.XULWindowRep = domplate(Firebug.Rep,
+{
+    tag:
+        FirebugReps.OBJECTLINK(
+                SPAN({class: "objectTitle"}, "$object|getTitle")
+            ),
+
+    className: "XULWindow",
+
+    supportsObject: function(object, type)
+    {
+         return (object instanceof Ci.nsIXULWindow);
+    },
+
+    getTitle: function(xul_window)
+    {
+        var domWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(xul_window.docShell);
+        return domWindow.document.title;
+    },
+
+    getRealObject: function(object, context)
+    {
+        FBTrace.sysout("platform.getRealObject ");
+        return object;
+    },
+});
+
+Firebug.registerRep(Firebug.Platform.XULWindowRep);
+Firebug.registerRep(Firebug.Platform.XPConnectWrappedRep);
+
 Firebug.Platform.nsXPCComponents_ClassesRep = domplate(Firebug.Rep,
 {
     tag:
@@ -51,7 +128,7 @@ Firebug.Platform.nsXPCComponents_ClassesRep = domplate(Firebug.Rep,
 
     supportsObject: function(object, type)
     {
-         return (object.toString() == "[object nsXPCComponents_Classes]")
+         return (safeToString(object) == "[object nsXPCComponents_Classes]");
     },
 
     getTitle: function(aClass)
@@ -207,76 +284,6 @@ function getInterfaces(obj)
     return ifaces;
 }
 
-Firebug.Platform.XPConnectWrappedRep = domplate(Firebug.Rep,
-{
-    tag:
-        FirebugReps.OBJECTLINK(
-                SPAN({class: "objectTitle"}, "$object|getTitle")
-            ),
-
-    className: "XPConnectWrapper",
-
-    reXPConnect: /\[xpconnect wrapped ([^\]]*)\]/,
-
-    supportsObject: function(object, type)
-    {
-        try
-        {
-            var p = object.toString();
-            if (p.indexOf('[xpconnect wrapped') == 0)
-                return 2;
-        }
-        catch(exc)
-        {
-            FBTrace.sysout("XPConnectWrappedRep FAILS "+exc, exc);
-        }
-        return 0;
-    },
-
-    getTitle: function(object)
-    {
-        try
-        {
-            var p = object.toString();
-            var m = this.reXPConnect.exec(p);
-            return m[1];
-        }
-        catch(exc)
-        {
-            FBTrace.sysout("XPConnectWrappedRep FAILS "+exc, exc);
-        }
-    }
-});
-
-Firebug.Platform.XULWindowRep = domplate(Firebug.Rep,
-{
-    tag:
-        FirebugReps.OBJECTLINK(
-                SPAN({class: "objectTitle"}, "$object|getTitle")
-            ),
-
-    className: "XULWindow",
-
-    supportsObject: function(object, type)
-    {
-         return (object instanceof Ci.nsIXULWindow);
-    },
-
-    getTitle: function(xul_window)
-    {
-        var domWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(xul_window.docShell);
-        return domWindow.document.title;
-    },
-
-    getRealObject: function(object, context)
-    {
-        FBTrace.sysout("platform.getRealObject ");
-        return object;
-    },
-});
-
-Firebug.registerRep(Firebug.Platform.XULWindowRep);
-Firebug.registerRep(Firebug.Platform.XPConnectWrappedRep);
 
 //  A wrapper around nsISimpleEnumerator
   /*
