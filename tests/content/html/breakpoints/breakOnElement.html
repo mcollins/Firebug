@@ -4,18 +4,12 @@
   <title>Test Case for Mutation Breakpoints II.</title>
 </head>
 <body>
-<div id="content"></div>
-
 <h1>Test Case for Mutation Breakpoints</h1>
 <i>Jan Odvarko, odvarko@gmail.com</i>
 
-<p>This test is intended to verify <i>Mutation Breakpoints</i> support within the
-HTML panel. This features allows to debug following mutation events:
-<ul>
-    <li><i>DOMAttrModified</i></li>
-    <li><i>DOMCharacterDataModified</i></li>
-    <li><i>DOMNodeInserted</i></li>
-    <li><i>DOMNodeRemoved</i></li>
+<p>This test is intended to verify <i>Break On Mutate</i> support within the
+HTML panel. This features allows to debug mutation events (<i>DOMAttrModified</i>,
+<i>DOMCharacterDataModified</i>, <i>DOMNodeInserted</i>, <i>DOMNodeRemoved</i>)
 </ul>
 </p>
 
@@ -34,6 +28,7 @@ HTML panel. This features allows to debug following mutation events:
 always breaks at the proper location.</li>
 </ol>
 
+<h3 id="content" style="color:green">Test Element</h3>
 
 <button id="breakOnAttrModified" onclick="breakOnAttrModified()">Break on Attribute Modified</button>
 <button id="breakOnNodeInserted" onclick="breakOnNodeInserted()">Break on Node Inserted</button>
