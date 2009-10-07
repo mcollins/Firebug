@@ -17,7 +17,7 @@ HTML panel. This features allows to debug mutation events (<i>DOMAttrModified</i
 <li>Open Firebug and select the HTML panel.</li>
 <li>Expand <code>body</code> element</li>
 <li>Right-click on the <code>content</code> element</li>
-<li>Step by step pick: 
+<li>Step by step pick:
     <ul>
         <li>Break on Attribute Change</li>
         <li>Break on Child Addition or Removal</li>
@@ -39,23 +39,23 @@ var content = document.getElementById("content");
 function breakOnAttrModified()
 {
     var now = (new Date()).getTime();
-    content.setAttribute("test", now); 
+    content.setAttribute("test", now); // Line 42 do not move
 }
 
 function breakOnNodeInserted()
 {
-    content.appendChild(document.createElement("div")); 
+    content.appendChild(document.createElement("div"));  // line 47 do not move
 }
 
 function breakOnNodeRemoved()
 {
-    if (content.firstChild) 
-        content.removeChild(content.firstChild);
+    if (content.firstChild)
+        content.removeChild(content.firstChild);  // line 53 do not move
     else
-        alert("You have to append a node first. Use 'Break on Node Inserted'."); 
+        alert("You have to append a node first. Use 'Break on Node Inserted'.");
 }
 
 </script>
-  
+
 </body>
 </html>
