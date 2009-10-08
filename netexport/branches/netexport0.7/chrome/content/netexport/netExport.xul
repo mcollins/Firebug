@@ -16,12 +16,13 @@
         <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
             <hbox id="fbNetButtons" collapsed="true">
                 <hbox id="fbNetButtonsFilter" class="noTabStop">
-                    <toolbarbutton id="netExport" type="menu-button"
+                    <toolbarbutton id="netExport"
                         class="toolbar-text-button fbmenubutton"
                         insertbefore="fbNetFilter-all" command="cmd_netExport"
                         label="netexport.button.label.Export"
                         buttontooltiptext="netexport.button.tooltip.Export HTTP Tracing"
                         tooltiptext="netexport.menu.tooltip.Export Options">
+                        <!-- type="menu-button" remove for now -->
                         <menupopup>
                             <menuitem id="netExportCompress" type="checkbox"
                                 label="netexport.menu.label.Compress" 
