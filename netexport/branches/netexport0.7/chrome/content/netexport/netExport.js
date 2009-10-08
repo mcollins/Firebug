@@ -8,6 +8,8 @@ const Ci = Components.interfaces;
 const dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
 const appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 
+const harVersion = "1.1";
+
 // ************************************************************************************************
 // Module implementation
 
@@ -206,7 +208,7 @@ JSONBuilder.prototype =
     buildLog: function(context)
     {
         var log = {};
-        log.version = "1.0";
+        log.version = harVersion;
         log.creator = {name: "Firebug", version: Firebug.version};
         log.browser = {name: appInfo.name, version: appInfo.version};
         log.pages = [this.buildPage(context)];
