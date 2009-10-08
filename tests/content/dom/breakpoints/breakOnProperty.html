@@ -20,7 +20,7 @@ HTML panel.
 Or, right click on <code style="color:green">_testProperty</code> within the panel and pick
 <span style="color:green">Break On Property Change</span>.</li>
 <li>Click on one of the buttons below.</li>
-<li>The debugger must stop JS execution and show the source code line that caused 
+<li>The debugger must stop JS execution and show the source code line that caused
 the change in the DOM.</li>
 </ol>
 
@@ -29,6 +29,7 @@ the change in the DOM.</li>
 <button id="removeProperty" onclick="removeProperty()">Remove Property</button>
 
 <script type="text/javascript">
+var anObject = {};
 function now()
 {
     return (new Date()).getTime();
@@ -36,21 +37,21 @@ function now()
 
 function addProperty()
 {
-    window._testProperty = "An initial value";
+    anObject._testProperty = "An initial value";
 }
 
 function changeProperty()
 {
-    window._testProperty = "New Value: " + now();
+    anObject._testProperty = "New Value: " + now();
 }
 
 function removeProperty()
 {
-    delete window._testProperty;
+    delete anObject._testProperty;
 }
 
 addProperty();
 </script>
-  
+
 </body>
 </html>

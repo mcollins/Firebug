@@ -7,8 +7,16 @@ function runTest()
         FBTestFirebug.enableScriptPanel(function(win)
         {
             var panel = FBTestFirebug.selectPanel("dom");
+            var row = getPropertyRow(panel, "anObject");
+            if (!FBTest.ok(row, "anObject must be available"))
+            {
+                FBTestFirebug.testDone("dom.breakpoints; FAILED");
+                return;
+            }
 
-            var row = getPropertyRow(panel, "_testProperty");
+            FBTest.click(row);
+
+            var row = getPropertyRow(panel, "_testProperty");  // FAILS here
             if (!FBTest.ok(row, "_testProperty must be available"))
             {
                 FBTestFirebug.testDone("dom.breakpoints; DONE");
@@ -59,7 +67,7 @@ function getPropertyRow(panel, propName)
     for (var i=0; i<rows.length; i++)
     {
         var row = rows[i];
-        var label = FW.FBL.getElementByClass(row, "memberLabel", "userLabel");
+        var label = FW.FBL.getElementByClass(row, "memberLabel", "userLabel");window.dump("label "+label.textContent+"\n");
         if (label.textContent == propName)
             return row;
     }
