@@ -270,7 +270,7 @@ JSONBuilder.prototype =
         request.postData = this.buildPostData(file);
 
         request.headersSize = -1; //xxxHonza: waiting for the activityObserver.
-        request.bodySize = 0; //xxxHonza: fix when activity observer is in place.
+        request.bodySize = file.postText ? file.postText.length : -1;
 
         return request;
     },
@@ -280,7 +280,7 @@ JSONBuilder.prototype =
         if (!file.postText)
             return;
 
-        var postData = {mimeType: "", text: "", params: []};
+        var postData = {mimeType: ""};
 
         var text = file.postText;
         if (isURLEncodedFile(file, text))
