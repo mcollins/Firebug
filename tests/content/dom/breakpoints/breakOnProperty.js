@@ -14,34 +14,51 @@ function runTest()
                 return;
             }
 
-            FBTest.click(row);
+            var recognizer = new MutationRecognizer(panel.document.defaultView,
+                "Text", {}, "_testProperty");
 
-            var row = getPropertyRow(panel, "_testProperty");  // FAILS here
-            if (!FBTest.ok(row, "_testProperty must be available"))
+            // Wait till _testProperty row in the UI is available. This row displays
+            // the _testProperty and we need to created a breakpoint on it.
+            recognizer.onRecognize(function (element)
             {
-                FBTestFirebug.testDone("dom.breakpoints; DONE");
-                return;
-            }
+                var row = getPropertyRow(panel, "_testProperty");
+                if (!FBTest.ok(row, "_testProperty must be available"))
+                {
+                    FBTestFirebug.testDone("dom.breakpoints; DONE");
+                    return;
+                }
 
-            // Create breakpoint.
-            panel.breakOnProperty(row);
+                // OK, the row exists, but we need to wait till the
+                // domObject property is set. This is done by domplate just
+                // after the row is inserted into the document.
+                row.watch("domObject", function(prop, oldVal, newVal)
+                {
+                    row.unwatch("domObject");
 
-            var testSuite = [];
-            testSuite.push(function(callback) {
-                breakOnMutation(win, "changeProperty", 44, callback);
-            });
-            testSuite.push(function(callback) {
-                FBTest.click(win.wrappedJSObject.document.getElementById("removeProperty"));
-                callback();
-            });
-            testSuite.push(function(callback) {
-                breakOnMutation(win, "addProperty", 39, callback);
-            });
-            testSuite.push(function(callback) {
-                breakOnMutation(win, "changeProperty", 44, callback);
+                    row.domObject = newVal;
+                    panel.breakOnProperty(row);
+
+                    var testSuite = [];
+                    testSuite.push(function(callback) {
+                        breakOnMutation(win, "changeProperty", 45, callback);
+                    });
+                    testSuite.push(function(callback) {
+                        FBTest.click(win.wrappedJSObject.document.getElementById("removeProperty"));
+                        callback();
+                    });
+                    testSuite.push(function(callback) {
+                        breakOnMutation(win, "addProperty", 40, callback);
+                    });
+                    testSuite.push(function(callback) {
+                        breakOnMutation(win, "changeProperty", 45, callback);
+                    });
+
+                    runTestSuite(testSuite);
+                })
             });
 
-            runTestSuite(testSuite);
+            // Click to expand object's properties.
+            FBTest.click(row);
         });
     });
 }
@@ -67,7 +84,7 @@ function getPropertyRow(panel, propName)
     for (var i=0; i<rows.length; i++)
     {
         var row = rows[i];
-        var label = FW.FBL.getElementByClass(row, "memberLabel", "userLabel");window.dump("label "+label.textContent+"\n");
+        var label = FW.FBL.getElementByClass(row, "memberLabel", "userLabel");
         if (label.textContent == propName)
             return row;
     }
