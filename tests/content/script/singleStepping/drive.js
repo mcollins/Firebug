@@ -71,7 +71,7 @@ function defineSingleStepping()
         FW.Firebug.Debugger.stepInto(FW.FirebugContext);
     };
 
-    singleStepping.stepIntoLineNo = 14;
+    singleStepping.stepIntoLineNo = 13;
     singleStepping.stepIntoFileName = "index.html";
     singleStepping.checkStepInto = function()
     {
@@ -96,7 +96,7 @@ function defineSingleStepping()
         FW.Firebug.Debugger.stepOver(FW.FirebugContext);
     };
 
-    singleStepping.stepOverLineNo = 15;
+    singleStepping.stepOverLineNo = 14;
     singleStepping.stepOverFileName = "index.html";
     singleStepping.checkStepOver = function()
     {
