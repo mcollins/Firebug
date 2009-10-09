@@ -1,4 +1,10 @@
 
+
+var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
+var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+var FF3p5OrLess = versionChecker.compare(appInfo.version, "3.5.*") <= 0;
+
+
 function defineSingleStepping()
 {
     window.singleStepping = new FBTest.Firebug.TestHandlers("singleStepping");
@@ -18,6 +24,8 @@ function defineSingleStepping()
 
     singleStepping.fileName = "index.html";
     singleStepping.breakOnNextLineNo = 2;
+    if (FF3p5OrLess)
+        singleStepping.breakOnNextLineNo = 2;
 
     singleStepping.selectFile = function()
     {
@@ -72,6 +80,9 @@ function defineSingleStepping()
     };
 
     singleStepping.stepIntoLineNo = 13;
+    if (FF3p5OrLess)
+        singleStepping.stepIntoLineNo = 14;
+
     singleStepping.stepIntoFileName = "index.html";
     singleStepping.checkStepInto = function()
     {
@@ -97,6 +108,10 @@ function defineSingleStepping()
     };
 
     singleStepping.stepOverLineNo = 14;
+
+    if (FF3p5OrLess)
+        singleStepping.stepOverLineNo = 15;
+
     singleStepping.stepOverFileName = "index.html";
     singleStepping.checkStepOver = function()
     {
@@ -154,6 +169,8 @@ function runTest()
         FBTest.ok(true, "We have the Firebug Window: "+FBTest.FirebugWindow.location);
     else
         FBTest.ok(false, "No Firebug Window");
+
+    FBTest.progress("Version dependent test, version "+appInfo.version+" is "+(FF3p5OrLess?"3.5 or less":"newer than 3.5")+" ="+versionChecker.compare(appInfo.version, "3.5*"));
 
     // Auto run sequence
     defineSingleStepping();
