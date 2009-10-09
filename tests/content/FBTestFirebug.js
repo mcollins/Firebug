@@ -822,7 +822,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     var doc = panel.panelNode.ownerDocument;
 
     // Complete attributes that must be set on sourceRow element.
-    var attributes = {"class": "sourceRow", exeline: "true"};
+    var attributes = {"class": "sourceRow", exe_line: "true"};
     if (breakpoint)
         attributes.breakpoint = breakpoint ? "true" : "false";
 
@@ -830,7 +830,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
     lookBP.onRecognize(function onBreak(sourceRow)
     {
-        FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exeline" +
+        FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exe_line" +
             (breakpoint ? " and breakpoint" : ""));
 
         var panel = chrome.getSelectedPanel();
