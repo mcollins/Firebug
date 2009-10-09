@@ -55,7 +55,7 @@ MutationRecognizer.prototype.matches = function(elt)
     // Note Text nodes have no tagName
     if (this.tagName == "Text")
     {
-        if (elt.data.indexOf(this.characterData) != -1)
+        if (elt.data && elt.data.indexOf(this.characterData) != -1)
         {
             FBTest.sysout("MutationRecognizer matches Text character data "+this.characterData);
             return true;
