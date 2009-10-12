@@ -527,7 +527,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (context.window && context.window instanceof Ci.nsIDOMWindow && !context.window.closed)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
-        context.panelName = FirebugContext.panelName; // don't change the panel with the context in Chromebug
+        if (FirebugContext)
+            context.panelName = FirebugContext.panelName; // don't change the panel with the context in Chromebug
 
         Firebug.showContext(context.browser, context);  // sets FirebugContext and syncs the tool bar
     },
