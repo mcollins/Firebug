@@ -54,6 +54,17 @@ var ChromeBugOverrides = {
 
     // Override Firebug.HTMLPanel.prototype
 
+    getFirstChild: function(node)
+    {
+        //http://mxr.mozilla.org/comm-central/source/mozilla/extensions/inspector/resources/content/viewers/dom/dom.js#819
+        this.treeWalker = CCIN("@mozilla.org/inspector/deep-tree-walker;1", "inIDeepTreeWalker");
+         this.treeWalker.showAnonymousContent = true;
+         this.treeWalker.showSubDocuments = true; // does not matter, we don't visit childern, only siblings
+         this.treeWalker.init(node, Components.interfaces.nsIDOMNodeFilter.SHOW_ALL);
+
+        return this.treeWalker.firstChild();
+    },
+
     // Override debugger
     supportsWindow: function(win)
     {
@@ -257,6 +268,9 @@ function overrideFirebugFunctions()
         {
              return false;
         };
+
+        //top.Firebug.HTMLPanel.prototype.getFirstChild = ChromeBugOverrides.getFirstChild;
+
         top.Firebug.Debugger.supportsWindow = ChromeBugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromeBugOverrides.supportsGlobal;
         top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromeBugOverrides.showThisSourceFile;
