@@ -165,8 +165,10 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
 
     getOptionsMenuItems: function()
     {
-         var items = this.controller.getOptionsMenuItems();
-         return items;
+         if (this.controller)
+            return this.controller.getOptionsMenuItems();
+
+         return [];
     },
 
     onPrefChange: function(optionName, optionValue)
