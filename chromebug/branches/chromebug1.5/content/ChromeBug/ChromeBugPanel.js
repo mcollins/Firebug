@@ -497,11 +497,19 @@ Firebug.Chromebug = extend(Firebug.Module,
         browser.contentWindow = domWindow;
         browser.tag = this.fakeTabBrowser.browsers.length;
 
-        var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
-        if (domWindow && 'location' in domWindow && domWindow.location && domWindow.location["toString"])
-            browserName = domWindow.location.toString();
+        var browserName = null;
+        if (domWindow)
+            var browserName = safeToString(domWindow.location);
+
+        if (!browserName)
+            var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
 
         browser.currentURI = makeURI(browserName);
+
+        if (!browser.currentURI)
+        {
+            FBTrace.sysout("createBrowser "+browser.tag+" for browserName "+browserName+' FAILED makeURI ' + (domWindow?safeToString(domWindow):"no domWindow") );
+        }
 
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
