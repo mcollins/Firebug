@@ -136,18 +136,3 @@ function pushButton(win, buttonId)
     var win = win.wrappedJSObject ? win.wrappedJSObject : win;
     FBTest.click(win.document.getElementById(buttonId));
 }
-
-function runTestSuite(tests, callback)
-{
-    setTimeout(function()
-    {
-        var test = tests.shift();
-        test.call(this, function() {
-            if (tests.length > 0)
-                runTestSuite(tests, callback);
-            else
-                callback();
-        });
-    }, 200);
-}
-

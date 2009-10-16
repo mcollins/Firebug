@@ -24,31 +24,19 @@ function runTest()
 
         // Realod window to activate debugger and run all tests.
         FBTestFirebug.reload(function(win) {
-            runTestSuite(testSuite);
+            runTestSuite(testSuite, function() {
+                FBTestFirebug.testDone("html.breakpoints; DONE");
+            });
         })
     });
-}
-
-function runTestSuite(tests)
-{
-    setTimeout(function()
-    {
-        FBTestFirebug.selectPanel("html");
-
-        var test = tests.shift();
-        test.call(this, function() {
-            if (tests.length > 0)
-                runTestSuite(tests);
-            else
-                FBTestFirebug.testDone("html.breakpoints; DONE");
-        });
-    }, 100);
 }
 
 function breakOnMutation(win, buttonId, lineNo, callback)
 {
     var chrome = FW.Firebug.chrome;
     chrome.resume(chrome.window.FirebugContext);
+
+    FBTestFirebug.selectPanel("html");
 
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {

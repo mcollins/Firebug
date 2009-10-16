@@ -23,27 +23,13 @@ function runTest()
             breakOnMutation(win, BP_BREAKONREMOVE, "breakOnNodeRemoved", 53, callback);
         });
 
-        // Realod window to activate debugger and run all tests.
+        // Reload window to activate debugger and run all tests.
         FBTestFirebug.reload(function(win) {
-            runTestSuite(testSuite);
+            runTestSuite(testSuite, function() {
+                FBTestFirebug.testDone("html.breakpoints; DONE");
+            });
         })
     });
-}
-
-function runTestSuite(tests)
-{
-    setTimeout(function()
-    {
-        FBTestFirebug.selectPanel("html");
-
-        var test = tests.shift();
-        test.call(this, function() {
-            if (tests.length > 0)
-                runTestSuite(tests);
-            else
-                FBTestFirebug.testDone("html.breakpoints; DONE");
-        });
-    }, 100);
 }
 
 function breakOnMutation(win, type, buttonId, lineNo, callback)
@@ -51,6 +37,8 @@ function breakOnMutation(win, type, buttonId, lineNo, callback)
     var chrome = FW.Firebug.chrome;
     var content = win.wrappedJSObject.document.getElementById("content");
     var context = chrome.window.FirebugContext;
+
+    FBTestFirebug.selectPanel("html");
 
     // Set breakpoint.
     FW.Firebug.HTMLModule.MutationBreakpoints.onModifyBreakpoint(context,

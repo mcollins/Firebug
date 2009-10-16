@@ -42,22 +42,11 @@ function runTest()
                 });
             });
 
-            runTestSuite(testSuite);
+            runTestSuite(testSuite, function() {
+                FBTestFirebug.testDone("search; DONE");
+            });
         });
     });
-}
-
-// Run various search configurations.
-function runTestSuite(tests)
-{
-    var test = tests.shift();
-    test.call(this, function()
-    {
-        if (tests.length > 0)
-            setTimeout(function() { runTestSuite(tests); }, 100);
-        else
-            FBTestFirebug.testDone("search; DONE");
-    })
 }
 
 // Set search box value and global search options.

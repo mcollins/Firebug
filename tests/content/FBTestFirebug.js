@@ -872,6 +872,7 @@ window.onerror = function(errType, errURL, errLineNum)
     return false;
 }
 */
+
 // ************************************************************************************************
 // Panel Navigation
 
@@ -904,9 +905,6 @@ this.selectSourceLine = function(url, lineNo, category, chrome)
     else
         FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
 }
-
-//************************************************************************************************
-
 
 //************************************************************************************************
 // Test Handlers  XXXjjb I would like to get rid of this one
@@ -1036,6 +1034,47 @@ this.TestHandlers.prototype =
 
 // ************************************************************************************************
 };
+
+// ************************************************************************************************
+// Support for asynchronous test suites (within a FBTest).
+
+/**
+ * Example:
+ * 
+ *  // A suite of asynchronous tests.
+ *  var testSuite = [];
+ *  testSuite.push(function(callback) {
+ *      // TODO: test implementation
+ *      // Continue with other tests.
+ *      callback();
+ *  });
+ *  testSuite.push(function(callback) {
+ *      // TODO: test implementation
+ *      // Continue with other tests.
+ *      callback();
+ *  });
+
+ *  // Run entire suite.
+ *  runTestSuite(testSuite, function() {
+ *      FBTestFirebug.testDone("DONE");
+ *  });
+ * 
+ */
+function runTestSuite(tests, callback)
+{
+    setTimeout(function()
+    {
+        var test = tests.shift();
+        test.call(this, function() {
+            if (tests.length > 0)
+                runTestSuite(tests, callback);
+            else
+                callback();
+        });
+    }, 200);
+}
+
+// ************************************************************************************************
 
 // Initialization
 function initializeFBTestFirebug()
