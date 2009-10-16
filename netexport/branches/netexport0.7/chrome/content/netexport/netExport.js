@@ -192,6 +192,8 @@ JSONBuilder.prototype =
 {
     build: function(context)
     {
+        this.context = context;
+
         var panel = context.getPanel("net");
 
         // Build basic structure for data.
@@ -225,9 +227,12 @@ JSONBuilder.prototype =
         page.startedDateTime = 0;
 
         // Page title and ID comes from a document object that is shared by
-        // all requests executed by the same page.
-        page.id = "page_" + file.document.id;
-        page.title = file.document.title;
+        // all requests executed by the same page (since Firebug 1.5b1).
+        var pageId = file.document.id;
+        var title = file.document.title;
+
+        page.id = "page_" + (pageId ? pageId : "0");
+        page.title = title ? title : this.context.getTitle();
         return page;
     },
 
