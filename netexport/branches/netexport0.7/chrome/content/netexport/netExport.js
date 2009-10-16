@@ -185,6 +185,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
 
 function JSONBuilder()
 {
+    this.pageMap = [];
 }
 
 JSONBuilder.prototype =
@@ -194,39 +195,58 @@ JSONBuilder.prototype =
         var panel = context.getPanel("net");
 
         // Build basic structure for data.
-        var log = this.buildLog(context);
+        var log = this.buildLog();
 
         // Build entries.
         var self = this;
         panel.enumerateRequests(function(file) {
-            log.entries.push(self.buildEntry(log.pages[0], file));
+            log.entries.push(self.buildEntry(log, file));
         })
 
         return {log:log};
     },
 
-    buildLog: function(context)
+    buildLog: function()
     {
         var log = {};
         log.version = harVersion;
         log.creator = {name: "Firebug", version: Firebug.version};
         log.browser = {name: appInfo.name, version: appInfo.version};
-        log.pages = [this.buildPage(context)];
+        log.pages = [];
         log.entries = [];
         return log;
     },
 
-    buildPage: function(context)
+    buildPage: function(file)
     {
         var page = {};
-        page.startedDateTime = 0; // Computed from the first request start time.
-        page.id = "page_0";
-        page.title = context.getTitle();
+
+        // Page start time is set when the first request is processed (see buildEntry)
+        page.startedDateTime = 0;
+
+        // Page title and ID comes from a document object that is shared by
+        // all requests executed by the same page.
+        page.id = "page_" + file.document.id;
+        page.title = file.document.title;
         return page;
     },
 
-    buildEntry: function(page, file)
+    getPage: function(log, file)
     {
+        var page = this.pageMap[file.document.id];
+        if (page)
+            return page;
+
+        this.pageMap[file.document.id] = page = this.buildPage(file);
+        log.pages.push(page); 
+
+        return page;
+    },
+
+    buildEntry: function(log, file)
+    {
+        var page = this.getPage(log, file);
+
         var entry = {};
         entry.pageref = page.id;
         entry.startedDateTime = dateToJSON(new Date(file.startTime));
