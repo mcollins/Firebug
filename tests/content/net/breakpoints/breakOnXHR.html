@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for Conditional XHR Breakpoints</title>
+</head>
+<body>
+<div id="content"></div>
+
+<h1>Break On XHR</h1>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+
+<p>This test is intended to verify <i>Conditional XHR Breakpoints</i> support within the
+Net panel.
+</p>
+
+<ol>
+<li>Open Firebug and select the Net panel.</li>
+
+<button id="executeRequest1" onclick="executeRequest(1)">param == 1</button>
+<button id="executeRequest2" onclick="executeRequest(2)">param == 2</button>
+<button onclick="executePostRequest('Example Posted Data')">postData == "Example Posted Data"</button>
+<button onclick="executePostRequest('Posted Data')">postData == "Posted Data"</button>
+
+<script type="text/javascript">
+function executeRequest(value)
+{
+    var request = new XMLHttpRequest();
+    request.open("POST", "process1.php?param=" + value, true);
+    request.send(null);
+}
+
+function executePostRequest(value)
+{
+    var request = new XMLHttpRequest();
+    request.open("POST", "process2.php", true);
+    request.send(value);
+}
+</script>
+  
+</body>
+</html>
