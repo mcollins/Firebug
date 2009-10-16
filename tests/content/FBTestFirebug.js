@@ -67,17 +67,17 @@ MutationRecognizer.prototype.matches = function(elt)
         }
     }
 
-    if ( !(elt instanceof Element) )
+    if (!(elt instanceof Element))
     {
         FBTest.sysout("MutationRecognizer Node not an Element ", elt);
         return false;
     }
 
-   if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
-   {
-       FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), {element: elt, recogizer: this});
-       return false;
-   }
+    if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
+    {
+        FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), {element: elt, recogizer: this});
+        return false;
+    }
 
     for (var p in this.attributes)
     {
@@ -93,9 +93,14 @@ MutationRecognizer.prototype.matches = function(elt)
             {
                 if (p == 'class')
                 {
-                    if (eltP.indexOf(this.attributes[p]) < 0)
+                    var args = [elt];
+                    args = args.concat(this.attributes[p].split(" "));
+
+                    if (!FW.FBL.hasClass.apply(FW.FBL, args))
                     {
-                        FBTest.sysout("MutationRecognizer no match for class "+this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class')+" indexOf: "+eltP.indexOf(this.attributes[p]));
+                        FBTest.sysout("MutationRecognizer no match for class " +
+                            this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class') +
+                            " indexOf: "+eltP.indexOf(this.attributes[p]));
                         return false;
                     }
                 }
@@ -116,6 +121,7 @@ MutationRecognizer.prototype.matches = function(elt)
             return false;
         }
     }
+
     // tagName and all attributes match
     FBTest.sysout("MutationRecognizer tagName and all attributes match "+elt, elt);
     return true;
