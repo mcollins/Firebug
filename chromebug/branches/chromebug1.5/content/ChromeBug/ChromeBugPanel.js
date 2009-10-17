@@ -1290,12 +1290,12 @@ Firebug.Chromebug = extend(Firebug.Module,
                         message = info.wrappedJSObject.repObject;
                     if (message)
                     {
-                        var filename = event.target.text;
+                        var filename = encodeURI(event.target.text);
 
                         var found = Chromebug.allFilesList.eachSourceFileDescription(function findMatching(d)
                         {
                             var testName = d.href;
-                            //window.dump(filename +"=?="+testName+"\n");
+                            //FBTrace.sysout("click traceConsole filename "+ filename +"=?="+testName);
                             if (testName == filename)
                             {
                                 var context = d.context;
