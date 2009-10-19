@@ -737,7 +737,7 @@ this.getPref = function(pref)
 // ************************************************************************************************
 // Debugger
 
-this.clickContinueButton = function(breakOnNext, chrome)
+this.clickContinueButton = function(chrome)
 {
     if (!chrome)
         chrome = FW.FirebugChrome;
@@ -745,28 +745,25 @@ this.clickContinueButton = function(breakOnNext, chrome)
     var doc = chrome.window.document;
     var button = doc.getElementById("fbContinueButton");
 
-    if (breakOnNext)
-    {
-        if (button.getAttribute("breakable") == "true")
-        {
-            FBTest.sysout("FBTestFirebug breakable true, resuming should arm break on next");
-            FW.FirebugChrome.resume(chrome.window.FirebugContext);
-            FBTest.sysout("FBTestFirebug breakable true, armed break on next");
-            return true;
-        }
-        FBTest.sysout("FBTestFirebug clickContinueButton not armed for breakOnNext breakable:"+button.getAttribute("breakable"), button);
-        return false; // not breakable
-    }
+    FBTest.click(button);
+}
 
-    if (button.getAttribute("breakable") == "off")
-    {
-        FBTest.sysout("FBTestFirebug breakable off, resuming debugger in "+chrome.window.location+" for context "+chrome.window.FirebugContext);
-        FW.FirebugChrome.resume(chrome.window.FirebugContext);
-        FBTest.sysout("FBTestFirebug breakable off, resumed debugger");
-        return true;
-    }
-    FBTest.sysout("FBTestFirebug clickContinueButton not armed for continue breakable:"+button.getAttribute("breakable"), button);
-    return false; // not breakable
+this.clickBreakOnNextButton = function(chrome)
+{
+    if (!chrome)
+        chrome = FW.FirebugChrome;
+
+    var doc = chrome.window.document;
+    var button = doc.getElementById("fbBreakOnNextButton");
+    var breakable = button.getAttribute("breakable");
+
+    if (breakable == "true")
+        FBTest.sysout("FBTestFirebug breakable true, click should arm break on next");
+    else if (breakable == "false")
+        FBTest.sysout("FBTestFirebug breakable false, click should disarm break on next");
+    else FBTest.sysout("FBTestFirebug breakOnNext breakable:"+breakable, button);
+
+    FBTest.click(button);
 }
 
 this.getSourceLineNode = function(lineNo, chrome)
@@ -1040,7 +1037,7 @@ this.TestHandlers.prototype =
 
 /**
  * Example:
- * 
+ *
  *  // A suite of asynchronous tests.
  *  var testSuite = [];
  *  testSuite.push(function(callback) {
@@ -1058,7 +1055,7 @@ this.TestHandlers.prototype =
  *  runTestSuite(testSuite, function() {
  *      FBTestFirebug.testDone("DONE");
  *  });
- * 
+ *
  */
 function runTestSuite(tests, callback)
 {

@@ -44,8 +44,8 @@ function defineSingleStepping()
 
     singleStepping.breakOnNext = function(panel)
     {
-        var canBreakOnNext = FBTestFirebug.clickContinueButton(true);
-        FBTest.ok(canBreakOnNext, "The breakOnNext button was pushable");
+        FBTestFirebug.clickBreakOnNextButton(true);
+        FBTest.progress("The breakOnNext button was pushed");
 
         var doc = FW.document;
         var button = doc.getElementById("fbContinueButton");
@@ -151,8 +151,8 @@ function defineSingleStepping()
         if (!row)
             FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row);
 
-        var canContinue = FBTestFirebug.clickContinueButton(false);
-        FBTest.ok(canContinue, "The continue button was pushable");
+        FBTestFirebug.clickContinueButton();
+        FBTest.progress("The continue button was pushed");
 
         FBTestFirebug.testDone("singleStepping.DONE");
     };

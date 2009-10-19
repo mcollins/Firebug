@@ -87,8 +87,8 @@ function runTest()
                             FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
 
-                        var canContinue = FBTestFirebug.clickContinueButton(false, detachedFW.FirebugChrome);
-                        FBTest.ok(canContinue, "The continue button is pushed");
+                        FBTestFirebug.clickContinueButton(detachedFW.FirebugChrome);
+                        FBTest.progress( "The continue button is pushed");
 
                         FBTest.progress("breakpoint checks complete");
                     });

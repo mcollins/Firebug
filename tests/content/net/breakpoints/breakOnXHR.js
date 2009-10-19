@@ -85,8 +85,8 @@ function breakOnXHR(win, lineNo, callback)
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
         FBTest.sysout("net.breakpoints; Break on XHR OK");
-        FBTest.ok(FBTestFirebug.clickContinueButton(false, chrome),
-            "The continue button is pushed");
+        FBTestFirebug.clickContinueButton(chrome);
+        FBTest.progress("The continue button is pushed");
         callback();
     });
 

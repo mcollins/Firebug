@@ -34,8 +34,8 @@ function runTest()
                     FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
                 checkWatchPanel();
-                var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
-                FBTest.ok(canContinue, "The continue button is pushable");
+                FBTestFirebug.clickContinueButton(chrome);
+                FBTest.progress("The continue button is pushed");
 
             });
 

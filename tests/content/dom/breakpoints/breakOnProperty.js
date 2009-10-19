@@ -70,8 +70,8 @@ function breakOnMutation(win, buttonId, lineNo, callback)
     var chrome = FW.Firebug.chrome;
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
-        FBTest.ok(FBTestFirebug.clickContinueButton(false, chrome),
-            "The continue button is pushed");
+        FBTestFirebug.clickContinueButton(chrome);
+        FBTest.progress("The continue button is pushed");
         callback();
     });
 

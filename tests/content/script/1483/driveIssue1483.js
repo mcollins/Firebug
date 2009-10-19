@@ -60,9 +60,9 @@ function defineIssue1483()
             if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should NOT have a breakpoint set"))
                 FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row);
 
-            var canContinue = FBTestFirebug.clickContinueButton(false, chrome);
+            FBTestFirebug.clickContinueButton(chrome);
 
-            FBTest.ok(canContinue, "The continue button is pused");
+            FBTest.progress("The continue button is pused");
 
             FBTestFirebug.testDone("issue1483.DONE");
 
