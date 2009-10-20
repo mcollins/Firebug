@@ -763,8 +763,11 @@ this.clickBreakOnNextButton = function(chrome)
         FBTest.sysout("FBTestFirebug breakable false, click should disarm break on next");
     else FBTest.sysout("FBTestFirebug breakOnNext breakable:"+breakable, button);
 
-    FBTest.click(button);
-    FBTest.sysout("clickBreakOnNextButton ", button);
+    // HACK, click does not work
+    chrome.breakOnNext(FW.FirebugContext);
+
+    //FBTest.click(button);
+    FBTest.sysout("clickBreakOnNextButton HACK ", button);
 }
 
 this.getSourceLineNode = function(lineNo, chrome)
