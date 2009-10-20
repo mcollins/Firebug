@@ -91,23 +91,25 @@ function runTest()
                         FBTest.progress( "The continue button is pushed");
 
                         FBTest.progress("breakpoint checks complete");
+
+                        FBTest.progress("Now reload");
+
+                        FBTestFirebug.reload(function ()  // waitForBreakInDebugger should hit first
+                        {
+                            FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
+                            var panel = detachedFW.FirebugChrome.getSelectedPanel();
+                            FBTest.compare(panel.name, 'script', "The script panel should be selected");
+
+                            FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
+                            FBTest.progress("close detached window");
+                            detachedFW.close();
+
+                            //testAlwaysOpenOption();
+                            FBTestFirebug.testDone("openInNewWindow.DONE");
+                        });
                     });
 
-                    FBTest.progress("Now reload");
 
-                    FBTestFirebug.reload(function ()  // waitForBreakInDebugger should hit first
-                    {
-                        FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
-                        var panel = detachedFW.FirebugChrome.getSelectedPanel();
-                        FBTest.compare(panel.name, 'script', "The script panel should be selected");
-
-                        FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
-                        FBTest.progress("close detached window");
-                        detachedFW.close();
-
-                        //testAlwaysOpenOption();
-                        FBTestFirebug.testDone("openInNewWindow.DONE");
-                    });
 
                 }, true);
             } , true);

@@ -764,6 +764,7 @@ this.clickBreakOnNextButton = function(chrome)
     else FBTest.sysout("FBTestFirebug breakOnNext breakable:"+breakable, button);
 
     FBTest.click(button);
+    FBTest.sysout("clickBreakOnNextButton ", button);
 }
 
 this.getSourceLineNode = function(lineNo, chrome)
@@ -818,7 +819,7 @@ this.getSourceLineNode = function(lineNo, chrome)
  */
 this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
 {
-    FBTest.progress("fbTestFirebug.waitForBreakInDebugger; " + chrome.window.location);
+    FBTest.progress("fbTestFirebug.waitForBreakInDebugger in chrome.window" + chrome.window.location);
 
     // Get document of Firebug's panel.html
     var panel = chrome.getSelectedPanel();
@@ -829,8 +830,9 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     if (breakpoint)
         attributes.breakpoint = breakpoint ? "true" : "false";
 
-    // Wait for the UI modification that shows the source line where break happend.
+    // Wait for the UI modification that shows the source line where break happened.
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
+
     lookBP.onRecognize(function onBreak(sourceRow)
     {
         FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exe_line" +
@@ -854,6 +856,8 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
             FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
         }
     });
+
+    FBTest.sysout("fbTestFirebug.waitForBreakInDebugger recognizing ", lookBP);
 }
 
 // ************************************************************************************************

@@ -44,11 +44,11 @@ function defineSingleStepping()
 
     singleStepping.breakOnNext = function(panel)
     {
-        FBTestFirebug.clickBreakOnNextButton(true);
+        FBTestFirebug.clickBreakOnNextButton(FW.Firebug.chrome);
         FBTest.progress("The breakOnNext button was pushed");
 
         var doc = FW.document;
-        var button = doc.getElementById("fbContinueButton");
+        var button = doc.getElementById("fbBreakOnNextButton");
         FBTest.compare("false", button.getAttribute("breakable"), "The button is armed for break")
 
         FBTest.progress("Listen for exeline true, meaning the breakOnNext hit");
