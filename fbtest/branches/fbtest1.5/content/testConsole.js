@@ -640,6 +640,9 @@ var FBTest = FBTestApp.FBTest =
             FBTest.FirebugWindow.Firebug.toggleAll("none");
         }
 
+        if (FBTest.FirebugWindow.Firebug.isDetached())
+            FBTest.FirebugWindow.Firebug.toggleDetachBar();
+
         FBTest.FirebugWindow.Firebug.resetAllOptions(false);
     },
 
