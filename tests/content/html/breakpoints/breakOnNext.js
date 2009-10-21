@@ -36,7 +36,7 @@ function breakOnMutation(win, buttonId, lineNo, callback)
     FBTestFirebug.selectPanel("html");
 
     var chrome = FW.Firebug.chrome;
-    chrome.resume(chrome.window.FirebugContext);
+    FBTestFirebug.clickBreakOnNextButton(chrome);
 
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
