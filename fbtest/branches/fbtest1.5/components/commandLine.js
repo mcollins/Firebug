@@ -63,10 +63,7 @@ var CommandLineHandler =
     startOnStartup: function(testListURI)
     {
         if (!testListURI)
-        {
-            window.dump("FBTest; No test list URI specified. Default list will be used.\n");
-            testListURI = "chrome://firebug/content/testList.html";
-        }
+            window.dump("FBTest; No test list URI specified.");
 
         // This info will be used by FBTest overlay as soon as the browser window is loaded.
         this.runFBTests = true;
@@ -82,8 +79,6 @@ var CommandLineHandler =
     // xxxHonza: weird is that if I run Firefox with -help parameter the second column
     // begins on 33th character.
     helpInfo: "  -" + CMDLINE_FLAG + " <test-list-uri>   Automatically run all Firebug tests \n" +
-              "                                from the specified test list. If no \n" +
-              "                                list is specified default is used:  \n" +
               "                                chrome://firebug/content/testList.html\n",
 
     /* nsIFactory */
