@@ -71,44 +71,46 @@ function runTest()
                     // Select proper JS file.
                     FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
                     setBreakpoint(detachedFW);
-
-                    FBTestFirebug.waitForBreakInDebugger(detachedFW.FirebugChrome,
-                        issue1483.lineNo, true, function closeOut()
+                    setTimeout( function delayThenWait()
                     {
-                        FBTest.progress("Remove breakpoint from "+detachedFW.location);
-                        var panel = detachedFW.FirebugChrome.getSelectedPanel();
-                        FBTest.progress("Remove breakpoint by toggle, from selected panel "+panel.name);
-                        panel.toggleBreakpoint(issue1483.lineNo);
+                            FBTestFirebug.waitForBreakInDebugger(detachedFW.FirebugChrome,
+                                    issue1483.lineNo, true, function closeOut()
+                                {
+                                    FBTest.progress("Remove breakpoint from "+detachedFW.location);
+                                    var panel = detachedFW.FirebugChrome.getSelectedPanel();
+                                    FBTest.progress("Remove breakpoint by toggle, from selected panel "+panel.name);
+                                    panel.toggleBreakpoint(issue1483.lineNo);
 
-                        FBTest.progress("Removed breakpoint from selected panel "+panel.name);
-                        var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo, detachedFW.FirebugChrome);
+                                    FBTest.progress("Removed breakpoint from selected panel "+panel.name);
+                                    var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo, detachedFW.FirebugChrome);
 
-                        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ issue1483.lineNo+" should NOT have a breakpoint set"))
-                            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
+                                    if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ issue1483.lineNo+" should NOT have a breakpoint set"))
+                                        FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
 
 
-                        FBTestFirebug.clickContinueButton(detachedFW.FirebugChrome);
-                        FBTest.progress( "The continue button is pushed");
+                                    FBTestFirebug.clickContinueButton(detachedFW.FirebugChrome);
+                                    FBTest.progress( "The continue button is pushed");
 
-                        FBTest.progress("breakpoint checks complete");
+                                    FBTest.progress("breakpoint checks complete");
 
-                        FBTest.progress("Now reload");
 
-                        FBTestFirebug.reload(function ()  // waitForBreakInDebugger should hit first
-                        {
-                            FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
-                            var panel = detachedFW.FirebugChrome.getSelectedPanel();
-                            FBTest.compare(panel.name, 'script', "The script panel should be selected");
+                                });
+                            FBTest.progress("Now reload");
+                            FBTestFirebug.reload(function ()
+                            {
+                                FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
+                                var panel = detachedFW.FirebugChrome.getSelectedPanel();
+                                FBTest.compare(panel.name, 'script', "The script panel should be selected");
 
-                            FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
-                            FBTest.progress("close detached window");
-                            detachedFW.close();
+                                FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
+                                FBTest.progress("close detached window");
+                                detachedFW.close();
 
-                            //testAlwaysOpenOption();
-                            FBTestFirebug.testDone("openInNewWindow.DONE");
-                        });
-                    });
+                                //testAlwaysOpenOption();
+                                FBTestFirebug.testDone("openInNewWindow.DONE");
+                            });
 
+                    }, 100);
 
 
                 }, true);
