@@ -746,11 +746,8 @@ this.clickContinueButton = function(chrome)
     var button = doc.getElementById("fbContinueButton");
     FBTest.sysout("clickContinueButton", button);
 
-    // HACK, click does not work
-    FW.Firebug.Debugger.resume(FW.FirebugContext);
-
-    //FBTest.click(button);
-    FBTest.sysout("clickContinueButton HACK ", button);
+    // Do not use FBTest.click, toolbar buttons need doCommand.
+    button.doCommand();
 }
 
 this.clickBreakOnNextButton = function(chrome)
@@ -766,13 +763,11 @@ this.clickBreakOnNextButton = function(chrome)
         FBTest.sysout("FBTestFirebug breakable true, click should arm break on next");
     else if (breakable == "false")
         FBTest.sysout("FBTestFirebug breakable false, click should disarm break on next");
-    else FBTest.sysout("FBTestFirebug breakOnNext breakable:"+breakable, button);
+    else
+        FBTest.sysout("FBTestFirebug breakOnNext breakable:"+breakable, button);
 
-    // HACK, click does not work
-    chrome.breakOnNext(FW.FirebugContext);
-
-    //FBTest.click(button);
-    FBTest.sysout("clickBreakOnNextButton HACK ", button);
+    // Do not use FBTest.click, toolbar buttons need doCommand.
+    button.doCommand();
 }
 
 this.getSourceLineNode = function(lineNo, chrome)
