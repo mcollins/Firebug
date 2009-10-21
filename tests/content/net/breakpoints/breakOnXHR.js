@@ -44,6 +44,8 @@ function addBreakpoint(win, callback)
 
     var panel = FBTestFirebug.selectPanel("net");
 
+    panel.context.netProgress.breakpoints.breakpoints = [];
+
     // Create listener for mutation events.
     var doc = FBTestFirebug.getPanelDocument();
     var recognizer = new MutationRecognizer(doc.defaultView, "tr",
@@ -52,33 +54,53 @@ function addBreakpoint(win, callback)
     // Wait till the XHR request is visible
     recognizer.onRecognize(function(row)
     {
-        // Wait till the repObject is set.
-        row.watch("repObject", function(prop, oldVal, newVal)
+        FBTest.sysout("net.breakpoints; XHR visible");
+
+        if (row.repObject)
         {
-            var bpUrl = basePath + "net/breakpoints/process1.php";
-            var breakpoints = panel.context.netProgress.breakpoints;
-
-            var bp = breakpoints.findBreakpoint(bpUrl);
-            FBTest.ok(!bp, "XHR breakpoint for 'process1.php' must not exist.");
-
-            // Create a new breakpoint.
-            panel.breakOnRequest(newVal);
-
-            bp = breakpoints.findBreakpoint(bpUrl);
-            FBTest.ok(bp, "XHR breakpoint for 'process1.php' must exist.");
-
-            callback();
-
-            return newVal;
-        });
+            createBreakpoint(panel, row.repObject, callback);
+        }
+        else
+        {
+            // Wait till the repObject is set.
+            row.watch("repObject", function(prop, oldVal, newVal)
+            {
+                row.unwatch("repObject");
+                createBreakpoint(panel, newVal, callback);
+                return newVal;
+            });
+        }
     });
 
     pushButton(win, "executeRequest1");
+
+    FBTest.sysout("net.breakpoints; XHR executed");
+}
+
+function createBreakpoint(panel, repObject, callback)
+{
+    FBTest.sysout("net.breakpoints; createBreakpoint", repObject);
+
+    var bpUrl = basePath + "net/breakpoints/process1.php";
+    var breakpoints = panel.context.netProgress.breakpoints;
+
+    var bp = breakpoints.findBreakpoint(bpUrl);
+    FBTest.ok(!bp, "XHR breakpoint for 'process1.php' must not exist.");
+
+    // Create a new breakpoint.
+    panel.breakOnRequest(repObject);
+
+    bp = breakpoints.findBreakpoint(bpUrl);
+    FBTest.ok(bp, "XHR breakpoint for 'process1.php' must exist.");
+
+    callback();
 }
 
 function breakOnXHR(win, lineNo, callback)
 {
     FBTest.sysout("net.breakpoints; breakOnXHR");
+
+    FBTestFirebug.selectPanel("script");
 
     // Wait for break.
     var chrome = FW.Firebug.chrome;

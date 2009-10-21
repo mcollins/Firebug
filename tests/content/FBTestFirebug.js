@@ -744,8 +744,13 @@ this.clickContinueButton = function(chrome)
 
     var doc = chrome.window.document;
     var button = doc.getElementById("fbContinueButton");
+    FBTest.sysout("clickContinueButton", button);
 
-    FBTest.click(button);
+    // HACK, click does not work
+    FW.Firebug.Debugger.resume(FW.FirebugContext);
+
+    //FBTest.click(button);
+    FBTest.sysout("clickContinueButton HACK ", button);
 }
 
 this.clickBreakOnNextButton = function(chrome)
