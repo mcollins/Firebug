@@ -746,8 +746,8 @@ this.clickContinueButton = function(chrome)
     var button = doc.getElementById("fbContinueButton");
     FBTest.sysout("clickContinueButton", button);
 
-    // Do not use FBTest.click, toolbar buttons need doCommand.
-    button.doCommand();
+    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
+    this.synthesizeMouse(button);
 }
 
 this.clickBreakOnNextButton = function(chrome)
@@ -766,8 +766,22 @@ this.clickBreakOnNextButton = function(chrome)
     else
         FBTest.sysout("FBTestFirebug breakOnNext breakable:"+breakable, button);
 
-    // Do not use FBTest.click, toolbar buttons need doCommand.
-    button.doCommand();
+    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
+    this.synthesizeMouse(button);
+}
+
+this.synthesizeMouse = function(node)
+{
+    var doc = node.ownerDocument;
+    var utils = doc.defaultView.QueryInterface(Ci.nsIInterfaceRequestor).
+        getInterface(Ci.nsIDOMWindowUtils);
+
+    if (utils)
+    {
+        var rect = node.getBoundingClientRect();
+        utils.sendMouseEvent("mousedown", rect.left, rect.top, 0, 1, 0);
+        utils.sendMouseEvent("mouseup", rect.left, rect.top, 0, 1, 0);
+    }
 }
 
 this.getSourceLineNode = function(lineNo, chrome)
