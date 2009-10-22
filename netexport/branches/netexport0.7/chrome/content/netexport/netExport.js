@@ -59,7 +59,8 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         // Build entries.
         var numberOfRequests = 0;
         panel.enumerateRequests(function(file) {
-            numberOfRequests++;
+            if (file.loaded)
+                numberOfRequests++;
         })
 
         if (numberOfRequests > 0)
@@ -202,7 +203,8 @@ JSONBuilder.prototype =
         // Build entries.
         var self = this;
         panel.enumerateRequests(function(file) {
-            log.entries.push(self.buildEntry(log, file));
+            if (file.loaded)
+                log.entries.push(self.buildEntry(log, file));
         })
 
         return {log:log};
