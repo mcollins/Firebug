@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for HTML Mutation</title>
+  <style type="text/css">
+    body > div {
+      background-color: red;
+      min-height: 1em;
+      margin: 25px;
+    }
+    div > div {
+      background-color: green;
+      min-height: 1em;
+    }
+  </style>
+</head>
+<body>
+
+Mutate Text:
+<div id="mutateText" onclick="onMutateText('mutateText')">&nbsp;<div></div></div>
+
+Mutate Text Inline:
+<div id="mutateTextInline" onclick="onMutateText('mutateTextInline')">Test</div>
+
+Mutate Node:
+<div id="mutateNode" onclick="onMutateNode('mutateNode')">&nbsp;<div></div></div>
+
+Mutate Node Text:
+<div id="mutateNodeText" onclick="onMutateNode('mutateNodeText')">Test</div>
+
+Mutate Node Empty:
+<div id="mutateNodeEmpty" onclick="onMutateNode('mutateNodeEmpty')"></div>
+
+Remove Node:
+<div id="removeNode" onclick="onRemoveNode('removeNode', 1)">&nbsp;<div></div></div>
+
+Remove Node Text:
+<div id="removeNodeText" onclick="onRemoveNode('removeNodeText', 0)">Test<div></div></div>
+
+Remove Node Empty:
+<div id="removeNodeEmpty" onclick="onRemoveNode('removeNodeEmpty', 0)">Test</div>
+
+Mutate Attr New:
+<div id="mutateAttrNew" onclick="onMutateAttr('mutateAttrNew', 'title', 'boo')"><div></div></div>
+
+Mutate Attr Set:
+<div id="mutateAttrSet" onclick="onMutateAttr('mutateAttrSet', 'title', 'boo')"><div title="test"></div></div>
+
+Mutate Attr Remove:
+<div id="mutateAttrRemove" onclick="onMutateAttr('mutateAttrRemove', 'title')"><div title="test"></div></div>
+
+Mutate Test Race Condition:
+<div id="mutateRemovedRace" onclick="onMutateRemovedRace('mutateRemovedRace')">&nbsp;<div></div></div>
+
+</body>
+</html>
