@@ -7,6 +7,7 @@
     <em:id>firefocus@incaseofstairs.com</em:id>
     <em:version>1.0</em:version>
     <em:type>2</em:type>
+    <em:optionsURL>chrome://firefocus/content/options.xul</em:optionsURL>
 
     <!-- Firefox -->
     <em:targetApplication>

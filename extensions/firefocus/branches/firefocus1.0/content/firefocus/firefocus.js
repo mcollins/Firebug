@@ -8,6 +8,24 @@ var i18n = document.getElementById("strings_firefocus");
 Firebug.FocusModule = extend(Firebug.Module, {
   //////////////////////////////////////////////
   // Module
+  initialize: function(prefDomain, prefNames) {
+    var prefs = [ "firefocus.logFocus", "firefocus.highlightFocus" ];
+    for (var i = 0; i < prefs.length; i++) {
+      this.updateOption(prefs[i], Firebug.getPref(prefDomain, prefs[i]));
+    }
+  },
+  updateOption: function(name, data) {
+    switch (name) {
+    case "firefocus.logFocus":
+      this.prefLogFocus = data;
+      break;
+
+    case "firefocus.highlightFocus":
+      this.prefHighlightFocus = data;
+      break;
+    }
+  },
+
   initContext: function(context, persistedState) {
     this.monitorContext(context);
   },
@@ -26,7 +44,7 @@ Firebug.FocusModule = extend(Firebug.Module, {
     var panel = context.getPanel("html", true),
         target = event.target;
 
-    if (this.getLogFocusPref() && Firebug.Console.isAlwaysEnabled()) {
+    if (this.prefLogFocus && Firebug.Console.isAlwaysEnabled()) {
       Firebug.Console.logFormatted([i18n.getString("log.FocusIn"), target], context, "focusIn", true, null);
     }
 
@@ -41,7 +59,7 @@ Firebug.FocusModule = extend(Firebug.Module, {
     var panel = context.getPanel("html", true),
         target = event.target;
 
-    if (this.getLogFocusPref() && Firebug.Console.isAlwaysEnabled()) {
+    if (this.prefLogFocus && Firebug.Console.isAlwaysEnabled()) {
       Firebug.Console.logFormatted([i18n.getString("log.FocusOut"), target], context, "focusOut", true, null);
     }
 
@@ -57,7 +75,7 @@ Firebug.FocusModule = extend(Firebug.Module, {
   // This has the slight differences that rather than using a class timeout, the class
   // remains on until blur is called.
   highlightFocus: function(elt, objectBox, type, panel) {
-    if (!elt || !Firebug.getPref(Firebug.prefDomain, "firefocus.highlightFocus"))
+    if (!elt || !this.prefHighlightFocus)
         return;
 
     var ioBox = panel.ioBox,
@@ -79,10 +97,6 @@ Firebug.FocusModule = extend(Firebug.Module, {
     }
 
     setClass(elt, type);
-  },
-
-  getLogFocusPref: function() {
-    return Firebug.getPref(Firebug.prefDomain, "firefocus.logFocus");
   },
 
   addStyleSheet: function(doc) {
