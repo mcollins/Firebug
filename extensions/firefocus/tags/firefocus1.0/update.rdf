@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <RDF:Description about="urn:mozilla:extension:firefocus@incaseofstairs.com">
+    <em:updates>
+      <RDF:Seq>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.0</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>3.0</em:minVersion>
+                <em:maxVersion>3.5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.0.xpi</em:updateLink>
+                <em:updateHash>sha1:eaefd5883f154a3dd4801166ff3e610a06956332</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+      </RDF:Seq>
+    </em:updates>
+
+    <em:signature>
+      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAITVQ/PU5QpS4lSAlk4OXdckFHjZ4kghdahyCS89pL18MZ
+      F5/YCrHhWRJuwmrP4cCKLzAd0Si2spvzUuZsT47Ue4ah5BQd/s3uJQ9/Y+hLru5lxuGKxAZbN8
+      OlcX7bPDAnG7WAy6N/Z5C0Y41MdgYiB7B/Rq93SxEAsWzC/egb0w
+    </em:signature>
+  </RDF:Description>
+</RDF:RDF>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<!DOCTYPE window>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="strings_firefocus" src="chrome://firefocus/locale/firefocus.properties"/>
+  </stringbundleset>
+
+  <script src="chrome://firefocus/content/firefocus.js" type="application/x-javascript"/>
+</overlay>
