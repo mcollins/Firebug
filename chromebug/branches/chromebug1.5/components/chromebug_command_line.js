@@ -302,6 +302,11 @@ function tmpout(text)
     fbs.foStream.write(text, text.length);
 }
 
+function unwrapIValue(object)
+{
+    return object.getWrappedValue();  // this should be the only call to getWrappedValue in firebug
+}
+
 fbs.trackFiles  = {
     allFiles: {},
     avoidSelf: function(URI)
@@ -324,7 +329,7 @@ fbs.trackFiles  = {
         var jscontext = frame.executionContext;
         if (jscontext)
         {
-            frameGlobal = jscontext.globalObject.getWrappedValue();
+            frameGlobal = unwrapIValue(jscontext.globalObject);
             scopeName = fbs.getLocationSafe(frameGlobal);
             if (!scopeName)
                 scopeName = "noGlobalObjectLocationInJSContext:"+(jscontext?jscontext.tag:"none");

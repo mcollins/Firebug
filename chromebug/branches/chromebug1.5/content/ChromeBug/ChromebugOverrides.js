@@ -103,7 +103,7 @@ var ChromeBugOverrides = {
                     while(scope.jsParent) // walk to the oldest scope
                         scope = scope.jsParent;
 
-                    var global = scope.getWrappedValue();
+                    var global = unwrapIValue(scope);
 
                     if (FBTrace.DBG_TOPLEVEL)
                         FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);

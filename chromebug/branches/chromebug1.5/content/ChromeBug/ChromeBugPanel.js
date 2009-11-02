@@ -2660,7 +2660,7 @@ Chromebug.jsContextList = {
     {
         if (!jscontext)
             FBTrace.sysout("getObjectLocation for nothing ");
-        var global = jscontext.globalObject?jscontext.globalObject.getWrappedValue():null;
+        var global = jscontext.globalObject? unwrapIValue(jscontext.globalObject) : null;
         if (global)
         {
             var document = global.document;
@@ -2719,7 +2719,7 @@ Chromebug.jsContextList = {
         if (object)
         {
             var jscontext = object;
-            var global = jscontext.globalObject.getWrappedValue();
+            var global = unwrapIValue(jscontext.globalObject);
             if (global)
             {
                 var context = Firebug.Chromebug.getContextByGlobal(global)
@@ -2839,7 +2839,7 @@ function getFrameWindow(frame)
     {
         var result = {};
         frame.eval("window", "", 1, result);
-        var win = result.value.getWrappedValue();
+        var win = unwrapIValue(result.value);
         FBTrace.sysout("getFrameWindow eval window is ", win.location);
         return getRootWindow(win);
     }
