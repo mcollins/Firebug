@@ -18,7 +18,7 @@ function fireTest(win, ith)
     var buttons = ["syntaxError", "shallowError", "deepError", "throw", "uncaughtException1891"];
     var titles = ["missing ; before statement", "foops is not defined",
                   "B3 is not defined", "uncaught exception: hi", 'String contains an invalid character"  code: "5'];
-    var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();", "", ""];
+    var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();\\r\\n", "", ""];
 
     if (ith >= buttons.length)
     {
