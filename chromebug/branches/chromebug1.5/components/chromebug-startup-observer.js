@@ -400,11 +400,6 @@ function getGlobalName(global)
     return m ? m[1] : label;
 }
 
-function unwrapIValue(object)
-{
-    return object.getWrappedValue();  // this should be the only call to getWrappedValue in firebug
-}
-
 function safeToString(ob)
 {
     try
@@ -424,7 +419,7 @@ function analyzeScope(cb, frame, jsdState)
     while(scope.jsParent) // walk to the oldest scope
         scope = scope.jsParent;
 
-    var frameGlobal = unwrapIValue(scope);
+    var frameGlobal = new XPCNativeWrapper(scope.getWrappedValue());
     var frameGlobalTag = cb.globals.indexOf(frameGlobal);
     if (frameGlobalTag < 0)
     {
