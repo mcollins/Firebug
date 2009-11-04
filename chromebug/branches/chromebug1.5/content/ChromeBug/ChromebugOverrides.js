@@ -269,7 +269,7 @@ function overrideFirebugFunctions()
              return false;
         };
 
-        //top.Firebug.HTMLPanel.prototype.getFirstChild = ChromeBugOverrides.getFirstChild;
+        top.Firebug.HTMLPanel.prototype.getFirstChild = ChromeBugOverrides.getFirstChild;
 
         top.Firebug.Debugger.supportsWindow = ChromeBugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromeBugOverrides.supportsGlobal;
