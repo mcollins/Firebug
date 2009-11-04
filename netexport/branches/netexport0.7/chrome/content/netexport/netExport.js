@@ -85,7 +85,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
             this.ViewerOpener.openViewer(viewerURL, jsonString);
     },
 
-    // Handle Import toolbat button.
+    // Handle Import toolbar button.
     importData: function(context)
     {
         alert("TBD");
