@@ -117,7 +117,7 @@ function breakOnXHR(win, lineNo, callback)
 
 function setCondition(win, callback)
 {
-    FBTest.sysout("net.breakpoints; setCondition");
+    FBTest.progress("net.breakpoints; setCondition");
 
     var panel = FBTestFirebug.selectPanel("net");
     var bpUrl = basePath + "net/breakpoints/process1.php";
@@ -132,7 +132,7 @@ function setCondition(win, callback)
 
 function removeBreakpoint(win, callback)
 {
-    FBTest.sysout("net.breakpoints; removeBreakpoint");
+    FBTest.progress("net.breakpoints; removeBreakpoint");
 
     var panel = FBTestFirebug.selectPanel("net");
 
