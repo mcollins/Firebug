@@ -348,7 +348,7 @@ FBTestApp.TestRunner =
         }, FBTestApp.FBTest.testTimeout);
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("TestRunner set   testTimeoutID "+this.testTimeoutID);
+            FBTrace.sysout("TestRunner set testTimeoutID "+this.testTimeoutID);
     },
 
     clearTestTimeout: function()
@@ -367,9 +367,15 @@ FBTestApp.TestRunner =
         if (!this.wrapAJSFile)
             this.wrapAJSFile = getResource("chrome://fbtest/content/wrapAJSFile.html");
 
+        var testFirebugLibURL = FBTestApp.TestServer.chromeToUrl(
+            "chrome://fbtest/content/FBTestFirebug.js");
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.wrapJS; Firebug lib file: " + testFirebugLibURL);
+
         var wrapAJSFile = new String(this.wrapAJSFile);
         var temp = wrapAJSFile.replace("__TestDriverURL__", jsURL).
-            replace("__FBTestFirebugURL__", FBTestApp.TestConsole.driverBaseURI + "FBTestFirebug.js");
+            replace("__FBTestFirebugURL__",  testFirebugLibURL);
 
         var testURL = getDataURLForContent(temp, jsURL);
         if (FBTrace.DBG_FBTEST)
