@@ -1291,6 +1291,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     if (message)
                     {
                         var filename = encodeURI(event.target.text);
+                        var line = event.target.getAttribute("lineNumber");
 
                         var found = Chromebug.allFilesList.eachSourceFileDescription(function findMatching(d)
                         {
@@ -1303,7 +1304,6 @@ Firebug.Chromebug = extend(Firebug.Module,
                                 {
                                     Firebug.Chromebug.selectContext(context);
                                     FBTrace.sysout("onLoadConsole.eventListener found matching description: "+d+" context set to "+context.getName(), message);
-                                    var line = event.target.getAttribute("lineNumber");
                                     var link = new SourceLink(filename, line, "js" );
                                     FBTrace.sysout("Chromebug click on traceConsole isAStackFrame SourceLink:"+(link instanceof SourceLink), {target: event.target, href: filename, lineNo:line, link:link});
                                     Firebug.chrome.select(link, "script");
@@ -1315,7 +1315,11 @@ Firebug.Chromebug = extend(Firebug.Module,
                             return false;
                         });
                         if (!found)
+                        {
+                            // Fallback is to just open the view-source window on the file
+                            viewSource(fileName, line);
                             FBTrace.sysout("onLoadConsole.eventListener no match for filename "+filename);
+                        }
                     }
                     else
                         FBTrace.sysout("onLoadConsole.eventListener no message found on info", info);

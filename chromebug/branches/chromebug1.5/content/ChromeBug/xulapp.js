@@ -646,7 +646,7 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
 
     getOptionsMenuItems: function()
     {
-         var items = this.controller.getOptionsMenuItems();
+         var items = [];
          return items;
     },
 
