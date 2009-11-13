@@ -1,0 +1,135 @@
+<html>
+<head>
+<style>
+.swarmTitle {
+  text-align: center;
+  font-weight: bold;
+}
+body {
+  font-family: Sans-serif;
+  margin: 45px;
+  background-color: #FFFFFF;
+}
+.signed {
+   border-style: solid;
+   border-width: 1px;
+   border-color: #FF9933;
+   padding: 5px;
+}
+.signature {
+   float: right;
+   color: red;
+}
+.signature .verified {
+   color: #CCCCCC;
+}
+.signature .verified:before {
+   content: "signature verified";
+}
+.signature .verified span .signatureHash {
+   display:none;
+}
+
+ol {
+    padding-right: 40px;
+}
+.certification {
+   font-weight: bold;
+}
+.certification .date:before {
+   content: " tested and signed: ";
+}
+.extension {
+   padding: 5px;
+   border-style: solid;
+   border-color: gray;
+   border-width: 3px;
+   margin: -3px; /* causes the borders to overlay one another */
+}
+.extensionURL {
+   font-weight: bold;
+}
+.extensionHash {
+   display: none;
+}
+.extensionStatus {
+   float: right;
+   font-weight: bold;
+   color: #FF9933;
+}
+.extensionMoreInfo {
+   float: right;
+}
+.certificationTests {
+   padding-left: 40px;
+}
+</style>
+</head>
+<body>
+<img src="http://getfirebug.com/header.png" class="header"/>
+<div class="signed swarm"><!-- The nextSibling must be the signature -->
+ <h2 class="swarmTitle">Basic Swarm For
+ <a class="swarmWith" href="http://getfirebug.com/releases/firebug/1.5X/firebug-1.5X.0b3.xpi">Firebug 1.5</a>
+ </h2>
+ <ol>
+ <li> <!-- One item for every extension in the Swarm -->
+  <div class="extension">
+  <span class="extensionURL" href="http://getfirebug.com/releases/eventbug/1.5/eventbug-0.1a2.xpi">eventbug</span>
+  <span class="extensionStatus">not installed</span>
+  <div class="extensionInfo">
+  <p>This extension brings a new <b>Events</b> panel that lists all of the event handlers
+   on the page grouped by event type. The panel also nicely integrates with other Firebug
+   panels and allows to quickly find out,
+  which HTML element is associated with specific event listener or see the Javascript source code.
+  <a class="extensionMoreInfo" href="http://www.softwareishard.com/blog/firebug/eventbug-alpha-released/">more info</a>
+  </p>
+  </div>
+  </div>
+  <div class="extensionHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Hash Must Match</div>
+</li>
+<li> <!-- One item for every extension in the Swarm -->
+  <div class="extension">
+  <span class="extensionURL" href="http://www.incaseofstairs.com/download/firediff/firediff1.0a1.xpi">Firediff</span>
+  <span class="extensionStatus">not installed</span>
+  <div class="extensionInfo">
+  <p>Firediff is a Firebug extension that tracks changes to a pages DOM and CSS.
+
+  <a class="extensionMoreInfo" href="http://www.incaseofstairs.com/firediff/">more info</a>
+  </p>
+  </div>
+  </div>
+  <div class="extensionHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Hash Must Match</div>
+</li>
+<li> <!-- One item for every extension in the Swarm -->
+  <div class="extension">
+  <span class="extensionURL" href="http://getfirebug.com/releases/export/1.5/netExport-0.7b7.xpi">NetExport</span>
+  <span class="extensionStatus">not installed</span>
+  <div class="extensionInfo">
+  <p>NetExport is a Firebug extension that allows exporting data from the Net panel.
+
+  <a class="extensionMoreInfo" href="http://www.softwareishard.com/blog/netexport/">more info</a>
+  </p>
+  </div>
+  </div>
+  <div class="extensionHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Hash Must Match</div>
+</li>
+
+</ol>
+<div class="certification">
+<img src="http://getfirebug.com/images/firebug3.jpg"><span class="date">date goes here</span>
+<table class="certificationTests">
+<tbody>
+<tr>
+  <td>Untested</td><!--  Uncle elements of href are test results -->
+  <td><a href="http://getfirebug.com/tests/content/testLists/firebug1.5.html">http://getfirebug.com/tests/content/testLists/firebug1.5.html</a></td>
+</tr>
+</ul>
+</div>
+</div>
+<!-- The prevSibling.innerHTML is signed -->
+<div class="signature">Signature <span class="signatureHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Not </span>Verified</div>
+
+
+
+</body>
+</html>
