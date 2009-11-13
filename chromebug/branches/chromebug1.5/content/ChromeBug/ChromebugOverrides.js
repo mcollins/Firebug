@@ -139,8 +139,10 @@ var ChromebugOverrides = {
 
         if (global == previousContext.global)
             context = previousContext;
+
         if (!context)
-            context = Firebug.Chromebug.getContextByGlobal(global);
+            context = Firebug.Chromebug.getOrCreateContext(global);
+
         if (context)
         {
             if (FBTrace.DBG_TOPLEVEL)

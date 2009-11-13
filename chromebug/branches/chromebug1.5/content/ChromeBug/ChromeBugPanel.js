@@ -501,7 +501,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (domWindow)
             var browserName = safeToString(domWindow.location);
 
-        if (!browserName)
+        if (!browserName || browserName == "undefined")
             var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
 
         browser.currentURI = makeURI(browserName);
@@ -514,7 +514,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
         this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
-        FBTrace.sysout("createBrowser "+browser.tag+" for browserName "+browserName+' with URI '+browser.currentURI.spec);
+        FBTrace.sysout("createBrowser "+browser.tag+" for browserName "+browserName+' with URI '+browser.currentURI.spec, domWindow);
         return browser;
     },
 
@@ -835,16 +835,11 @@ Firebug.Chromebug = extend(Firebug.Module,
     },
 
     // ******************************************************************************
-    createContext: function(global, jsClassName, jsContext)
+    createContext: function(global)
     {
         var persistedState = null; // TODO
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
-
-        var browser = Firebug.Chromebug.createBrowser(global);
-
-        if (!FirebugChrome)
-            FBTrace.sysout("FirebugChrome is null??");
 
         var browser = Firebug.Chromebug.createBrowser(global);
         if (global instanceof Ci.nsIDOMWindow)
@@ -892,12 +887,12 @@ Firebug.Chromebug = extend(Firebug.Module,
          });
     },
 
-    getOrCreateContext: function(global, jsClassName, jsContext)
+    getOrCreateContext: function(global)
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
         FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created"));
         if (!context)
-            context = Firebug.Chromebug.createContext(global, jsClassName, jsContext);
+            context = Firebug.Chromebug.createContext(global);
 
         return context;
     },
@@ -916,6 +911,8 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (context.global && (context.global == global)) // will that test work?
                 return context;
         }
+
+        FBTrace.sysout("getContextByGlobal, not instanceof Window "+safeToString(global));
 
         return null;
     },

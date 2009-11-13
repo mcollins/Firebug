@@ -49,6 +49,11 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         this.name = new String(name);
     },
 
+    clearName: function()
+    {
+        delete this.name;
+    },
+
     getGlobalScope: function()
     {
         return this.global;  // override Firebug's getGlobalScope; same iff global == domWindow
@@ -64,7 +69,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         if (domWindow == outerDOMWindow)
         {
             var oldName = this.getName();
-            delete this.name; // remove the cache
+            this.clearName(); // remove the cache
 
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location+" tried context rename: "+oldName+" -> "+this.getName());
@@ -74,15 +79,17 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
-        var context = Firebug.Chromebug.getContextByGlobal(domWindow, true);
+        var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (context)
         {
             // then we had one, say from a Frame
             var oldName = context.getName();
-            delete context.name;
+            this.clearName();  // remove name cache
              if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
              if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
             Chromebug.globalScopeInfos.remove(context.globalScope);
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("loadHandler found context with sourceFileMap ", context.sourceFileMap);
         }
         else
         {
