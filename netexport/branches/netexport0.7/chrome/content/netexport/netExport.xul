@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <!-- See license.txt for terms of usage -->
 
-<?xml-stylesheet href="chrome://netexport/content/bindings.css"?>
-
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
     <script src="chrome://netexport/content/json2.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/netExport.js" type="application/x-javascript"/>
