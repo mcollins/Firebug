@@ -501,7 +501,14 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (domWindow)
             var browserName = safeToString(domWindow.location);
 
-        if (!browserName || browserName == "undefined")
+        if (isDataURL(browserName))
+        {
+            var props = splitDataURL(browserName);
+            FBTrace.sysout('isDataURL props ', props);
+            browserName = props['decodedfileName'];
+        }
+
+        if (!browserName)
             var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
 
         browser.currentURI = makeURI(browserName);
@@ -514,7 +521,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
         this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
-        FBTrace.sysout("createBrowser "+browser.tag+" for browserName "+browserName+' with URI '+browser.currentURI.spec, domWindow);
+        FBTrace.sysout("createBrowser "+browser.tag+" domWindow:"+(domWindow?safeToString(domWindow):"no domWindow")+" for browserName "+browserName+' with URI '+browser.currentURI.spec);
         return browser;
     },
 
@@ -847,6 +854,17 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
             var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
 
+        var url = safeToString(global.location);
+        if (isDataURL(url))
+        {
+            var lines = context.sourceCache.load(url);
+            var props = splitDataURL(url);
+            if (props.fileName)
+                context.sourceCache.storeSplitLines(props.fileName, lines);
+            FBTrace.sysout("createContext data url stored in to context under "+(props.fileName?props.fileName+ " & ":"just dataURL ")+url);
+        }
+
+        context.onLoadWindowContent = true; // all Chromebug contexts are active
         return context;
     },
 
@@ -1201,7 +1219,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.showContext(context.browser, context);
 
         var stopName = getExecutionStopNameFromType(type);
-        FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName+ "context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+        FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName+ " context.getName():"+context.getName() + " context.stopped:"+context.stopped );
         try
         {
             var src = frame.script.isValid ? frame.script.functionSource : "<invalid script>";
