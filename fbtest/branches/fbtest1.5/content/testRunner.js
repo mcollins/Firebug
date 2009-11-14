@@ -364,8 +364,9 @@ FBTestApp.TestRunner =
 
     wrapJS: function(jsURL)
     {
+        const wrapperURL = "chrome://fbtest/content/wrapAJSFile.html";
         if (!this.wrapAJSFile)
-            this.wrapAJSFile = getResource("chrome://fbtest/content/wrapAJSFile.html");
+            this.wrapAJSFile = getResource(wrapperURL);
 
         var testFirebugLibURL = FBTestApp.TestServer.chromeToUrl(
             "chrome://fbtest/content/FBTestFirebug.js");
@@ -377,7 +378,7 @@ FBTestApp.TestRunner =
         var temp = wrapAJSFile.replace("__TestDriverURL__", jsURL).
             replace("__FBTestFirebugURL__",  testFirebugLibURL);
 
-        var testURL = getDataURLForContent(temp, jsURL);
+        var testURL = getDataURLForContent(temp, wrapperURL);
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("wrapJS converted "+jsURL, unescape(testURL));
 
