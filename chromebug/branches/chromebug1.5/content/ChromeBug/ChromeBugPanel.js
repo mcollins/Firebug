@@ -1229,11 +1229,17 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         FBTrace.sysout("ChromeBugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc, "source:"+src);
 
+        var cbContextList = document.getElementById('cbContextList');
+        cbContextList.setAttribute("highlight", "true");
+
         return -1;
     },
 
     onResume: function(context)
     {
+        var cbContextList = document.getElementById('cbContextList');
+        cbContextList.removeAttribute("highlight");
+
         var panel = context.getPanel("script", true);
         if (panel && panel.location)
         {
@@ -1704,6 +1710,8 @@ function connectedList(xul_element, list)
     {
         list.elementBoundTo = xul_element;
         xul_element.addEventListener("selectObject", bind(list.onSelectLocation, list), false);
+        if (list.onPopUpShown)
+            xul_element.addEventListener("popupshown", bind(list.onPopUpShown, list), false);
     }
     return list;
 }
@@ -1996,7 +2004,8 @@ Chromebug.contextList =
            path: d?d.path:"parseURI fails",
            name: context.getName() +(title?"   "+title:""),
            label: context.getName(),
-           href: context.getName()
+           href: context.getName(),
+           highlight: context.stoppped,
            };
 
         if (FBTrace.DBG_LOCATIONS)
@@ -2030,6 +2039,29 @@ Chromebug.contextList =
             FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
         }
     },
+
+    /*
+     * Called when the filelist is already showing, highlight any stopped contexts.
+     */
+    onPopUpShown: function(event)
+    {
+        var list = document.getAnonymousElementByAttribute(event.currentTarget, "anonid", "popup");
+
+        if (FBTrace.DBG_SOURCEFILES)
+            FBTrace.sysout("Context on popup shown "+list, list);
+
+        var child = list.firstChild;
+        while(child)
+        {
+            if (FBTrace.DBG_SOURCEFILES)
+                FBTrace.sysout("Context onPopUpShown "+child+ " has repObject "+(child.repObject?child.repObject.getName():"none"));
+
+            if (child.repObject && child.repObject.stopped)
+                child.setAttribute('highlight', "true");
+
+            child = child.nextSibling;
+        }
+    }
 }
 
 Chromebug.contextListLocator = function(xul_element)

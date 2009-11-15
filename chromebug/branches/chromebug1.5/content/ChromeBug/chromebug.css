@@ -4,6 +4,15 @@
 @import "chrome://browser/skin/browser.css";
 
 
+/* Lightup the text, eg on the Script tab when stopped on a breakpoint */
+toolbarbutton#cbContextList[highlight="true"] {
+    color: #FF9933;
+}
+
+.fbURLMenuItem[highlight="true"] {
+    color: #FF9933;
+}
+
 #cbContextList {
     /* This triggers initialize() calls , see bindings.xml */
     -moz-binding: url("chrome://firebug/content/bindings.xml#panelFileList");
