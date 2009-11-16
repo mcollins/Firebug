@@ -53,8 +53,7 @@ function verifyContent()
         var jsonBody = FW.FBL.getElementByClass(nextSibling, "netInfoJSONText", "netInfoText");
         var domTable = FW.FBL.getElementByClass(jsonBody, "domTable");
 
-        var label = FW.FBL.getElementByClass(row, "netFullHrefLabel", 
-            "netHrefLabel", "netLabel");
+        var label = FW.FBL.getElementByClass(row, "netFullHrefLabel", "netHrefLabel");
 
         FBTest.ok(domTable, "JSON tree must exist for: " + label.textContent);
         FBTest.ok(textContent, domTable.textContent, "JSON data must be properly displayed.");
