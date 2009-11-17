@@ -122,6 +122,9 @@ var ChromebugOverrides = {
      */
     getContextByFrame: function(frame, previousContext)
     {
+        if (!frame || !frame.isValid)
+            return previousContext;
+
         // To map this frame to a context, we want the outermost scope of the current frame.
         // This is unlike Firebug, where we want to be in a Window, not just any scope.
         var scope = frame.scope;
