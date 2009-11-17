@@ -24,9 +24,11 @@
 <button id="runTest" onclick="runTest(null)">Execute Requests</button>
 
 <script>
+var button = document.getElementById("runTest");
+button.disabled = false;
+
 function runTest(callback)
 {
-    var button = document.getElementById("runTest");
     button.disabled = true;
 
     var counter = 0;
