@@ -208,7 +208,22 @@ var ChromebugOverrides = {
             FBTrace.sysout("ChromebugPanel.resumeFirebug\n");
     },
 
+    tagBase: 1,
+    getTabIdForWindow: function(win)
+    {
+        if (!win)  // eg net.js getWindowForRequest gives null
+        {
+            FBTrace.sysout("ChromebugOverrides.getTabIdForWindow null window");
+            return null;
+        }
 
+        var tab = Firebug.getTabForWindow(win);
+        if (tab)
+            return tab.linkedPanel;
+        if (!win.tag)
+            win.tag = ChromebugOverrides.tagBase++; // set expando property
+        return win.tag;
+    },
 };
 
 ChromebugOverrides.commandLine = {
@@ -317,6 +332,8 @@ function overrideFirebugFunctions()
         Firebug.ActivableModule.isAlwaysEnabled = ChromebugOverrides.isAlwaysEnabled;
         Firebug.suspendFirebug = ChromebugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromebugOverrides.resumeFirebug;
+
+        top.Firebug.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
 
         for (var p in Chromebug.Activation)
             Firebug.Activation[p] = Chromebug.Activation[p];

@@ -5,7 +5,7 @@
 
 
 /* Lightup the text, eg on the Script tab when stopped on a breakpoint */
-toolbarbutton#cbContextList[highlight="true"] {
+#wrapper-cbContextList > label {
     color: #FF9933;
 }
 

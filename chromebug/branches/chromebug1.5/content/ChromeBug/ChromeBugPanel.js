@@ -1289,7 +1289,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         var pkg = Chromebug.packageList.getOrCreatePackage(description);
         pkg.appendContext(context);
         if (FBTrace.DBG_SOURCEFILES)
-            FBTrace.sysout("onSourceFileCreated sourceFile "+sourceFile.href+" in  "+pkg.name);
+            FBTrace.sysout("onSourceFileCreated sourceFile "+sourceFile.href+" in  "+pkg.name+" context "+context.getName());
     },
     //******************************************************************************
     // traceModule listener
