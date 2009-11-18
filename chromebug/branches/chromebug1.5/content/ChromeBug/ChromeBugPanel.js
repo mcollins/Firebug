@@ -1337,9 +1337,10 @@ Firebug.Chromebug = extend(Firebug.Module,
                         });
                         if (!found)
                         {
-                            // Fallback is to just open the view-source window on the file
-                            viewSource(fileName, line);
-                            FBTrace.sysout("onLoadConsole.eventListener no match for filename "+filename);
+                            if (fileName) // Fallback is to just open the view-source window on the file
+                                viewSource(fileName, line);
+                            else
+                                FBTrace.sysout("onLoadConsole.eventListener no fileName in event target", event);
                         }
                     }
                     else

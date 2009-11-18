@@ -132,8 +132,25 @@ var ChromebugOverrides = {
         {
             while(scope.jsParent) // walk to the oldest scope
                 scope = scope.jsParent;
+            try
+            {
+                var global = null;
 
-            var global = new XPCNativeWrapper(scope.getWrappedValue());
+                if (scope.jsClassName == "Sandbox")
+                {
+                    var proto = scope.jsPrototype;
+                    if (proto.jsClassName == "XPCNativeWrapper")
+                        proto = proto.jsParent;
+                    if (proto.jsClassName == "Window")
+                        global = new XPCNativeWrapper(proto.getWrappedValue());
+                }
+                else
+                    global = new XPCNativeWrapper(scope.getWrappedValue());
+            }
+            catch(exc)
+            {
+                FBTrace.sysout("supportsGlobal FAILS for "+scope.getWrappedValue());
+            }
 
             if (FBTrace.DBG_TOPLEVEL)
                 FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);
@@ -143,7 +160,7 @@ var ChromebugOverrides = {
         if (global == previousContext.global)
             context = previousContext;
 
-        if (!context)
+        if (!context && global)
             context = Firebug.Chromebug.getOrCreateContext(global);
 
         if (context)
@@ -176,6 +193,16 @@ var ChromebugOverrides = {
 
     // Override
     // Override FBL
+    getBrowserForWindow: function(win)
+    {
+        var browsers = Firebug.Chromebug.getBrowsers();
+        for (var i=0; i < browsers.length; ++i)
+        {
+            var browser = browsers[i];
+            if (browser.contentWindow == win)
+                return browser;
+        }
+    },
 
     skipSpy: function(win)
     {
@@ -334,6 +361,7 @@ function overrideFirebugFunctions()
         Firebug.resumeFirebug = ChromebugOverrides.resumeFirebug;
 
         top.Firebug.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
+        FBL.getBrowserForWindow = ChromebugOverrides.getBrowserForWindow;
 
         for (var p in Chromebug.Activation)
             Firebug.Activation[p] = Chromebug.Activation[p];
