@@ -34,7 +34,7 @@ function runTest()
                         // If the activity-observer is available the response is correct.
                         // Otherwise only the first part of the multipart XHR is displayed.
                         var response = Cc["@mozilla.org/network/http-activity-distributor;1"]
-                            ? "Part0-Part1-Part2-Part3-" : "Part0-";
+                            ? "Part0+Part1+Part2+Part3+" : "Part0+";
                         FBTest.compare(response, responseBody.textContent, "Response text must match."); 
                     }
                 }
