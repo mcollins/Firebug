@@ -176,7 +176,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         FirebugChrome.onToggleOption(menuitem);
 
         // Don't bubble up so, the main command (executed when the menu-button
-        // iself is pressed) is not fired.
+        // itself is pressed) is not fired.
         cancelEvent(event);
     }
 });
