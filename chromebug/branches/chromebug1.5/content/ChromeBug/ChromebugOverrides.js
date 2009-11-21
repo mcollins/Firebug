@@ -191,6 +191,23 @@ var ChromebugOverrides = {
             return false;
     },
 
+    //Firebug.SourceFile.getSourceFileByScript
+    _getSourceFileByScript: Firebug.SourceFile.getSourceFileByScript,
+    getSourceFileByScript: function(context, script)
+    {
+        var sourceFile = ChromebugOverrides._getSourceFileByScript( context, script );
+        if (!sourceFile)
+        {
+            sourceFile = Firebug.Chromebug.eachContext(function visitContext(context)
+            {
+                var rc = ChromebugOverrides._getSourceFileByScript( context, script );
+                if (rc)
+                    return rc;
+            });
+        }
+        return sourceFile;
+    },
+
     // Override
     // Override FBL
     getBrowserForWindow: function(win)
@@ -348,6 +365,7 @@ function overrideFirebugFunctions()
         top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
         top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromebugOverrides.showThisSourceFile;
+        top.Firebug.SourceFile.getSourceFileByScript = ChromebugOverrides.getSourceFileByScript;
 
         top.Firebug.showBar = function() {
             if (FBTrace.DBG_CHROMEBUG)
