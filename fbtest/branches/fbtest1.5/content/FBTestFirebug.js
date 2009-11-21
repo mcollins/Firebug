@@ -1095,6 +1095,11 @@ function runTestSuite(tests, callback)
 // ************************************************************************************************
 
 // Initialization
+FBTest.Firebug = {};
+FBTestFirebug.apply(FBTest.Firebug);
+FBTestFirebug = FBTest.Firebug;
+
+
 function initializeFBTestFirebug()
 {
     FBTest.Firebug = {};

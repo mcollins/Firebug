@@ -69,12 +69,8 @@ FBTestApp.TestRunner =
                 FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
                     this.currentTest);
 
-            var testURL = this.currentTest.path;
-            if (/\.js$/.test(testURL))
-                testURL = this.wrapJS(testURL);
-
-            // Load the test file (*.js or *.html) into a test frame and execute it.
-            this.loadTestFrame(testURL);
+            // Load the test file the test frame and execute it.
+            this.loadTestFrame(this.currentTest);
         }
         catch (e)
         {
@@ -195,61 +191,76 @@ FBTestApp.TestRunner =
         return this.testQueue.shift();
     },
 
-    loadTestFrame: function(testURL)
+    loadTestFrame: function(test)
     {
-        var testFrame = $("testFrame");
-        var outerWindow =  testFrame.contentWindow;
-        var doc = outerWindow.document;
+        if (!this.browser)
+        {
+            this.browser = $("testFrame");  // browser in testConsole
+            // Hook the load event to run the test in the frameProgressListener
+            this.browser.addProgressListener(this.frameProgressListener, Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+            // we don't remove the progress listener
+            FBTestApp.TestRunner.defaultTestTimeout = FBTestApp.TestRunner.getDefaultTestTimeout();
+        }
 
-        FBTestApp.TestRunner.removePreviousFrames(doc);
+        FBTestApp.TestRunner.loadAndRun = bind(FBTestApp.TestRunner.onLoadTestFrame, FBTestApp.TestRunner, test);
 
-        // Create a new frame for this test.
-        var testCaseIframe = doc.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
-        testCaseIframe.setAttribute("src", "about:blank");
-        testCaseIframe.setAttribute("id", "testFrame");
-        var body = doc.getElementsByTagName("body")[0];
-        body.appendChild(testCaseIframe);
-
-        // Set default timeout for the test.
-        FBTestApp.FBTest.testTimeout = this.getDefaultTestTimeout();
-
-        // Now hook the load event, so the next src= will trigger it.
-        testCaseIframe.addEventListener("load", FBTestApp.TestRunner.onLoadTestFrame, true);
-        testCaseIframe.addEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
-        // Load or reload the test page
-        testCaseIframe.setAttribute("src", testURL);
+        // Load the empty test frame
+        this.browser.loadURI("chrome://fbtest/content/testFrame.html");
     },
 
-    removePreviousFrames: function(doc)
+    frameProgressListener: extend(BaseProgressListener,
     {
-        // Clean up previous test if any.
-        var testCaseIframe = null;
-        var frames = doc.getElementsByTagName("iframe");
-        for (var i = 0; i < frames.length; i++)
+        onStateChange: function(progress, request, flag, status)
         {
-            testCaseIframe = frames[i];
-            var event = testCaseIframe.contentDocument.createEvent("Event");
-            event.initEvent("FBTestCleanup", true, false); // bubbles and not cancelable
-
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("Firing FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
-
-            testCaseIframe.contentDocument.dispatchEvent(event);
-
             if (FBTrace.DBG_FBTEST)
             {
-                FBTrace.sysout("Fired FBTestCleanup at "+testCaseIframe.contentDocument+" "+testCaseIframe.contentDocument.location);
-                FBTrace.sysout("Removing testCaseIFrame "+testCaseIframe, testCaseIframe);
+                    FBTrace.sysout("-> frameProgressListener.onStateChanged for: "+safeGetName(request)+
+                        ", win: "+progress.DOMWindow.location.href+ " "+getStateDescription(flag));
             }
 
-            testCaseIframe.parentNode.removeChild(testCaseIframe);
+            if (safeGetName(request) === "about:blank")
+                return;
+
+            if (flag & Ci.nsIWebProgressListener.STATE_IS_DOCUMENT && flag & Ci.nsIWebProgressListener.STATE_TRANSFERRING)
+            {
+                var win = progress.DOMWindow;
+
+                if (FBTestApp.TestRunner.eventListener)
+                {
+                    try
+                    {
+                        FBTestApp.TestRunner.win.removeEventListener("load", FBTestApp.TestRunner.eventListener, true);
+                    }
+                    catch(e)
+                    {
+                        // I don't understand why we get here
+                    }
+                }
+
+                FBTestApp.TestRunner.eventListener = FBTestApp.TestRunner.loadAndRun;
+                FBTestApp.TestRunner.win = win;
+                win.addEventListener("load", FBTestApp.TestRunner.eventListener, true);
+
+                if (FBTrace.DBG_FBTEST)
+                {
+                    FBTrace.sysout("-> frameProgressListener.onStateChanged set load handler for: "+safeGetName(request)+
+                                ", win: "+progress.DOMWindow.location.href+ " "+getStateDescription(flag));
+                }
+            }
         }
-    },
+    }),
 
     onUnloadTestFrame: function(event)
     {
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("onUnloadTestFrame ", event);
+        var testFrame = $("testFrame");
+        var outerWindow =  testFrame.contentWindow;
+
+        FBTestApp.TestRunner.win.removeEventListener("load", FBTestApp.TestRunner.eventListener, true);
+        delete FBTestApp.TestRunner.eventListener;
+
+        FBTestApp.TestRunner.win.removeEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
     },
 
     getDefaultTestTimeout: function()
@@ -257,34 +268,56 @@ FBTestApp.TestRunner =
         return Firebug.getPref(FBTestApp.prefDomain, "testTimeout");
     },
 
-    onLoadTestFrame: function(event)
+    onLoadTestFrame: function( event, test )
     {
-        var doc = $("testFrame").contentWindow.document;
-        var testCaseIframe = doc.getElementById("testFrame");
-        testCaseIframe.removeEventListener("load", FBTestApp.TestRunner.onLoadTestFrame, true);
-
+        var testURL = test.path;
+        var testTitle = test.desc;
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("FBTest.onLoadTestFrame; " + event.target, event.target);
+            FBTrace.sysout("FBTest.onLoadTestFrame; url: "+testURL+" win: " +FBTestApp.TestRunner.win+" wrapped: "+FBTestApp.TestRunner.win.wrappedJSObject);
 
-        var testDoc = event.target;
-        var win = testDoc.defaultView;
+        var win = FBTestApp.TestRunner.win;
+        if (win.wrappedJSObject)
+            win = win.wrappedJSObject;
+
+        var testDoc = win.document;
+        testDoc.title = testTitle;
+        var title = win.document.getElementById("testTitle");
+        title.innerHTML = testTitle;
+
+        // Hook the unload to clean up
+        FBTestApp.TestRunner.win.addEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
 
         // Inject FBTest object into the test page.
         win.FBTest = FBTestApp.FBTest;
 
-        // As soon as the window is loaded, execute a "runTest" method, that must be
-        // implemented within the test file.
-        win.addEventListener('load', FBTestApp.TestRunner.runTestCase, true);
+        // Compile the test driver into the page
+        var testFirebugLibURL = "chrome://fbtest/content/FBTestFirebug.js";
+
+        var scriptSource = getResource(testFirebugLibURL);
+        var addedElement = addScript(testDoc, "testFirebugLibURL", scriptSource);
+
+        var scriptSource = getResource(testURL);
+        var addedElement = addScript(testDoc, "testURL", scriptSource);
+
+        //FBTestApp.TestRunner.appendScriptTag(testDoc, testFirebugLibURL);
+        //FBTestApp.TestRunner.appendScriptTag(testDoc, testURL);
+
+        // Execute a "runTest" method, that must be implemented within the test driver.
+        FBTestApp.TestRunner.runTestCase(win);
     },
 
-    runTestCase: function(event)
+    appendScriptTag: function(doc, srcURL)
     {
-        FBTrace.sysout("testRunner driverBaseURI:"+FBTestApp.TestConsole.driverBaseURI+" testCasePath: "+FBTestApp.TestConsole.testCasePath)
-        var testDoc = event.target;
-        var win = testDoc.defaultView;
+        var scriptTag = doc.createElementNS("http://www.w3.org/1999/xhtml", "script");
+        scriptTag.setAttribute("src", srcURL);
+        var body = doc.getElementsByTagName("body")[0];
+        body.appendChild(scriptTag);
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("FBTest.appendScriptTag "+srcURL, doc);
+    },
 
-        win.removeEventListener('load', FBTestApp.TestRunner.runTestCase, true);
-
+    runTestCase: function(win)
+    {
         // Start timeout that breaks stuck tests.
         FBTestApp.TestRunner.setTestTimeout(win);
 
@@ -316,8 +349,7 @@ FBTestApp.TestRunner =
         try
         {
             FBTestApp.TestRunner.clearTestTimeout();
-            var doc = $("testFrame").contentWindow.document;
-            FBTestApp.TestRunner.removePreviousFrames(doc);
+            //$("testFrame").contentWindow.location = "about:blank";
         }
         catch(e)
         {
@@ -330,6 +362,7 @@ FBTestApp.TestRunner =
         if (this.testTimeoutID)
             this.clearTestTimeout();
 
+        FBTestApp.FBTest.testTimeout = FBTestApp.TestRunner.defaultTestTimeout;
         // Use test timeout from the test driver window if any. This is how
         // a test can override the default value.
         if (win && typeof(win.FBTestTimeout) != "undefined")
@@ -348,7 +381,7 @@ FBTestApp.TestRunner =
         }, FBTestApp.FBTest.testTimeout);
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("TestRunner set testTimeoutID "+this.testTimeoutID);
+            FBTrace.sysout("TestRunner set timeout="+FBTestApp.FBTest.testTimeout+" testTimeoutID "+this.testTimeoutID);
     },
 
     clearTestTimeout: function()
@@ -360,29 +393,6 @@ FBTestApp.TestRunner =
             clearTimeout(this.testTimeoutID);
             this.testTimeoutID = 0;
         }
-    },
-
-    wrapJS: function(jsURL)
-    {
-        const wrapperURL = "chrome://fbtest/content/wrapAJSFile.html";
-        if (!this.wrapAJSFile)
-            this.wrapAJSFile = getResource(wrapperURL);
-
-        var testFirebugLibURL = FBTestApp.TestServer.chromeToUrl(
-            "chrome://fbtest/content/FBTestFirebug.js");
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.wrapJS; Firebug lib file: " + testFirebugLibURL);
-
-        var wrapAJSFile = new String(this.wrapAJSFile);
-        var temp = wrapAJSFile.replace("__TestDriverURL__", jsURL).
-            replace("__FBTestFirebugURL__",  testFirebugLibURL);
-
-        var testURL = getDataURLForContent(temp, wrapperURL);
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("wrapJS converted "+jsURL, unescape(testURL));
-
-        return testURL;
     },
 
     appendResult: function(result)
@@ -548,6 +558,16 @@ FBTestApp.Preferences =
         this.values = [];
     }
 }
-
+function safeGetName(request)
+{
+    try
+    {
+        return request.name;
+    }
+    catch (exc)
+    {
+        return null;
+    }
+}
 // ************************************************************************************************
 }});

@@ -121,7 +121,7 @@
         <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
     </popupset>
 
-    <vbox flex="2">
+    <vbox flex="3">
         <browser id="consoleFrame" type="content-primary" src="" flex="1"
              disablehistory="true" contextmenu="fbContextMenu"
              tooltip="fbTooltip"/>
@@ -132,8 +132,8 @@
         resizeAfter="closest" persist="state substate"/>
 
     <!-- Test frame, all tests are launched as frames within this frame -->
-    <vbox>
-        <iframe id="testFrame" src="chrome://fbtest/content/testFrame.html" />
+    <vbox flex="1">
+        <browser disablehistory="true" id="testFrame" flex="1"  qsrc="chrome://fbtest/content/testFrame.html" />
     </vbox>
 
     <!-- Status bar info -->
