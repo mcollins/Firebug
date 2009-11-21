@@ -126,7 +126,7 @@ FBTestApp.TestConsole =
 
     internationalizeUI: function()
     {
-        var buttons = ["runAll", "stopTest", "haltOnFailedTest", "refreshList",
+        var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
             "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar"];
 
@@ -554,6 +554,12 @@ FBTestApp.TestConsole =
     setHaltOnFailedTestButton: function()
     {
         $('haltOnFailedTest').setAttribute('checked', this.haltOnFailedTest?'true':'false');
+    },
+
+    onToggleNoTestTimeout: function()
+    {
+        this.noTestTimeout = !this.noTestTimeout;
+        $('noTestTimeout').setAttribute('checked', this.noTestTimeout?'true':'false');
     },
 
     onViewToolbarsPopupShowing: function(event)

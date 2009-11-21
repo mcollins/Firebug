@@ -1094,12 +1094,6 @@ function runTestSuite(tests, callback)
 
 // ************************************************************************************************
 
-// Initialization
-FBTest.Firebug = {};
-FBTestFirebug.apply(FBTest.Firebug);
-FBTestFirebug = FBTest.Firebug;
-
-
 function initializeFBTestFirebug()
 {
     FBTest.Firebug = {};
@@ -1111,7 +1105,9 @@ function initializeFBTestFirebug()
 }
 
 // Make sure FBTest.Firebug namespace is initialized at the right time.
-window.addEventListener("load", initializeFBTestFirebug, true);
+window.addEventListener("DOMContentLoaded", initializeFBTestFirebug, true);
+
+FBTest.sysout("FBTest.Firebug; load event handler set");
 
 window.addEventListener('unload', function sayUnload()
 {
