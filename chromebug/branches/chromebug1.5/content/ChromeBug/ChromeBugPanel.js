@@ -1337,10 +1337,10 @@ Firebug.Chromebug = extend(Firebug.Module,
                         });
                         if (!found)
                         {
-                            if (fileName) // Fallback is to just open the view-source window on the file
-                                viewSource(fileName, line);
+                            if (filename) // Fallback is to just open the view-source window on the file
+                                viewSource(filename, line);
                             else
-                                FBTrace.sysout("onLoadConsole.eventListener no fileName in event target", event);
+                                FBTrace.sysout("onLoadConsole.eventListener no filename in event target", event);
                         }
                     }
                     else
@@ -2002,7 +2002,7 @@ Chromebug.contextList =
         var d = Chromebug.parseURI(context.getName());
 
         d = {
-           path: d?d.path:"parseURI fails",
+           path: d ? d.path : "parseURI fails",
            name: context.getName() +(title?"   "+title:""),
            label: context.getName(),
            href: context.getName(),

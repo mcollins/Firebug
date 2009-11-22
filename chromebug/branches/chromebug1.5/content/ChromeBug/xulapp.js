@@ -293,7 +293,8 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     //***********************************************************************************
     // nsIWindowMediatorListener
 
-    onOpenWindow: function(xul_window) {
+    onOpenWindow: function(xul_window) 
+    {
         try
         {
             if (xul_window instanceof Ci.nsIXULWindow)

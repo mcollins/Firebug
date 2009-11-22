@@ -265,7 +265,11 @@ var ChromebugOverrides = {
         if (tab)
             return tab.linkedPanel;
         if (!win.tag)
-            win.tag = ChromebugOverrides.tagBase++; // set expando property
+        {
+            FBTrace.sysout("getTabIdForWindow win.tag "+win.tag, {ChromebugOverrides:ChromebugOverrides, win: win} );
+            ChromebugOverrides.tagBase++;
+            win.tag = ChromebugOverrides.tagBase;
+        }
         return win.tag;
     },
 };
