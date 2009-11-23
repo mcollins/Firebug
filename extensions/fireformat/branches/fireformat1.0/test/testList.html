@@ -1,0 +1,39 @@
+﻿﻿﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Firediff Test Console</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="chrome://fbtest/skin/tabView.css" type="text/css"/>
+</head>
+<body>
+<div id="testList"></div>
+<script type="text/javascript">
+/**
+ * Root directory of the test tree. If it's empty, the parent directory of this file
+ * is used as the test root directory.
+ */
+var driverBaseURI = "chrome://fireformat-test/content/";
+var serverURI = "chrome://fireformat-test/content/";
+
+/**
+ * List of registered tests.
+ * @param: {String} group       Name of the group where the test belongs to.
+ * @param: {String} uri         Relative location of the test file.
+ * @param: {String} desc        Test description.
+ * @param: {String} category    Test category, this can be set to: 
+ *                              "passes": (default) - a test must pass, otherwise it's a blocking bug.
+ *                              "fails": - it's not blocking bug if the test fails.
+ */
+var testList = [
+    {group: "formatter", uri: "formatter/cssFormatterTest.js",          desc: "Formatter: CSS Formatter Test" }
+];
+/*
+ * Test cases needed:
+ * - Retrieve formatter when parameter is set to invalid formatter
+ * - Individual formatter test
+ */
+</script>
+</body>
+</html>

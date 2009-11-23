@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>fireformat@incaseofstairs.com</em:id>
+    <em:version>1.0a1</em:version>
+    <em:type>2</em:type>
+    <em:optionsURL>chrome://fireformat/content/options.xul</em:optionsURL>
+
+    <!-- Firefox -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>3.0</em:minVersion>
+        <em:maxVersion>3.5.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:updateURL>http://www.incaseofstairs.com/download/fireformat/update.rdf</em:updateURL>
+    <em:updateKey>
+      MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCEMiu08MPm9dIJhnzAorUknwWOR5Tfr6XPY
+      ailAFLICcedVF51ep+8tbt/liQnkRJ6dcJXrZnin/LVo5dCv4Dc0sYhhwADn4R95aMFCHcvcC1
+      dAUimaZ0RakDCTbOOiF5Kvflfe2OUOzEko/PYv8IcgrcmMZFx5NCQjQv+FsrhwIDAQAB
+    </em:updateKey>
+
+    <em:name>Fireformat</em:name>
+    <em:description>Page source file formatter</em:description>
+    <em:creator>Kevin Decker</em:creator>
+    <em:homepageURL>http://www.incaseofstairs.com/fireformat</em:homepageURL>
+  </Description>
+</RDF>

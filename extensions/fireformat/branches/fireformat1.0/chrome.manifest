@@ -1,0 +1,9 @@
+content fireformat content/fireformat/ contentaccessible=yes
+content fireformat content/fireformat/
+content fireformat-test test/
+
+resource fireformat modules/
+
+locale  fireformat en-US       locale/en-US/
+
+overlay chrome://firebug/content/firebugOverlay.xul           chrome://fireformat/content/fireformat.xul

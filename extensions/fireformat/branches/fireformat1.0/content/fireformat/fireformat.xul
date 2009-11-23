@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<!DOCTYPE window [
+  <!ENTITY % firebugDTD SYSTEM "chrome://firebug/locale/firebug.dtd">
+  %firebugDTD;
+]>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="strings_fireformat" src="chrome://fireformat/locale/fireformat.properties"/>
+  </stringbundleset>
+
+  <script src="chrome://fireformat/content/formatters/fireformatCssFormatter.js" type="application/x-javascript"/>
+  <script src="chrome://fireformat/content/formatters/fireformatHtmlFormatter.js" type="application/x-javascript"/>
+  <script src="chrome://fireformat/content/formatters/mozillaHtmlFormatter.js" type="application/x-javascript"/>
+</overlay>

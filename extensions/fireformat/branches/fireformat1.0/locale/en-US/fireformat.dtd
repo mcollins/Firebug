@@ -1,0 +1,4 @@
+<!ENTITY fireformat.Options "Fireformat Options">
+<!ENTITY fireformat.Formatters "Formatters">
+<!ENTITY fireformat.htmlFormatterSelector "HTML Formatter">
+<!ENTITY fireformat.cssFormatterSelector "CSS Formatter">
