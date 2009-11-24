@@ -908,7 +908,9 @@ Firebug.Chromebug = extend(Firebug.Module,
     getOrCreateContext: function(global)
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
-        FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created"));
+
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created"));
         if (!context)
             context = Firebug.Chromebug.createContext(global);
 
@@ -930,7 +932,8 @@ Firebug.Chromebug = extend(Firebug.Module,
                 return context;
         }
 
-        FBTrace.sysout("getContextByGlobal, not instanceof Window "+safeToString(global));
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("getContextByGlobal; null and not instanceof Window "+safeToString(global));
 
         return null;
     },
