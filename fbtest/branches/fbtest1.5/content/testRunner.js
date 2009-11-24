@@ -293,7 +293,8 @@ FBTestApp.TestRunner =
         var testDoc = win.document;
         testDoc.title = testTitle;
         var title = win.document.getElementById("testTitle");
-        title.innerHTML = testTitle;
+        if (title)
+            title.innerHTML = testTitle;
 
         // Hook the unload to clean up
         FBTestApp.TestRunner.win.addEventListener("unload", FBTestApp.TestRunner.onUnloadTestFrame, true);
