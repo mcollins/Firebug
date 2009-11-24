@@ -82,7 +82,14 @@ Firebug.FireStarter = extend(Firebug.Module,
                 url + ", commands: " + userCommands);
 
         return result;
-    }
+    },
+
+    // Called by tab-watcher when a context exists to decide whether to show it
+    // or close Firebug's UI.
+    shouldShowContext: function(context)
+    {
+        return this.shouldCreateContext(context.browser, context.getWindowLocation().toString());
+    }, 
 });
 
 // ************************************************************************************************
