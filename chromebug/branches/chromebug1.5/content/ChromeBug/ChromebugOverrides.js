@@ -253,26 +253,32 @@ var ChromebugOverrides = {
     },
 
     tagBase: 1,
+    tags:[],
+
     getTabIdForWindow: function(win)
     {
         if (!win)  // eg net.js getWindowForRequest gives null
         {
-            FBTrace.sysout("ChromebugOverrides.getTabIdForWindow null window");
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("ChromebugOverrides.getTabIdForWindow null window");
             return null;
         }
         if (!win instanceof Window)
             return;
 
+        if (! (win instanceof Ci.nsIDOMWindow) )  // eg net.js getWindowForRequest gives null
+        {
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("ChromebugOverrides.getTabIdForWindow not a window", win);
+            return null;
+        }
+
         var tab = Firebug.getTabForWindow(win);
         if (tab)
             return tab.linkedPanel;
-        if (!win.tag)
-        {
-            FBTrace.sysout("getTabIdForWindow win.tag "+win.tag, {ChromebugOverrides:ChromebugOverrides, win: win} );
-            ChromebugOverrides.tagBase++;
-            win.tag = ChromebugOverrides.tagBase;
-        }
-        return win.tag;
+
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("ChromebugOverrides.getTabIdForWindow no id ", win);
     },
 };
 
