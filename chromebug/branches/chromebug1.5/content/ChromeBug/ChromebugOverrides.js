@@ -149,11 +149,11 @@ var ChromebugOverrides = {
             }
             catch(exc)
             {
-                FBTrace.sysout("supportsGlobal FAILS for "+scope.getWrappedValue());
+                FBTrace.sysout("ChromebugOverrides.getContextByFrame FAILS for "+scope.getWrappedValue());
             }
 
             if (FBTrace.DBG_TOPLEVEL)
-                FBTrace.sysout("supportsGlobal found oldest scope: "+scope.jsClassName, global);
+                FBTrace.sysout("ChromebugOverrides.getContextByFrame found oldest scope: "+scope.jsClassName, global);
         }
         var context = null;
 
@@ -260,6 +260,8 @@ var ChromebugOverrides = {
             FBTrace.sysout("ChromebugOverrides.getTabIdForWindow null window");
             return null;
         }
+        if (!win instanceof Window)
+            return;
 
         var tab = Firebug.getTabForWindow(win);
         if (tab)

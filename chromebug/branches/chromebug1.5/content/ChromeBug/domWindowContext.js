@@ -138,7 +138,8 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         }
         catch(exc)
         {
-            FBTrace.sysout("domwindowContext.unloadHandler FAILS "+exc, exc);
+            if (FBTrace)
+                FBTrace.sysout("domwindowContext.unloadHandler FAILS "+exc, exc);
         }
     },
 
