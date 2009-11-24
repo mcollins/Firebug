@@ -8,11 +8,11 @@
     <em:version>@VERSION@@RELEASE@</em:version>
     <em:type>2</em:type>
 
-    <!-- toolkit@mozilla.org --> 
+    <!-- toolkit@mozilla.org -->
     <em:targetApplication>
       <Description>
         <em:id>toolkit@mozilla.org</em:id>
-        <em:minVersion>1.5</em:minVersion>
+        <em:minVersion>1.9.0.11</em:minVersion>
         <em:maxVersion>99.0.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
