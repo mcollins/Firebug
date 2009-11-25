@@ -43,7 +43,7 @@ Chromebug.globalObserver =
         {
             if (subject instanceof Ci.nsIDOMWindow)
             {
-                //if (FBTrace.DBG_WINDOWS)
+                if (FBTrace.DBG_WINDOWS)
                     FBTrace.sysout("Chromebug.globalObserver found domwindowclosed "+subject.location+getStackDump());
                 if (subject.location.toString() == "chrome://chromebug/content/chromebug.xul")
                     throw new Error("Chromebug.globalObserver should not find chromebug.xul");

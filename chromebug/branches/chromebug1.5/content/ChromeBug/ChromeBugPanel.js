@@ -690,7 +690,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         else
         {
-            //if (FBTrace.DBG_INITIALIZE)
+            if (FBTrace.DBG_INITIALIZE)
                 FBTrace.sysout("restoreState NO previousStateJSON ");
             this.stopRestoration(); // no reason to beat our head against the wall...
         }
@@ -1055,7 +1055,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (Firebug.Chromebug.activated)
             return;
 
-        //if (FBTrace.DBG_CHROMEBUG)
+        if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
@@ -1739,7 +1739,7 @@ Chromebug.Package.prototype =
 
         this.contexts.push(context);
         context.pkg = this;
-        //if (FBTrace.DBG_LOCATIONS)
+        if (FBTrace.DBG_LOCATIONS)
             FBTrace.sysout("appendContext "+context.getName()+" to package "+this.name+" total contexts:"+this.contexts.length);
     },
 
