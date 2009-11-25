@@ -11,6 +11,7 @@
     <stringbundle id="strings_fireformat" src="chrome://fireformat/locale/fireformat.properties"/>
   </stringbundleset>
 
+  <script src="chrome://fireformat/content/fireformat.js" type="application/x-javascript"/>
   <script src="chrome://fireformat/content/formatters/fireformatCssFormatter.js" type="application/x-javascript"/>
   <script src="chrome://fireformat/content/formatters/fireformatHtmlFormatter.js" type="application/x-javascript"/>
   <script src="chrome://fireformat/content/formatters/mozillaHtmlFormatter.js" type="application/x-javascript"/>
