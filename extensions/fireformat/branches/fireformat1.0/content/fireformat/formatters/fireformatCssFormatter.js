@@ -15,8 +15,9 @@ FBL.ns(function() { with (FBL) {
         last: index == (collection.length-1)
     };
   }
-  var CSSFormatter = function(writer) {
+  var CSSFormatter = function(writer, prefCache) {
     this.writer = writer;
+    this.prefCache = prefCache;
 
     this.helpers = {};
     this.helpers[CSSRule.STYLE_RULE] = this.printStyleRule;
@@ -38,8 +39,25 @@ FBL.ns(function() { with (FBL) {
         this.printNode(cssRules[i], iterStatus);
       }
     },
+    printSelectorText: function(selectorText) {
+      var join = new Array(this.prefCache.getPref("selectorText.spaceCount")+1).join(" "),
+          indent = this.prefCache.getPref("selectorText.indentLevel"),
+          tokensPerLine = this.prefCache.getPref("selectorText.selectorsPerLine");
+
+      var selectors = selectorText.split(/\s*,\s*/).map(function(value, i, baseArray) {
+        if (i+1 < baseArray.length) {
+          return value + ",";
+        } else {
+          return value;
+        }
+      });
+      
+      // TODO : Use offset at all?
+      this.writer.write(Fireformat.wrapTokens(this.prefCache, selectors, join, tokensPerLine, indent));
+    },
     printStyleRule: function(styleRule, iterStatus) {
-      this.writer.write(styleRule.selectorText + " {\n");
+      this.printSelectorText(styleRule.selectorText);
+      this.writer.write(" {\n");    // TODO : Formatting of this is the next to work on
       this.writer.increaseIndent();
       this.printStyleDeclaration(styleRule.style, iterStatus);
       this.writer.decreaseIndent();
@@ -105,8 +123,9 @@ FBL.ns(function() { with (FBL) {
     name: "com.incaseofstairs.fireformatCSSFormatter",
     display: i18n.getString("FireformatCSSFormatter"),
     format: function(object) {
-      var writer = new Format.Writer("  ");
-      new CSSFormatter(writer).printNode(object);
+      var writer = new Format.Writer("  "),
+          prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatCssFormatter");
+      new CSSFormatter(writer, prefCache).printNode(object);
       return writer.toString();
     }
   });
