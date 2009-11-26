@@ -1,6 +1,13 @@
 /* See license.txt for terms of usage */
 var Fireformat = FBL.ns(function() {
   /**
+   * Generates a repeating string count number of times.
+   */
+  this.repeatString = function(string, count) {
+    return new Array(count+1).join(string);
+  },
+
+  /**
    * Takes a collection of objects and concatenates, wrapping when the
    * length of each line exceeds the wrapSize preference.
    * 
@@ -16,8 +23,8 @@ var Fireformat = FBL.ns(function() {
    */
   this.wrapTokens = function(prefCache, tokens, join, tokensPerLine, indentLevel, offset) {
     var wrapSize = prefCache.getPref("wrapSize")-(offset||0),
-        indent = new Array(prefCache.getPref("indentCount")+1).join(prefCache.getPref("indentChar")),
-        totalIndent = new Array((indentLevel||0)+1).join(indent),
+        indent = this.repeatString(prefCache.getPref("indentChar"), prefCache.getPref("indentCount")),
+        totalIndent = this.repeatString(indent, indentLevel||0),
 
         tokenLen = tokens.length,
         joinLen = join.length,
@@ -26,8 +33,8 @@ var Fireformat = FBL.ns(function() {
         lines = [];
     for (var i = 0; i < tokenLen; i++) {
       var token = tokens[i];
-      curTokens.push(token);
-      curLen += token.length + joinLen;
+      curTokens.push(token.value || token);
+      curLen += curTokens[curTokens.length-1].length + (token.join ? token.join.length : joinLen);
       curToken++;
 
       if (curLen >= wrapSize || (tokensPerLine > 0 && curToken >= tokensPerLine)) {
@@ -35,7 +42,7 @@ var Fireformat = FBL.ns(function() {
         curTokens = [totalIndent];
         curLen = totalIndent.length;  curToken = 0;
       } else if (i+1 < tokenLen){
-        curTokens.push(join);
+        curTokens.push(token.join || join);
       }
     }
     if (curTokens.length > 1 || curTokens.length == tokenLen) {

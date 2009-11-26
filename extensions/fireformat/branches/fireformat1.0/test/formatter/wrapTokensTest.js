@@ -12,7 +12,6 @@ function runTest() {
       }
   };
 
-  // TODO : Tokens per line and indent testing
   tokens = [ "aaaa", "bbbb", "cccc", "dddd" ];
 
   pref = { wrapSize: 11, indentChar: "e", indentCount: 2 };
@@ -32,6 +31,25 @@ function runTest() {
   FBTest.compare("aaaafbbbb\neecccc\needddd", Fireformat.wrapTokens(prefMock, tokens, "f", 0, 1), "Stacking");
 
   FBTest.compare("", Fireformat.wrapTokens(prefMock, [], "f", 0, 1), "Empty String");
+
+  // Unique joins
+  tokens = [
+    { value: "aaaa", join: "g" },
+    { value: "bbbb", join: "hhhh" },
+    "cccc",
+    { value: "dddd", join: "i" }
+  ];
+  pref = { wrapSize: 11, indentChar: "e", indentCount: 2 };
+  FBTest.compare("aaaagbbbb\neeccccxdddd", Fireformat.wrapTokens(prefMock, tokens, "x", 0, 1), "Unique join");
+
+  tokens = [
+    { value: "aaaa", join: "g" },
+    { value: "bbbb", join: "hhhh" },
+    "cccc",
+    { value: "dddd", join: "i" }
+  ];
+  pref = { wrapSize: 17, indentChar: "e", indentCount: 2 };
+  FBTest.compare("aaaagbbbbhhhhcccc\needddd", Fireformat.wrapTokens(prefMock, tokens, "xxxx", 0, 1), "Unique join length");
   
   FBTest.testDone();
 }
