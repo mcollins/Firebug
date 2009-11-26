@@ -34,7 +34,7 @@ var Fireformat = FBL.ns(function() {
     for (var i = 0; i < tokenLen; i++) {
       var token = tokens[i];
       curTokens.push(token.value || token);
-      curLen += curTokens[curTokens.length-1].length + (token.join ? token.join.length : joinLen);
+      curLen += curTokens[curTokens.length-1].length + (token.join !== undefined ? token.join.length : joinLen);
       curToken++;
 
       if (curLen >= wrapSize || (tokensPerLine > 0 && curToken >= tokensPerLine)) {
@@ -42,7 +42,7 @@ var Fireformat = FBL.ns(function() {
         curTokens = [totalIndent];
         curLen = totalIndent.length;  curToken = 0;
       } else if (i+1 < tokenLen){
-        curTokens.push(token.join || join);
+        curTokens.push(token.join !== undefined ? token.join : join);
       }
     }
     if (curTokens.length > 1 || curTokens.length == tokenLen) {
