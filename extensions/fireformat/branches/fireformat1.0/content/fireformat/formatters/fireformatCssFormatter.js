@@ -1,5 +1,5 @@
 /* See license.txt for terms of usage */
-FBL.ns(function() { with (FBL) {
+FBL.ns(function() {
   var i18n = document.getElementById("strings_fireformat");
 
   var Format = {};
@@ -15,6 +15,20 @@ FBL.ns(function() { with (FBL) {
         last: index == (collection.length-1)
     };
   }
+  function tokenizeValue(value) {
+    // This expression does not strictly follow the CSS syntax declaration
+    // Rather than limiting the characters that can be used as an escape,
+    // we are just requiring that that a character follow the escape token
+    // See: http://www.w3.org/TR/CSS21/syndata.html
+    var re = /(?:"(?:[^\n\r\f\\"]|(?:\\.))*")|(?:'(?:[^\n\r\f\\']|(?:\\.))*')|\S+/gm,
+        ret = [],
+        search;
+    while (search = re.exec(value)) {
+      ret.push(search[0]);
+    }
+    return ret;
+  }
+
   var CSSFormatter = function(writer, prefCache) {
     this.writer = writer;
     this.prefCache = prefCache;
@@ -40,7 +54,7 @@ FBL.ns(function() { with (FBL) {
       }
     },
     printSelectorText: function(selectorText) {
-      var join = new Array(this.prefCache.getPref("selectorText.spaceCount")+1).join(" "),
+      var join = Fireformat.repeatString(" ", this.prefCache.getPref("selectorText.spaceCount")),
           indent = this.prefCache.getPref("selectorText.indentLevel"),
           tokensPerLine = this.prefCache.getPref("selectorText.selectorsPerLine");
 
@@ -78,7 +92,7 @@ FBL.ns(function() { with (FBL) {
       // Copied from CSS Panel's getRuleProperties implementation
       // TODO : Attempt to unify these as a lib method?
       var lines = style.cssText.match(/(?:[^;\(]*(?:\([^\)]*?\))?[^;\(]*)*;?/g),
-          propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! important)?;?$/,
+          propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! ?important)?;?$/,
           line, m, i = 0;
       while(line=lines[i++]){
         m = propRE.exec(line);
@@ -90,7 +104,33 @@ FBL.ns(function() { with (FBL) {
       }
     },
     printProperty: function(propName, value, priority, iterStatus) {
-      this.writer.write(propName + ": " + value + (priority ? " " + priority : "") + ";\n");
+      var joinBeforeColon = Fireformat.repeatString(" ", this.prefCache.getPref("property.spaceBeforeColon")),
+          joinBeforeValue = Fireformat.repeatString(" ", this.prefCache.getPref("property.spaceBeforeValue")),
+          joinBeforePriority = Fireformat.repeatString(" ", this.prefCache.getPref("property.spaceBeforePriority")),
+          joinBeforeSemicolon = Fireformat.repeatString(" ", this.prefCache.getPref("property.spaceBeforeSemicolon")),
+          joinValue = Fireformat.repeatString(" ", this.prefCache.getPref("property.valueSpaceCount")),
+          indent = this.prefCache.getPref("property.indentLevel"),
+          tokensPerLine = this.prefCache.getPref("property.tokensPerLine"),
+          tokens = [];
+
+      tokens.push({ value: propName, join: joinBeforeColon });
+      tokens.push({ value: ":", join: joinBeforeValue, nowrap: true });
+
+      var tokenValues = tokenizeValue(value);
+      for (var i = 0; i < tokenValues.length; i++) {
+        tokens.push({ value: tokenValues[i], join: joinValue });
+      }
+
+      if (priority) {
+        tokens[tokens.length-1].join = joinBeforePriority;
+        tokens.push({ value: priority, join: joinBeforeSemicolon });
+      } else {
+        tokens[tokens.length-1].join = joinBeforeSemicolon;
+      }
+
+      tokens.push({ value: ";\n", nowrap: true });
+
+      this.writer.write(Fireformat.wrapTokens(this.prefCache, tokens, " ", tokensPerLine, indent));
     },
     printMediaRule: function(mediaRule, iterStatus) {
       this.writer.write("@media " + mediaRule.media.mediaText + " {\n");
@@ -129,4 +169,4 @@ FBL.ns(function() { with (FBL) {
       return writer.toString();
     }
   });
-}});
+});
