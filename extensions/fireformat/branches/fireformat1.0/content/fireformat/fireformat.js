@@ -27,22 +27,22 @@ var Fireformat = FBL.ns(function() {
         totalIndent = this.repeatString(indent, indentLevel||0),
 
         tokenLen = tokens.length,
-        joinLen = join.length,
         curTokens = [],
         curLen = 0, curToken = 0,
         lines = [];
     for (var i = 0; i < tokenLen; i++) {
-      var token = tokens[i];
+      var token = tokens[i],
+          curJoin = token.join !== undefined ? token.join : join;
       curTokens.push(token.value || token);
-      curLen += curTokens[curTokens.length-1].length + (token.join !== undefined ? token.join.length : joinLen);
+      curLen += curTokens[curTokens.length-1].length + curJoin.length;
       curToken++;
 
-      if (curLen >= wrapSize || (tokensPerLine > 0 && curToken >= tokensPerLine)) {
+      if (!(tokens[i+1]||{}).nowrap && (curLen >= wrapSize || (tokensPerLine > 0 && curToken >= tokensPerLine))) {
         lines.push(curTokens.join(""));
         curTokens = [totalIndent];
         curLen = totalIndent.length;  curToken = 0;
       } else if (i+1 < tokenLen){
-        curTokens.push(token.join !== undefined ? token.join : join);
+        curTokens.push(curJoin);
       }
     }
     if (curTokens.length > 1 || curTokens.length == tokenLen) {

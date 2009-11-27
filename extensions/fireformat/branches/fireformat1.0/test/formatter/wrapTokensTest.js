@@ -60,5 +60,18 @@ function runTest() {
   pref = { wrapSize: 11, indentChar: "e", indentCount: 2 };
   FBTest.compare("aaaabbbb\neeccccxdddd", Fireformat.wrapTokens(prefMock, tokens, "x", 0, 1), "Zero Length Join");
 
+  // Nowrap tokens
+  tokens = [
+    { value: "aaaa", join: "g" },
+    { value: "bbbb", join: "hhhh" },
+    { value: "cccc", nowrap: true },
+    { value: "dddd", join: "i" }
+  ];
+  pref = { wrapSize: 11, indentChar: "e", indentCount: 2 };
+  FBTest.compare("aaaagbbbbhhhhcccc\needddd", Fireformat.wrapTokens(prefMock, tokens, "x", 0, 1), "Token Wrap: Chars");
+
+  pref = { wrapSize: 80, indentChar: "e", indentCount: 2 };
+  FBTest.compare("aaaagbbbbhhhhcccc\needddd", Fireformat.wrapTokens(prefMock, tokens, "x", 2, 1), "Token Wrap: Tokens");
+  
   FBTest.testDone();
 }
