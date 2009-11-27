@@ -38,6 +38,10 @@ body {
     -moz-image-region: rect(0px 64px 16px 48px);
 }
 
+#noTestTimeout {
+    list-style-image: url(chrome://fbtest/skin/Throbber-small.png);
+}
+
 /************************************************************************************************/
 /* Test List URL Bar */
 
