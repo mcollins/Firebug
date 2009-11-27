@@ -296,7 +296,7 @@ JSONBuilder.prototype =
         request.queryString = file.urlParams;
         request.postData = this.buildPostData(file);
 
-        request.headersSize = -1; //xxxHonza: waiting for the activityObserver.
+        request.headersSize = file.requestHeadersText ? file.requestHeadersText.length : -1;
         request.bodySize = file.postText ? file.postText.length : -1;
 
         return request;
@@ -418,7 +418,7 @@ JSONBuilder.prototype =
 
         response.redirectURL = findHeader(file.responseHeaders, "Location");
 
-        response.headersSize = -1; //xxxHonza: waiting for the activityObserver.
+        response.headersSize = file.responseHeadersText ? file.responseHeadersText.length : -1;
         response.bodySize = file.size;
 
         return response;
