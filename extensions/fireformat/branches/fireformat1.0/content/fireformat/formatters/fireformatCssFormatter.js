@@ -15,6 +15,24 @@ FBL.ns(function() {
         last: index == (collection.length-1)
     };
   }
+  function tokenizeSelector(selector) {
+    // Break into tokens of strings, commas and surrounding whitespace and everything else
+    var re = /(?:"(?:[^\n\r\f\\"]|(?:\\.))*")|(?:'(?:[^\n\r\f\\']|(?:\\.))*')|\s*(,)\s*|[^,'"]+/gm,
+        curSet = [],
+        ret = [];
+    while (search = re.exec(selector)) {
+      if (search[1] != ",") {
+        curSet.push(search[0]);
+      } else {
+        ret.push(curSet.join("") || "");
+        curSet = [];
+      }
+    }
+    if (curSet.length) {
+      ret.push(curSet.join(""));
+    }
+    return ret;
+  }
   function tokenizeValue(value) {
     // This expression does not strictly follow the CSS syntax declaration
     // Rather than limiting the characters that can be used as an escape,
@@ -58,7 +76,7 @@ FBL.ns(function() {
           indent = this.prefCache.getPref("selectorText.indentLevel"),
           tokensPerLine = this.prefCache.getPref("selectorText.selectorsPerLine");
 
-      var selectors = selectorText.split(/\s*,\s*/).map(function(value, i, baseArray) {
+      var selectors = tokenizeSelector(selectorText).map(function(value, i, baseArray) {
         if (i+1 < baseArray.length) {
           return value + ",";
         } else {
@@ -147,6 +165,7 @@ FBL.ns(function() {
       this.writer.write("\n");
     },
     printImportRule: function(importRule, iterStatus) {
+      // TODO : Media type
       this.writer.write("@import url(\"" + importRule.href + "\");\n");
       var nextSibling = iterStatus && iterStatus.collection[iterStatus.index+1];
       if (nextSibling && nextSibling.type != CSSRule.IMPORT_RULE) {

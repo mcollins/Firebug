@@ -47,6 +47,12 @@ function runTest() {
   prefs.setPrefs(10, 3, 2, 1);
   FBTest.compare(".single[name] > DIV.test + *,\n  .double:focus,\n  .triple#myid {\n}\n", formatter.format(getStyle(".single[name] > DIV.test + *, .double:focus, .triple#myid")), "Multiple no wrap");
 
+
+  // Formatting with comma strings in the selector
+  prefs.setPrefs(10, 1, 2, 1);
+  FBTest.compare(".single[test=\"fail, fail\"] > DIV.test + *,\n  .double:focus,\n  .triple#myid {\n}\n", formatter.format(getStyle(".single[test=\"fail, fail\"] > DIV.test + *, .double:focus, .triple#myid")), "Comma selector string 1");
+  FBTest.compare(".single[test=\'fail, fail\'] > DIV.test + *,\n  .double:focus,\n  .triple#myid {\n}\n", formatter.format(getStyle(".single[test=\'fail, fail\'] > DIV.test + *, .double:focus, .triple#myid")), "Comma selector string 2");
+  
   prefs.reset();
 
   FBTest.testDone();
