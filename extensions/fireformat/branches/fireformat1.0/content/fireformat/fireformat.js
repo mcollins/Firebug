@@ -1,5 +1,15 @@
 /* See license.txt for terms of usage */
 var Fireformat = FBL.ns(function() {
+  var Format = {};
+  Components.utils.import("resource://fireformat/formatters.jsm", Format);
+
+  /**
+   * Convenience wrapper around the formatters js module registration method.
+   */
+  this.registerFormatter = function(formatter) {
+    return Format.Formatters.registerFormatter(formatter);
+  };
+
   /**
    * Generates a repeating string count number of times.
    */

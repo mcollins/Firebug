@@ -7,10 +7,7 @@ FBL.ns(function() {
 
   var i18n = document.getElementById("strings_fireformat");
 
-  var Format = {};
-  Components.utils.import("resource://fireformat/formatters.jsm", Format);
-
-  Format.Formatters.registerFormatter({
+  Fireformat.registerFormatter({
     type: "HTML",
     name: "com.incaseofstairs.mozillaHTMLFormatter",
     display: i18n.getString("MozillaHTMLFormatter"),

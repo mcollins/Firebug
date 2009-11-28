@@ -2,9 +2,6 @@
 FBL.ns(function() {
   var i18n = document.getElementById("strings_fireformat");
 
-  var Format = {};
-  Components.utils.import("resource://fireformat/formatters.jsm", Format);
-
   function createIterStatus(collection, index, parent) {
     return {
         parent: parent,
@@ -176,7 +173,7 @@ FBL.ns(function() {
     }
   };
 
-  Format.Formatters.registerFormatter({
+  Fireformat.registerFormatter({
     type: "CSS",
     name: "com.incaseofstairs.fireformatCSSFormatter",
     display: i18n.getString("FireformatCSSFormatter"),

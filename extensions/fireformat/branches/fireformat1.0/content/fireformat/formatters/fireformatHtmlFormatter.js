@@ -2,9 +2,6 @@
 FBL.ns(function() { with (FBL) {
   var i18n = document.getElementById("strings_fireformat");
 
-  var Format = {};
-  Components.utils.import("resource://fireformat/formatters.jsm", Format);
-
   var DOMFormatter = function(writer) {
     this.writer = writer;
   };
@@ -58,7 +55,7 @@ FBL.ns(function() { with (FBL) {
     }
   };
 
-  Format.Formatters.registerFormatter({
+  Fireformat.registerFormatter({
     type: "HTML",
     name: "com.incaseofstairs.fireformatHTMLFormatter",
     display: i18n.getString("FireformatHTMLFormatter"),
