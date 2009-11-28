@@ -84,6 +84,15 @@ function runTest() {
   prefs.setPrefs(1, 10, 1, 1, 0, 2, 1, 1);
   FBTest.compare("  background :\n    \'green }string\'\n    !important ;\n", getStyle("background : \'green }string\' !important;"), "Important single Property, token wrap, string2");
 
+  prefs.setPrefs(80, 1, 1, 1, 0, 1, 1, 1);
+  FBTest.compare("  background :\n    \"green{\\\n string\" ;\n", getStyle("background : \"green{\\\n string\";"), "Single Property newline, token wrap, string1");
+  prefs.setPrefs(80, 1, 1, 1, 0, 1, 1, 1);
+  FBTest.compare("  background :\n    \'green{\\\n string\' ;\n", getStyle("background : \'green{\\\n string\';"), "Single Property newline, token wrap, string2");
+  prefs.setPrefs(80, 1, 1, 1, 0, 1, 1, 1);
+  FBTest.compare("  background :\n    \"green{\\\n string\" ;\n", getStyle("background : \"green{\n string\";"), "Single Property invalid newline, token wrap, string1");
+  prefs.setPrefs(80, 1, 1, 1, 0, 1, 1, 1);
+  FBTest.compare("  background :\n    \'green{\\\n string\' ;\n", getStyle("background : \'green{\n string\';"), "Single Property invalid newline, token wrap, string2");
+
   prefs.reset();
 
   FBTest.testDone();
