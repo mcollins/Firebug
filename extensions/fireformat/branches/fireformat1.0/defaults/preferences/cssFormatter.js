@@ -37,3 +37,14 @@ pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforeValue", 1);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforePriority", 1);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforeSemicolon", 0);
 pref("extensions.firebug.fireformatCssFormatter.property.valueSpaceCount", 1);
+
+/*
+ * Simple @rule text formatting
+ * This applies to @import and @charset and the header for @media.
+ */
+pref("extensions.firebug.fireformatCssFormatter.atRule.tokensPerLine", 5);
+pref("extensions.firebug.fireformatCssFormatter.atRule.indentLevel", 2);
+pref("extensions.firebug.fireformatCssFormatter.atRule.spaceBeforeValue", 1);
+pref("extensions.firebug.fireformatCssFormatter.atRule.spaceBeforeSemicolon", 0);
+pref("extensions.firebug.fireformatCssFormatter.atRule.valueSpaceCount", 1);
+pref("extensions.firebug.fireformatCssFormatter.atRule.typeSeparator", "\n");

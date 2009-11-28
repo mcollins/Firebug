@@ -27,7 +27,13 @@ FBL.ns(function() {
     if (curSet.length) {
       ret.push(curSet.join(""));
     }
-    return ret;
+    return ret.map(function(value, i, baseArray) {
+      if (i+1 < baseArray.length) {
+        return value + ",";
+      } else {
+        return value;
+      }
+    });
   }
   function tokenizeValue(value) {
     // This expression does not strictly follow the CSS syntax declaration
@@ -69,13 +75,7 @@ FBL.ns(function() {
           indent = this.prefCache.getPref("selectorText.indentLevel"),
           tokensPerLine = this.prefCache.getPref("selectorText.selectorsPerLine");
 
-      var selectors = tokenizeSelector(selectorText).map(function(value, i, baseArray) {
-        if (i+1 < baseArray.length) {
-          return value + ",";
-        } else {
-          return value;
-        }
-      });
+      var selectors = tokenizeSelector(selectorText);
       
       // TODO : Use offset at all?
       this.writer.write(Fireformat.wrapTokens(this.prefCache, selectors, join, tokensPerLine, indent));
@@ -144,7 +144,11 @@ FBL.ns(function() {
       this.writer.write(Fireformat.wrapTokens(this.prefCache, tokens, " ", tokensPerLine, indent));
     },
     printMediaRule: function(mediaRule, iterStatus) {
-      this.writer.write("@media " + mediaRule.media.mediaText);
+      var tokens = [];
+      if (mediaRule.media.mediaText) {
+        tokens.push.apply(tokens, tokenizeSelector(mediaRule.media.mediaText));
+      }
+      this.printAtValueRule("@media", tokens, mediaRule, iterStatus, false);
       this.printBlock(mediaRule, iterStatus, function() { this.printRuleList(mediaRule.cssRules, iterStatus); });
     },
     printBlock: function(object, iterStatus, contentFormatter) {
@@ -186,15 +190,38 @@ FBL.ns(function() {
       }
     },
     printImportRule: function(importRule, iterStatus) {
-      // TODO : Media type
-      this.writer.write("@import url(\"" + importRule.href + "\");");
-      var nextSibling = iterStatus && iterStatus.collection[iterStatus.index+1];
-      if (nextSibling && nextSibling.type != CSSRule.IMPORT_RULE) {
-        this.writer.write("\n");
+      var tokens = [ "url(\"" + importRule.href + "\")" ];
+      if (importRule.media.mediaText) {
+        tokens.push.apply(tokens, tokenizeSelector(importRule.media.mediaText));
       }
+      this.printAtValueRule("@import", tokens, importRule, iterStatus, true);
     },
     printCharsetRule: function(charsetRule, iterStatus) {
-      this.writer.write("@charset \"" + charsetRule.encoding + "\";");
+      this.printAtValueRule("@charset", [ "\"" + charsetRule.encoding + "\"" ], charsetRule, iterStatus, true);
+    },
+    printAtValueRule: function(atText, valueTokens, atRule, iterStatus, close) {
+      var joinBeforeValue = Fireformat.repeatString(" ", this.prefCache.getPref("atRule.spaceBeforeValue")),
+          joinBeforeSemicolon = Fireformat.repeatString(" ", this.prefCache.getPref("atRule.spaceBeforeSemicolon")),
+          joinValue = Fireformat.repeatString(" ", this.prefCache.getPref("atRule.valueSpaceCount")),
+          indent = this.prefCache.getPref("atRule.indentLevel"),
+          tokensPerLine = this.prefCache.getPref("atRule.tokensPerLine"),
+          typeSeparator = this.prefCache.getPref("atRule.typeSeparator"),
+          tokens = [];
+    
+      tokens.push({ value: atText, join: joinBeforeValue });
+      for (var i = 0; i < valueTokens.length; i++) {
+        tokens.push({ value: valueTokens[i], join: joinValue });
+      }
+      tokens[tokens.length-1].join = joinBeforeSemicolon;
+      if (close) {
+        tokens.push({ value: ";", nowrap: true });
+      }
+
+      this.writer.write(Fireformat.wrapTokens(this.prefCache, tokens, " ", tokensPerLine, indent));
+      var nextSibling = iterStatus && iterStatus.collection[iterStatus.index+1];
+      if (close && nextSibling && nextSibling.type != atRule.type) {
+        this.writer.write(typeSeparator);
+      }
     }
   };
 

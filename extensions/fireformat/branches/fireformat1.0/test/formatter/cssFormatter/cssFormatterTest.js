@@ -11,6 +11,7 @@ function runTest() {
     var doc = win.document;
 
     var expected = '@charset "ISO-8859-1";\n'
+      + '\n'
       + '@import url("import.css");\n'
       + '@import url("import.css");\n'
       + '\n'
