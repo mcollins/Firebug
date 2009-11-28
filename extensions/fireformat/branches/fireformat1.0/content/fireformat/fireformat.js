@@ -43,7 +43,7 @@ var Fireformat = FBL.ns(function() {
     for (var i = 0; i < tokenLen; i++) {
       var token = tokens[i],
           curJoin = token.join !== undefined ? token.join : join;
-      curTokens.push(token.value || token);
+      curTokens.push(token.value !== undefined ? token.value : token);
       curLen += curTokens[curTokens.length-1].length + curJoin.length;
       curToken++;
 
