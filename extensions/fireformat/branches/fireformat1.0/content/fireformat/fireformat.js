@@ -71,4 +71,42 @@ var Fireformat = FBL.ns(function() {
         return ret;
       }
   };
+
+  /**
+   * Object passed to the formatter used to output the formatted object
+   */
+  this.Writer = function(indentToken) {
+    this.lines = [];
+    this.indentToken = indentToken;
+    this.indent = 0;
+    this.indentStr = "";
+    this.completeLine = true;
+  };
+  this.Writer.prototype = {
+    toString: function() {
+      return this.lines.join("");
+    },
+    write: function(text) {
+      var newLines = text.split("\n");
+
+      for (var i = 0; i < newLines.length; i++) {
+        if (this.completeLine && (i < newLines.length - 1 || newLines[i])) {
+          newLines[i] = this.indentStr + newLines[i];
+        }
+        // If the final line is not blank then we did not end on a new line char
+        this.completeLine = i != newLines.length - 1 || !newLines[i];
+      }
+      this.lines.push(newLines.join("\n"));
+    },
+    increaseIndent: function() {
+      this.indent++;
+      this.indentStr = Fireformat.repeatString(this.indentToken, this.indent);
+    },
+    decreaseIndent: function() {
+      if (this.indent > 0) {
+        this.indent--;
+        this.indentStr = Fireformat.repeatString(this.indentToken, this.indent);
+      }
+    }
+  };
 });

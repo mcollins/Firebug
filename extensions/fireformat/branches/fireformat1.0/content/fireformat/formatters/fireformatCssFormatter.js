@@ -4,7 +4,6 @@ FBL.ns(function() {
 
   var Format = {};
   Components.utils.import("resource://fireformat/formatters.jsm", Format);
-  Components.utils.import("resource://fireformat/writer.jsm", Format);
 
   function createIterStatus(collection, index, parent) {
     return {
@@ -182,7 +181,8 @@ FBL.ns(function() {
     name: "com.incaseofstairs.fireformatCSSFormatter",
     display: i18n.getString("FireformatCSSFormatter"),
     format: function(object) {
-      var writer = new Format.Writer("  "),
+      // TODO : Allow config on this format value
+      var writer = new Fireformat.Writer("  "),
           prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatCssFormatter");
       new CSSFormatter(writer, prefCache).printNode(object);
       return writer.toString();

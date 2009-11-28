@@ -4,7 +4,6 @@ FBL.ns(function() { with (FBL) {
 
   var Format = {};
   Components.utils.import("resource://fireformat/formatters.jsm", Format);
-  Components.utils.import("resource://fireformat/writer.jsm", Format);
 
   var DOMFormatter = function(writer) {
     this.writer = writer;
@@ -64,7 +63,7 @@ FBL.ns(function() { with (FBL) {
     name: "com.incaseofstairs.fireformatHTMLFormatter",
     display: i18n.getString("FireformatHTMLFormatter"),
     format: function(object) {
-      var writer = new Format.Writer("  ");
+      var writer = new Fireformat.Writer("  ");
       new DOMFormatter(writer).printNode(object);
       return writer.toString();
     }
