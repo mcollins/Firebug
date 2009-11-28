@@ -1,9 +1,5 @@
 /* See license.txt for terms of usage */
 function runTest() {
-  var Firebug = FW.Firebug;
-  var Format = {};
-  Components.utils.import("resource://fireformat/formatters.jsm", Format);
-
   FBTest.loadScript("FBTestFireformat.js", this);
   var prefs = new FBTestFireformat.PrefHandler([
        "fireformatCssFormatter.wrapSize",
