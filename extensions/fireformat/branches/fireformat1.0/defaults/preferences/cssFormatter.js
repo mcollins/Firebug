@@ -17,6 +17,17 @@ pref("extensions.firebug.fireformatCssFormatter.selectorText.spaceCount", 1);
 pref("extensions.firebug.fireformatCssFormatter.selectorText.indentLevel", 0);
 
 /*
+ * CSS rule body formatting
+ */
+pref("extensions.firebug.fireformatCssFormatter.block.indentLevel", 1);
+pref("extensions.firebug.fireformatCssFormatter.block.componentSeparator", "\n");
+pref("extensions.firebug.fireformatCssFormatter.block.separatorBeforeOpen", " ");
+pref("extensions.firebug.fireformatCssFormatter.block.separatorAfterOpen", "\n");
+pref("extensions.firebug.fireformatCssFormatter.block.separatorBeforeClose", "\n");
+pref("extensions.firebug.fireformatCssFormatter.block.separatorAfterClose", "\n");
+pref("extensions.firebug.fireformatCssFormatter.block.separatorAfterLast", "");
+
+/*
  * CSS Property text formatting.
  */
 pref("extensions.firebug.fireformatCssFormatter.property.tokensPerLine", 5);

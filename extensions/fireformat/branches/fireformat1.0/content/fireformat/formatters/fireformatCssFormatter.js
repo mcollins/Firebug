@@ -61,11 +61,8 @@ FBL.ns(function() {
       helper.call(this, object, iterStatus);
     },
     printSheet: function(sheet) {
-      var cssRules = sheet.cssRules;
-      for (var i = 0; i < cssRules.length; i++) {
-        var iterStatus = createIterStatus(cssRules, i);
-        this.printNode(cssRules[i], iterStatus);
-      }
+      this.printRuleList(sheet.cssRules);
+      this.writer.write(this.prefCache.getPref("block.separatorAfterClose"));
     },
     printSelectorText: function(selectorText) {
       var join = Fireformat.repeatString(" ", this.prefCache.getPref("selectorText.spaceCount")),
@@ -85,35 +82,35 @@ FBL.ns(function() {
     },
     printStyleRule: function(styleRule, iterStatus) {
       this.printSelectorText(styleRule.selectorText);
-      this.writer.write(" {\n");    // TODO : Formatting of this is the next to work on
-      this.writer.increaseIndent();
-      this.printStyleDeclaration(styleRule.style, iterStatus);
-      this.writer.decreaseIndent();
-      this.writer.write("}\n");
-      if (iterStatus && !iterStatus.last) {
-        this.writer.write("\n");
-      }
+      this.printBlock(styleRule, iterStatus, function() { this.printStyleDeclaration(styleRule.style, iterStatus); });
     },
     printFontFaceRule: function(styleRule, iterStatus) {
-      this.writer.write("@font-face {\n");
-      this.writer.increaseIndent();
-      this.printStyleDeclaration(styleRule.style, iterStatus);
-      this.writer.decreaseIndent();
-      this.writer.write("}\n");
-      this.writer.write("\n");
+      this.writer.write("@font-face");
+      this.printBlock(styleRule, iterStatus, function() { this.printStyleDeclaration(styleRule.style, iterStatus); });
     },
     printStyleDeclaration: function(style, iterStatus) {
+      var separator = this.prefCache.getPref("block.componentSeparator");
+
       // Copied from CSS Panel's getRuleProperties implementation
       // TODO : Attempt to unify these as a lib method?
       var lines = style.cssText.match(/(?:[^;\(]*(?:\([^\)]*?\))?[^;\(]*)*;?/g),
           propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! ?important)?;?$/,
-          line, m, i = 0;
+          line, m, i = 0,
+          props = [];
       while(line=lines[i++]){
         m = propRE.exec(line);
         if(!m)    continue;
         //var name = m[1], value = m[2], important = !!m[3];
         if (m[2]) {
-          this.printProperty(m[1], m[2], m[3]);
+          props.push({ name: m[1], value: m[2], important: m[3] });
+        }
+      }
+      var propLen = props.length;
+      for (var i = 0; i < propLen; i++) {
+        var prop = props[i];
+        this.printProperty(prop.name, prop.value, prop.important);
+        if (i+1 < propLen) {
+          this.writer.write(separator);
         }
       }
     },
@@ -142,34 +139,62 @@ FBL.ns(function() {
         tokens[tokens.length-1].join = joinBeforeSemicolon;
       }
 
-      tokens.push({ value: ";\n", nowrap: true });
+      tokens.push({ value: ";", nowrap: true });
 
       this.writer.write(Fireformat.wrapTokens(this.prefCache, tokens, " ", tokensPerLine, indent));
     },
     printMediaRule: function(mediaRule, iterStatus) {
-      this.writer.write("@media " + mediaRule.media.mediaText + " {\n");
-      this.writer.increaseIndent();
-      var cssRules = mediaRule.cssRules;
-      
-      for (var i = 0; i < cssRules.length; i++) {
-        var childIterStatus = createIterStatus(cssRules, i, iterStatus);
-        this.printNode(cssRules[i], childIterStatus);
+      this.writer.write("@media " + mediaRule.media.mediaText);
+      this.printBlock(mediaRule, iterStatus, function() { this.printRuleList(mediaRule.cssRules, iterStatus); });
+    },
+    printBlock: function(object, iterStatus, contentFormatter) {
+      // TODO : Examine how we should handle wrapping for elements that are offseted only on the first line
+      var indent = this.prefCache.getPref("block.indentLevel"),
+          sepBeforeOpen = this.prefCache.getPref("block.separatorBeforeOpen"),
+          sepAfterOpen = this.prefCache.getPref("block.separatorAfterOpen"),
+          sepBeforeClose = this.prefCache.getPref("block.separatorBeforeClose"),
+          sepAfterClose = this.prefCache.getPref("block.separatorAfterClose"),
+          sepAfterLast = this.prefCache.getPref("block.separatorAfterLast");
+
+      // Separator
+      this.writer.write(sepBeforeOpen);
+      this.writer.write("{");
+      this.writer.write(sepAfterOpen);
+      for (var i = 0; i < indent; i++) {
+        this.writer.increaseIndent();
       }
 
-      this.writer.decreaseIndent();
-      this.writer.write("}\n");
-      this.writer.write("\n");
+      contentFormatter.call(this, object, iterStatus);
+
+      for (var i = 0; i < indent; i++) {
+        this.writer.decreaseIndent();
+      }
+      this.writer.write(sepBeforeClose);
+      this.writer.write("}");
+      this.writer.write((iterStatus && iterStatus.last) ? sepAfterLast : sepAfterClose);
+    },
+    printRuleList: function(cssRules, iterStatus) {
+      var separator = this.prefCache.getPref("block.componentSeparator");
+
+      var rulesLen = cssRules.length;
+      for (var i = 0; i < rulesLen; i++) {
+        var childIterStatus = createIterStatus(cssRules, i, iterStatus);
+        this.printNode(cssRules[i], childIterStatus);
+        if (i+1 < rulesLen) {
+          this.writer.write(separator);
+        }
+      }
     },
     printImportRule: function(importRule, iterStatus) {
       // TODO : Media type
-      this.writer.write("@import url(\"" + importRule.href + "\");\n");
+      this.writer.write("@import url(\"" + importRule.href + "\");");
       var nextSibling = iterStatus && iterStatus.collection[iterStatus.index+1];
       if (nextSibling && nextSibling.type != CSSRule.IMPORT_RULE) {
         this.writer.write("\n");
       }
     },
     printCharsetRule: function(charsetRule, iterStatus) {
-      this.writer.write("@charset \"" + charsetRule.encoding + "\";\n");
+      this.writer.write("@charset \"" + charsetRule.encoding + "\";");
     }
   };
 

@@ -45,14 +45,14 @@ function runTest() {
     FBTest.compare(expected, text, "Formatter value");
 
     text = formatter.format(doc.styleSheets[0].cssRules[0]);
-    FBTest.compare('@charset "ISO-8859-1";\n', text, "Rule Formatter Value");
+    FBTest.compare('@charset "ISO-8859-1";', text, "Rule Formatter Value");
 
     text = formatter.format(doc.styleSheets[0].cssRules[3]);
     FBTrace.sysout("cssFormatter", text);
     FBTest.compare('@font-face {\n'
         + '  font-family: "Robson Celtic";\n'
         + '  src: url("http://site/fonts/rob-celt");\n'
-        + '}\n\n', text, "Rule Formatter Value");
+        + '}\n', text, "Rule Formatter Value");
 
     + 
     FBTestFirebug.testDone();
