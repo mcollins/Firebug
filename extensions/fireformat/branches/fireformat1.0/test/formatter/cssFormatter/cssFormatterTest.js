@@ -4,7 +4,7 @@ function runTest() {
       FBTrace = FBTest.FirebugWindow.FBTrace;
   
   //FBTest.loadScript("FBTestFireDiff.js", this);
-  FBTestFirebug.openNewTab(urlBase + "formatter/index.htm", function(win) {
+  FBTestFirebug.openNewTab(urlBase + "formatter/cssFormatter/index.htm", function(win) {
     var Format = {};
     Components.utils.import("resource://fireformat/formatters.jsm", Format);
 
