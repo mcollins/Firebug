@@ -613,12 +613,12 @@ Firebug.NetMonitorSerializer.ViewerOpener =
 // xxxHonza: duplicated in net.js
 function isURLEncodedFile(file, text)
 {
-    if (text && text.indexOf("Content-Type: application/x-www-form-urlencoded") != -1)
+    if (text && text.toLowerCase().indexOf("content-type: application/x-www-form-urlencoded") != -1)
         return true;
 
     // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
     // there can be even charset specified. So, use indexOf rather than just "==".
-    var headerValue = findHeader(file.requestHeaders, "Content-Type");
+    var headerValue = findHeader(file.requestHeaders, "content-type");
     if (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0)
         return true;
 
