@@ -475,18 +475,16 @@ JSONBuilder.prototype =
 
     buildTimings: function(file)
     {
-        var timings = {};
-        timings.dns = file.resolvingTime - file.startTime;
-        timings.connect = file.connectingTime - file.startTime;
+        var sendStarted = (file.sendingTime > file.startTime);
+        var blockingEnd = sendStarted ? file.sendingTime : file.waitingForTime;
 
-        if (file.sendingTime != file.startTime)
-            timings.send = file.sendingTime - file.startTime - timings.connect - timings.dns;
-        else
-            timings.send = 0;   //  Waiting for activity observer.
- 
+        var timings = {};
+        timings.dns = file.connectingTime - file.startTime;
+        timings.connect = file.connectedTime - file.connectingTime;
+        timings.blocked = blockingEnd - file.connectedTime;
+        timings.send = sendStarted ? file.waitingForTime - file.sendingTime : 0;
         timings.wait = file.respondedTime - file.waitingForTime;
         timings.receive = file.endTime - file.respondedTime;
-        timings.blocked = file.waitingForTime - file.startTime - timings.connect - timings.dns - timings.send;
 
         return timings;
     },
