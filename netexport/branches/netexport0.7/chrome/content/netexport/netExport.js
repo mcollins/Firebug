@@ -276,9 +276,14 @@ JSONBuilder.prototype =
 
     buildPageTimings: function(file)
     {
-        var timings = {};
-        timings.onContentLoad = file.phase.contentLoadTime - file.startTime;
-        timings.onLoad = file.phase.windowLoadTime - file.startTime;
+        var timings = {onContentLoad: 0, onLoad: 0};
+
+        if (file.phase.contentLoadTime)
+            timings.onContentLoad = file.phase.contentLoadTime - file.startTime;
+
+        if (file.phase.windowLoadTime)
+            timings.onLoad = file.phase.windowLoadTime - file.startTime;
+
         return timings;
     },
 
