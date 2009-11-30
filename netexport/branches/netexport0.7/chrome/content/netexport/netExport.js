@@ -59,7 +59,7 @@ Firebug.NetMonitorSerializer = extend(Firebug.Module,
         // Build entries.
         var numberOfRequests = 0;
         panel.enumerateRequests(function(file) {
-            if (file.loaded)
+            if (file.loaded && file.requestHeaders && file.responseHeaders)
                 numberOfRequests++;
         })
 
