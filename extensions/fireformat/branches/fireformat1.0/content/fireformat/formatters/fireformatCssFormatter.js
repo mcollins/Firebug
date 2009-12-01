@@ -94,7 +94,7 @@ FBL.ns(function() {
       // Copied from CSS Panel's getRuleProperties implementation
       // TODO : Attempt to unify these as a lib method?
       var lines = style.cssText.match(/(?:[^;\(]*(?:\([^\)]*?\))?[^;\(]*)*;?/g),
-          propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! ?important)?;?$/,
+          propRE = /\s*([^:\s]*)\s*:\s*([\s\S]*?)\s*(! ?important)?;?$/,
           line, m, i = 0,
           props = [];
       while(line=lines[i++]){
