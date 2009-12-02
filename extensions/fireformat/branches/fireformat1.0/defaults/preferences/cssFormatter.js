@@ -31,7 +31,7 @@ pref("extensions.firebug.fireformatCssFormatter.block.separatorAfterLast", "");
  * CSS Property text formatting.
  */
 pref("extensions.firebug.fireformatCssFormatter.property.tokensPerLine", 5);
-pref("extensions.firebug.fireformatCssFormatter.property.indentLevel", 2);
+pref("extensions.firebug.fireformatCssFormatter.property.indentLevel", 1);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforeColon", 0);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforeValue", 1);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforePriority", 1);
