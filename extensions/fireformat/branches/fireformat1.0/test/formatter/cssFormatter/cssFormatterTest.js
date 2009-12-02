@@ -53,7 +53,7 @@ function runTest() {
     FBTest.compare('@font-face {\n'
         + '  font-family: "Robson Celtic";\n'
         + '  src: url("http://site/fonts/rob-celt");\n'
-        + '}\n', text, "Rule Formatter Value");
+        + '}', text, "Rule Formatter Value");
 
     + 
     FBTestFirebug.testDone();

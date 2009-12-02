@@ -44,7 +44,7 @@ var Fireformat = FBL.ns(function() {
       var token = tokens[i],
           curJoin = token.join !== undefined ? token.join : join;
       curTokens.push(token.value !== undefined ? token.value : token);
-      curLen += curTokens[curTokens.length-1].length + curJoin.length;
+      curLen += curTokens[curTokens.length-1].length + (curTokens.length > 1 ? curJoin.length : 0);
       curToken++;
 
       if (!(tokens[i+1]||{}).nowrap && (curLen >= wrapSize || (tokensPerLine > 0 && curToken >= tokensPerLine))) {
@@ -83,40 +83,120 @@ var Fireformat = FBL.ns(function() {
   };
 
   /**
-   * Object passed to the formatter used to output the formatted object
+   * TODO : Proper jsdoc
    */
-  this.Writer = function(indentToken) {
+  this.Writer = function(prefCache) {
+    this.indentToken = Fireformat.repeatString(prefCache.getPref("indentChar"), prefCache.getPref("indentCount"));
+    this.wrapLength = prefCache.getPref("wrapSize");
+
     this.lines = [];
-    this.indentToken = indentToken;
     this.indent = 0;
     this.indentStr = "";
+    this.lineLength = 0;
+    this.tokenCount = 0;
     this.completeLine = true;
   };
   this.Writer.prototype = {
     toString: function() {
       return this.lines.join("");
     },
+    
     write: function(text) {
-      var newLines = text.split("\n");
+      var value = text.value !== undefined ? text.value : text,
+          join = (this.nextJoin !== undefined ? this.nextJoin : this.defaultJoin) || "";
+          newLines = value.split("\n"),
+          preformatted = newLines.length > 1 && text.preformatted;
+
+      // Do not join if we are outputting a new line 
+      if (this.completeLine) {
+        join = "";
+      }
+
+      if (this.lines.length) {
+        var newLength = this.lineLength + join.length;
+
+        // If explicit wrapping is not in the token then we have to check to see if we need to
+        // wrap, otherwise join using the current join value
+        if (!text.nowrap
+            && newLines[0]  
+            && (newLength > this.wrapLength
+                || (this.tokensPerLine > 0 && this.tokenCount+1 > this.tokensPerLine))) {
+          this.lines.push("\n");
+          this.completeLine = true;
+          this.lineLength = 0;
+          this.tokenCount = 0;
+        } else {
+          var joinLines = join.split("\n");
+          newLines[0] = joinLines[joinLines.length-1] + newLines[0];
+          for (var i = joinLines.length-1; i > 0; i--) {
+            newLines.unshift(joinLines[i-1]);
+          }
+        }
+      }
 
       for (var i = 0; i < newLines.length; i++) {
-        if (this.completeLine && (i < newLines.length - 1 || newLines[i])) {
+        // Indent if we
+        // - Are not preformatted or are outputting the first line of a preformatted token
+        // - Are outputting a new line with content
+        if ((!preformatted || !i) && this.completeLine && (i < newLines.length - 1 || newLines[i])) {
           newLines[i] = this.indentStr + newLines[i];
         }
         // If the final line is not blank then we did not end on a new line char
         this.completeLine = i != newLines.length - 1 || !newLines[i];
       }
+
+      if (newLines.length > 1) {
+        this.lineLength = newLines[newLines.length-1].length;
+        this.tokenCount = newLines[newLines.length-1] ? 1 : 0;
+      } else {
+        this.lineLength += newLines[newLines.length-1].length;
+        this.tokenCount++;
+      }
+
+      this.nextJoin = text.join;
       this.lines.push(newLines.join("\n"));
     },
-    increaseIndent: function() {
-      this.indent++;
+    writeTokens: function(tokens, join, tokensPerLine, indentOffset) {
+      var originalJoin = this.defaultJoin,
+          originalTokens = this.tokensPerLine,
+          originalIndent = this.indent,
+
+          len = tokens.length;
+
+      this.setDefaultJoin(join);
+      this.setTokensPerLine(tokensPerLine);
+
+      // Output the first token without indent as the indent as passed into
+      // this function only applies to lines after the first 
+      if (len) {
+        this.write(tokens[0]);
+      }
+
+      this.increaseIndent(indentOffset);
+
+      for (var i = 1; i < len; i++) {
+        this.write(tokens[i]);
+      }
+
+      this.setDefaultJoin(originalJoin);
+      this.setTokensPerLine(originalTokens);
+      this.setIndent(originalIndent);
+    },
+    setTokensPerLine: function(tokensPerLine) {
+      this.tokensPerLine = tokensPerLine;
+    },
+    setDefaultJoin: function(join) {
+      this.defaultJoin = join;
+    },
+    setIndent: function(indent) {
+      this.indent = Math.max(indent, 0);
       this.indentStr = Fireformat.repeatString(this.indentToken, this.indent);
     },
-    decreaseIndent: function() {
-      if (this.indent > 0) {
-        this.indent--;
-        this.indentStr = Fireformat.repeatString(this.indentToken, this.indent);
-      }
+    increaseIndent: function(offset) {
+      this.setIndent(this.indent + (offset !== undefined ? offset : 1));
+    },
+    decreaseIndent: function(offset) {
+      this.setIndent(this.indent - (offset !== undefined ? offset : 1));
     }
   };
 });

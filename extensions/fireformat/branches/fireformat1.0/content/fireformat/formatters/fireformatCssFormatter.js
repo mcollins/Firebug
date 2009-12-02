@@ -40,7 +40,7 @@ FBL.ns(function() {
     // Rather than limiting the characters that can be used as an escape,
     // we are just requiring that that a character follow the escape token
     // See: http://www.w3.org/TR/CSS21/syndata.html
-    var re = /(?:"(?:[^\n\r\f\\"]|(?:\\.))*")|(?:'(?:[^\n\r\f\\']|(?:\\.))*')|\S+/gm,
+    var re = /(?:"(?:[^\n\r\f\\"]|(?:\\[\s\S]))*")|(?:'(?:[^\n\r\f\\']|(?:\\[\s\S]))*')|\S+/gm,
         ret = [],
         search;
     while (search = re.exec(value)) {
@@ -76,9 +76,7 @@ FBL.ns(function() {
           tokensPerLine = this.prefCache.getPref("selectorText.selectorsPerLine");
 
       var selectors = tokenizeSelector(selectorText);
-      
-      // TODO : Use offset at all?
-      this.writer.write(Fireformat.wrapTokens(this.prefCache, selectors, join, tokensPerLine, indent));
+      this.writer.writeTokens(selectors, join, tokensPerLine, indent);
     },
     printStyleRule: function(styleRule, iterStatus) {
       this.printSelectorText(styleRule.selectorText);
@@ -129,7 +127,7 @@ FBL.ns(function() {
 
       var tokenValues = tokenizeValue(value);
       for (var i = 0; i < tokenValues.length; i++) {
-        tokens.push({ value: tokenValues[i], join: joinValue });
+        tokens.push({ value: tokenValues[i], join: joinValue, preformatted: true });
       }
 
       if (priority) {
@@ -141,7 +139,7 @@ FBL.ns(function() {
 
       tokens.push({ value: ";", nowrap: true });
 
-      this.writer.write(Fireformat.wrapTokens(this.prefCache, tokens, " ", tokensPerLine, indent));
+      this.writer.writeTokens(tokens, "", tokensPerLine, indent);
     },
     printMediaRule: function(mediaRule, iterStatus) {
       var tokens = [];
@@ -152,7 +150,6 @@ FBL.ns(function() {
       this.printBlock(mediaRule, iterStatus, function() { this.printRuleList(mediaRule.cssRules, iterStatus); });
     },
     printBlock: function(object, iterStatus, contentFormatter) {
-      // TODO : Examine how we should handle wrapping for elements that are offseted only on the first line
       var indent = this.prefCache.getPref("block.indentLevel"),
           sepBeforeOpen = this.prefCache.getPref("block.separatorBeforeOpen"),
           sepAfterOpen = this.prefCache.getPref("block.separatorAfterOpen"),
@@ -162,20 +159,14 @@ FBL.ns(function() {
 
       // Separator
       this.writer.write(sepBeforeOpen);
-      this.writer.write("{");
-      this.writer.write(sepAfterOpen);
-      for (var i = 0; i < indent; i++) {
-        this.writer.increaseIndent();
-      }
+      this.writer.write({ value: "{", join: sepAfterOpen });
 
+      this.writer.increaseIndent(indent);
       contentFormatter.call(this, object, iterStatus);
+      this.writer.decreaseIndent(indent);
 
-      for (var i = 0; i < indent; i++) {
-        this.writer.decreaseIndent();
-      }
       this.writer.write(sepBeforeClose);
-      this.writer.write("}");
-      this.writer.write((iterStatus && iterStatus.last) ? sepAfterLast : sepAfterClose);
+      this.writer.write({ value: "}", join: (iterStatus && iterStatus.last) ? sepAfterLast : sepAfterClose });
     },
     printRuleList: function(cssRules, iterStatus) {
       var separator = this.prefCache.getPref("block.componentSeparator");
@@ -210,14 +201,14 @@ FBL.ns(function() {
     
       tokens.push({ value: atText, join: joinBeforeValue });
       for (var i = 0; i < valueTokens.length; i++) {
-        tokens.push({ value: valueTokens[i], join: joinValue });
+        tokens.push({ value: valueTokens[i], join: joinValue, preformatted: true });
       }
       tokens[tokens.length-1].join = joinBeforeSemicolon;
       if (close) {
         tokens.push({ value: ";", nowrap: true });
       }
 
-      this.writer.write(Fireformat.wrapTokens(this.prefCache, tokens, " ", tokensPerLine, indent));
+      this.writer.writeTokens(tokens, "", tokensPerLine, indent);
       var nextSibling = iterStatus && iterStatus.collection[iterStatus.index+1];
       if (close && nextSibling && nextSibling.type != atRule.type) {
         this.writer.write(typeSeparator);
@@ -230,9 +221,8 @@ FBL.ns(function() {
     name: "com.incaseofstairs.fireformatCSSFormatter",
     display: i18n.getString("FireformatCSSFormatter"),
     format: function(object) {
-      // TODO : Allow config on this format value
-      var writer = new Fireformat.Writer("  "),
-          prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatCssFormatter");
+      var prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatCssFormatter"),
+          writer = new Fireformat.Writer(prefCache);
       new CSSFormatter(writer, prefCache).printNode(object);
       return writer.toString();
     }
