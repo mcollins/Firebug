@@ -1,0 +1,33 @@
+<?xml version="1.0" standalone="yes"?>
+<HTML:html xmlns:HTML="http://www.w3.org/1999/xhtml">
+<HTML:head>
+    <HTML:meta http-equiv="Content-Type" content="text/xml; charset=utf-8" />
+    <HTML:title>Firediff: HTML Formatter Test</HTML:title>
+    <HTML:link type="text/css" rel="stylesheet" href="cssSource.css" />
+    <HTML:style type="text/css">
+      p {
+        background-color: green;
+      }
+      div {
+        background-color: red;
+      }
+      p {
+        margin: 100;
+      }
+    </HTML:style>
+</HTML:head>
+<HTML:body>
+  <!-- 
+  Comments!
+  -->
+
+  <![CDATA[CDATA="GOOD & STUFF <>"]]>
+
+  <HTML:div id="elementValue" class="Value1 &amp; &lt;" align="left" dir="ltr">
+    <HTML:p>Nested Element</HTML:p>
+    Escaping &amp; entities.
+    <HTML:br />
+    <HTML:input type="submit" />
+  </HTML:div>
+</HTML:body>
+</HTML:html>
