@@ -56,13 +56,26 @@ var ChromebugOverrides = {
 
     getFirstChild: function(node)
     {
-        //http://mxr.mozilla.org/comm-central/source/mozilla/extensions/inspector/resources/content/viewers/dom/dom.js#819
-        this.treeWalker = CCIN("@mozilla.org/inspector/deep-tree-walker;1", "inIDeepTreeWalker");
-         this.treeWalker.showAnonymousContent = true;
-         this.treeWalker.showSubDocuments = true; // does not matter, we don't visit childern, only siblings
-         this.treeWalker.init(node, Components.interfaces.nsIDOMNodeFilter.SHOW_ALL);
+        if (!this.treeWalker)
+        {
+            //http://mxr.mozilla.org/comm-central/source/mozilla/extensions/inspector/resources/content/viewers/dom/dom.js#819
+            this.treeWalker = CCIN("@mozilla.org/inspector/deep-tree-walker;1", "inIDeepTreeWalker");
+            this.treeWalker.showAnonymousContent = true;
+            this.treeWalker.showSubDocuments = true; // does not matter, we don't visit children, only siblings
+        }
 
-        return this.treeWalker.firstChild();
+        try
+        {
+            this.treeWalker.init(node, Components.interfaces.nsIDOMNodeFilter.SHOW_ALL);
+            return this.treeWalker.firstChild();
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("Falling back to DOM Tree walker, inIDeepTreeWalker in chromebug requires FF 3.6 or higher "+exc, exc);
+            this.treeWalker = node.ownerDocument.createTreeWalker(
+                    node, NodeFilter.SHOW_ALL, null, false);
+            return this.treeWalker.firstChild();
+        }
     },
 
     // Override debugger
