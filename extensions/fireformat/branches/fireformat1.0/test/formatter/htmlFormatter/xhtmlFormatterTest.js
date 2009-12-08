@@ -3,15 +3,23 @@ function runTest() {
   var Formatter = FBTest.FirebugWindow.FireDiff.formatter,
       FBTrace = FBTest.FirebugWindow.FBTrace;
   
-  //FBTest.loadScript("FBTestFireDiff.js", this);
   FBTestFirebug.openNewTab(urlBase + "formatter/htmlFormatter/xhtml_index.xhtml", function(win) {
     var Format = {};
     Components.utils.import("resource://fireformat/formatters.jsm", Format);
 
     var doc = win.document;
     var expected =
-      "<?xml version=\"1.0\" standalone=\"yes\" ?>\n"
-      + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>\n"
+      + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\" [\n"
+      + "  <!ENTITY foo \"food\">\n"
+      + "  <!ENTITY bar \"bar\">\n"
+      + "  <!ENTITY bar \"bar2\">\n"
+      + "  <!ENTITY % baz \"baz\">\n"
+      + "]>\n"
+      + "<?xslt-param?>\n"
+      + "<?xslt-param name=\"color\"\n"
+      + "    value=\"blue\"\n"
+      + "?>\n"
       + "<HTML:html xmlns:HTML=\"http://www.w3.org/1999/xhtml\">\n"
       + "<HTML:head>\n"
       + "    <HTML:meta content=\"text/xml; charset=utf-8\" http-equiv=\"Content-Type\" />\n"

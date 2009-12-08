@@ -1,5 +1,14 @@
-<?xml version="1.0" standalone="yes"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"[
+  <!ENTITY foo "food">
+  <!ENTITY bar "bar">
+  <!ENTITY bar "bar2">
+  <!ENTITY % baz "baz">
+]>
+<?xslt-param?>
+<?xslt-param name="color"
+    value="blue"
+?>
 <HTML:html xmlns:HTML="http://www.w3.org/1999/xhtml">
 <HTML:head>
     <HTML:meta http-equiv="Content-Type" content="text/xml; charset=utf-8" />
