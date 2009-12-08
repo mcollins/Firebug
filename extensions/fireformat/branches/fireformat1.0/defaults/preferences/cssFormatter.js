@@ -6,6 +6,7 @@
 pref("extensions.firebug.fireformatCssFormatter.wrapSize", 80);
 pref("extensions.firebug.fireformatCssFormatter.indentChar", ' ');
 pref("extensions.firebug.fireformatCssFormatter.indentCount", 2);
+pref("extensions.firebug.fireformatCssFormatter.tabSize", 2);
 
 /*
  * CSS Selector text formatting.
