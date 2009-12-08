@@ -111,15 +111,17 @@ FBL.ns(function() { with (FBL) {
     },
     
     printDocument: function(doc) {
-      // TODO : Allow formatting of this
       if (doc.xmlVersion) {
-        this.writer.write({ value: "<?xml", join: " " });
-        this.writer.write({ value: "version=\"" + doc.xmlVersion + "\"", join: " " });
+        this.writer.write({ value: "<?xml" });
+        this.writer.write({ prefix: this.prefCache.getPref("xmlDocType.separatorBeforeVersion"), value: "version=\"" + doc.xmlVersion + "\"" });
         if (doc.xmlEncoding) {
-          this.writer.write({ value: "encoding=\"" + doc.xmlEncoding + "\"", join: " " });
+          this.writer.write({ prefix: this.prefCache.getPref("xmlDocType.separatorBeforeEncoding"), value: "encoding=\"" + doc.xmlEncoding + "\"" });
         }
-        this.writer.write({ value: "standalone=\"" + (doc.xmlStandalone ? "yes" : "no") + "\"", join: " " });
-        this.writer.write("?>\n");
+        this.writer.write({
+          prefix: this.prefCache.getPref("xmlDocType.separatorBeforeStandalone"),
+          value: "standalone=\"" + (doc.xmlStandalone ? "yes" : "no") + "\""
+        });
+        this.writer.write({ prefix: this.prefCache.getPref("xmlDocType.separatorBeforeClose"), value: "?>\n" });
       }
 
       this.printFragment(doc);

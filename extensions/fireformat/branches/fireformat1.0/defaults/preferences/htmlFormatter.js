@@ -9,6 +9,14 @@ pref("extensions.firebug.fireformatHtmlFormatter.indentCount", 2);
 pref("extensions.firebug.fireformatHtmlFormatter.tabSize", 2);
 
 /*
+ * XML Doc Type formatter preferences
+ */
+pref("extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeVersion", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeEncoding", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeStandalone", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeClose", " ");
+
+/*
  * Element formatter preferences
  */
 pref("extensions.firebug.fireformatHtmlFormatter.element.htmlNameToLower", true);
