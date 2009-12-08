@@ -73,8 +73,18 @@ FBL.ns(function() { with (FBL) {
     return value.replace(/./g, function(x) { return ENTITY_LUT[x] || x; });
   }
 
-  var DOMFormatter = function(writer) {
+  var DOMFormatter = function(ownerDocument, writer, prefCache) {
     this.writer = writer;
+    this.prefCache = prefCache;
+    
+    // We can determine if the document is XML generically by attempting to create an XML specific
+    // object (CDATA in this case). If it succeeds then we are working with XML.
+    try {
+      ownerDocument.createCDATASection("XML CDATA");
+      this.isXML = true;
+    } catch (err) {
+    }
+      
   };
   DOMFormatter.prototype = {
     printNode: function(node) {
@@ -122,35 +132,62 @@ FBL.ns(function() { with (FBL) {
       this.writer.write({ value: ">", join: "\n", nowrap: true });
     },
     printElement: function(el) {
-      var tagName = el.tagName;    // TODO : Update this for XHTML and HTML pref
-      var childNodes = el.childNodes;
+      var childNodes = el.childNodes,
+          tagName = el.tagName;
+      if (!this.isXML && this.prefCache.getPref("element.htmlNameToLower")) {
+        tagName = tagName.toLowerCase();
+      }
 
-      this.writer.write("<");
-      this.writer.write(tagName);
-      
+      this.writer.write({ value: "<" + tagName, nowrap: true, indentOffset: true });
+
       var attrs = el.attributes;
-      for (var i = 0; i < attrs.length; i++) {
-        this.printAttr(attrs[i]);
+      if (attrs.length) {
+        var attrsPerLine = this.prefCache.getPref("attribute.attrsPerLine");
+
+        this.writer.setIndent(this.prefCache.getPref("attribute.indentLevel"));
+        this.writer.write({ value: this.prefCache.getPref("element.separatorBeforeAttributes"), nowrap: true });
+        var curLineCount = 0, curLine = this.writer.lineCount;
+        for (var i = 0; i < attrs.length; i++) {
+          if (curLineCount >= attrsPerLine) {
+            this.writer.write("\n");
+          }
+          curLine = this.writer.lineCount;
+
+          this.printAttr(attrs[i]);
+          curLineCount++;
+        }
+        this.writer.setIndent(0);
       }
 
-      var childNodes = el.childNodes;
-      for (var i = 0; i < childNodes.length; i++) {
-        this.printNode(childNodes[i]);
-      }
+      if (childNodes.length || !this.isXML) {
+        this.writer.write({ value: this.prefCache.getPref("element.separatorBeforeClose"), nowrap: true });
+        this.writer.write({ value: ">", nowrap: true, resetOffset: true });
+  
+        for (var i = 0; i < childNodes.length; i++) {
+          this.printNode(childNodes[i]);
+        }
 
-      this.writer.write("</");
-      this.writer.write(el.tagName);
-      this.writer.write(">");
+        if (childNodes.length || !FBL.selfClosingTags[tagName.toLowerCase()]) {
+          this.writer.write({ value: "</" + tagName + ">", nowrap: true });
+        }
+      } else {
+        // Not joining as this is simplier and there will never a be a wrap for this case, unless the separator itself is a wrap
+        this.writer.write({ value: this.prefCache.getPref("element.separatorBeforeSelfClose"), nowrap: true });
+        this.writer.write({ value: "/>", nowrap: true, resetOffset: true });
+        this.writer.setIndent(0);
+      }
     },
     printText: function(text) {
       this.writer.write(replaceEntities(text.data));
     },
     printAttr: function(attr) {
-      this.writer.write(" ");
-      this.writer.write(attr.nodeName);
-      this.writer.write("=\"");
-      this.writer.write(replaceEntities(attr.nodeValue));
-      this.writer.write("\"");
+      this.writer.write({
+        prefix: this.prefCache.getPref("attribute.listSeparator"),
+        value: attr.nodeName,
+        join: this.prefCache.getPref("attribute.separatorBeforeEquals")
+      });
+      this.writer.write({ value: "=", join: this.prefCache.getPref("attribute.separatorBeforeValue"), nowrap: true });
+      this.writer.write({ value: "\"" + replaceEntities(attr.nodeValue) + "\"", nowrap: true, preformatted: true });
     },
     printComment: function(comment) {
       this.writer.write("<!--");
@@ -170,8 +207,8 @@ FBL.ns(function() { with (FBL) {
     display: i18n.getString("FireformatHTMLFormatter"),
     format: function(object) {
       var prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatHtmlFormatter"),
-          writer = new Fireformat.Writer(prefCache);
-      new DOMFormatter(writer, prefCache).printNode(object);
+          writer = new Fireformat.Writer(prefCache);  
+      new DOMFormatter(object.ownerDocument || object, writer, prefCache).printNode(object);
       return writer.toString();
     }
   });
