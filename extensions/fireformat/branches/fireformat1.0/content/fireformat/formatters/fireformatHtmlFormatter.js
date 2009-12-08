@@ -76,15 +76,7 @@ FBL.ns(function() { with (FBL) {
   var DOMFormatter = function(ownerDocument, writer, prefCache) {
     this.writer = writer;
     this.prefCache = prefCache;
-    
-    // We can determine if the document is XML generically by attempting to create an XML specific
-    // object (CDATA in this case). If it succeeds then we are working with XML.
-    try {
-      ownerDocument.createCDATASection("XML CDATA");
-      this.isXML = true;
-    } catch (err) {
-    }
-      
+    this.isXML = !!ownerDocument.xmlVersion;
   };
   DOMFormatter.prototype = {
     printNode: function(node) {
@@ -116,6 +108,17 @@ FBL.ns(function() { with (FBL) {
     },
     
     printDocument: function(doc) {
+      // TODO : Allow formatting of this
+      if (doc.xmlVersion) {
+        this.writer.write({ value: "<?xml", join: " " });
+        this.writer.write({ value: "version=\"" + doc.xmlVersion + "\"", join: " " });
+        if (doc.xmlEncoding) {
+          this.writer.write({ value: "encoding=\"" + doc.xmlEncoding + "\"", join: " " });
+        }
+        this.writer.write({ value: "standalone=\"" + (doc.xmlStandalone ? "yes" : "no") + "\"", join: " " });
+        this.writer.write("?>\n");
+      }
+
       var child = doc.firstChild;
       while (child) {
         this.printNode(child);
@@ -129,7 +132,8 @@ FBL.ns(function() { with (FBL) {
       this.writer.write({ value: "PUBLIC", join: " " });
       this.writer.write({ value: "\"" + docType.publicId + "\"", join: " " });
       this.writer.write("\"" + docType.systemId + "\"");
-      this.writer.write({ value: ">", join: "\n", nowrap: true });
+      this.writer.write({ value: ">", nowrap: true });
+      this.writer.write("\n");
     },
     printElement: function(el) {
       var childNodes = el.childNodes,
@@ -147,13 +151,33 @@ FBL.ns(function() { with (FBL) {
         this.writer.setIndent(this.prefCache.getPref("attribute.indentLevel"));
         this.writer.write({ value: this.prefCache.getPref("element.separatorBeforeAttributes"), nowrap: true });
         var curLineCount = 0, curLine = this.writer.lineCount;
+        
+        var idAttr, classAttr, sortedAttrs = [];
         for (var i = 0; i < attrs.length; i++) {
+          var attr = attrs[i];
+          if (attr.name == "id") {
+            idAttr = attr;
+          } else if (attr.name == "class") {
+            classAttr = attr;
+          } else {
+            sortedAttrs.push(attr);
+          }
+        }
+        sortedAttrs.sort(function(a, b) { return a.name.localeCompare(b.name); });
+        if (classAttr) {
+          sortedAttrs.unshift(classAttr);
+        }
+        if (idAttr) {
+          sortedAttrs.unshift(idAttr);
+        }
+        
+        for (var i = 0; i < sortedAttrs.length; i++) {
           if (curLineCount >= attrsPerLine) {
             this.writer.write("\n");
           }
           curLine = this.writer.lineCount;
 
-          this.printAttr(attrs[i]);
+          this.printAttr(sortedAttrs[i]);
           curLineCount++;
         }
         this.writer.setIndent(0);
