@@ -82,18 +82,32 @@ var Fireformat = FBL.ns(function() {
       }
   };
 
+  function getDisplayLen(value, tabSize) {
+    var len = value.length;
+    if (tabSize > 1) {
+      tabSize--;
+      while (/\t/g.exec(value)) {
+        len += tabSize;
+      }
+    }
+    return len;
+  }
+
   /**
    * TODO : Proper jsdoc
    */
   this.Writer = function(prefCache) {
-    this.indentToken = Fireformat.repeatString(prefCache.getPref("indentChar"), prefCache.getPref("indentCount"));
+    this.indentChar = prefCache.getPref("indentChar");
+    this.indentToken = Fireformat.repeatString(this.indentChar, prefCache.getPref("indentCount"));
     this.wrapLength = prefCache.getPref("wrapSize");
+    this.tabSize = prefCache.getPref("tabSize") || 2;
 
     this.lines = [];
     this.indent = 0;
     this.indentStr = "";
     this.lineLength = 0;
     this.tokenCount = 0;
+    this.lineCount = 0;
     this.completeLine = true;
   };
   this.Writer.prototype = {
@@ -105,11 +119,17 @@ var Fireformat = FBL.ns(function() {
       var value = text.value !== undefined ? text.value : text,
           join = (this.nextJoin !== undefined ? this.nextJoin : this.defaultJoin) || "";
           newLines = value.split("\n"),
-          preformatted = newLines.length > 1 && text.preformatted;
+          preformatted = newLines.length > 1 && text.preformatted,
+          joinLen = 0;
+
+      // The new line tracking logic becomes confused if we try to write the empty string
+      if (value === "")     return;
 
       // Do not join if we are outputting a new line 
       if (this.completeLine) {
         join = "";
+      } else if (text.prefix && join.indexOf("\n") == -1) {
+        join += text.prefix;
       }
 
       if (this.lines.length) {
@@ -122,11 +142,14 @@ var Fireformat = FBL.ns(function() {
             && (newLength > this.wrapLength
                 || (this.tokensPerLine > 0 && this.tokenCount+1 > this.tokensPerLine))) {
           this.lines.push("\n");
+          this.lineCount++;
           this.completeLine = true;
           this.lineLength = 0;
           this.tokenCount = 0;
         } else {
           var joinLines = join.split("\n");
+          joinLen = getDisplayLen(joinLines[0], this.tabSize);
+
           newLines[0] = joinLines[joinLines.length-1] + newLines[0];
           for (var i = joinLines.length-1; i > 0; i--) {
             newLines.unshift(joinLines[i-1]);
@@ -134,23 +157,38 @@ var Fireformat = FBL.ns(function() {
         }
       }
 
+      if (text.indentOffset) {
+        var indentSize = getDisplayLen(this.indentChar, this.tabSize),
+            len = this.lineLength + joinLen;
+
+        this.offsetStr = Fireformat.repeatString(this.indentChar, Math.ceil(len/indentSize));
+      }
+
       for (var i = 0; i < newLines.length; i++) {
-        // Indent if we
-        // - Are not preformatted or are outputting the first line of a preformatted token
-        // - Are outputting a new line with content
-        if ((!preformatted || !i) && this.completeLine && (i < newLines.length - 1 || newLines[i])) {
-          newLines[i] = this.indentStr + newLines[i];
+        // A new line occurs when the previous line was complete, and we are not the
+        // or the last entry has content
+        if (this.completeLine && (i < newLines.length - 1 || newLines[i])) {
+          // Indent if we are not preformatted or are outputting the first line of a preformatted token
+          if (!preformatted || !i) {
+            newLines[i] = (this.offsetStr || "") + this.indentStr + newLines[i];
+          }
+          this.lineCount++;
         }
+
         // If the final line is not blank then we did not end on a new line char
         this.completeLine = i != newLines.length - 1 || !newLines[i];
       }
 
       if (newLines.length > 1) {
-        this.lineLength = newLines[newLines.length-1].length;
+        this.lineLength = getDisplayLen(newLines[newLines.length-1], this.tabSize);
         this.tokenCount = newLines[newLines.length-1] ? 1 : 0;
       } else {
-        this.lineLength += newLines[newLines.length-1].length;
+        this.lineLength += getDisplayLen(newLines[newLines.length-1], this.tabSize);
         this.tokenCount++;
+      }
+
+      if (text.resetOffset) {
+        this.offsetStr = "";
       }
 
       this.nextJoin = text.join;
