@@ -134,14 +134,56 @@ FBL.ns(function() { with (FBL) {
       }
     },
     printDocType: function(docType) {
-      // TODO : Check this against the spec and examine the formatting options that are available
-      this.writer.write({ value: "<!DOCTYPE", join: " " });
-      this.writer.write({ value: docType.name.toLowerCase(), join: " " });
-      this.writer.write({ value: "PUBLIC", join: " " });
-      this.writer.write({ value: "\"" + docType.publicId + "\"", join: " " });
-      this.writer.write("\"" + docType.systemId + "\"");
-      this.writer.write({ value: ">", nowrap: true });
-      this.writer.write("\n");
+      var name = docType.name;
+      if (!this.isXML && this.prefCache.getPref("element.htmlNameToLower")) {
+        name = name.toLowerCase();
+      }
+
+      this.writer.write({ value: "<!DOCTYPE" });
+      this.writer.write({
+        prefix: this.prefCache.getPref("docType.separatorBeforeName"),
+        value: name,
+        nowrap: true
+      });
+      if (docType.publicId) {
+        this.writer.write({
+          prefix: this.prefCache.getPref("docType.separatorBeforeExternalId"),
+          value: "PUBLIC",
+          nowrap: true
+        });
+        this.writer.write({
+          prefix: this.prefCache.getPref("docType.separatorBeforePublicId"),
+          value: "\"" + docType.publicId + "\"",
+          nowrap: true
+        });
+      } else if (docType.systemId) {
+        this.writer.write({
+          prefix: this.prefCache.getPref("docType.separatorBeforeExternalId"),
+          value: "SYSTEM",
+          nowrap: true
+        });
+      }
+      if (docType.systemId) {
+        this.writer.write({
+          prefix: this.prefCache.getPref("docType.separatorBeforeSystemId"),
+          value: "\"" + docType.systemId + "\"",
+          nowrap: true
+        });
+      }
+      if (docType.internalSubset) {
+        // Firefox reports the newlines as encoded here rather than converting to \n.
+        // Normalize to make things sane
+        this.writer.write({
+          prefix: this.prefCache.getPref("docType.separatorBeforeInternalSubset"),
+          value: "[" + docType.internalSubset.replace(/\r\n/g, "\n") + "]",
+          nowrap: true
+        });
+      }
+      this.writer.write({
+        prefix: this.prefCache.getPref("docType.separatorBeforeClose"),
+        value: ">\n",
+        nowrap: true
+      });
     },
     printElement: function(el) {
       var childNodes = el.childNodes,

@@ -17,6 +17,17 @@ pref("extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeStand
 pref("extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeClose", " ");
 
 /*
+ * Doc Type formatter preferences
+ */
+pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeName", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeExternalId", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforePublicId", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeSystemId", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeInternalSubset", " ");
+pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeClose", "");
+
+
+/*
  * Element formatter preferences
  */
 pref("extensions.firebug.fireformatHtmlFormatter.element.htmlNameToLower", true);
