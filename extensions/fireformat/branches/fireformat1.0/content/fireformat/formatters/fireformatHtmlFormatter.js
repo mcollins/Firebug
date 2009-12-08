@@ -90,9 +90,7 @@ FBL.ns(function() { with (FBL) {
         this.printText(node);
       } else if (type == Node.CDATA_SECTION_NODE) {
         this.printCDATA(node);
-      // Node.ENTITY_REFRENCE_NODE
-      // Node.ENTITY_NODE
-      // Node.PROCESSING_INSTRUCTION_NODE
+      // TODO : Node.PROCESSING_INSTRUCTION_NODE
       } else if (type == Node.COMMENT_NODE) {
         this.printComment(node);
       } else if (type == Node.DOCUMENT_NODE) {
@@ -105,7 +103,11 @@ FBL.ns(function() { with (FBL) {
         // TODO : Remove
         FBTrace.sysout(node + " " + node.nodeType, node.wrappedJSObject || node);
       }
-      // Node.NOTATION_NODE
+      
+      // Not Impl in Mozilla: 
+      // Node.ENTITY_NODE (https://developer.mozilla.org/En/DOM/Entity)
+      // Node.ENTITY_REFRENCE_NODE (https://developer.mozilla.org/En/DOM/EntityReference)
+      // Node.NOTATION_NODE (https://developer.mozilla.org/En/DOM/Notation)
     },
     
     printDocument: function(doc) {
