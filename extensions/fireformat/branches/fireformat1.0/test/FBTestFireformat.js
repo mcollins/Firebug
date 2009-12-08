@@ -22,6 +22,9 @@ var FBTestFireformat = {
           for (var i = 0; i < arguments.length; i++) {
             Firebug.setPref(Firebug.prefDomain, prefs[i], arguments[i]);
           }
+          for (; i < prefs.length; i++) {
+            Firebug.setPref(Firebug.prefDomain, prefs[i], original[i]);
+          }
         },
         reset: function() {
           this.setPrefs.apply(this, original);
