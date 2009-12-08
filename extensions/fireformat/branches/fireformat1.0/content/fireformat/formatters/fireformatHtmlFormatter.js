@@ -99,11 +99,12 @@ FBL.ns(function() { with (FBL) {
         this.printDocument(node);
       } else if (type == Node.DOCUMENT_TYPE_NODE) {
         this.printDocType(node);
+      } else if (type == Node.DOCUMENT_FRAGMENT_NODE) {
+        this.printFragment(node);
       } else {
         // TODO : Remove
         FBTrace.sysout(node + " " + node.nodeType, node.wrappedJSObject || node);
       }
-      // Node.DOCUMENT_FRAGMENT_NODE
       // Node.NOTATION_NODE
     },
     
@@ -119,6 +120,9 @@ FBL.ns(function() { with (FBL) {
         this.writer.write("?>\n");
       }
 
+      this.printFragment(doc);
+    },
+    printFragment: function(doc) {
       var child = doc.firstChild;
       while (child) {
         this.printNode(child);
@@ -202,7 +206,7 @@ FBL.ns(function() { with (FBL) {
       }
     },
     printText: function(text) {
-      this.writer.write(replaceEntities(text.data));
+      this.writer.write({ value: replaceEntities(text.data), nowrap: true, preformatted: true });
     },
     printAttr: function(attr) {
       this.writer.write({
@@ -214,14 +218,14 @@ FBL.ns(function() { with (FBL) {
       this.writer.write({ value: "\"" + replaceEntities(attr.nodeValue) + "\"", nowrap: true, preformatted: true });
     },
     printComment: function(comment) {
-      this.writer.write("<!--");
-      this.writer.write(replaceEntities(comment.data));
-      this.writer.write("-->");
+      this.writer.write({ value: "<!--", nowrap: true });
+      this.writer.write({ value: replaceEntities(comment.data), nowrap: true, preformatted: true });
+      this.writer.write({ value: "-->", nowrap: true });
     },
     printCDATA: function(cdata) {
-      this.writer.write("<![CDATA[");
-      this.writer.write(cdata.data);
-      this.writer.write("]]>");
+      this.writer.write({ value: "<![CDATA[", nowrap: true });
+      this.writer.write({ value: cdata.data, nowrap: true, preformatted: true });
+      this.writer.write({ value: "]]>", nowrap: true });
     }
   };
 

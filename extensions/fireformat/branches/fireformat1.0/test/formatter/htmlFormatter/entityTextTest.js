@@ -17,7 +17,7 @@ function runTest() {
   // Test comment node output with a few sample entities
   FBTest.compare("<!--" + output + "-->", formatter.format(document.createComment(input)), "Comment entities");
 
-  // TODO : Test CDATA output with a few sample entities
+  // Test CDATA output with a few sample entities
   var xmlDoc = document.implementation.createDocument(null, "", null);
   FBTest.compare("<![CDATA[" + input + "]]>", formatter.format(xmlDoc.createCDATASection(input)), "CDATA entities");
 
