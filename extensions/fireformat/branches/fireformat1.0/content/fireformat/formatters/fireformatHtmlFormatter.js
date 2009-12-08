@@ -90,7 +90,8 @@ FBL.ns(function() { with (FBL) {
         this.printText(node);
       } else if (type == Node.CDATA_SECTION_NODE) {
         this.printCDATA(node);
-      // TODO : Node.PROCESSING_INSTRUCTION_NODE
+      } else if (type == Node.PROCESSING_INSTRUCTION_NODE) {
+        this.printProcessingInstruction(node);
       } else if (type == Node.COMMENT_NODE) {
         this.printComment(node);
       } else if (type == Node.DOCUMENT_NODE) {
@@ -99,9 +100,6 @@ FBL.ns(function() { with (FBL) {
         this.printDocType(node);
       } else if (type == Node.DOCUMENT_FRAGMENT_NODE) {
         this.printFragment(node);
-      } else {
-        // TODO : Remove
-        FBTrace.sysout(node + " " + node.nodeType, node.wrappedJSObject || node);
       }
       
       // Not Impl in Mozilla: 
@@ -184,6 +182,11 @@ FBL.ns(function() { with (FBL) {
         value: ">\n",
         nowrap: true
       });
+    },
+    printProcessingInstruction: function(pi) {
+      this.writer.write({ value "<?" + pi.nodeName, nowrap: true });
+      this.writer.write({ prefix: this.prefCache.getPref("pi.separatorBeforeData"), value: pi.nodeValue, nowrap: true });
+      this.writer.write({ value: "?>\n", nowrap: true });
     },
     printElement: function(el) {
       var childNodes = el.childNodes,

@@ -26,6 +26,10 @@ pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeSystemId
 pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeInternalSubset", " ");
 pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeClose", "");
 
+/*
+ * Processing Instruction formatter preferences
+ */
+pref("extensions.firebug.fireformatHtmlFormatter.pi.separatorBeforeData", "");
 
 /*
  * Element formatter preferences
