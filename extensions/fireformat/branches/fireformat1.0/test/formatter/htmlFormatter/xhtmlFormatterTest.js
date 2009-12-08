@@ -10,12 +10,13 @@ function runTest() {
 
     var doc = win.document;
     var expected =
-      "<?xml version=\"1.0\" standalone=\"yes\"?>\n"
+      "<?xml version=\"1.0\" standalone=\"yes\" ?>\n"
+      + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
       + "<HTML:html xmlns:HTML=\"http://www.w3.org/1999/xhtml\">\n"
       + "<HTML:head>\n"
-      + "    <HTML:meta http-equiv=\"Content-Type\" content=\"text/xml; charset=utf-8\" />\n"
+      + "    <HTML:meta content=\"text/xml; charset=utf-8\" http-equiv=\"Content-Type\" />\n"
       + "    <HTML:title>Firediff: HTML Formatter Test</HTML:title>\n"
-      + "    <HTML:link type=\"text/css\" rel=\"stylesheet\" href=\"cssSource.css\" />\n"
+      + "    <HTML:link href=\"cssSource.css\" rel=\"stylesheet\" type=\"text/css\" />\n"
       + "    <HTML:style type=\"text/css\">\n"
       + "      p {\n"
       + "        background-color: green;\n"
@@ -42,17 +43,11 @@ function runTest() {
       + "    <HTML:input type=\"submit\" />\n"
       + "  </HTML:div>\n"
       + "</HTML:body>\n"
-      + "</HTML:html>\n";
+      + "</HTML:html>";
 
     var formatter = Format.Formatters.getFormatter("com.incaseofstairs.fireformatHTMLFormatter"),
         text = formatter.format(doc);
-    FBTrace.sysout("htmlFormatter", text);
     FBTest.compare(expected, text, "Formatter value");
-
-    // TODO : Individual tests?
-    // TODO : Self closing tests
-    // TODO : Test for each node type
-    // TODO : Test the case where everything should wrap. Make sure that nowrap is correct
 
     FBTestFirebug.testDone();
   });
