@@ -445,19 +445,19 @@ FBTestApp.TestConsole =
     {
         if (testListPath)
         {
-            testListPath = trimLeft(testListPath);
+            testListPath = trim(testListPath);
             this.appendNVPairToHistory("history", testListPath);
         }
 
         if (testCaseServer)
         {
-            testCaseServer = trimLeft(testCaseServer);
+            testCaseServer = trim(testCaseServer);
             this.appendNVPairToHistory("testCaseHistory", testCaseServer);
         }
 
         if (driverBaseURI)
         {
-            driverBaseURI = trimLeft(driverBaseURI);
+            driverBaseURI = trim(driverBaseURI);
             this.appendNVPairToHistory("testDriverHistory", driverBaseURI);
         }
 
@@ -615,7 +615,7 @@ FBTestApp.TestConsole.TraceListener =
         if (index == 0)
         {
             message.text = message.text.substr("fbtest.".length);
-            message.text = trimLeft(message.text);
+            message.text = trim(message.text);
         }
     }
 };
