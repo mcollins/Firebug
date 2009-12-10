@@ -81,7 +81,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
 
     collapseGroup: function(row)
     {
-        if (hasClass(row, "testGroupRow", "opened"))
+        if (hasClass(row, "testGroupRow") && hasClass(row, "opened"))
             this.toggleRow(row);
     },
 
@@ -286,7 +286,7 @@ FBTestApp.TestList = domplate(
 
     collapseTest: function(row)
     {
-        if (hasClass(row, "testListRow", "opened"))
+        if (hasClass(row, "testListRow") && hasClass(row, "opened"))
             this.toggleRow(row);
     },
 

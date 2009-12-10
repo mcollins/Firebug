@@ -303,7 +303,7 @@ Firebug.Chromebug.FBCacheModule.CacheList = domplate(Firebug.Rep,
 
     collapseGroup: function(row)
     {
-        if (hasClass(row, "cacheListRow", "opened"))
+        if (hasClass(row, "cacheListRow") && hasClass(row,"opened"))
             this.toggleRow(row);
     },
 

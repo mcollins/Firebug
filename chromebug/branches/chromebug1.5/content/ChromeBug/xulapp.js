@@ -736,7 +736,7 @@ Chromebug.XULAppModule.WindowList = domplate(Firebug.Rep,
 
     collapseGroup: function(row)
     {
-        if (hasClass(row, "windowListRow", "opened"))
+        if (hasClass(row, "windowListRow") && hasClass(row, "opened"))
             this.toggleRow(row);
     },
 
