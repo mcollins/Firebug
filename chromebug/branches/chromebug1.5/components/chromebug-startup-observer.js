@@ -391,12 +391,18 @@ function getLocationSafe(global)
     return null;
 }
 
-const reObject = /\[object (.*?)\]/;
+const reObject = /\[object ([^\]]*)/;
 
 function getGlobalName(global)
 {
-    var label = safeToString(global);
+    var label = safeToString(global);          // eg [object XPCWrappedNative [object foo
     var m = reObject.exec(label);
+    var n = null;
+    if (m)
+        n = reObject.exec(m[1]);
+    if (n)
+        return n[1];
+
     return m ? m[1] : label;
 }
 
