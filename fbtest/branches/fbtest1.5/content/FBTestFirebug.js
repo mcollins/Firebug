@@ -93,10 +93,7 @@ MutationRecognizer.prototype.matches = function(elt)
             {
                 if (p == 'class')
                 {
-                    var args = [elt];
-                    args = args.concat(this.attributes[p].split(" "));
-
-                    if (!FW.FBL.hasClass.apply(FW.FBL, args))
+                    if (!FW.FBL.hasClass.apply(FW.FBL, [elt, this.attributes[p]]))
                     {
                         FBTest.sysout("MutationRecognizer no match for class " +
                             this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class') +
