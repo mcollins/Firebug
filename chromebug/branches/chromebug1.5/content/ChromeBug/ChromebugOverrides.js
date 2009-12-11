@@ -170,7 +170,7 @@ var ChromebugOverrides = {
         }
         var context = null;
 
-        if (global == previousContext.global)
+        if (previousContext && global == previousContext.global)
             context = previousContext;
 
         if (!context && global)
@@ -394,6 +394,7 @@ function overrideFirebugFunctions()
 
         top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
+        top.Firebug.Debugger.getContextByFrame = ChromebugOverrides.getContextByFrame;
         top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromebugOverrides.showThisSourceFile;
         top.Firebug.SourceFile.getSourceFileByScript = ChromebugOverrides.getSourceFileByScript;
 
