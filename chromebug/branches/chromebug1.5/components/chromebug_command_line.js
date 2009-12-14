@@ -66,6 +66,11 @@ const  chromebugCommandLineHandler = {
             if (!h)
                 h = opener.screen.availHeight;
 
+            if (!w || w < 200) // see issue 2576
+                w = 400;
+            if (!h || h < 200)
+                h = 300;
+
             var features = "outerWidth="+w+","+"outerHeight="+h;
 
             var winFeatures = "resizable,dialog=no,centerscreen" + (features != "" ? ("," + features) : "");
