@@ -457,22 +457,22 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         try
         {
-         var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);
-         context.xul_window = xul_window;
-         var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
-         Chromebug.globalScopeInfos.add(context, gs);
+            var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);
+            context.xul_window = xul_window;
+            var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
+            Chromebug.globalScopeInfos.add(context, gs);
 
-         if (Chromebug.XULAppModule.stateReloader)  // TODO this should be per xul_window
-             outerDOMWindow.addEventListener("DOMContentLoaded", Firebug.Chromebug.stateReloader, true);
+            if (Chromebug.XULAppModule.stateReloader)  // TODO this should be per xul_window
+                outerDOMWindow.addEventListener("DOMContentLoaded", Firebug.Chromebug.stateReloader, true);
 
-         // 'true' for capturing, so all of the sub-window loads also trigger
-         context.onLoad = bind(context.loadHandler, context);
-         outerDOMWindow.addEventListener("DOMContentLoaded", context.onLoad, true);
+            // 'true' for capturing, so all of the sub-window loads also trigger
+            context.onLoad = bind(context.loadHandler, context);
+            outerDOMWindow.addEventListener("DOMContentLoaded", context.onLoad, true);
 
-         context.onUnload = bind(context.unloadHandler, context)
-         outerDOMWindow.addEventListener("unload", context.onUnload, true);
+            context.onUnload = bind(context.unloadHandler, context)
+            outerDOMWindow.addEventListener("unload", context.onUnload, true);
 
-         outerDOMWindow.addEventListener("keypress", bind(Chromebug.XULAppModule.keypressToBreakIntoWindow, this, context), true);
+            outerDOMWindow.addEventListener("keypress", bind(Chromebug.XULAppModule.keypressToBreakIntoWindow, this, context), true);
         }
         catch(exc)
         {
@@ -600,10 +600,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.TraceModule.addListener(this);
 
         if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("Chromebug.initialize module "+this.uid+" Firebug.Debugger:"+Firebug.Debugger.fbListeners.length+" window.location="+window.location+"\n");
-    },
 
-    initializeUI: function(detachArgs)
-    {
         var wantIntro = prefs.getBoolPref("extensions.chromebug.showIntroduction");
 
         if (FBTrace.DBG_INITIALIZE)
@@ -632,6 +629,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             FBTrace.sysout("unloading " + window.location, getStackDump());
         }, true);
+        window.dump(FBL.getStackDump()+"\n");
     },
 
     prepareForCloseEvents: function()
@@ -786,13 +784,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         fbs.DBG_FBS_FF_START = true;
 
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("initializeDebugger start, enabled: "+fbs.enabled+" ******************************\n");
+            FBTrace.sysout("initializeDebugger start, enabled: "+fbs.enabled+" ******************************");
 
         Firebug.Debugger.isChromeDebugger = true;
         Firebug.Debugger.wrappedJSObject = Firebug.Debugger;
         Firebug.Debugger.addListener(this);
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("initializeDebugger complete ******************************\n");
+            FBTrace.sysout("initializeDebugger complete ******************************");
 
     },
 
