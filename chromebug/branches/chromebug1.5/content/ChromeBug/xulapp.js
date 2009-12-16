@@ -499,14 +499,13 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             FBTrace.sysout("Chromebug.XULAppModule.initialize" + prefDomain);
 
         this.xulWindowTagSeed = FBL.getUniqueId();
+    },
 
-        var self = this;
-        setTimeout(function startWatchingXULWindows() // delay until after all modules have initialized
-        {
-            if (FBTrace.DBG_INITIALIZE)
-                FBTrace.sysout("Chromebug.startWatchingXULWindows -------------------------- start creating contexts --------");
-            self.watchXULWindows();
-        });
+    initializeUI: function()
+    {
+        if (FBTrace.DBG_INITIALIZE)
+            FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
+        this.watchXULWindows();
     },
 
     watchXULWindows: function()

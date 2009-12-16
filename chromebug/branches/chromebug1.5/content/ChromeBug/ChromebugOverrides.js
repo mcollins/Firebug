@@ -290,10 +290,10 @@ var ChromebugOverrides = {
         if (tab)
             return tab.linkedPanel;
 
+        if (!win.chromebugTag)
+            win.chromebugTag = ChromebugOverrides.tagBase++;
         if (win.chromebugTag)
             return win.chromebugTag;
-        else
-            win.chromebugTag = ChromebugOverrides.tagBase++;
 
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromebugOverrides.getTabIdForWindow no id ", win);

@@ -498,7 +498,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         browser.tag = this.fakeTabBrowser.browsers.length;
 
         var browserName = null;
-        if (domWindow)
+        if (domWindow && domWindow.location)
             var browserName = safeToString(domWindow.location);
 
         if (isDataURL(browserName))

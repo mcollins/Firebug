@@ -15,7 +15,7 @@ const traceService = Cc["@joehewitt.com/firebug-trace-service;1"].getService(Ci.
 
 // ***********************************************************************************
 // TraceConsole Module
-
+var tracePanel = null;
 
 Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 {
@@ -43,10 +43,9 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
             FBTrace.sysout("cb.TraceConsoleModule.initContext; " +
                 context.getName() + " - " + context.getTitle());
 
-        if (this.tracePanel)  // one per app
-            context.setPanel(this.tracePanel.name, this.tracePanel);
-        else
-            this.tracePanel = this.createTracePanel(context);
+        if (tracePanel)  // one per app
+            context.setPanel(tracePanel.name, tracePanel);
+
     },
 
     destroyContext: function(context)
@@ -56,8 +55,8 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
                 context.getName() + " - " + context.getTitle());
 
         // unpoint from this context to our panel so its not destroyed.
-        if (this.tracePanel)
-            context.setPanel(this.tracePanel.name, null);
+        if (tracePanel)
+            context.setPanel(tracePanel.name, null);
     },
 
     createTracePanel: function(context)
@@ -86,9 +85,12 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
             if (messageInfo.type != "extensions.firebug")  // TODO selectable
                 return;
 
-            if (this.tracePanel)
+            if (!tracePanel && FirebugContext)
+                tracePanel = this.createTracePanel(FirebugContext);
+
+            if (tracePanel)
             {
-                this.tracePanel.dump(new Firebug.TraceModule.TraceMessage(
+                tracePanel.dump(new Firebug.TraceModule.TraceMessage(
                         messageInfo.type, data, messageInfo.obj, messageInfo.scope));
                 return false;
             }
@@ -98,10 +100,10 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
 
     clearPanel: function(context)
     {
-        if (this.tracePanel)
-            this.tracePanel.clear();
+        if (tracePanel)
+            tracePanel.clear();
         else
-            FBTrace("tracePanel.clearPanel no this.tracePanel");
+            FBTrace("tracePanel.clearPanel no tracePanel");
     },
 });
 
