@@ -8,9 +8,22 @@
     <h1>Page</h1>
     <script type="text/javascript">
       function start() {
+          console.log("start called");
+          console.trace();
         window.frames["testWin"].f1();
       }
     </script>
+    <pre>
+    When the page loads the iframe, it calls a start() (defined in page.html).
+
+The start() function calls a function f1() (defined in frame.html) which
+calls f2(), which calls f3(), which calls console.trace().
+
+So, I would
+expect to see a stack trace showing start(), f1(), f2(), and f3().
+However, the trace I get doesn't contain any of those.
+
+    </pre>
     <iframe name="testWin" src="frame.html" onload="start()"></iframe>
 
 
