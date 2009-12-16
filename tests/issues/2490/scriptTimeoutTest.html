@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head></head>
+<body>
+  <script type="text/javascript">
+    function doWork(i) {
+      var logger = document.getElementById("loggerArea");
+      logger.innerHTML = i;
+      var color = "#" + (i % 100) + (i % 100) + (i % 100);
+      logger.style.backgroundColor = color;
+    }
+    function stackOverflow(value) {
+      value = value || 0;
+
+      doWork(value);
+      stackOverflow(value+1);
+    }
+    function infLoop() {
+      for (var i = 0; i < 1000000; i++) {
+        doWork(i);
+      }
+    }
+  </script>
+  <button onclick="stackOverflow();">Stack Overflow</button>
+  <button onclick="infLoop();">Infinite Loop</button>
+  <div id="loggerArea"></div>
+</body>
+</html>
