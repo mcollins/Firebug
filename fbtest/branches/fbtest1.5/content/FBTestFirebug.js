@@ -45,6 +45,18 @@ MutationRecognizer.prototype.onRecognize = function(handler)
     return new MutationEventFilter(this, handler);
 }
 
+MutationRecognizer.prototype.onRecognizeAsync = function(handler, delay)
+{
+    if (!delay)
+        delay = 10;
+
+    return new MutationEventFilter(this, function(element) {
+        setTimeout(function() {
+            handler(element);
+        }, delay);
+    });
+}
+
 MutationRecognizer.prototype.getWindow = function()
 {
     return this.win;
