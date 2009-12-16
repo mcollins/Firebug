@@ -1,8 +1,9 @@
 function executeSearch(text, reverse, caseSensitive, global) {
 
     FW.document.getElementById("fbSearchBox").value = text;
-    FW.Firebug.searchCaseSensitive = caseSensitive;
-    FW.Firebug.searchGlobal = global;
+    FBTestFirebug.setPref("searchCaseSensitive", caseSensitive);
+    FBTestFirebug.setPref("searchGlobal", global);
+
     if (!reverse) {
         FBTest.progress("pressKey 13@"+"fbSearchBox");
         FBTest.pressKey(13, "fbSearchBox"); // FW.document.getElementById("fbSearchBox"),

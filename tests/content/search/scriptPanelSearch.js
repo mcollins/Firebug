@@ -82,8 +82,8 @@ function runTest()
 function doSearch(text, reverse, caseSensitive, global, callback)
 {
     FW.document.getElementById("fbSearchBox").value = text;
-    FW.Firebug.searchCaseSensitive = caseSensitive;
-    FW.Firebug.searchGlobal = global;
+    FBTestFirebug.setPref("searchCaseSensitive", caseSensitive);
+    FBTestFirebug.setPref("searchGlobal", global);
 
     // Press enter key within the search box.
     FBTest.focus(FW.document.getElementById("fbSearchBox"));
