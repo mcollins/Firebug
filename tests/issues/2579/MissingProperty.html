@@ -2,12 +2,21 @@
 <head><script>
 function A()
 {
-    fe = document.getElementById("form");
-    fe.form_idx = 123;
-    console.log(fe);
     de = document.getElementById("div");
     de.form_idx = 123;
-    console.log(de);
+    report(de);
+
+    fe = document.getElementById("form");
+    fe.form_idx = 123;
+    report(fe);
+}
+
+function report(elt)
+{
+    console.log("The "+elt.tagName+".form_idx is ", elt.form_idx);
+    for (var p in elt)
+        if (p == "form_idx") console.log(elt.tagName, p, elt[p]);
+
 }
 </script></head>
 <body onload="A();">
