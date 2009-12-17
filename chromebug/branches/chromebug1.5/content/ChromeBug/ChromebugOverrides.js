@@ -298,6 +298,12 @@ var ChromebugOverrides = {
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("ChromebugOverrides.getTabIdForWindow no id ", win);
     },
+
+    // Override Firebug.disableXULWindow
+    disableXULWindow: function()
+    {
+        // no op, ignore the call
+    },
 };
 
 ChromebugOverrides.commandLine = {
@@ -410,6 +416,7 @@ function overrideFirebugFunctions()
         Firebug.resumeFirebug = ChromebugOverrides.resumeFirebug;
 
         top.Firebug.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
+        top.Firebug.disableXULWindow = ChromebugOverrides.disableXULWindow;
         FBL.getBrowserForWindow = ChromebugOverrides.getBrowserForWindow;
 
         for (var p in Chromebug.Activation)
