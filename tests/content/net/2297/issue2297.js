@@ -29,9 +29,10 @@ function runTest()
         recognizer.onRecognize(function (element)
         {
             // Verify error log in the console.
-            var expectedResult = "NetworkError: 404 Not Found - " + basePath +
-                "net/2297/" + "non-existing-script.js";
-            FBTest.compare(expectedResult, element.textContent,
+            var expectedResult = "\"NetworkError: 404 Not Found - " + basePath +
+                "net/2297/" + "non-existing-script.js\"";
+            var message = element.getElementsByClassName("objectBox")[0];
+            FBTest.compare(expectedResult, message.textContent,
                 "There must be a Network Error with proper URL");
 
             // Verify status bar text
