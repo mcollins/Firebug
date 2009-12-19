@@ -1,3 +1,3 @@
 <?php
-header( 'Location: http://192.168.1.2/red.html' ) ;
+header( 'Location: http://getfirebug.com/tests/issues/2571/red.html' ) ;
 ?>
