@@ -2249,7 +2249,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
     getObjectLocation: function(sourceFileDescription)
     {
         if (sourceFileDescription)
-            return sourceFileDescription.sourceFile.href;
+            return sourceFileDescription.href;
         else
             return "no sourcefile:";
     },
@@ -2259,11 +2259,18 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
         if (sourceFileDescription)
         {
             var cn = sourceFileDescription.context.getName();
+            if (cn)
+            {
+                cnParts = cn.split('/');
+                cn = cnParts[cnParts.length - 1];
+            }
+            var nameParts = sourceFileDescription.name.split('/');
+            var name = nameParts[nameParts.length - 1];
             var description =
             {
-                name: cropString(sourceFileDescription.name+(cn?" < "+cn:""), 120),
+                name: cropString(name+(cn?" in "+cn:""), 120),
                 path: cropString(sourceFileDescription.path, 120),
-                label: cropString(sourceFileDescription.name, 40),
+                label: cropString(name, 40),
             }
             return description;
         }
