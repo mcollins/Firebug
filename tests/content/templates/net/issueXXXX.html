@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for Issue #XXXX</title>
+</head>
+<body>
+
+<h1>Issue #XXXX</h1>
+
+<p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=XXXX">Issue #XXXX</a>
+- <span class="h3">{issue-summary}</span>.
+<br/>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+</p>
+
+<ol>
+<li>Open Firebug and enable the Net panel.</li>
+<li>Click on the <code style="color:green">Execute Test</code> button below.</li>
+<li></li>
+<li></li>
+</ol>
+
+<button id="testButton" onclick="onExecuteTest()">Execute Test</button>
+
+<script type="text/javascript">
+function onExecuteTest()
+{
+    var request = new XMLHttpRequest();
+    request.open("GET", "issueXXXX.php", true);
+
+    request.onreadystatechange = function()
+    {
+        if (request.readyState == 4 && request.status == 200)
+        {
+        }
+    }
+
+    request.send(null);
+}
+</script>
+  
+</body>
+</html>
