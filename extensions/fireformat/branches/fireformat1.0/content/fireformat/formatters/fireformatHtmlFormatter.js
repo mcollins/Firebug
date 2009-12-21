@@ -184,7 +184,7 @@ FBL.ns(function() { with (FBL) {
       });
     },
     printProcessingInstruction: function(pi) {
-      this.writer.write({ value "<?" + pi.nodeName, nowrap: true });
+      this.writer.write({ value: "<?" + pi.nodeName, nowrap: true });
       this.writer.write({ prefix: this.prefCache.getPref("pi.separatorBeforeData"), value: pi.nodeValue, nowrap: true });
       this.writer.write({ value: "?>\n", nowrap: true });
     },
