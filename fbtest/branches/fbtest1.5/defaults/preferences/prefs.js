@@ -8,7 +8,7 @@ pref("extensions.fbtest.haltOnFailedTest", false);
 pref("extensions.firebug.alwaysOpenTestConsole", false); //xxxHonza: set by Firebug, but must not be part of Firebug branche.
 pref("extensions.fbtest.randomTestSelection", false);
 pref("extensions.fbtest.history", "");
-pref("extensions.fbtest.testCaseHistory", "https://getfirebug.com/tests/content/,http://localhost:7080/");
+pref("extensions.fbtest.testCaseHistory", "https://getfirebug.com/tests/content/");
 pref("extensions.fbtest.testDriverHistory", "");
 
 // Support for tracing console
