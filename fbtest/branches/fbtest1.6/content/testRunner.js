@@ -401,7 +401,7 @@ FBTestApp.TestRunner =
         if (!this.wrapAJSFile)
             this.wrapAJSFile = getResource(wrapperURL);
 
-        var testFirebugLibURL = FBTestApp.TestServer.chromeToUrl(
+        var testFirebugLibURL = FBTestApp.TestConsole.chromeToUrl(
             "chrome://fbtest/content/FBTestFirebug.js");
 
         if (FBTrace.DBG_FBTEST)

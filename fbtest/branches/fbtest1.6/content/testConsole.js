@@ -14,6 +14,9 @@ var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
+var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
+var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
+
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
 
@@ -582,7 +585,111 @@ FBTestApp.TestConsole =
         var toolbar = $(menuItem.getAttribute("toolbar"));
         toolbar.collapsed = menuItem.getAttribute("checked") != "true";
         document.persist(toolbar.id, "collapsed");
-    }
+    },
+
+    // Directories
+    chromeToPath: function (aPath)
+    {
+        try
+        {
+            if (!aPath || !(/^chrome:/.test(aPath)))
+                return this.urlToPath( aPath );
+
+            var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
+            var rv = cr.convertChromeURL(uri).spec;
+
+            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+            {
+                var m = /(.*\/content\/)/.exec(rv);
+                if (m)
+                    rv = m[1];
+            }
+
+            if (/^file:/.test(rv))
+                rv = this.urlToPath(rv);
+            else
+                rv = this.urlToPath("file://"+rv);
+
+            return rv;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.chromeToPath EXCEPTION", err);
+        }
+
+        return null;
+    },
+
+    urlToPath: function (aPath)
+    {
+        try
+        {
+            if (!aPath || !/^file:/.test(aPath))
+                return;
+
+            return Cc["@mozilla.org/network/protocol;1?name=file"]
+                      .createInstance(Ci.nsIFileProtocolHandler)
+                      .getFileFromURLSpec(aPath);
+        }
+        catch (e)
+        {
+            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
+        }
+    },
+
+    chromeToUrl: function (aPath, aDir)
+    {
+        try
+        {
+            if (!aPath || !(/^chrome:/.test(aPath)))
+                return this.pathToUrl(aPath);
+
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            var rv = chromeRegistry.convertChromeURL(uri).spec;
+            if (aDir)
+                rv = rv.substr(0, rv.lastIndexOf("/") + 1);
+
+            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+            {
+                var m = /(.*\/content\/)/.exec(rv);
+                if (m)
+                    rv = m[1];
+            }
+
+            if (!/^file:/.test(rv))
+                rv = this.pathToUrl(rv);
+
+            return rv;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.chromeToUrl EXCEPTION", err);
+        }
+
+        return null;
+    },
+
+    pathToUrl: function(aPath)
+    {
+        try
+        {
+            if (!aPath || !(/^file:/.test(aPath)))
+                return aPath;
+
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            return Cc["@mozilla.org/network/protocol;1?name=file"]
+                .createInstance(Ci.nsIFileProtocolHandler)
+                .getURLSpecFromFile(uri).spec;
+        }
+        catch (e)
+        {
+            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
+        }
+    },
 };
 
 // ************************************************************************************************
@@ -774,23 +881,12 @@ var FBTest = FBTestApp.FBTest =
 
     getLocalURLBase: function()
     {
-        return FBTestApp.TestServer.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
+        return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
     },
 
     registerPathHandler: function(path, handler)
     {
-        var server = FBTestApp.TestServer.getServer();
-        return server.registerPathHandler(path, function(metadata, response)
-        {
-            try
-            {
-                handler.apply(null, [metadata, response]);
-            }
-            catch (err)
-            {
-                FBTrace.sysout("FBTest.registerPathHandler EXCEPTION", err);
-            }
-        });
+        // OBSOLETE
     },
 
     pressKey: function(keyCode, eltID)
