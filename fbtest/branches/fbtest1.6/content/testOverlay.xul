@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- overlay firebug to add menu item -->
+
+<overlay id="xfbtest-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script type="application/x-javascript" src="chrome://fbtest/content/testOverlay.js"/>
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
+    </stringbundleset>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_openTestConsole" oncommand="FBTestFirebugOverlay.open()"/>
+    </commandset>
+
+    <keyset id="mainKeyset">
+        <key id="key_openTestConsole" key="t" modifiers="shift" command="cmd_openTestConsole" class="fbOnlyKey"/>
+    </keyset>
+
+    <!-- Overlay for Firebug icon menu -->
+    <menupopup id="fbFirebugMenuPopup">
+        <menuitem id="menu_openTestConsole" label="Open Test Console"
+            command="cmd_openTestConsole" insertbefore="menu_aboutSeparator"
+            key="key_openTestConsole"/>
+
+        <menu id="FirebugMenu_Options">
+            <menupopup id="FirebugMenu_OptionsPopup">
+                <menuitem id="FirebugMenu_Options_alwaysOpenTestConsole"
+                    insertbefore="menu_optionsSeparator"
+                    type="checkbox" label="Always Open Test Console"
+                    oncommand="FirebugChrome.onToggleOption(this)"
+                    option="alwaysOpenTestConsole"/>
+            </menupopup>
+        </menu>
+    </menupopup>
+</overlay>

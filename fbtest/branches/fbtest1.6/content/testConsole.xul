@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+<?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
+<?xml-stylesheet href="chrome://fbtest/skin/testConsole.css"?>
+<?xml-stylesheet href="chrome://fbtest/content/bindings.css"?>
+
+<!DOCTYPE window [
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
+%browserDTD;
+<!ENTITY % findBarDTD SYSTEM "chrome://global/locale/findbar.dtd" >
+%findBarDTD;
+]>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        id="TestConsole"
+        windowtype="FBTestConsole"
+        title="Firebug Test Console XUL Window"
+        width="640" height="480"
+        screenX="10" screenY="10"
+        persist="screenX screenY width height sizemode">
+
+    <!-- Firefox -->
+    <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
+    <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
+
+    <!-- Firebug -->
+    <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/xpcom.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/lib.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
+
+    <!-- FBTest -->
+    <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
+
+    <script type="application/x-javascript" src="chrome://fbtest/content/testCore.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testServer.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testRunner.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="strings_firebug" src="chrome://firebug/locale/firebug.properties"/>
+        <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
+        <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
+    </stringbundleset>
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_runAll" oncommand="FBTestApp.TestConsole.onRunAll()"/>
+        <command id="cmd_stopTest" oncommand="FBTestApp.TestConsole.onStop()"/>
+        <command id="cmd_haltOnFailedTest" oncommand="FBTestApp.TestConsole.onToggleHaltOnFailedTest()"/>
+        <command id="cmd_noTestTimeout" oncommand="FBTestApp.TestConsole.onToggleNoTestTimeout()"/>
+        <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
+        <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
+        <command id="cmd_refreshTestList" oncommand="FBTestApp.TestConsole.onRefreshTestList()"/>
+    </commandset>
+
+    <keyset id="mainKeyset">
+        <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
+    </keyset>
+
+    <toolbox id="consoleToolbox">
+        <toolbar id="consoleToolbar" align="center" context="consoleToolbarContextMenu">
+            <toolbarbutton id="runAll"
+                label="fbtest.cmd.Run All" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Run All Tests"
+                command="cmd_runAll"/>
+            <toolbarbutton id="stopTest"
+                label="fbtest.cmd.Stop" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Stop"
+                command="cmd_stopTest"/>
+            <toolbarbutton id="haltOnFailedTest"
+                label="fbtest.cmd.haltOnFailedTest" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.haltOnFailedTest"
+                command="cmd_haltOnFailedTest"/>
+
+            <toolbarbutton id="noTestTimeout"
+                label="fbtest.cmd.noTestTimeout" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.noTestTimeout"
+                command="cmd_noTestTimeout"/>
+
+            <toolbarseparator flex="1"/>
+            <toolbarbutton id="refreshList"
+                label="fbtest.cmd.Refresh" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.Refresh"
+                command="cmd_refreshTestList"/>
+        </toolbar>
+
+        <!-- Bar with testList.hmtl URL (e.g. chrome://firebug/content/testList.html -->
+        <toolbar id="testListUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestHistory" disablePicker="false"
+            coollapsed="false" label="fbtest.urlbar.label.Test List"
+            barTooltiptext="fbtest.urlbar.tooltip.Test_List_URL"
+            pickerTooltiptext="fbtest.cmd.tip.Browse For Test List"/>
+
+        <!-- Bar with test cases root URL (e.g. https://getfirebug.com/tests/content/) -->
+        <toolbar id="testCaseUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestCaseHistory" disablePicker="true"
+            collapsed="true" label="fbtest.urlbar.label.Test_Cases"
+            barTooltiptext="fbtest.urlbar.tooltip.Test_Cases_URL"/>
+
+        <!-- Bar with test drivers root URL (e.g. https://getfirebug.com/tests/content/) -->
+        <toolbar id="testDriverUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestDriverHistory" disablePicker="false"
+            collapsed="true" label="fbtest.urlbar.label.Test_Drivers"
+            barTooltiptext="fbtest.urlbar.tooltip.Test_Drivers_URL"/>
+    </toolbox>
+
+    <popup id="consoleToolbarContextMenu"
+        onpopupshowing="FBTestApp.TestConsole.onViewToolbarsPopupShowing(event);">
+        <menuitem id="menu_showTestListURLBar" type="checkbox" checked="true"
+            label="fbtest.urlbar.name.Test List URL Bar" toolbar="testListUrlBar"
+            oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
+        <menuitem id="menu_showTestCaseURLBar" type="checkbox" checked="false"
+            label="fbtest.urlbar.name.Test Cases URL Bar" toolbar="testCaseUrlBar"
+            oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
+        <menuitem id="menu_showTestDriverURLBar" type="checkbox" checked="false"
+            label="fbtest.urlbar.name.Test Drivers URL Bar" toolbar="testDriverUrlBar"
+            oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
+    </popup>
+
+    <popupset id="mainPopupSet">
+        <popup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
+        <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
+    </popupset>
+
+    <vbox flex="3">
+        <browser id="consoleFrame" type="content-primary" src="" flex="1"
+             disablehistory="true" contextmenu="fbContextMenu"
+             tooltip="fbTooltip"/>
+        <findbar id="FindToolbar" browserid="consoleFrame"/>
+    </vbox>
+
+    <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest"
+        resizeAfter="closest" persist="state substate"/>
+
+    <!-- Test frame, all tests are launched as frames within this frame -->
+    <vbox flex="1">
+        <browser disablehistory="true" id="testFrame" flex="1"  qsrc="chrome://fbtest/content/testFrame.html" />
+    </vbox>
+
+    <!-- Status bar info -->
+    <statusbar id="statusBar">
+        <label id="passingTests" />
+        <label id="failingTests" />
+        <label id="todoTests" tooltip="todoTestsTooltip"/>
+        <tooltip id="todoTestsTooltip" onpopupshowing="return FBTestApp.TestSummary.onTodoShowTooltip(this)"/>
+        <spacer flex="1" />
+        <label id="progressMessage" />
+        <progressmeter id="progressMeter" mode="determined" style="display:none"/>
+    </statusbar>
+</window>
