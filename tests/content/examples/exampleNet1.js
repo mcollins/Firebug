@@ -15,6 +15,8 @@ function runTest()
             // Asynchronously wait for the request beeing displayed.
             onRequestDisplayed(function(netRow)
             {
+                // TODO: test code, verify UI, etc.
+                
                 // 5) Finish test
                 FBTestFirebug.testDone("exampleNet1.DONE");
             });
