@@ -58,7 +58,8 @@ function runTest()
             });
 
             // Click to expand object's properties.
-            FBTest.click(row);
+            var label = row.getElementsByClassName("memberLabel").item(0);
+            FBTest.click(label);
         });
     });
 }
