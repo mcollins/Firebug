@@ -1043,12 +1043,12 @@ Firebug.Chromebug = extend(Firebug.Module,
         FBTrace.sysout("chromebug onPauseJSDRequested: rejection ", rejection);
     },
 
-    onJSDDeactivate: function(jsd, why)
+    onJSDDeactivate: function(active, why)
     {
-        FBTrace.sysout("chromebug onJSDDeactivate "+why);
+        FBTrace.sysout("chromebug onJSDDeactivate active: "+active+" why "+why);
     },
 
-    onJSDActivate: function(jsd)  // just before hooks are set in fbs
+    onJSDActivate: function(active, why)  // just before hooks are set in fbs
     {
         if (Firebug.Chromebug.activated)
             return;
