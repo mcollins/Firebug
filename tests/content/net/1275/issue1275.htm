@@ -16,8 +16,8 @@
 <ol>
 <li>Click on the <b>JSON Request</b> button to initiate request for JSON data.</li>
 <li>Open Firebug and activate Net panel.</li>
-<li>Expand the <span style="color:green">.../Issue1275.txt</span> request and check Response tab.</li>
-<li>Content of the tab should display content of <a href="Issue1275.txt">this</a> file.</li>
+<li>Expand the <span style="color:green">.../issue1275.txt</span> request and check Response tab.</li>
+<li>Content of the tab should display content of <a href="issue1275.txt">this</a> file.</li>
 </ol>
 
 <button onclick="jsonRequest()">JSON Request</button>
@@ -44,17 +44,17 @@ function jsonRequest(callback)
                             callback(request);
                         }, 300);
                     }
-                } 
+                }
             }
         };
         request.open("POST", "issue1275.txt", true);
         request.send(null);
-    } 
+    }
     catch (err) {
         alert("Error initializing XMLHttpRequest.\n" + err);
-    }  
+    }
 }
 </script>
-  
+
 </body>
 </html>
