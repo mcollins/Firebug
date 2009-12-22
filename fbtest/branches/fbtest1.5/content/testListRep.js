@@ -190,6 +190,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
             appInfo.name + ": " + appInfo.version + ", " + 
             appInfo.platformVersion + ", " + 
             appInfo.appBuildID + ", " + currLocale + "\n" +
+            "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
             "Export Date: " + (new Date()).toGMTString() + 
             "\n==========================================\n\n";
 
