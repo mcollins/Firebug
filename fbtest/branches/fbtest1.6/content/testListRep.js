@@ -3,6 +3,12 @@
 FBTestApp.ns(function() { with (FBL) {
 
 // ************************************************************************************************
+// Constants
+
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+
+// ************************************************************************************************
 // Test List Domplate repository.
 
 /**
@@ -182,23 +188,35 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
 
     onCopyAllErrors: function()
     {
-        var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
-        var currLocale = Firebug.getPref("general.useragent", "locale");
+        try
+        {
+            var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+            var currLocale = Firebug.getPref("general.useragent", "locale");
+            var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag); 
+            var name = systemInfo.getProperty("name");
+            var version = systemInfo.getProperty("version");
 
-        // Store head info.
-        var text = "Firebug: " + Firebug.version + "\n" + 
-            appInfo.name + ": " + appInfo.version + ", " + 
-            appInfo.platformVersion + ", " + 
-            appInfo.appBuildID + ", " + currLocale + "\n" +
-            "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
-            "Export Date: " + (new Date()).toGMTString() + 
-            "\n==========================================\n\n";
+            // Store head info.
+            var text = "Firebug: " + Firebug.version + "\n" + 
+                appInfo.name + ": " + appInfo.version + ", " + 
+                appInfo.platformVersion + ", " + 
+                appInfo.appBuildID + ", " + currLocale + "\n" +
+                "OS: " + name + " " + version + "\n" +
+                "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
+                "Export Date: " + (new Date()).toGMTString() + 
+                "\n==========================================\n\n";
 
-        var groups = FBTestApp.TestConsole.groups;
-        for (group in groups)
-            text += groups[group].getErrors();
+            var groups = FBTestApp.TestConsole.groups;
+            for (group in groups)
+                text += groups[group].getErrors();
 
-        copyToClipboard(text);
+            copyToClipboard(text);
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_ERRORS || FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbrace.FTestApp.GroupList; onCopyAllErrors EXCEPTION", err);
+        }
     }
 });
 
