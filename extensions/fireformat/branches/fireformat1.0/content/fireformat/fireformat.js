@@ -47,7 +47,7 @@ var Fireformat = FBL.ns(function() {
       curLen += curTokens[curTokens.length-1].length + (curTokens.length > 1 ? curJoin.length : 0);
       curToken++;
 
-      if (!(tokens[i+1]||{}).nowrap && (curLen >= wrapSize || (tokensPerLine > 0 && curToken >= tokensPerLine))) {
+      if (!(tokens[i+1]||{}).nowrap && ((wrapSize > 0 && curLen >= wrapSize) || (tokensPerLine > 0 && curToken >= tokensPerLine))) {
         lines.push(curTokens.join(""));
         curTokens = [totalIndent];
         curLen = totalIndent.length;  curToken = 0;
@@ -139,7 +139,7 @@ var Fireformat = FBL.ns(function() {
         // wrap, otherwise join using the current join value
         if (!text.nowrap
             && newLines[0]  
-            && (newLength > this.wrapLength
+            && ((this.wrapLength > 0 && newLength > this.wrapLength)
                 || (this.tokensPerLine > 0 && this.tokenCount+1 > this.tokensPerLine))) {
           this.lines.push("\n");
           this.lineCount++;
