@@ -17,6 +17,23 @@ function runTest() {
     };
     return formatter.format(style).replace(/\s*\{[\S\s]*?\}[\S\s]*/, "");
   }
+  function getMultipleStyle() {
+    var style = {
+      cssRules: [
+        {
+          type: CSSRule.STYLE_RULE,
+          selectorText: ".single",
+          style: { cssText: "" }
+        },
+        {
+          type: CSSRule.STYLE_RULE,
+          selectorText: ".single[name] > DIV.test + *, .double:focus, .triple#myid",
+          style: { cssText: "" }
+        }
+      ]
+    };
+    return formatter.format(style).replace(/\s*\{[\S\s]*?\}\s*/g, "|");
+  }
   
   // Formatting with a single token
   FBTest.compare(".single", getStyle(".single"), "Single Token");
@@ -41,15 +58,24 @@ function runTest() {
   prefs.setPrefs(11, 3, 2, 1);
   FBTest.compare(".single,  .double,\n  .triple", getStyle(".single, .double, .triple"), "Formatting with multiple tokens, char wrap, indent");
 
+  // Formatting with advanced selectors, token wrap, indent
+  prefs.setPrefs(80, 2, 1, 1);
+  FBTest.compare(".single[name] > DIV.test + *, .double:focus,\n  .triple#myid", getStyle(".single[name] > DIV.test + *, .double:focus, .triple#myid"), "Formatting with advanced selectors, token wrap, indent");
+
   // Formatting with advanced selectors, char wrap, indent
   prefs.setPrefs(10, 3, 2, 1);
-  FBTest.compare(".single[name] > DIV.test + *,\n  .double:focus,\n  .triple#myid", getStyle(".single[name] > DIV.test + *, .double:focus, .triple#myid"), "Multiple no wrap");
+  FBTest.compare(".single[name] > DIV.test + *,\n  .double:focus,\n  .triple#myid", getStyle(".single[name] > DIV.test + *, .double:focus, .triple#myid"), "Formatting with advanced selectors, char wrap, indent");
 
+  // Formatting with multiple rules, token wrap
+  prefs.setPrefs(80, 2, 1, 1);
+  FBTest.compare(".single|.single[name] > DIV.test + *, .double:focus,\n  .triple#myid|", getMultipleStyle(), "Formatting with multiple rules, token wrap");
 
   // Formatting with comma strings in the selector
-  prefs.setPrefs(10, 1, 2, 1);
+  prefs.setPrefs(10, 1, 1, 1);
   FBTest.compare(".single[test=\"fail, fail\"] > DIV.test + *,\n  .double:focus,\n  .triple#myid", getStyle(".single[test=\"fail, fail\"] > DIV.test + *, .double:focus, .triple#myid"), "Comma selector string 1");
   FBTest.compare(".single[test=\'fail, fail\'] > DIV.test + *,\n  .double:focus,\n  .triple#myid", getStyle(".single[test=\'fail, fail\'] > DIV.test + *, .double:focus, .triple#myid"), "Comma selector string 2");
+  
+
   
   prefs.reset();
 
