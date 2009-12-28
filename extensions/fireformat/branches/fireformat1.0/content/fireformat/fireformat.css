@@ -1,0 +1,23 @@
+/* See license.txt for terms of usage */
+
+@import "chrome://fireformat/skin/fireformat.css";
+
+
+textbox[type="formatter"] {
+  -moz-binding: url("chrome://fireformat/content/bindings.xml#formatTest");
+}
+
+wrapSelector {
+  -moz-binding: url("chrome://fireformat/content/bindings.xml#wrapSelector");
+}
+
+separatorSelector[type="indent"] {
+  -moz-binding: url("chrome://fireformat/content/bindings.xml#indentSelector");
+}
+separatorSelector[type="whitespace"] {
+  -moz-binding: url("chrome://fireformat/content/bindings.xml#whitespaceSeparatorSelector");
+}
+
+separatorSelector[type="whitespace"] menulist:not([value="_ffmt_custom"]) + textbox {
+  display: none;
+}

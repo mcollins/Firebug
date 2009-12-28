@@ -1,0 +1,35 @@
+/* See license.txt for terms of usage */
+
+textbox[type="formatter"] {
+  height: 150px;
+  width: 80ch;
+  
+  overflow: auto;
+  font-family: Courier New;
+  
+  margin: 0px;
+  padding: 0px;
+  -moz-appearance: textfield;
+  background-color: -moz-Field;
+  color: -moz-FieldText;
+}
+
+.formatTest {
+  position: relative;
+}
+
+.formatTest > .formatTestContent {
+  white-space: pre;
+}
+
+.formatTest > .wrapPosition {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: 100%;
+  
+  background-color: red;
+  opacity: 0.5;
+  left: 2ch;
+}

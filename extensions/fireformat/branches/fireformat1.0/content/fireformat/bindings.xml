@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE bindings [
+  <!ENTITY % fireformatDTD SYSTEM "chrome://fireformat/locale/fireformat.dtd">
+  %fireformatDTD;
+]>
+
+<bindings xmlns="http://www.mozilla.org/xbl"
+    xmlns:xbl="http://www.mozilla.org/xbl"
+    xmlns:xul="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <binding id="wrapSelector">
+    <content preference-editable="true">
+      <xul:checkbox xbl:inherits="label" oncommand="onUserInput()" anonid="check" />
+      <xul:textbox type="number" min="0" oncommand="onUserInput()" anonid="wrapSize" />
+    </content>
+    <implementation>
+      <method name="onUserInput">
+        <body><![CDATA[
+          var check = document.getAnonymousElementByAttribute(this, 'anonid', 'check'),
+              wrapSize = document.getAnonymousElementByAttribute(this, 'anonid', 'wrapSize');
+          wrapSize.disabled = !check.checked;
+          if (check.checked) {
+            this.setAttribute("value", wrapSize.value);
+          } else {
+            wrapSize.value = 0;
+            this.setAttribute("value", -1);
+          }
+        ]]></body>
+      </method>
+      <property name="value">
+        <getter><![CDATA[
+          return this.getAttribute("value");
+        ]]></getter>
+        <setter><![CDATA[
+          var check = document.getAnonymousElementByAttribute(this, 'anonid', 'check'),
+              wrapSize = document.getAnonymousElementByAttribute(this, 'anonid', 'wrapSize');
+          check.checked = val >= 0;
+          wrapSize.value = val;
+          this.onUserInput();
+        ]]></setter>
+      </property>
+    </implementation>
+  </binding>
+
+  <binding id="indentSelector">
+    <content preference-editable="true">
+      <xul:radiogroup anonid="valueList">
+        <xul:radio label="&fireformat.space;" value=" " />
+        <xul:radio label="&fireformat.tab;" value="&#x9;" />
+      </xul:radiogroup>
+    </content>
+    <implementation>
+      <property name="value">
+        <getter><![CDATA[
+          return document.getAnonymousElementByAttribute(this, 'anonid', 'valueList').value;
+        ]]></getter>
+        <setter><![CDATA[
+          document.getAnonymousElementByAttribute(this, 'anonid', 'valueList').value = val;
+        ]]></setter>
+      </property>
+    </implementation>
+  </binding>
+  
+  <binding id="whitespaceSeparatorSelector">
+    <content preference-editable="true">
+      <xul:vbox>
+        <xul:menulist anonid="valueList">
+          <xul:menupopup>
+            <xul:menuitem label="&fireformat.space;" value=" " />
+            <xul:menuitem label="&fireformat.newline;" value="&#xA;" />
+            <xul:menuitem label="&fireformat.tab;" value="&#x9;" />
+            <xul:menuitem label="&fireformat.none;" value="" />
+            <xul:menuitem label="&fireformat.custom;" value="_ffmt_custom" />
+          </xul:menupopup>
+        </xul:menulist>
+        <xul:textbox anonid="customValue" value="" />
+      </xul:vbox>
+    </content>
+    <implementation>
+      <constructor><![CDATA[
+        var self = this;
+        this.valueList.addEventListener(
+            "command",
+            function(ev) { self.updateCommand(ev); },
+            true);
+      ]]></constructor>
+
+      <property name="valueList">
+        <getter><![CDATA[
+          return document.getAnonymousElementByAttribute(this, 'anonid', 'valueList');
+        ]]></getter>
+      </property>
+      <property name="customValue">
+        <getter><![CDATA[
+          return document.getAnonymousElementByAttribute(this, 'anonid', 'customValue');
+        ]]></getter>
+      </property>
+      <property name="value" onget="return this.customValue.value;">
+        <setter><![CDATA[
+          var valueList = this.valueList,
+              popup = valueList.menupopup,
+              item = popup && popup.getElementsByAttribute('value', val)[0];
+          valueList.value = item ? val : "_ffmt_custom";
+          this.customValue.value = val;
+        ]]></setter>
+      </property>
+      
+      <method name="updateCommand">
+        <parameter name="event" />
+        <body><![CDATA[
+          this.customValue.value = "";
+          window.sizeToContent();
+          if (this.valueList.value == '_ffmt_custom') {
+            event.stopPropagation();
+          }
+        ]]></body>
+      </method>
+    </implementation>
+  </binding>
+
+  <binding id="formatTest">
+    <content>
+      <xul:box></xul:box>
+      <html:div class="formatTest">
+        <html:div anonid="input" class="formatTestContent" />
+        <html:div anonid="wrap" class="wrapPosition" />
+      </html:div>
+    </content>
+    <implementation>
+      <property name="wrapPosition">
+        <getter><![CDATA[
+          return this.wrapPos;
+        ]]></getter>
+        <setter><![CDATA[
+          var wrap = document.getAnonymousElementByAttribute(this, "anonid", "wrap");
+          wrap.style.left = val+"ch";
+          this.wrapPos = val;
+        ]]></setter>
+      </property>
+      <property name="value">
+        <getter><![CDATA[
+          return document.getAnonymousElementByAttribute(this, "anonid", "input").textContent;
+        ]]></getter>
+        <setter><![CDATA[
+          document.getAnonymousElementByAttribute(this, "anonid", "input").textContent = val;
+        ]]></setter>
+      </property>
+    </implementation>
+  </binding>
+</bindings>
