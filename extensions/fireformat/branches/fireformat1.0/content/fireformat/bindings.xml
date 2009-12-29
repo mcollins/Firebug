@@ -131,22 +131,77 @@
     <implementation>
       <property name="wrapPosition">
         <getter><![CDATA[
-          return this.wrapPos;
+          return this._wrapPos;
         ]]></getter>
         <setter><![CDATA[
           var wrap = document.getAnonymousElementByAttribute(this, "anonid", "wrap");
           wrap.style.left = val+"ch";
-          this.wrapPos = val;
+          this._wrapPos = val;
+        ]]></setter>
+      </property>
+      <property name="tabSize">
+        <getter><![CDATA[
+          return this._tabSize;
+        ]]></getter>
+        <setter><![CDATA[
+          if (val != this._tabStop) {
+            var indent = "", arrayLut = [];
+            for (var i = 1; i <= val; i++) {
+              arrayLut.push(indent);
+              indent += " ";
+            }
+            this._arrayLut = arrayLut;
+            this._tabStop = val;
+          }
+        ]]></setter>
+      </property>
+      <property name="replaceWhitespace">
+        <getter><![CDATA[
+          return this._replaceWhitespace;
+        ]]></getter>
+        <setter><![CDATA[
+          this._replaceWhitespace = val;
         ]]></setter>
       </property>
       <property name="value">
         <getter><![CDATA[
-          return document.getAnonymousElementByAttribute(this, "anonid", "input").textContent;
+          return this._value;
         ]]></getter>
         <setter><![CDATA[
-          document.getAnonymousElementByAttribute(this, "anonid", "input").textContent = val;
+          this._value = val;
+          
+          this.format();
         ]]></setter>
       </property>
+
+      <method name="format">
+        <body><![CDATA[
+          var length = 0, tabstop = this._tabStop, arrayLut = this._arrayLut;
+          var whitespaceReplace = this._replaceWhitespace ? {
+              '\r\n': '\\r\\n\n',
+              '\r': '\\r\n',
+              '\n': '\\n\n',
+              '\f': '\\f\n',
+              '\t': '\u00AB',
+              ' ' : '\u2022'
+          } : {};
+
+          document.getAnonymousElementByAttribute(this, "anonid", "input").textContent =
+              this._value.replace(/(?:\r\n)|\s/g, function(str, offset) {
+                var ret = whitespaceReplace[str] || str;
+                
+                if (str == "\t") {
+                  var lineOffset = length + offset+1;
+                  var tabOff = tabstop - (lineOffset % tabstop) - 1;
+                  length += tabOff;
+                  ret = ret + arrayLut[tabOff];
+                } else if (str.indexOf("\n") > -1 || str.indexOf("\r") > -1 || str.indexOf("\f") > -1) {
+                  length = -1*(offset+ret.length-1);
+                }
+                return ret;
+              });
+        ]]></body>
+      </method>
     </implementation>
   </binding>
 </bindings>

@@ -1,8 +1,8 @@
 /* See license.txt for terms of usage */
 
 textbox[type="formatter"] {
-  height: 150px;
-  width: 80ch;
+  height: 20em;
+  width: 60ch;
   
   overflow: auto;
   font-family: Courier New;
