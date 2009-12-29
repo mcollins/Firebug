@@ -33,6 +33,6 @@ textbox[type="formatter"] {
   opacity: 0.5;
 }
 
-#cssFormatterTabs > tabpanels > tabpanel {
+.fireformatOptions > tabpanels > tabpanel {
   -moz-box-pack: center;
 }

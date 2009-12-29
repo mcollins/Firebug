@@ -52,7 +52,7 @@
       </preferences>
 
       <vbox>
-        <tabbox id="cssFormatterTabs" onselect="FireformatOptions.updatePreview()">
+        <tabbox class="fireformatOptions" onselect="FireformatOptions.updatePreview()">
           <tabs>
             <tab label="&fireformat.cssFormatter.generalOptions;" />
             <tab label="&fireformat.cssFormatter.selectorOptions;" />
