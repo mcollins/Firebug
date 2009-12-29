@@ -2,3 +2,52 @@
 <!ENTITY fireformat.Formatters "Formatters">
 <!ENTITY fireformat.htmlFormatterSelector "HTML Formatter">
 <!ENTITY fireformat.cssFormatterSelector "CSS Formatter">
+
+<!ENTITY fireformat.wrap "Wrap">
+<!ENTITY fireformat.space "Space">
+<!ENTITY fireformat.tab "Tab">
+<!ENTITY fireformat.newline "Newline">
+<!ENTITY fireformat.none "None">
+<!ENTITY fireformat.custom "Custom...">
+
+<!ENTITY fireformat.preview "Preview">
+<!ENTITY fireformat.showWhitespace "Show Whitespace">
+
+<!ENTITY fireformat.cssFormatter "Fireformat CSS Formatter">
+
+<!ENTITY fireformat.cssFormatter.generalOptions "General">
+<!ENTITY fireformat.cssFormatter.wrapSize "Line wrap column">
+<!ENTITY fireformat.cssFormatter.indentChar "Indent Character">
+<!ENTITY fireformat.cssFormatter.indentCount "Indent Count">
+<!ENTITY fireformat.cssFormatter.tabSize "Tab Size">
+
+<!ENTITY fireformat.cssFormatter.selectorOptions "Selector">
+<!ENTITY fireformat.cssFormatter.selectorText.selectorsPerLine "Selectors Per-Line">
+<!ENTITY fireformat.cssFormatter.selectorText.spaceCount "Selectors Separator Count">
+<!ENTITY fireformat.cssFormatter.selectorText.indentLevel "Indent Count">
+
+<!ENTITY fireformat.cssFormatter.blockOptions "Block">
+<!ENTITY fireformat.cssFormatter.block.indentLevel "Block Indent Count">
+<!ENTITY fireformat.cssFormatter.block.componentSeparator "Component Separator">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterLast "Separator After Last Component">
+<!ENTITY fireformat.cssFormatter.block.separatorBeforeOpen "Separator Before Open Brace">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterOpen "Separator After Open Brace">
+<!ENTITY fireformat.cssFormatter.block.separatorBeforeClose "Separator Before Close Brace">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterClose "Separator After Close Brace">
+
+<!ENTITY fireformat.cssFormatter.propertyOptions "Properties">
+<!ENTITY fireformat.cssFormatter.property.tokensPerLine "Property Tokens Per Line">
+<!ENTITY fireformat.cssFormatter.property.indentLevel "Indent Count">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeColon "Spaces Before Colon">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeValue "Spaces Before Value">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforePriority "Spaces Before Priority">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeSemicolon "Spaces Before Semicolon">
+<!ENTITY fireformat.cssFormatter.property.valueSpaceCount "Spaces Between Values">
+
+<!ENTITY fireformat.cssFormatter.atRuleOptions "At Rules">
+<!ENTITY fireformat.cssFormatter.atRule.tokensPerLine "Tokens Per Line">
+<!ENTITY fireformat.cssFormatter.atRule.indentLevel "Indent Count">
+<!ENTITY fireformat.cssFormatter.atRule.spaceBeforeValue "Spaces Before Value">
+<!ENTITY fireformat.cssFormatter.atRule.spaceBeforeSemicolon "Spaces Before Semicolon">
+<!ENTITY fireformat.cssFormatter.atRule.valueSpaceCount "Spaces Between Values">
+<!ENTITY fireformat.cssFormatter.atRule.typeSeparator "Type Separator">

@@ -31,5 +31,8 @@ textbox[type="formatter"] {
   
   background-color: red;
   opacity: 0.5;
-  left: 2ch;
+}
+
+#cssFormatterTabs > tabpanels > tabpanel {
+  -moz-box-pack: center;
 }
