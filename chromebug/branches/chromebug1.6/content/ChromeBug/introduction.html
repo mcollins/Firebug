@@ -1,0 +1,45 @@
+<html>
+<head>
+    <title>ChromeBug: Firebug For Chrome</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="chrome://chromebug/content/categoryBrowser.css" type="text/css"/>
+    <script>
+    var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                   .getInterface(Components.interfaces.nsIWebNavigation)
+                   .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
+                   .rootTreeItem
+                   .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                   .getInterface(Components.interfaces.nsIDOMWindow);
+    function toggleIntroduction()
+    {
+        mainWindow.Firebug.Chromebug.toggleIntroduction();
+    }
+    function toggleIntroductionTrue()
+    {
+        mainWindow.Firebug.Chromebug.toggleIntroductionTrue();
+    }
+    </script>
+</head>
+<body class="panelNode panelNode-html" id="categoryBrowserBody">
+<h1>ChromeBug: chrome development evolved</h1>
+<button onclick="toggleIntroduction()">Ok, Let me at it!</button><button onclick="toggleIntroductionTrue()">Don't Show This Next Time</button>
+
+<p>The experimental stuff across the top is now in the XPCOM Explorer tool</p>
+<p>Components now in the global scope for the hidden window</p>
+<p>XUL Inspect is kinda working, the highlights don't work over XUL and response is sluggish</p>
+<p>The tools menu contains:</p>
+<ul>
+<li>Gijs Kruitbosch's Chrome List</li>
+<!--  <li>Mark Finkle's XUL Explorer</li>  --->
+<li>XPCOM Explorer</li>
+<ul>
+<li>Catogory Manager</li>
+<li>Overlays</li>
+<li>Extension Scripts</li>
+<li>JSContexts</li>
+<li>Components</li>
+</ul>
+</ul>
+
+</body>
+</html>

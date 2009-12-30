@@ -1,0 +1,46 @@
+
+@import "chrome://firebug/skin/panelbase.css";
+@import "chrome://firebug/skin/html.css";
+/* For twisty */
+@import "chrome://firebug-os/skin/panel.css";
+
+#categoryBrowserBody {
+    display: block;
+}
+
+.twisty {
+    position: relative;
+}
+
+.categoryPropertyBox {
+    position: relative;
+    padding-left: 1.2em;
+    display: none;
+}
+
+.categoryBox.showProperties > .categoryPropertyBox {
+    display: block;
+}
+
+.categoryPropertyValue {
+    padding-right: 1ex;
+}
+
+.categoryPropertyValue:before {
+    content: " = ";
+    }
+
+.categoryName {
+    font-weight: bold;
+    margin-left: 1ex;
+}
+
+.categoryBox > .twisty {
+     background-position: 0px 0px;
+}
+
+.categoryBox.showProperties > .twisty {
+    background-image: url(chrome://firebug/skin/win/twistyOpen.png);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;  /* override panel.css */
+}
