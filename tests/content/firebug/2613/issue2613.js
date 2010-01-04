@@ -31,6 +31,8 @@ function runTest()
 
 function reload(panelName, callback)
 {
+    FBTestFirebug.clearCache();
+
     // Select specified panel.
     FBTestFirebug.selectPanel(panelName);
 
@@ -40,7 +42,6 @@ function reload(panelName, callback)
     {
         var panel = FBTestFirebug.getPanel(panelName);
         FBTest.ok(panel.panelNode.firstChild, "The " + panelName + " panel must not be empty");
-        FBTestFirebug.clearCache();
         callback();
     })
 }

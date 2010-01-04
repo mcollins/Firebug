@@ -3,6 +3,12 @@
 <head>
     <title>Test Case for Issue #2613</title>
     <script type="text/javascript" src="issue2613.php"></script>
+    <script>
+        var now = Number(new Date());
+        while (now + (2*1000) > Number(new Date())) {
+            var tmp = now;
+        }
+    </script> 
 </head>
 <body>
 
