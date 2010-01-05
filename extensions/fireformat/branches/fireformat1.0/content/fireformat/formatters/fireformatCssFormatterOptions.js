@@ -58,7 +58,7 @@
     return document.getElementById("cssFormatterTest");
   }
 
-  FireformatOptions.updatePreview = function() {
+  FireformatOptions.updateCssPreview = function() {
     setTimeout(function() {
       // Create helper root element (for the case where there is no signle root).
       var text = getTestBox();

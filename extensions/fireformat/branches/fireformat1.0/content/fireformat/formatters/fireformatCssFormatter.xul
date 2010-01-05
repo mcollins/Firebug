@@ -52,7 +52,7 @@
       </preferences>
 
       <vbox>
-        <tabbox class="fireformatOptions" onselect="FireformatOptions.updatePreview()">
+        <tabbox class="fireformatOptions" onselect="FireformatOptions.updateCssPreview()">
           <tabs>
             <tab label="&fireformat.cssFormatter.generalOptions;" />
             <tab label="&fireformat.cssFormatter.selectorOptions;" />
@@ -220,7 +220,7 @@
                   <row>
                     <checkbox id="ffmt_ccs_showWhitespace" label="&fireformat.showWhitespace;"
                         preference="pref_showWhitespace"
-                        oncommand="FireformatOptions.updatePreview()"
+                        oncommand="FireformatOptions.updateCssPreview()"
                     />
                   </row>
                 </rows>
