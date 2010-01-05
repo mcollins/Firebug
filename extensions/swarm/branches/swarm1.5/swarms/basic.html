@@ -67,14 +67,18 @@ ol {
 </head>
 <body>
 <img src="http://getfirebug.com/header.png" class="header"/>
-<div class="signed swarm"><!-- The nextSibling must be the signature -->
+<div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
  <h2 class="swarmTitle">Basic Swarm For
  <a class="swarmWith" href="http://getfirebug.com/releases/firebug/1.5X/firebug-1.5X.0b3.xpi">Firebug 1.5</a>
  </h2>
+ <button onclick="FirebugSwarm.install(event);">Install</button> <!-- must be child of firebug signed swarm -->
  <ol>
  <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
-  <span class="extensionURL" href="http://getfirebug.com/releases/eventbug/1.5/eventbug-0.1a2.xpi">eventbug</span>
+  <span class="extensionURL"
+        href="http://getfirebug.com/releases/eventbug/1.5/eventbug-0.1a2.xpi"
+        hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        >eventbug</span>
   <span class="extensionStatus">not installed</span>
   <div class="extensionInfo">
   <p>This extension brings a new <b>Events</b> panel that lists all of the event handlers
@@ -85,11 +89,13 @@ ol {
   </p>
   </div>
   </div>
-  <div class="extensionHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Hash Must Match</div>
 </li>
 <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
-  <span class="extensionURL" href="http://www.incaseofstairs.com/download/firediff/firediff1.0a1.xpi">Firediff</span>
+  <span class="extensionURL"
+        href="http://www.incaseofstairs.com/download/firediff/firediff1.0a1.xpi"
+        hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        >Firediff</span>
   <span class="extensionStatus">not installed</span>
   <div class="extensionInfo">
   <p>Firediff is a Firebug extension that tracks changes to a pages DOM and CSS.
@@ -98,11 +104,13 @@ ol {
   </p>
   </div>
   </div>
-  <div class="extensionHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Hash Must Match</div>
 </li>
 <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
-  <span class="extensionURL" href="http://getfirebug.com/releases/export/1.5/netExport-0.7b7.xpi">NetExport</span>
+  <span class="extensionURL"
+        href="http://getfirebug.com/releases/export/1.5/netExport-0.7b7.xpi"
+        hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        >NetExport</span>
   <span class="extensionStatus">not installed</span>
   <div class="extensionInfo">
   <p>NetExport is a Firebug extension that allows exporting data from the Net panel.
@@ -111,7 +119,7 @@ ol {
   </p>
   </div>
   </div>
-  <div class="extensionHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Hash Must Match</div>
+
 </li>
 
 </ol>
@@ -131,5 +139,39 @@ ol {
 
 
 
+<script>
+var FirebugSwarm =
+{
+    install: function(event)
+    {
+        var button = event.target;
+        var swarms = document.getElementsByClassName("firebug signed swarm");
+        var iSwarm = -1;
+        for (var i  = 0; i  < swarms.length; i++)
+            if (swarms[i] === button.parentNode)
+                iSwarm = i;
+
+        if (iSwarm >= 0)
+        {
+            var swarm = swarms[iSwarm];
+            event.target.innerHTML = "Check Signature";
+            var extensions = swarm.getElementsByClassName("extensionURL");
+            var extensionURLs = [];
+            var extensionHash = [];
+            for (var i = 0; i < extensions.length; i++)
+            {
+                extensionURLs[i] = extensions[i].getAttribute("href");
+                extensionHash[i] = extensions[i].getAttribute("hash");
+            }
+            event.target.innerHTML = "Ready for "+extensions.length+" extensions";
+        }
+        else
+        {
+            event.target.innerHTML = "No valid swarm found";
+        }
+    },
+
+}
+</script>
 </body>
 </html>
