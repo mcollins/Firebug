@@ -113,11 +113,29 @@
           this.customValue.value = "";
           window.sizeToContent();
           if (this.valueList.value == '_ffmt_custom') {
+            this.customValue.value = "";
             event.stopPropagation();
+          } else {
+            this.customValue.value = this.valueList.value;
           }
         ]]></body>
       </method>
     </implementation>
+  </binding>
+  <binding id="requiredWhitespaceSeparatorSelector" extends="chrome://fireformat/content/bindings.xml#whitespaceSeparatorSelector">
+    <content preference-editable="true">
+      <xul:vbox>
+        <xul:menulist anonid="valueList">
+          <xul:menupopup>
+            <xul:menuitem label="&fireformat.space;" value=" " />
+            <xul:menuitem label="&fireformat.newline;" value="&#xA;" />
+            <xul:menuitem label="&fireformat.tab;" value="&#x9;" />
+            <xul:menuitem label="&fireformat.custom;" value="_ffmt_custom" />
+          </xul:menupopup>
+        </xul:menulist>
+        <xul:textbox anonid="customValue" value="" />
+      </xul:vbox>
+    </content>
   </binding>
 
   <binding id="formatTest">
