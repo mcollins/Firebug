@@ -833,5 +833,11 @@ var FBTest = FBTestApp.FBTest =
     }
 };
 
+// Compatibility with Firebug 1.4
+function trim(text)
+{
+    return text.replace(/^\s*|\s*$/g,"");
+}
+
 // ************************************************************************************************
 }});
