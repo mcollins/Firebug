@@ -1,4 +1,6 @@
 <?php
+header('Cache-Control: no-cache');
+header('Pragma: no-cache');
 set_time_limit(10);
 sleep(2);   // Sleep for 2 sec.
 ?>
@@ -6,8 +8,6 @@ sleep(2);   // Sleep for 2 sec.
 <html>
 <head>
     <title>Test of the sleep() function</title>
-    <meta http-equiv="Pragma" content="no-cache"></meta>
-    <meta HTTP-equiv="Expires" content="-1"></meta>
 </head>
 <body>
 
