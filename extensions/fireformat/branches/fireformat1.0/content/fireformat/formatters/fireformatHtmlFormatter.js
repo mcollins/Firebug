@@ -230,7 +230,7 @@ FBL.ns(function() { with (FBL) {
           }
           curLine = this.writer.lineCount;
 
-          this.printAttr(sortedAttrs[i]);
+          this.printAttr(sortedAttrs[i], !i);
           curLineCount++;
         }
         this.writer.setIndent(0);
@@ -257,9 +257,9 @@ FBL.ns(function() { with (FBL) {
     printText: function(text) {
       this.writer.write({ value: replaceEntities(text.data), nowrap: true, preformatted: true });
     },
-    printAttr: function(attr) {
+    printAttr: function(attr, first) {
       this.writer.write({
-        prefix: this.prefCache.getPref("attribute.listSeparator"),
+        prefix: first ? "" : this.prefCache.getPref("attribute.listSeparator"),
         value: attr.nodeName,
         join: this.prefCache.getPref("attribute.separatorBeforeEquals")
       });

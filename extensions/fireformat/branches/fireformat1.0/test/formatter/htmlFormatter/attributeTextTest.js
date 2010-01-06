@@ -30,22 +30,22 @@ function runTest() {
   prefs.setPrefs(5, 2, " ", "\n", "\n");
   FBTest.compare("attr1\n    =\n    \"attr1 value\"", getAttr(htmlElement), "HTML Attr Default, Newline Sep Extra indent");
   prefs.setPrefs(5, 1, " ", " ", " ", 1);
-  FBTest.compare("  attr1 = \"attr1 value\"", getAttr(htmlElement), "HTML Attr Default, Wrap");
+  FBTest.compare("\n  attr1 = \"attr1 value\"", getAttr(htmlElement), "HTML Attr Default, Wrap");
   
   // Multiple attributes
   htmlElement.setAttribute("attr2", "attr2 value");
   prefs.setPrefs(5, 1, " ", "", "");
   FBTest.compare("attr1=\"attr1 value\" attr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr");
   prefs.setPrefs(5, 1, "\n", "", "");
-  FBTest.compare("  attr1=\"attr1 value\"\n  attr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr Newline");
+  FBTest.compare("attr1=\"attr1 value\"\n  attr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr Newline");
   prefs.setPrefs(5, 0, "\n", "", "");
   FBTest.compare("attr1=\"attr1 value\"\nattr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr No Indent");
   prefs.setPrefs(5, 2, "\n", "", "");
-  FBTest.compare("    attr1=\"attr1 value\"\n    attr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr, Multiple Indent");
+  FBTest.compare("attr1=\"attr1 value\"\n    attr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr, Multiple Indent");
   prefs.setPrefs(1, 1, " ", "", "");
   FBTest.compare("attr1=\"attr1 value\"\n  attr2=\"attr2 value\"", getAttr(htmlElement), "HTML Multiple Attr, Token Wrap");
   prefs.setPrefs(5, 1, " ", " ", " ", 1);
-  FBTest.compare("  attr1 = \"attr1 value\"\n  attr2 = \"attr2 value\"", getAttr(htmlElement), "HTML Multiple Default, Char Wrap");
+  FBTest.compare("\n  attr1 = \"attr1 value\"\n  attr2 = \"attr2 value\"", getAttr(htmlElement), "HTML Multiple Default, Char Wrap");
   
   // Attr with newline embedded
   htmlElement.setAttribute("newLine", "new\nline");

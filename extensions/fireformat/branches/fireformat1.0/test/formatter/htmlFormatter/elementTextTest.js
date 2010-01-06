@@ -31,9 +31,9 @@ function runTest() {
   htmlElement.setAttribute("class", "test value");
 
   prefs.setPrefs(true, " ", "", " ");
-  FBTest.compare("<div  class=\"test value\"></div>", formatter.format(htmlElement), "HTML Element, Spaces");
-  prefs.setPrefs(true, "", "", " ");
   FBTest.compare("<div class=\"test value\"></div>", formatter.format(htmlElement), "HTML Element, Spaces");
+  prefs.setPrefs(true, "", "", " ");
+  FBTest.compare("<divclass=\"test value\"></div>", formatter.format(htmlElement), "HTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", " ");
   FBTest.compare("<div\n  class=\"test value\"></div>", formatter.format(htmlElement), "HTML Element, Spaces");
   prefs.setPrefs(true, "\n", " ", " ");
@@ -51,9 +51,9 @@ function runTest() {
   htmlElement.appendChild(childElement);
 
   prefs.setPrefs(false, "", "", "");
-  FBTest.compare("<DIV class=\"test value\">\n   <BR></DIV>", formatter.format(htmlElement), "Child HTML Element, Spaces Upper");
+  FBTest.compare("<DIVclass=\"test value\">\n   <BR></DIV>", formatter.format(htmlElement), "Child HTML Element, Spaces Upper");
   prefs.setPrefs(true, "", "", "");
-  FBTest.compare("<div class=\"test value\">\n   <br></div>", formatter.format(htmlElement), "Child HTML Element, Spaces");
+  FBTest.compare("<divclass=\"test value\">\n   <br></div>", formatter.format(htmlElement), "Child HTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", " ");
   FBTest.compare("<div\n  class=\"test value\">\n   <br></div>", formatter.format(htmlElement), "Child HTML Element, Spaces");
   prefs.setPrefs(true, "\n", " ", " ");
@@ -72,13 +72,13 @@ function runTest() {
   htmlElement = document.createElement("input");
   htmlElement.setAttribute("class", "test");
   prefs.setPrefs(true, "", "", "");
-  FBTest.compare("<input class=\"test\">", formatter.format(htmlElement), "Void HTML Element, Spaces");
+  FBTest.compare("<inputclass=\"test\">", formatter.format(htmlElement), "Void HTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", "");
   FBTest.compare("<input\n  class=\"test\">", formatter.format(htmlElement), "Void HTML Element, Spaces");
   prefs.setPrefs(true, "\n", " ", " ");
   FBTest.compare("<input\n  class=\"test\" >", formatter.format(htmlElement), "Void HTML Element, Newline Spaces");
   prefs.setPrefs(false, "", "", "");
-  FBTest.compare("<INPUT class=\"test\">", formatter.format(htmlElement), "Void HTML Element, Spaces");
+  FBTest.compare("<INPUTclass=\"test\">", formatter.format(htmlElement), "Void HTML Element, Spaces");
   prefs.setPrefs(false, "\n", "", "");
   FBTest.compare("<INPUT\n  class=\"test\">", formatter.format(htmlElement), "Void HTML Element, Spaces");
   prefs.setPrefs(false, "\n", " ", " ");
@@ -99,9 +99,9 @@ function runTest() {
   htmlElement.setAttribute("class", "test value");
 
   prefs.setPrefs(true, "", "", " ");
-  FBTest.compare("<div class=\"test value\" />", formatter.format(htmlElement), "XHTML Element, Spaces");
+  FBTest.compare("<divclass=\"test value\" />", formatter.format(htmlElement), "XHTML Element, Spaces");
   prefs.setPrefs(true, " ", "", " ");
-  FBTest.compare("<div  class=\"test value\" />", formatter.format(htmlElement), "XHTML Element, Spaces");
+  FBTest.compare("<div class=\"test value\" />", formatter.format(htmlElement), "XHTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", "");
   FBTest.compare("<div\n  class=\"test value\"/>", formatter.format(htmlElement), "XHTML Element, Spaces");
   prefs.setPrefs(true, "\n", " ", "\n");
@@ -121,8 +121,8 @@ function runTest() {
   htmlElement.appendChild(childElement);
 
   prefs.setPrefs(true, "", "", "");
-  FBTest.compare("<div class=\"test value\">\n   <br class=\"something\"/></div>", formatter.format(htmlElement), "Child XHTML Element, Spaces Upper");
-  prefs.setPrefs(true, "", "", "");
+  FBTest.compare("<divclass=\"test value\">\n   <brclass=\"something\"/></div>", formatter.format(htmlElement), "Child XHTML Element, Spaces Upper");
+  prefs.setPrefs(true, " ", "", "");
   FBTest.compare("<div class=\"test value\">\n   <br class=\"something\"/></div>", formatter.format(htmlElement), "Child XHTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", " ");
   FBTest.compare("<div\n  class=\"test value\">\n   <br\n     class=\"something\" /></div>", formatter.format(htmlElement), "Child XHTML Element, Spaces");
@@ -137,13 +137,13 @@ function runTest() {
   // Void HTML Element
   htmlElement = xmlDoc.createElementNS("http://www.w3.org/1999/xhtml", "input");
   htmlElement.setAttribute("class", "test");
-  prefs.setPrefs(true, "", "", "");
+  prefs.setPrefs(true, " ", "", "");
   FBTest.compare("<input class=\"test\"/>", formatter.format(htmlElement), "Void XHTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", " ");
   FBTest.compare("<input\n  class=\"test\" />", formatter.format(htmlElement), "Void XHTML Element, Spaces");
   prefs.setPrefs(true, "\n", "", "\n");
   FBTest.compare("<input\n  class=\"test\"\n/>", formatter.format(htmlElement), "Void XHTML Element, Newline Spaces");
-  prefs.setPrefs(false, "", "", "");
+  prefs.setPrefs(false, " ", "", "");
   FBTest.compare("<input class=\"test\"/>", formatter.format(htmlElement), "Void XHTML Element, Spaces");
 
   // TODO : Test for XHTML element prefix?
