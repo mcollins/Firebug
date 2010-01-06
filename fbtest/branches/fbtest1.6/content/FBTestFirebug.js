@@ -834,7 +834,7 @@ this.getPref = function(pref)
 }
 
 // ************************************************************************************************
-// Debugger
+// Toolbar buttons
 
 /**
  * Simulates click on the Continue button that is available in the Script panel when
@@ -844,15 +844,7 @@ this.getPref = function(pref)
  */
 this.clickContinueButton = function(chrome)
 {
-    if (!chrome)
-        chrome = FW.FirebugChrome;
-
-    var doc = chrome.window.document;
-    var button = doc.getElementById("fbContinueButton");
-    FBTest.sysout("clickContinueButton", button);
-
-    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
-    this.synthesizeMouse(button);
+    this.clickToolbarButton(chrome, "fbContinueButton");
 }
 
 /**
@@ -881,6 +873,29 @@ this.clickBreakOnNextButton = function(chrome)
     this.synthesizeMouse(button);
 }
 
+/**
+ * Simulates click on the Persist button that is available in the Script and Net panels.
+ * Having this button pressed causes persistence of the appropriate panel content across reloads.
+ * @param {Object} chrome Firebug.chrome object.
+ */
+this.clickPersistButton = function(chrome)
+{
+    this.clickToolbarButton(chrome, "fbConsolePersist");
+}
+
+this.clickToolbarButton = function(chrome, buttonID)
+{
+    if (!chrome)
+        chrome = FW.FirebugChrome;
+
+    var doc = chrome.window.document;
+    var button = doc.getElementById(buttonID);
+    FBTest.sysout("Click toolbar button " + buttonID, button);
+
+    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
+    this.synthesizeMouse(button);
+}
+
 this.synthesizeMouse = function(node)
 {
     var doc = node.ownerDocument;
@@ -894,6 +909,9 @@ this.synthesizeMouse = function(node)
         utils.sendMouseEvent("mouseup", rect.left, rect.top, 0, 1, 0);
     }
 }
+
+// ************************************************************************************************
+// Debugger
 
 this.getSourceLineNode = function(lineNo, chrome)
 {
