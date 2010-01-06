@@ -51,3 +51,43 @@
 <!ENTITY fireformat.cssFormatter.atRule.spaceBeforeSemicolon "Spaces Before Semicolon">
 <!ENTITY fireformat.cssFormatter.atRule.valueSpaceCount "Spaces Between Values">
 <!ENTITY fireformat.cssFormatter.atRule.typeSeparator "Type Separator">
+
+<!ENTITY fireformat.htmlFormatter "Fireformat HTML Formatter">
+
+<!ENTITY fireformat.htmlFormatter.generalOptions "General">
+<!ENTITY fireformat.htmlFormatter.wrapSize "Line wrap column">
+<!ENTITY fireformat.htmlFormatter.indentChar "Indent Character">
+<!ENTITY fireformat.htmlFormatter.indentCount "Indent Count">
+<!ENTITY fireformat.htmlFormatter.tabSize "Tab Size">
+
+<!ENTITY fireformat.htmlFormatter.xmlDocOptions "XHTML">
+
+<!ENTITY fireformat.htmlFormatter.xmlDocTypeOptions "XML Doc Type">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeVersion "Separator Before Version">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeEncoding "Separator Before Encoding">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeStandalone "Separator Before Standalone">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeClose "Separator Before Close">
+
+<!ENTITY fireformat.htmlFormatter.piOptions "Processing Instruction">
+<!ENTITY fireformat.htmlFormatter.pi.beforeData "Separator Before Data">
+
+<!ENTITY fireformat.htmlFormatter.docTypeOptions "Doc Type">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeName "Separator Before Name">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeExternalId "Separator Before External Id">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforePublicId "Separator Before Public Id">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeSystemId "Separator Before System Id">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeInternalSubset "Separator Before Internal Subset">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeClose "Separator Before Close">
+
+<!ENTITY fireformat.htmlFormatter.elOptions "Element">
+<!ENTITY fireformat.htmlFormatter.el.toLower "HTML Element Names to Lower Case">
+<!ENTITY fireformat.htmlFormatter.el.beforeAttr "Separator Before Attribute List">
+<!ENTITY fireformat.htmlFormatter.el.beforeClose "Separator Before Close">
+<!ENTITY fireformat.htmlFormatter.el.beforeSelfClose "Separator Before Self Close">
+
+<!ENTITY fireformat.htmlFormatter.attrOptions "Attribute">
+<!ENTITY fireformat.htmlFormatter.attribute.attrsPerLine "Attributes Per Line">
+<!ENTITY fireformat.htmlFormatter.attribute.indentLevel "Indent Count">
+<!ENTITY fireformat.htmlFormatter.attribute.listSeparator "Attribute Separator">
+<!ENTITY fireformat.htmlFormatter.attribute.separatorBeforeEquals "Separator Before Equals">
+<!ENTITY fireformat.htmlFormatter.attribute.separatorBeforeValue "Separator Before Value">

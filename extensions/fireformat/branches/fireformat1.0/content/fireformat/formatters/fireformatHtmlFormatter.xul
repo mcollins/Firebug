@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://fireformat/content/fireformat.css" type="text/css"?>
+<!-- TODO : Examine the wording and if any additional help is necessary for some of the inputs
+-->
+
+<!DOCTYPE window [
+  <!ENTITY % fireformatDTD SYSTEM "chrome://fireformat/locale/fireformat.dtd">
+  %fireformatDTD;
+]>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+     xmlns:html="http://www.w3.org/1999/xhtml">
+  <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
+  
+  <prefwindow id="fireformatOptions">
+    <prefpane id="ffmt_htmlFormatter" label="&fireformat.htmlFormatter;">
+      <script src="chrome://fireformat/content/formatters/fireformatHtmlFormatterOptions.js" type="application/x-javascript"/>
+      <preferences>
+        <preference id="pref_html_wrapSize" type="int" name="extensions.firebug.fireformatHtmlFormatter.wrapSize" />
+        <preference id="pref_html_indentChar" type="string" name="extensions.firebug.fireformatHtmlFormatter.indentChar" />
+        <preference id="pref_html_indent" type="int" name="extensions.firebug.fireformatHtmlFormatter.indentCount" />
+        <preference id="pref_html_tabSize" type="int" name="extensions.firebug.fireformatHtmlFormatter.tabSize" />
+
+        <preference id="pref_html_xmlDocType_beforeVersion" type="string" name="extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeVersion" />
+        <preference id="pref_html_xmlDocType_beforeEncoding" type="string" name="extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeEncoding" />
+        <preference id="pref_html_xmlDocType_beforeStandalone" type="string" name="extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeStandalone" />
+        <preference id="pref_html_xmlDocType_beforeClose" type="string" name="extensions.firebug.fireformatHtmlFormatter.xmlDocType.separatorBeforeClose" />
+
+        <preference id="pref_html_docType_beforeName" type="string" name="extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeName" />
+        <preference id="pref_html_docType_beforeExternalId" type="string" name="extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeExternalId" />
+        <preference id="pref_html_docType_beforePublicId" type="string" name="extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforePublicId" />
+        <preference id="pref_html_docType_beforeSystemId" type="string" name="extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeSystemId" />
+        <preference id="pref_html_docType_beforeInternalSubset" type="string" name="extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeInternalSubset" />
+        <preference id="pref_html_docType_beforeClose" type="string" name="extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeClose" />
+
+        <preference id="pref_html_pi_beforeData" type="string" name="extensions.firebug.fireformatHtmlFormatter.pi.separatorBeforeData" />
+
+        <preference id="pref_html_el_toLower" type="bool" name="extensions.firebug.fireformatHtmlFormatter.element.htmlNameToLower" />
+        <preference id="pref_html_el_beforeAttr" type="string" name="extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeAttributes" />
+        <preference id="pref_html_el_beforeClose" type="string" name="extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeClose" />
+        <preference id="pref_html_el_beforeSelfClose" type="string" name="extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeSelfClose" />
+
+        <preference id="pref_html_attr_perLine" type="int" name="extensions.firebug.fireformatHtmlFormatter.attribute.attrsPerLine" />
+        <preference id="pref_html_attr_indent" type="int" name="extensions.firebug.fireformatHtmlFormatter.attribute.indentLevel" />
+        <preference id="pref_html_attr_listSep" type="string" name="extensions.firebug.fireformatHtmlFormatter.attribute.listSeparator" />
+        <preference id="pref_html_attr_beforeEquals" type="string" name="extensions.firebug.fireformatHtmlFormatter.attribute.separatorBeforeEquals" />
+        <preference id="pref_html_attr_beforeValue" type="string" name="extensions.firebug.fireformatHtmlFormatter.attribute.separatorBeforeValue" />
+
+        <preference id="pref_html_showWhitespace" type="bool" name="extensions.firebug.fireformat.preview.showWhitespace" />
+      </preferences>
+
+      <vbox>
+        <tabbox class="fireformatOptions" onselect="FireformatOptions.updateHtmlPreview()">
+          <tabs>
+            <tab label="&fireformat.htmlFormatter.generalOptions;" />
+            <tab label="&fireformat.htmlFormatter.elOptions;" />
+            <tab label="&fireformat.htmlFormatter.attrOptions;" />
+            <tab label="&fireformat.htmlFormatter.docTypeOptions;" />
+            <tab label="&fireformat.htmlFormatter.xmlDocOptions;" />
+            <tab label="&fireformat.preview;" />
+          </tabs>
+          <tabpanels>
+            <tabpanel>
+              <grid>
+                <columns>
+                  <column flex="1" />
+                  <column flex="1" />
+                </columns>
+                <rows>
+                  <wrapSelector preference="pref_html_wrapSize" label="&fireformat.htmlFormatter.wrapSize;" />
+                  <row align="center">
+                    <label control="ffmt_html_indentChar" value="&fireformat.htmlFormatter.indentChar;" />
+                    <separatorSelector type="indent" id="ffmt_html_indentChar" preference="pref_html_indentChar" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_indent" value="&fireformat.htmlFormatter.indentCount;" />
+                    <textbox type="number" min="0" id="ffmt_html_indent" preference="pref_html_indent" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_tabSize" value="&fireformat.htmlFormatter.tabSize;" />
+                    <textbox type="number" min="1" id="ffmt_html_tabSize" preference="pref_html_tabSize" />
+                  </row>
+                </rows>
+              </grid>
+            </tabpanel>
+            <tabpanel>
+              <grid>
+                <columns>
+                  <column flex="1" />
+                  <column flex="1" />
+                </columns>
+                <rows>
+                  <checkbox label="&fireformat.htmlFormatter.el.toLower;" preference="pref_html_el_toLower" />
+                  <row align="center">
+                    <label control="ffmt_html_el_beforeAttr" value="&fireformat.htmlFormatter.el.beforeAttr;" />
+                    <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_el_beforeAttr" preference="pref_html_el_beforeAttr" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_el_beforeClose" value="&fireformat.htmlFormatter.el.beforeClose;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_el_beforeClose" preference="pref_html_el_beforeClose" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_el_beforeSelfClose" value="&fireformat.htmlFormatter.el.beforeSelfClose;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_el_beforeSelfClose" preference="pref_html_el_beforeSelfClose" />
+                  </row>
+                </rows>
+              </grid>
+            </tabpanel>
+            <tabpanel>
+              <grid>
+                <columns>
+                  <column flex="1" />
+                  <column flex="1" />
+                </columns>
+                <rows>
+                  <wrapSelector preference="pref_html_attr_perLine" label="&fireformat.htmlFormatter.attribute.attrsPerLine;" />
+                  <row align="center">
+                    <label control="ffmt_html_attr_indent" value="&fireformat.htmlFormatter.attribute.indentLevel;" />
+                    <textbox type="number" min="0" id="ffmt_html_attr_indent" preference="pref_html_attr_indent" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_attr_listSep" value="&fireformat.htmlFormatter.attribute.listSeparator;" />
+                    <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_attr_listSep" preference="pref_html_attr_listSep" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_attr_beforeEquals" value="&fireformat.htmlFormatter.attribute.separatorBeforeEquals;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_attr_beforeEquals" preference="pref_html_attr_beforeEquals" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_attr_beforeValue" value="&fireformat.htmlFormatter.attribute.separatorBeforeValue;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_attr_beforeValue" preference="pref_html_attr_beforeValue" />
+                  </row>
+                </rows>
+              </grid>
+            </tabpanel>
+
+            <tabpanel>
+              <grid>
+                <columns>
+                  <column flex="1" />
+                  <column flex="1" />
+                </columns>
+                <rows>
+                  <row align="center">
+                    <label control="ffmt_html_docType_beforeName" value="&fireformat.htmlFormatter.docType.separatorBeforeName;" />
+                    <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_docType_beforeName" preference="pref_html_docType_beforeName" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_docType_beforeExternalId" value="&fireformat.htmlFormatter.docType.separatorBeforeExternalId;" />
+                    <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_docType_beforeExternalId" preference="pref_html_docType_beforeExternalId" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_docType_beforePublicId" value="&fireformat.htmlFormatter.docType.separatorBeforePublicId;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_docType_beforePublicId" preference="pref_html_docType_beforePublicId" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_docType_beforeSystemId" value="&fireformat.htmlFormatter.docType.separatorBeforeSystemId;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_docType_beforeSystemId" preference="pref_html_docType_beforeSystemId" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_docType_beforeInternalSubset" value="&fireformat.htmlFormatter.docType.separatorBeforeInternalSubset;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_docType_beforeInternalSubset" preference="pref_html_docType_beforeInternalSubset" />
+                  </row>
+                  <row align="center">
+                    <label control="ffmt_html_docType_beforeClose" value="&fireformat.htmlFormatter.docType.separatorBeforeClose;" />
+                    <separatorSelector type="whitespace" id="ffmt_html_docType_beforeClose" preference="pref_html_docType_beforeClose" />
+                  </row>
+                </rows>
+              </grid>
+            </tabpanel>
+            <tabpanel>
+              <vbox>
+                <groupbox>
+                  <caption label="&fireformat.htmlFormatter.xmlDocTypeOptions;" />
+                  <grid>
+                    <columns>
+                      <column flex="1" />
+                      <column flex="1" />
+                    </columns>
+                    <rows>
+                      <row align="center">
+                        <label control="ffmt_html_xmlDocType_beforeVersion" value="&fireformat.htmlFormatter.xmlDocType.separatorBeforeVersion;" />
+                        <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_xmlDocType_beforeVersion" preference="pref_html_xmlDocType_beforeVersion" />
+                      </row>
+                      <row align="center">
+                        <label control="ffmt_html_xmlDocType_beforeEncoding" value="&fireformat.htmlFormatter.xmlDocType.separatorBeforeEncoding;" />
+                        <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_xmlDocType_beforeEncoding" preference="pref_html_xmlDocType_beforeEncoding" />
+                      </row>
+                      <row align="center">
+                        <label control="ffmt_html_xmlDocType_beforeStandalone" value="&fireformat.htmlFormatter.xmlDocType.separatorBeforeStandalone;" />
+                        <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_xmlDocType_beforeStandalone" preference="pref_html_xmlDocType_beforeStandalone" />
+                      </row>
+                      <row align="center">
+                        <label control="ffmt_html_xmlDocType_beforeClose" value="&fireformat.htmlFormatter.xmlDocType.separatorBeforeClose;" />
+                        <separatorSelector type="whitespace" id="ffmt_html_xmlDocType_beforeClose" preference="pref_html_xmlDocType_beforeClose" />
+                      </row>
+                    </rows>
+                  </grid>
+                </groupbox>
+                <groupbox>
+                  <caption label="&fireformat.htmlFormatter.piOptions;" />
+                  <hbox align="center">
+                    <label control="ffmt_html_pi_beforeData" value="&fireformat.htmlFormatter.pi.beforeData;" />
+                    <separatorSelector type="whitespace" allowBlank="false" id="ffmt_html_pi_beforeData" preference="pref_html_pi_beforeData" />
+                  </hbox>
+                </groupbox>
+              </vbox>
+            </tabpanel>
+
+            <tabpanel>
+              <grid>
+                <columns>
+                  <column flex="1" />
+                </columns>
+                <rows>
+                  <row>
+                    <textbox id="htmlFormatterTest" type="formatter" />
+                  </row>
+                  <row>
+                    <checkbox label="&fireformat.showWhitespace;"
+                        preference="pref_html_showWhitespace"
+                        oncommand="FireformatOptions.updateHtmlPreview()"
+                    />
+                  </row>
+                </rows>
+              </grid>
+            </tabpanel>
+          </tabpanels>
+        </tabbox>
+      </vbox>
+
+      <!--  Invisible. Used to generate the preview content. -->
+      <iframe src="formatters/htmlOptionsPreview.html" id="htmlPreviewDoc" collapsed="true" type="content" />
+    </prefpane>
+  </prefwindow>
+</overlay>
