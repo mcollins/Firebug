@@ -225,7 +225,7 @@ FBL.ns(function() { with (FBL) {
         }
         
         for (var i = 0; i < sortedAttrs.length; i++) {
-          if (curLineCount >= attrsPerLine) {
+          if (attrsPerLine >= 0 && curLineCount >= attrsPerLine) {
             this.writer.write("\n");
           }
           curLine = this.writer.lineCount;
