@@ -63,6 +63,12 @@ ol {
 .certificationTests {
    padding-left: 40px;
 }
+.swarmInactive {
+    display: none;
+}
+.swarmActive {
+    display: inline;
+}
 </style>
 </head>
 <body>
@@ -71,7 +77,7 @@ ol {
  <h2 class="swarmTitle">Basic Swarm For
  <a class="swarmWith" href="http://getfirebug.com/releases/firebug/1.5X/firebug-1.5X.0b3.xpi">Firebug 1.5</a>
  </h2>
- <button onclick="FirebugSwarm.install(event);">Install</button> <!-- must be child of firebug signed swarm -->
+ <button class="swarmInstall">Install</button> <!-- must be child of "firebug signed swarm" -->
  <ol>
  <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
@@ -139,39 +145,5 @@ ol {
 
 
 
-<script>
-var FirebugSwarm =
-{
-    install: function(event)
-    {
-        var button = event.target;
-        var swarms = document.getElementsByClassName("firebug signed swarm");
-        var iSwarm = -1;
-        for (var i  = 0; i  < swarms.length; i++)
-            if (swarms[i] === button.parentNode)
-                iSwarm = i;
-
-        if (iSwarm >= 0)
-        {
-            var swarm = swarms[iSwarm];
-            event.target.innerHTML = "Check Signature";
-            var extensions = swarm.getElementsByClassName("extensionURL");
-            var extensionURLs = [];
-            var extensionHash = [];
-            for (var i = 0; i < extensions.length; i++)
-            {
-                extensionURLs[i] = extensions[i].getAttribute("href");
-                extensionHash[i] = extensions[i].getAttribute("hash");
-            }
-            event.target.innerHTML = "Ready for "+extensions.length+" extensions";
-        }
-        else
-        {
-            event.target.innerHTML = "No valid swarm found";
-        }
-    },
-
-}
-</script>
 </body>
 </html>
