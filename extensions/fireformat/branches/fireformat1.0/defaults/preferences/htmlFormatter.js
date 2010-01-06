@@ -29,13 +29,13 @@ pref("extensions.firebug.fireformatHtmlFormatter.docType.separatorBeforeClose", 
 /*
  * Processing Instruction formatter preferences
  */
-pref("extensions.firebug.fireformatHtmlFormatter.pi.separatorBeforeData", "");
+pref("extensions.firebug.fireformatHtmlFormatter.pi.separatorBeforeData", " ");
 
 /*
  * Element formatter preferences
  */
 pref("extensions.firebug.fireformatHtmlFormatter.element.htmlNameToLower", true);
-pref("extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeAttributes", "");
+pref("extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeAttributes", " ");
 pref("extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeClose", "");
 pref("extensions.firebug.fireformatHtmlFormatter.element.separatorBeforeSelfClose", " ");
 
