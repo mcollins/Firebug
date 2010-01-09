@@ -4,3 +4,4 @@ locale  swarm    en-US           locale/en-US/
 
 overlay chrome://firebug/content/browserOverlay.xul         chrome://swarm/content/swarm.xul
 
+overlay chrome://fbtest/content/testOverlay.xul chrome://swarm/content/swarm-test.xul

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<?xml-stylesheet href="chrome://swarm/skin/swarm.css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script src="chrome://swarm/content/swarm-test.js" type="application/x-javascript"/>
+
+</overlay>
