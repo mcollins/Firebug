@@ -80,7 +80,7 @@
                 tooltiptext="fbtest.cmd.tip.noTestTimeout"
                 command="cmd_noTestTimeout"/>
 
-            <toolbarseparator flex="1"/>
+            <toolbarseparator id="FBTestButtons_end" flex="1"/>
             <toolbarbutton id="refreshList"
                 label="fbtest.cmd.Refresh" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.Refresh"
