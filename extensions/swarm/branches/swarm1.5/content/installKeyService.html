@@ -1,0 +1,38 @@
+<html>
+<head>
+</head>
+<body>
+<h1>Installation Instructions for nsIKeyService</h1>
+<p>
+Dave Townsend's <a href="https://developer.mozilla.org/en/McCoy">Mccoy project</a>
+ has a great component that implements
+<a href="http://mxr.mozilla.org/projects-central/source/mccoy/components/public/nsIKeyService.idl">nsIKeyService.idl</a>.
+In Mccoy it is used to sign update.rdf files; we use it to sign swarm web pages.</p>
+
+<p>The keyservice does not come with Firefox; you need to install it.</p>
+
+<p>To install the keyservice you need to download the mccoy XPI file appropriate to your OS,
+unzip it, then copy the keyservice component files into the FBTest extension component directory. You'll
+have to restart to load the component.
+Here are the details:</p>
+<ol>
+<li><a target="_blank" href="http://www.oxymoronical.com/mccoy/releases/0.5/">Download Mccoy</a> according to your OS</li>
+<li>Rename the file from .xpi to .zip, then unzip the file</li>
+<li>Find the directory "components"</li>
+<li>Copy <code>mccoy.dll</code> and <code>mccoy.xpt</code> in to the
+<button id="openFBTestComponentDirectory">FBTest component directory.</button></li>
+<li>Exit and restart the browser</li>
+</ol>
+
+<p>We could do this install in code if it is worth the trouble</p>
+<ol>
+<li><a href="https://developer.mozilla.org/en/Code_snippets/Miscellaneous#Operating_system_detection">
+Detect OS</a></li>
+<li><a href="https://developer.mozilla.org/index.php?title=En/Code_snippets/File_I%2F%2FO#Creating_temporary_files">
+Create a temp file</a></li>
+<li><a target="_blank" href="http://www.oxymoronical.com/mccoy/releases/0.5/">Hardwire the Mccoy url</a> according to your OS</li>
+<li><a href="https://developer.mozilla.org/en/Code_snippets/Downloading_Files">Download</a></li>
+<li><a href="https://developer.mozilla.org/en/nsIZipReader">Extract the comonpent files from the zip file</a></li>
+</ol>
+</body>
+</html>

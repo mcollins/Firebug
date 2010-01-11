@@ -11,18 +11,31 @@ const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBran
 
 // ************************************************************************************************
 
-var FirebugSwarmTest
+// This code runs in the FBTest Window.
+
+var FirebugSwarmTest =
 {
     // initialization -------------------------------------------------------------------
+
+    initialize: function()
+    {
+        this.addSigningButton();
+    },
 
     addSigningButton: function()
     {
         FBTrace.sysout("addSigningButton goes here");
+        var toolbar = $("consoleToolbar");
+        var signingButton = document.createElement('toolbarbutton');
+        signingButton.setAttribute("label", "fbSwarm.cmd.signSwarm");
+        signingButton.setAttribute("class", "toolbar-image-button");
+        signingButton.setAttribute("tooltiptext","fbSwarm.signSwarm");
+        toolbar.insertBefore(signingButton, $('FBTestButtons_end'));
+        signingButton.addEventListener('click', bind(this, this.doSigning), true);
     },
 
     getKeyService: function()
     {
-        FBTrace.sysout("getKeyService goes here");
         if (!this.keyService)
         {
             try
@@ -37,8 +50,9 @@ var FirebugSwarmTest
             {
                 throw new Error("Failed to get nsIKeyService "+exc);
             }
-
         }
+
+        FBTrace.sysout("getKeyService "+this.keyService);
 
         return this.keyService;
     },
@@ -52,16 +66,58 @@ var FirebugSwarmTest
 
     doSigning: function(event)
     {
-
+        FBTrace.sysout("FirebugSwarmTest doSigning ", event);
+        var keyservice = this.getKeyService();
+        FBTrace.sysout("FirebugSwarmTest doSigning keyservice: "+this.keyservice);
+        if (!keyservice)
+            return;
     },
 
     // real work -------------------------------------------------------------------
 
+    installKeyServiceInstructionsURL: "chrome://swarm/content/installKeyService.html",
     downloadAndInstallKeyService: function()
     {
-        // put up instructions and later do it by calling nsIZipReader on a url to mccoy.
-    }
+        var componentsDir = this.getComponentsDirectory();
+        var consoleFrame = $("consoleFrame");
+        consoleFrame.addEventListener("load", function onInstructionsLoaded(event)
+        {
+            var doc = event.target;
+            var elt = doc.getElementById("openFBTestComponentDirectory");
+            elt.addEventListener("click", function onClickDirectory(event)
+            {
+                const nsIFilePicker = Components.interfaces.nsIFilePicker;
+
+                var fp = Components.classes["@mozilla.org/filepicker;1"]
+                               .createInstance(nsIFilePicker);
+                fp.init(window, "Dialog Title", nsIFilePicker.modeGetFolder);
+                fp.defaultString = componentsDir;
+                fp.appendFilters(nsIFilePicker.filterAll);
+
+                var rv = fp.show();
+
+            }, true);
+        }, true);
+        consoleFrame.setAttribute("src", installKeyServiceInstructionsURL);
+    },
+
+    getComponentsDirectory: function()
+    {
+        var fbtest = "fbtest@mozilla.com"; // the extension's id from install.rdf
+        var em = Components.classes["@mozilla.org/extensions/manager;1"].
+                 getService(Components.interfaces.nsIExtensionManager);
+        // the path may use forward slash ("/") as the delimiter
+        // returns nsIFile for the extension's install.rdf
+        var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
+        return file.path;
+    },
 };
+
+window.addEventListener('load', function addButton(event)
+{
+    FirebugSwarmTest.initialize();
+    window.removeEventListener('load', addButton, true);
+}, true);
 
 //************************************************************************************************
 }});
