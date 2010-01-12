@@ -63,10 +63,11 @@
       var prefCache = new FireformatOptions.OptionsPrefCache(
               document.getElementById("ffmt_cssFormatPreferences"),
               "extensions.firebug.fireformatCssFormatter"),
+          showWhitespace = document.getElementById("pref_css_showWhitespace"),
           text = getTestBox();
-      text.replaceWhitespace = prefs.getBoolPref("extensions.firebug.fireformat.preview.showWhitespace");
-      text.wrapPosition = prefs.getIntPref("extensions.firebug.fireformatCssFormatter.wrapSize");
-      text.tabSize = prefs.getIntPref("extensions.firebug.fireformatCssFormatter.tabSize");
+      text.replaceWhitespace = showWhitespace.value;
+      text.wrapPosition = prefCache.getPref("wrapSize");
+      text.tabSize = prefCache.getPref("tabSize");
       text.value = formatter.format(preview, prefCache);
       window.sizeToContent();
     }, 0);

@@ -48,7 +48,7 @@
         <preference id="pref_css_at_valueSpace" type="int" name="extensions.firebug.fireformatCssFormatter.atRule.valueSpaceCount" />
         <preference id="pref_css_at_typeSep" type="string" name="extensions.firebug.fireformatCssFormatter.atRule.typeSeparator" />
 
-        <preference id="pref_showWhitespace" type="bool" name="extensions.firebug.fireformat.preview.showWhitespace" />
+        <preference id="pref_css_showWhitespace" type="bool" name="extensions.firebug.fireformat.preview.showWhitespace" />
       </preferences>
 
       <vbox>
@@ -218,8 +218,8 @@
                     <textbox id="cssFormatterTest" type="formatter" />
                   </row>
                   <row>
-                    <checkbox id="ffmt_ccs_showWhitespace" label="&fireformat.showWhitespace;"
-                        preference="pref_showWhitespace"
+                    <checkbox label="&fireformat.showWhitespace;"
+                        preference="pref_css_showWhitespace"
                         oncommand="FireformatOptions.updateCssPreview()"
                     />
                   </row>
