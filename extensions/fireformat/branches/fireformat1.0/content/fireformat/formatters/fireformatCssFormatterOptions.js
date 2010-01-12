@@ -60,12 +60,14 @@
 
   FireformatOptions.updateCssPreview = function() {
     setTimeout(function() {
-      // Create helper root element (for the case where there is no signle root).
-      var text = getTestBox();
+      var prefCache = new FireformatOptions.OptionsPrefCache(
+              document.getElementById("ffmt_cssFormatPreferences"),
+              "extensions.firebug.fireformatCssFormatter"),
+          text = getTestBox();
       text.replaceWhitespace = prefs.getBoolPref("extensions.firebug.fireformat.preview.showWhitespace");
       text.wrapPosition = prefs.getIntPref("extensions.firebug.fireformatCssFormatter.wrapSize");
       text.tabSize = prefs.getIntPref("extensions.firebug.fireformatCssFormatter.tabSize");
-      text.value = formatter.format(preview);
+      text.value = formatter.format(preview, prefCache);
       window.sizeToContent();
     }, 0);
   };

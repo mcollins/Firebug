@@ -282,8 +282,8 @@ FBL.ns(function() { with (FBL) {
     type: "HTML",
     name: "com.incaseofstairs.fireformatHTMLFormatter",
     display: i18n.getString("FireformatHTMLFormatter"),
-    format: function(object) {
-      var prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatHtmlFormatter"),
+    format: function(object, prefs) {
+      var prefCache = prefs || new Fireformat.PrefCache("extensions.firebug.fireformatHtmlFormatter"),
           writer = new Fireformat.Writer(prefCache);  
       new DOMFormatter(object.ownerDocument || object, writer, prefCache).printNode(object);
       return writer.toString();

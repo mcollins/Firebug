@@ -220,8 +220,8 @@ FBL.ns(function() {
     type: "CSS",
     name: "com.incaseofstairs.fireformatCSSFormatter",
     display: i18n.getString("FireformatCSSFormatter"),
-    format: function(object) {
-      var prefCache = new Fireformat.PrefCache("extensions.firebug.fireformatCssFormatter"),
+    format: function(object, prefs) {
+      var prefCache = prefs || new Fireformat.PrefCache("extensions.firebug.fireformatCssFormatter"),
           writer = new Fireformat.Writer(prefCache);
       new CSSFormatter(writer, prefCache).printNode(object);
       return writer.toString();

@@ -10,6 +10,7 @@
 <prefwindow id="fireformatOptions" title="&fireformat.Options;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script type="text/javascript">
     <![CDATA[
+    // TODO : Break this out into a standalone file
     var Fireformat = {};
     Components.utils.import("resource://fireformat/formatters.jsm", Fireformat);
 
@@ -41,6 +42,26 @@
         setValue("ffmt_combo_html");
         setValue("ffmt_combo_css");
       }
+    };
+
+    FireformatOptions.OptionsPrefCache = function(prefsTag, prefDomain) {
+      this.prefsTag = prefsTag;
+      this.prefDomain = prefDomain;
+      this.cache = {};
+    };
+    FireformatOptions.OptionsPrefCache.prototype = {
+        getPref: function(name) {
+          if (this.cache.hasOwnProperty(name)) {
+            return this.cache[name];
+          }
+          
+          var prefTag = this.prefsTag.getElementsByAttribute("name", this.prefDomain + "." + name)[0],
+              ret = prefTag && prefTag.value;
+          if (prefTag) {
+            this.cache[name] = ret;
+          }
+          return ret;
+        }
     };
   ]]></script>
 

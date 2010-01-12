@@ -18,7 +18,7 @@
   <prefwindow id="fireformatOptions">
     <prefpane id="ffmt_htmlFormatter" label="&fireformat.htmlFormatter;">
       <script src="chrome://fireformat/content/formatters/fireformatHtmlFormatterOptions.js" type="application/x-javascript"/>
-      <preferences>
+      <preferences id="ffmt_htmlFormatPreferences">
         <preference id="pref_html_wrapSize" type="int" name="extensions.firebug.fireformatHtmlFormatter.wrapSize" />
         <preference id="pref_html_indentChar" type="string" name="extensions.firebug.fireformatHtmlFormatter.indentChar" />
         <preference id="pref_html_indent" type="int" name="extensions.firebug.fireformatHtmlFormatter.indentCount" />

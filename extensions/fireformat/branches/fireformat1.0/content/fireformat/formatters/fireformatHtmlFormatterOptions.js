@@ -18,11 +18,14 @@
 
   FireformatOptions.updateHtmlPreview = function() {
     setTimeout(function() {
-      var text = getTestBox();
+      var prefCache = new FireformatOptions.OptionsPrefCache(
+              document.getElementById("ffmt_htmlFormatPreferences"),
+              "extensions.firebug.fireformatHtmlFormatter"),
+          text = getTestBox();
       text.replaceWhitespace = prefs.getBoolPref("extensions.firebug.fireformat.preview.showWhitespace");
       text.wrapPosition = prefs.getIntPref("extensions.firebug.fireformatHtmlFormatter.wrapSize");
       text.tabSize = prefs.getIntPref("extensions.firebug.fireformatHtmlFormatter.tabSize");
-      text.value = formatter.format(getPreviewDoc());
+      text.value = formatter.format(getPreviewDoc(), prefCache);
       window.sizeToContent();
     }, 0);
   };
