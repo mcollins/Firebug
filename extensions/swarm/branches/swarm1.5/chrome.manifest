@@ -2,6 +2,7 @@ content swarm    content/
 skin    swarm    classic/1.0     skin/classic/
 locale  swarm    en-US           locale/en-US/
 
+resource swarm modules/
+
 overlay chrome://firebug/content/browserOverlay.xul         chrome://swarm/content/swarm.xul
 
-overlay chrome://fbtest/content/testOverlay.xul chrome://swarm/content/swarm-test.xul

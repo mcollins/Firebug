@@ -5,5 +5,5 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script src="chrome://swarm/content/swarm.js" type="application/x-javascript"/>
-
+    <script src="chrome://swarm/content/swarm-test.js" type="application/x-javascript"/>
 </overlay>

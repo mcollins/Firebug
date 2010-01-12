@@ -9,6 +9,8 @@ const Ci = Components.interfaces;
 
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
 
+Components.utils.import("resource://swarm/XULApplication.js");
+
 // ************************************************************************************************
 
 // This code runs in the FBTest Window.
@@ -111,13 +113,42 @@ var FirebugSwarmTest =
         var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
         return file.path;
     },
+    // nsIWindowMediatorListener ------------------------------------------------------------------
+    onOpenWindow: function(xulWindow)
+    {
+        FBTrace.sysout("FirebugSwarmTest onOpenWindow");
+    },
+
+    onCloseWindow: function(xulWindow)
+    {
+        FBTrace.sysout("FirebugSwarmTest onCloseWindow");
+    },
+
+    onWindowTitleChange: function(xulWindow, newTitle)
+    {
+        FBTrace.sysout("FirebugSwarmTest onWindowTitleChange");
+        var docShell = xulWindow.docShell;
+        if (docShell instanceof Ci.nsIInterfaceRequestor)
+        {
+            var win = docShell.getInterface(Ci.nsIDOMWindow);
+            var location = safeGetWindowLocation(win);
+            FBTrace.sysout("FirebugSwarmTest onWindowTitleChange location: "+location);
+            if (location === "chrome://fbtest/content/testConsole.xul")
+                FBTrace.sysout("FirebugSwarmTest onWindowTitleChange FOUND");
+        }
+    },
+
 };
 
-window.addEventListener('load', function addButton(event)
+window.addEventListener('load',function registerForWindow()
 {
-    FirebugSwarmTest.initialize();
-    window.removeEventListener('load', addButton, true);
-}, true);
+    var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
+        .getService(Components.interfaces.nsIWindowMediator);
+    windowManager.addListener(FirebugSwarmTest);
+    window.removeEventListener('load', registerForWindow, true);
+} , true);
+
+
 
 //************************************************************************************************
 }});
