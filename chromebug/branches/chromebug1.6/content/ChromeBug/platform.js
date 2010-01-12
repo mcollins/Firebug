@@ -103,7 +103,7 @@ Firebug.Platform.XULWindowRep = domplate(Firebug.Rep,
 
     getTitle: function(xul_window)
     {
-        var domWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(xul_window.docShell);
+        var domWindow = Chromebug.XULAppModule.getDOMWindowByXULWindow(xul_window);
         return domWindow.document.title;
     },
 

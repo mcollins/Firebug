@@ -18,7 +18,7 @@ var windowWatcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]
 
 var panelName = "window";
 
-const reChromeBug = /^chrome:\/\/chromebug\//;
+const reChromebug = /^chrome:\/\/chromebug\//;
 
 // ***********************************************************************************
 // Chromebug XULApp Module
@@ -73,7 +73,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         for (var i = 0; i < this.xulWindows.length; i++)
         {
             var xul_window = this.xulWindows[i];
-            var xul_windows_domWindow = this.getDOMWindowByDocShell(xul_window.docShell);
+            var xul_windows_domWindow = this.getDOMWindowByXULWindow(xul_window);
             if (FBTrace.DBG_CHROMEBUG)
             {
                 if (xul_windows_domWindow)
@@ -85,6 +85,11 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             if (xul_windows_domWindow == domWindow)
                 return xul_window;
         }
+    },
+
+    getDOMWindowByXULWindow: function(xul_window)
+    {
+        return this.getDOMWindowByDocShell(xul_window.docShell);
     },
 
     getDOMWindowByDocShell: function(docShell)
@@ -99,17 +104,27 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                     if (win)
                         return win;
                     else
-                        FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell xul_win.docShell has nsIInterfaceRequestor but not nsIDOMWindow\n");
+                    {
+                        if (FBTrace.DBG_ERRORS)
+                            FBTrace.sysout("getDOMWindowByXULWindow xul_win.docShell has nsIInterfaceRequestor but not nsIDOMWindow\n");
+                    }
                 }
                 else
-                    FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell xul_win.docShell has no nsIInterfaceRequestor\n");
+                {
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("getDOMWindowByXULWindow xul_win.docShell has no nsIInterfaceRequestor\n");
+                }
             }
             else
-                FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell xul_win has no docShell");
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("getDOMWindowByXULWindow xul_win has no docShell");
+            }
         }
         catch (exc)
         {
-            FBTrace.sysout("Firebug.Chromebug.getDOMWindowByDocShell FAILS "+exc, exc);
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("getDOMWindowByXULWindow FAILS "+exc, exc);
         }
     },
 
@@ -152,6 +167,17 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         return this.xulWindows[i];
     },
 
+    eachXULWindow: function(iterator)
+    {
+        for(var i = 0; i < this.xulWindows.length; i++ )
+        {
+            var rc = iterator(this.xulWindows[i]);
+            if (rc)
+                return rc;
+        }
+        return null;
+    },
+
     eachDocShell: function(docShell, content_chrome_OR_all, iterator)
     {
         var treeItemType = Ci.nsIDocShellTreeItem.typeAll;
@@ -166,14 +192,14 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         while (containedDocShells.hasMoreElements())
         {
             try
-              {
+            {
                 var childDocShell = containedDocShells.getNext().QueryInterface(Ci.nsIDocShell);
                 iterator(childDocShell);
-              }
-              catch (exc)
-              {
+            }
+            catch (exc)
+            {
                 FBTrace.sysout("XULAppModule.eachDocShell FAILED", exc);
-              }
+            }
         }
         return true;
     },
@@ -200,6 +226,12 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         }
     },
 
+    getDOMWindowTreeByXULWindow: function(xulWindow)
+    {
+        var docShell = xulWindow.docShell;
+        return this.getDOMWindowTreeByDocShell(docShell);
+    },
+
     getDOMWindowTreeByDocShell: function(docShell)
     {
         var domWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(docShell);
@@ -221,7 +253,6 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             var childDOMWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(childShell);
 
             var key = Chromebug.XULAppModule.getKeyByDOMWindow(childDOMWindow, domWindowsByURL);
-            FBTrace.sysout("getDOMWindowTreeByDocShell "+key);
 
             var familyTree = Chromebug.XULAppModule.getDOMWindowTreeByDocShell(childShell);  // recurse
 
@@ -250,14 +281,15 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         var domWindowsByURL = {};
 
         var enumerator = windowMediator.getXULWindowEnumerator(null);  // null means all
-        while(enumerator.hasMoreElements()) {
+        while(enumerator.hasMoreElements())
+        {
              var xul_window = enumerator.getNext();
              if (xul_window instanceof Ci.nsIXULWindow)
              {
                  if (xul_window.docShell)
                  {
-                     var domWindow = this.getDOMWindowByDocShell(xul_window.docShell);
-                     var familyTree = this.getDOMWindowTreeByDocShell(xul_window.docShell);  // recurse
+                     var domWindow = this.getDOMWindowByXULWindow(xul_window);
+                     var familyTree = this.getDOMWindowTreeByXULWindow(xul_window);  // recurse
 
                      var key = this.getKeyByDOMWindow(domWindow, domWindowsByURL);
                      domWindowsByURL[key] = familyTree; // either a window or a table
@@ -312,7 +344,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         if (!xul_window.docShell)
             FBTrace.sysout("Firebug.Chromebug.addXULWindow no docShell", xul_window);
 
-        var outerDOMWindow = this.getDOMWindowByDocShell(xul_window.docShell);
+        var outerDOMWindow = this.getDOMWindowByXULWindow(xul_window);
 
         if (outerDOMWindow == document.defaultView)
             return;  // This is my life we're talking about.
@@ -407,7 +439,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 }
                 else
                 {
-                    var outerDOMWindow = this.getDOMWindowByDocShell(xul_win.docShell);
+                    var outerDOMWindow = this.getDOMWindowByXULWindow(xul_win.docShell);
                     var url = new String(outerDOMWindow.location);
                     if (reChromebug.test(url))
                         return; // ignore self
@@ -434,7 +466,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 var tag = this.getXULWindowTag(xul_win);
                 FBTrace.sysout("XULAppModule.onWindowTitleChange tag:"+tag+" to \'"+newTitle+"\'\n");
 
-                var outerDOMWindow = this.getDOMWindowByDocShell(xul_win.docShell);
+                var outerDOMWindow = this.getDOMWindowByXULWindow(xul_win);
 
                 if (outerDOMWindow.location.href == "chrome://fb4cb/content/traceConsole.xul")
                 {
@@ -450,7 +482,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
 
     reloadWindow: function(xul_window)
     {
-        var outerDOMWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(xul_window.docShell);
+        var outerDOMWindow = Chromebug.XULAppModule.getDOMWindowByXULWindow(xul_window);
         if (outerDOMWindow && outerDOMWindow instanceof Ci.nsIDOMWindow)
         {
             try
@@ -488,7 +520,12 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             FBTrace.sysout("XULAppModule.reload, no domWindow for xul_window_tag:"+xul_window_tag+"\n");
         return false;
     },
-
+    // *****************************************************
+    // nsIWindowWatcher observer
+    observe: function(subject, topic, data)
+    {
+        FBTrace.sysout("xulapp observe "+subject+" with topic "+topic); // we never see this??
+    },
 
     // *****************************************************
     dispatchName: panelName,
@@ -499,6 +536,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             FBTrace.sysout("Chromebug.XULAppModule.initialize" + prefDomain);
 
         this.xulWindowTagSeed = FBL.getUniqueId();
+        windowWatcher.registerNotification(this);
     },
 
     initializeUI: function()
@@ -533,6 +571,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     {
         try
         {
+            windowWatcher.unregisterNotification(this);
             windowMediator.removeListener(this);  // added in this.initialize()
         }
         catch (exc)
@@ -596,41 +635,24 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
     getDefaultSelection: function()
     {
         return Chromebug.XULAppModule.getDOMWindowTree();
-        // http://mxr.mozilla.org/mozilla-central/source/xpfe/appshell/public/nsIWindowMediator.idl
-        var xul_windowList = [];
-        var cachedXULWindows = cloneArray(Chromebug.XULAppModule.getXULWindows());
-
-        var xulWindowsByURL = {};
-        var enumerator = windowMediator.getXULWindowEnumerator(null);  // null means all
-        while(enumerator.hasMoreElements()) {
-             var xul_window = enumerator.getNext();
-             xul_windowList.push(xul_window);
-             var i = cachedXULWindows.indexOf(xul_window);
-             if (i != -1)
-                 cachedXULWindows.splice(i, 1);
-             else
-                 FBTrace.sysout("XULAppModule cache missing a window ", xul_window);
-
-             var domWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(xul_window.docShell);
-             var url = safeGetWindowLocation(domWindow);
-             if (url)
-                 xulWindowsByURL[url] = xul_window;
-             else
-                 xulWindowsByURL["(no location)"] = xul_window; // this will overwrite, but just to notify anyway
-        }
-        for (var i = 0; i < cachedXULWindows.length; i++)
-        {
-            FBTrace.sysout("XULAppModule cache has extra entry ", xul_window);
-        }
-        FBTrace.sysout("XULApp windowlist.length: "+xul_windowList.length)
-
-        return xulWindowsByURL;
     },
 
     show: function(state)
     {
+        this.selection = null;
         if (FBTrace.DBG_CBWINDOW)
             FBTrace.sysout("Chromebug.XULAppModule.XULAppPanel.show;", state);
+
+        FBTrace.sysout('xulapp show enumerating windows');
+        var enumerator = windowWatcher.getWindowEnumerator();
+        while (enumerator.hasMoreElements())
+        {
+            var win = enumerator.getNext();
+            if (win instanceof Ci.nsIDOMWindow)
+                FBTrace.sysout("xulapp show window "+safeGetWindowLocation(win));
+            else
+                FBTrace.sysout("xulapp show not an nsIDOMWindow");
+        }
 
         this.showToolbarButtons("cbWindowButtons", true);
         Firebug.DOMPanel.prototype.show.apply(this, arguments);
@@ -698,7 +720,7 @@ Chromebug.XULAppModule.WindowList = domplate(Firebug.Rep,
 
     getWindowName: function(xul_window)
     {
-    FBTrace.sysout('getWindowName '+xul_window.title, xul_window);
+        FBTrace.sysout('getWindowName '+xul_window.title, xul_window);
         return xul_window.title;
     },
 

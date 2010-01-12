@@ -134,7 +134,7 @@ Chromebug.ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
     {
         var xul_window = this.getContainingXULWindow();
         var index = Chromebug.XULAppModule.getXULWindowIndex(xul_window) + 1;
-        var win = Chromebug.XULAppModule.getDOMWindowByDocShell(xul_window.docShell);
+        var win = Chromebug.XULAppModule.getDOMWindowByXULWindow(xul_window);
         var title = index +". "+this.getDocumentType()+" in "+" ("+(win?win.document.title:"?no window?")+")";
         return {path: title, name: this.getDocumentLocation() }
     },
@@ -192,7 +192,7 @@ Chromebug.ContainedDocument.prototype = extend(GlobalScopeInfo.prototype,
 
     getRootDOMWindow: function()  // maybe a container hierarchy?
     {
-        return  Chromebug.XULAppModule.getDOMWindowByDocShell(this.xul_window.docShell);
+        return  Chromebug.XULAppModule.getDOMWindowByXULWindow(this.xul_window);
     },
 
 });
@@ -363,7 +363,7 @@ Chromebug.ProgressListener = function(xul_window, xul_watcher)
 {
     this.xul_window = xul_window;
     this.xul_watcher = xul_watcher;
-    this.outerDOMWindow = this.xul_watcher.getDOMWindowByDocShell(this.xul_window.docShell);
+    this.outerDOMWindow = this.xul_watcher.getDOMWindowByXULWindow(this.xul_window);
     this.FBTrace = FBTrace;
     this.Chromebug = Firebug.Chromebug;
 }
