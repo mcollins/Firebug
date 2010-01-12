@@ -13,7 +13,7 @@
   <binding id="wrapSelector">
     <content preference-editable="true">
       <xul:checkbox xbl:inherits="label" oncommand="onUserInput()" anonid="check" />
-      <xul:textbox type="number" min="0" oncommand="onUserInput()" anonid="wrapSize" />
+      <xul:textbox type="number" min="0" anonid="wrapSize" />
     </content>
     <implementation>
       <method name="onUserInput">
@@ -31,7 +31,8 @@
       </method>
       <property name="value">
         <getter><![CDATA[
-          return this.getAttribute("value");
+          var wrapSize = document.getAnonymousElementByAttribute(this, 'anonid', 'wrapSize');
+          return !wrapSize.disabled ? wrapSize.value : -1;
         ]]></getter>
         <setter><![CDATA[
           var check = document.getAnonymousElementByAttribute(this, 'anonid', 'check'),
@@ -153,7 +154,10 @@
         ]]></getter>
         <setter><![CDATA[
           var wrap = document.getAnonymousElementByAttribute(this, "anonid", "wrap");
-          wrap.style.left = val+"ch";
+          wrap.style.display = val < 0 ? "none" : "";
+          if (val > 0) {
+            wrap.style.left = val+"ch";
+          }
           this._wrapPos = val;
         ]]></setter>
       </property>
