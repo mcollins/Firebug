@@ -744,6 +744,25 @@ this.getPref = function(pref)
 }
 
 // ************************************************************************************************
+// Command Line
+
+this.executeCommand = function(expr, chrome)
+{
+    if (!chrome)
+        chrome = FW.FirebugChrome;
+
+    var doc = chrome.window.document;
+    var cmdLine = doc.getElementById("fbCommandLine");
+
+    // Make sure the console is focused and command line API loaded. 
+    FBTest.focus(cmdLine);
+
+    // Set expression and press enter.
+    cmdLine.value = expr;
+    FBTest.pressKey(13, "fbCommandLine");
+}
+
+// ************************************************************************************************
 // Debugger
 
 this.clickContinueButton = function(chrome)
