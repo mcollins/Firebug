@@ -9,6 +9,15 @@
 
     <em:description>Firebug Unit Test Console</em:description>
 
+    <!-- Any suitably modern toolkit application -->
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.9.1</em:minVersion>
+        <em:maxVersion>1.9.3.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- firefox -->
