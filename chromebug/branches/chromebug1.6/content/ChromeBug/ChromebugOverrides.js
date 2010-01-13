@@ -46,6 +46,11 @@ var ChromebugOverrides = {
                         // The select panel is in charge.
                         return Firebug.chrome.getSelectedPanel().getLocationList();
                     },
+                    getObjectLocation: function()
+                    {
+                        var d = this.getObjectDescription();
+                        return (d?d.path+d.name:"no description");
+                    },
             }
             return locatorDelegator;
         }
