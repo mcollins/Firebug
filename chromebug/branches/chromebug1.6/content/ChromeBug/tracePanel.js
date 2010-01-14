@@ -43,9 +43,6 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
             FBTrace.sysout("cb.TraceConsoleModule.initContext; " +
                 context.getName() + " - " + context.getTitle());
 
-        if (tracePanel)  // one per app
-            context.setPanel(tracePanel.name, tracePanel);
-
     },
 
     destroyContext: function(context)
@@ -53,24 +50,6 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
         if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("cb.TraceConsoleModule.destroyContext; " +
                 context.getName() + " - " + context.getTitle());
-
-        // unpoint from this context to our panel so its not destroyed.
-        if (tracePanel)
-            context.setPanel(tracePanel.name, null);
-    },
-
-    createTracePanel: function(context)
-    {
-        if (FBTrace.DBG_CB_CONSOLE)
-            FBTrace.sysout("cb.TraceConsoleModule.createTracePanel; " +
-                context.getName() + " - " + context.getTitle());
-
-        var panel = context.getPanel("trace", false); // create if need be.
-        var panelType = Firebug.getPanelType("trace");
-        var doc = FirebugChrome.getPanelDocument(panelType);
-        var stylesheet = createStyleSheet(doc, "chrome://firebug/skin/traceConsole.css");
-        addStyleSheet(doc, stylesheet);
-        return panel;
     },
 
     // nsIObserver
@@ -84,9 +63,6 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
             // type is controlled by FBTrace.prefDomain in the XULWindow that sent the trace message
             if (messageInfo.type != "extensions.firebug")  // TODO selectable
                 return;
-
-            if (!tracePanel && FirebugContext)
-                tracePanel = this.createTracePanel(FirebugContext);
 
             if (tracePanel)
             {
@@ -126,8 +102,21 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         this.logs = Firebug.TraceModule.MessageTemplate.createTable(myPanelNode);
         Firebug.TraceModule.onLoadConsole(window, myPanelNode);
         this.unwrapper = bind(this.unWrapMessage, this);
+
+        if (tracePanel)  // share the panelNode across all contexts
+        {
+            this.panelNode.parentNode.removeChild(this.panelNode);
+            this.panelNode = tracePanel.panelNode;
+        }
+        else
+        {
+            var doc = this.panelNode.ownerDocument;
+            var stylesheet = createStyleSheet(doc, "chrome://firebug/skin/traceConsole.css");
+            addStyleSheet(doc, stylesheet);
+            tracePanel = this;
+        }
         if (FBTrace.DBG_CB_CONSOLE)
-            FBTrace.sysout("TraceConsolePanel initializeNode");
+            FBTrace.sysout("TraceConsolePanel initializeNode in panel "+this.name);
     },
 
     destroyNode: function()
@@ -144,7 +133,7 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
     show: function(state)
     {
         if (FBTrace.DBG_CB_CONSOLE)
-            FBTrace.sysout("cb.TraceConsolePanel.show", state);
+            FBTrace.sysout("cb.TraceConsolePanel.show ", state);
 
         this.showToolbarButtons("cbTraceButtons", true);
         var buttons = Firebug.chrome.$("cbTraceButtons");
