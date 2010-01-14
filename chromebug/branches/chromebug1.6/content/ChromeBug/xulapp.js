@@ -439,7 +439,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 }
                 else
                 {
-                    var outerDOMWindow = this.getDOMWindowByXULWindow(xul_win.docShell);
+                    var outerDOMWindow = this.getDOMWindowByXULWindow(xul_win);
                     var url = new String(outerDOMWindow.location);
                     if (reChromebug.test(url))
                         return; // ignore self
