@@ -538,7 +538,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Chromebug.selectBrowser(context.browser);
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+context.window);
+            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+safeGetWindowLocation(context.window) );
         if (context.window && context.window instanceof Ci.nsIDOMWindow && !context.window.closed)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
@@ -861,7 +861,8 @@ Firebug.Chromebug = extend(Firebug.Module,
                 context.sourceCache.storeSplitLines(props.fileName, lines);
             FBTrace.sysout("createContext data url stored in to context under "+(props.fileName?props.fileName+ " & ":"just dataURL ")+url);
         }
-
+        if (FBTrace.DBG_ACTIVATION)
+            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext ', context);
         context.onLoadWindowContent = true; // all Chromebug contexts are active
         return context;
     },
