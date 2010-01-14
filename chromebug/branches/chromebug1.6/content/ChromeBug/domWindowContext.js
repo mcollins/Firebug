@@ -27,7 +27,9 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
         this.window = global;
     else
     {
-        if (global)
+        if (global && global.location)
+            var name = global.location; // special case for jetpack
+        else if (global)
             var name = Firebug.Rep.getTitle(global);
         else
             var name ="mystery";
