@@ -153,21 +153,28 @@ var ChromebugOverrides = {
             try
             {
                 var global = null;
-
                 if (scope.jsClassName == "Sandbox")
                 {
                     var proto = scope.jsPrototype;
-                    if (proto.jsClassName == "XPCNativeWrapper")
+                    if (proto.jsClassName == "XPCNativeWrapper")  // this is the path if we have web page in a sandbox
+                    {
                         proto = proto.jsParent;
-                    if (proto.jsClassName == "Window")
-                        global = new XPCNativeWrapper(proto.getWrappedValue());
+                        if (proto.jsClassName == "Window")
+                            global = new XPCNativeWrapper(proto.getWrappedValue());
+                    }
                 }
-                else
-                    global = new XPCNativeWrapper(scope.getWrappedValue());
+                if (!global)
+                {
+                    var unwrapped = scope.getWrappedValue();
+                    if (unwrapped instanceof Ci.nsISupports) // https://bugzilla.mozilla.org/show_bug.cgi?id=522527#c49
+                        global = new XPCNativeWrapper(unwrapped);
+                    else
+                        global = unwrapped;
+                }
             }
             catch(exc)
             {
-                FBTrace.sysout("ChromebugOverrides.getContextByFrame FAILS for "+scope.getWrappedValue());
+                FBTrace.sysout("ChromebugOverrides.getContextByFrame FAILS for "+scope.getWrappedValue()+": "+exc);
             }
 
             if (FBTrace.DBG_TOPLEVEL)
