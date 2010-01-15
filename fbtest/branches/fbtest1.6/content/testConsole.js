@@ -131,7 +131,7 @@ FBTestApp.TestConsole =
     {
         var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
-            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar"];
+            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -538,6 +538,12 @@ FBTestApp.TestConsole =
 
             this.loadTestList(testListUrl, this.testCasePath);
         }
+    },
+
+    onRestartFirefox: function()
+    {
+        Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup).
+            quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
     },
 
     onRefreshTestList: function()

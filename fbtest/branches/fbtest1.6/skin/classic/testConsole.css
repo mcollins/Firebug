@@ -42,6 +42,10 @@ body {
     list-style-image: url(chrome://fbtest/skin/Throbber-small.png);
 }
 
+#restartFirefox {
+    list-style-image: url("chrome://fbtest/skin/restart.png");
+}
+
 /************************************************************************************************/
 /* Test List URL Bar */
 

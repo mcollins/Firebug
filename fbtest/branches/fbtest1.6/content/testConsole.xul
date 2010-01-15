@@ -54,6 +54,7 @@
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
         <command id="cmd_refreshTestList" oncommand="FBTestApp.TestConsole.onRefreshTestList()"/>
+        <command id="cmd_restartFirefox" oncommand="FBTestApp.TestConsole.onRestartFirefox()"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -81,6 +82,10 @@
                 command="cmd_noTestTimeout"/>
 
             <toolbarseparator id="FBTestButtons_end" flex="1"/>
+            <toolbarbutton id="restartFirefox"
+                label="fbtest.cmd.Restart" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Restart"
+                command="cmd_restartFirefox"/>
             <toolbarbutton id="refreshList"
                 label="fbtest.cmd.Refresh" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.Refresh"
