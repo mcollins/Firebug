@@ -146,8 +146,7 @@
         <label id="failingTests" />
         <label id="todoTests" tooltip="todoTestsTooltip"/>
         <tooltip id="todoTestsTooltip" onpopupshowing="return FBTestApp.TestSummary.onTodoShowTooltip(this)"/>
-        <spacer flex="1" />
-        <label id="progressMessage" />
+        <label id="progressMessage" crop="end" flex="1" />
         <progressmeter id="progressMeter" mode="determined" style="display:none"/>
     </statusbar>
 </window>

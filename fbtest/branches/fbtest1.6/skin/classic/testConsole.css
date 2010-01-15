@@ -83,4 +83,5 @@ body {
 #progressMessage {
     color: black;
     padding-top: 3px;
+    text-align: right;
 }

@@ -69,6 +69,7 @@
 }
 
 .testDesc {
+    width: 100%;
     color: Gray;
     margin-right: 7px;
     text-align: left;
@@ -91,7 +92,7 @@
 /************************************************************************************************/
 
 .testListCol.testIcon {
-    width: 100%;
+    min-width: 60px;
     color: gray;
     padding-top: 1px;
 }
