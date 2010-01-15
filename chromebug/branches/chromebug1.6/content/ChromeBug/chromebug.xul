@@ -309,7 +309,7 @@
             <label id="cbStatusText"/>
         </statusbarpanel>
 
-        <statusbarpanel id="fbStatusBar"
+        <statusbarpanel id="cbStatusBar"
                         onmousedown="Firebug.onClickStatusIcon(FirebugContext, event);">
             <image id="fbStatusIcon"/>
             <label id="fbStatusText"/>

@@ -223,7 +223,7 @@
                         onmousedown="Firebug.Chromebug.onClickStatusIcon(FirebugContext, event);">
             <label id="cbStatusText"/>
         </statusbarpanel>
-        <statusbarpanel id="fbStatusBar"
+        <statusbarpanel id="xpcomExplorerStatusBar"
                         onmousedown="Firebug.onClickStatusIcon(FirebugContext, event);">
             <image id="fbStatusIcon"/>
             <label id="fbStatusText"/>
