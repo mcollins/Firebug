@@ -20,7 +20,7 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="chromebug"
         windowtype="chromebug:ui"
-        title="Chromebug 0.4"
+        title="Chromebug 1.6"
         width="600" height="400"
         persist="screenX,screenY,width,height">
 
