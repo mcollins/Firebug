@@ -62,7 +62,7 @@ StartupObserver.prototype =
        this.setJSDFilters(jsd);
 
        this.hookJSDContexts(jsd,  gStartupObserverSingleton.jsdState);
-       Components.utils.reportError("FYI: Chromebug started jsd engine; run twice without -chromebug to disable");
+       Components.utils.reportError("FYI: Chromebug started jsd engine; JIT will be disabled");
    },
 
    setJSDFilters: function(jsd)
