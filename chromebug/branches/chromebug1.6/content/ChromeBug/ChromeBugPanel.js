@@ -65,6 +65,7 @@ const appcontent = $("appcontent");
 const cbContextList = $('cbContextList');
 const cbPackageList = $('cbPackageList');
 const versionURL = "chrome://chromebug/content/branch.properties";
+const fbVersionURL = "chrome://firebug/content/branch.properties";
 
 const statusText = $("cbStatusText");
 this.namespaceName = "ChromeBug";
@@ -575,9 +576,15 @@ Firebug.Chromebug = extend(Firebug.Module,
         FBTrace.DBG_CHROMEBUG = Firebug.getPref("extensions.chromebug", "DBG_CHROMEBUG");
         FBTrace.DBG_CB_CONSOLE = Firebug.getPref("extensions.chromebug", "DBG_CB_CONSOLE");
 
+        this.fbVersion = Firebug.loadVersion(fbVersionURL);
+
         this.fullVersion = Firebug.loadVersion(versionURL);
         if (this.fullVersion)
-            document.title = "Chromebug "+this.fullVersion;
+            document.title = "Chromebug "+this.fullVersion +" on Firebug "+this.fbVersion;
+
+        var versionCompat = (parseFloat(this.fbVersion) == parseFloat(this.fullVersion));
+        if (!versionCompat)
+            document.title =  ">>>>> Chromebug "+this.fullVersion+" requires Firebug "+parseFloat(this.fullVersion)+" but found "+this.fbVersion+" <<<<<";
 
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Chromebug.initialize this.fullVersion: "+this.fullVersion+" in "+document.location+" title:"+document.title);
@@ -606,7 +613,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("Chromebug.initializeUI from prefs wantIntro: "+wantIntro+"\n");
 
-        if (wantIntro)
+        if (wantIntro || !versionCompat)
             fbBox.setAttribute("collapsed", true);
         else
             Firebug.Chromebug.toggleIntroduction();
@@ -629,7 +636,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             FBTrace.sysout("unloading " + window.location, getStackDump());
         }, true);
-        window.dump(FBL.getStackDump()+"\n");
     },
 
     prepareForCloseEvents: function()
