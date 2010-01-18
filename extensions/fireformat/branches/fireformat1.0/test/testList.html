@@ -1,4 +1,4 @@
-﻿﻿﻿﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+﻿﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,44 +8,13 @@
     <link rel="stylesheet" href="chrome://fbtest/skin/tabView.css" type="text/css"/>
 </head>
 <body>
-<div id="testList"></div>
-<script type="text/javascript">
-/**
- * Root directory of the test tree. If it's empty, the parent directory of this file
- * is used as the test root directory.
- */
-var driverBaseURI = "chrome://fireformat-test/content/";
-var serverURI = "chrome://fireformat-test/content/";
-
-/**
- * List of registered tests.
- * @param: {String} group       Name of the group where the test belongs to.
- * @param: {String} uri         Relative location of the test file.
- * @param: {String} desc        Test description.
- * @param: {String} category    Test category, this can be set to: 
- *                              "passes": (default) - a test must pass, otherwise it's a blocking bug.
- *                              "fails": - it's not blocking bug if the test fails.
- */
-var testList = [
-                {group: "formatter",    uri: "formatter/wrapTokensTest.js",                         desc: "Formatter: Wrap Tokens Test" },
-                {group: "formatter",    uri: "formatter/writerTest.js",                             desc: "Formatter: Writer Test" },
-                {group: "cssFormatter", uri: "formatter/cssFormatter/selectorTextTest.js",          desc: "CSS Formatter: Selector Text Test" },
-                {group: "cssFormatter", uri: "formatter/cssFormatter/blockTextTest.js",             desc: "CSS Formatter: Block Text Test" },
-                {group: "cssFormatter", uri: "formatter/cssFormatter/propertyTextTest.js",          desc: "CSS Formatter: Property Text Test" },
-                {group: "cssFormatter", uri: "formatter/cssFormatter/atRuleTextTest.js",            desc: "CSS Formatter: Simple @Rule Text Test" },
-                {group: "cssFormatter", uri: "formatter/cssFormatter/cssFormatterTest.js",          desc: "CSS Formatter: CSS Formatter Test" },
-                {group: "htmlFormatter", uri: "formatter/htmlFormatter/entityTextTest.js",          desc: "HTML Formatter: Entity Text Test" },
-                {group: "htmlFormatter", uri: "formatter/htmlFormatter/textWrapTest.js",            desc: "HTML Formatter: Text Wrap Test" },
-                {group: "htmlFormatter", uri: "formatter/htmlFormatter/elementTextTest.js",         desc: "HTML Formatter: Element Text Test" },
-                {group: "htmlFormatter", uri: "formatter/htmlFormatter/attributeTextTest.js",       desc: "HTML Formatter: Attribute Text Test" },
-                {group: "htmlFormatter", uri: "formatter/htmlFormatter/htmlFormatterTest.js",       desc: "HTML Formatter: HTML Formatter Test" },
-                {group: "htmlFormatter", uri: "formatter/htmlFormatter/xhtmlFormatterTest.js",      desc: "HTML Formatter: XHTML Formatter Test" }
-];
-/*
- * Test cases needed:
- * - Retrieve formatter when parameter is set to invalid formatter
- * - Individual formatter test
- */
-</script>
+  <div id="testList"></div>
+  <script type="text/javascript">
+    var testList = [];
+    var driverBaseURI = "chrome://fireformat-test/content/";
+    var serverURI = "chrome://fireformat-test/content/";
+  </script>
+  <script type="text/javascript" src="firediffTestList.js"></script>
+  <script type="text/javascript" src="fireformatTestList.js"></script>
 </body>
 </html>
