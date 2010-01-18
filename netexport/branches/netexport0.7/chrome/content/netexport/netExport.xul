@@ -6,8 +6,8 @@
     <script src="chrome://netexport/content/netExport.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_netExport" oncommand="Firebug.NetMonitorSerializer.exportData(FirebugContext)"/>
-        <command id="cmd_netImport" oncommand="Firebug.NetMonitorSerializer.importData(FirebugContext)"/>
+        <command id="cmd_netExport" oncommand="Firebug.NetExport.exportData(FirebugContext)"/>
+        <command id="cmd_netImport" oncommand="Firebug.NetExport.importData(FirebugContext)"/>
     </commandset>
 
     <toolbar id="fbToolbar" align="center" role="toolbar">

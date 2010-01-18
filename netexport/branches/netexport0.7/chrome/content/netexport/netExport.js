@@ -18,7 +18,7 @@ const harVersion = "1.1";
  * data into a file using HTTP Archive format.
  * http://groups.google.com/group/firebug-working-group/web/http-tracing---export-format
  */
-Firebug.NetMonitorSerializer = extend(Firebug.Module,
+Firebug.NetExport = extend(Firebug.Module,
 {
     initialize: function(owner)
     {
@@ -523,7 +523,7 @@ JSONBuilder.prototype =
 // ************************************************************************************************
 // Viewer Opener
 
-Firebug.NetMonitorSerializer.ViewerOpener =
+Firebug.NetExport.ViewerOpener =
 {
     // Open online viewer for immediate preview.
     openViewer: function(url, jsonString)
@@ -683,7 +683,7 @@ function dateToJSON(date)
 // Registration
 
 Firebug.registerStringBundle("chrome://netexport/locale/netExport.properties");
-Firebug.registerModule(Firebug.NetMonitorSerializer);
+Firebug.registerModule(Firebug.NetExport);
 
 // ************************************************************************************************
 }});
