@@ -2,7 +2,7 @@ content fireformat content/fireformat/ contentaccessible=yes
 content fireformat content/fireformat/
 content fireformat-test test/
 
-resource fireformat modules/
+resource fireformat modules/fireformat/
 
 skin    fireformat classic/1.0 skin/classic/
 
