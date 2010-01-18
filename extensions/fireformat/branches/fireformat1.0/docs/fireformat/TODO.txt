@@ -1,0 +1,8 @@
+Fireformat TODO Tasks:
+-----------------------------
+ - Icons for the options panels
+ - Documentation and examples for providing custom implementations
+ - Additional help/explination for each of the parameters
+ - Usage documentation
+ - Export/Import setting feature
+ - Reset settung feature
