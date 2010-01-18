@@ -71,9 +71,21 @@ let (formatters = []) {
         }
       }
     },
+
+    /**
+     * Retrieves the currently selected CSS formatter.
+     * 
+     * This is defined by the "extensions.firebug.fireformat.cssFormatter" preference.
+     */
     getCSSFormatter: function() {
       return this.getFormatter(prefs.getCharPref("extensions.firebug.fireformat.cssFormatter"));
     },
+
+    /**
+     * Retrieves the currently selected HTML formatter.
+     * 
+     * This is defined by the "extensions.firebug.fireformat.htmlFormatter" preference.
+     */
     getHTMLFormatter: function() {
       return this.getFormatter(prefs.getCharPref("extensions.firebug.fireformat.htmlFormatter"));
     },
