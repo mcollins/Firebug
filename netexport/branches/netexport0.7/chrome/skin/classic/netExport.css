@@ -2,3 +2,21 @@
 .DBG_NETEXPORT {
     color: Bisque;
 }
+
+/********************************************************************************/
+
+#netExportAuto {
+    list-style-image: url(chrome://netexport/skin/autoexport-regular.png);
+}
+
+#netExportAuto:hover {
+    list-style-image: url(chrome://netexport/skin/autoexport-hover.png);
+}
+
+#netExportAuto[state="active"] {
+    list-style-image: url(chrome://netexport/skin/autoexport-active.png);
+}
+
+#netExportAuto[state="inprogress"] {
+    list-style-image: url(chrome://netexport/skin/autoexport-animated.png);
+}

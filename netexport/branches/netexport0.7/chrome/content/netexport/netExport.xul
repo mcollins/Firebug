@@ -1,13 +1,18 @@
 <?xml version="1.0"?>
 <!-- See license.txt for terms of usage -->
 
+<?xml-stylesheet href="chrome://netexport/skin/netExport.css"?>
+
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
     <script src="chrome://netexport/content/json2.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/netExport.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/harBuilder.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/exportController.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_netExport" oncommand="Firebug.NetExport.exportData(FirebugContext)"/>
         <command id="cmd_netImport" oncommand="Firebug.NetExport.importData(FirebugContext)"/>
+        <command id="cmd_netExportAuto" oncommand="Firebug.NetExport.toggleAutoExport(FirebugContext)"/>
     </commandset>
 
     <toolbar id="fbToolbar" align="center" role="toolbar">
@@ -19,16 +24,20 @@
                         insertbefore="fbNetFilter-all" command="cmd_netExport"
                         label="netexport.button.label.Export"
                         buttontooltiptext="netexport.button.tooltip.Export HTTP Tracing"
-                        tooltiptext="netexport.menu.tooltip.Export Options">
-                        <!-- type="menu-button" remove for now -->
+                        tooltiptext="netexport.menu.tooltip.Export Options"
+                        type="menu-button">
                         <menupopup>
                             <menuitem id="netExportCompress" type="checkbox"
-                                label="netexport.menu.label.Compress" 
+                                label="netexport.menu.label.Compress Exported Data"
                                 tooltiptext="netexport.menu.tooltip.Compress Exported Data"
                                 oncommand="Firebug.NetMonitorSerializer.onToggleOption(event, this)"
-                                option="netexport.compress"/>
+                                option="netexport.compress"
+                                checked="false" />
                         </menupopup>
                     </toolbarbutton>
+                    <toolbarbutton id="netExportAuto" command="cmd_netExportAuto"
+                        insertbefore="fbNetFilter-all"
+                        tooltiptext="netexport.menu.tooltip.Activate Auto Export" />
                     <!--<toolbarbutton label="Import" class="toolbar-text-button"
                         insertbefore="fbNetFilter-all"
                         tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>-->
