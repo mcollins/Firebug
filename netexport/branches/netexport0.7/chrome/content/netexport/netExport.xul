@@ -6,8 +6,9 @@
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
     <script src="chrome://netexport/content/json2.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/netExport.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/exporter.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/harBuilder.js" type="application/x-javascript"/>
-    <script src="chrome://netexport/content/exportController.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/automation.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_netExport" oncommand="Firebug.NetExport.exportData(FirebugContext)"/>
@@ -30,9 +31,15 @@
                             <menuitem id="netExportCompress" type="checkbox"
                                 label="netexport.menu.label.Compress Exported Data"
                                 tooltiptext="netexport.menu.tooltip.Compress Exported Data"
-                                oncommand="Firebug.NetMonitorSerializer.onToggleOption(event, this)"
+                                oncommand="Firebug.NetExport.onToggleOption(event, this)"
                                 option="netexport.compress"
                                 checked="false" />
+                            <menuseparator />
+                            <menuitem id="netExportLogDir"
+                                label="netexport.menu.label.Default Log Directory"
+                                tooltiptext="netexport.menu.tooltip.Pick target directory for logs"
+                                oncommand="Firebug.NetExport.onDefaultLogDirectory(event)"
+                                option="netexport.logDir" />
                         </menupopup>
                     </toolbarbutton>
                     <toolbarbutton id="netExportAuto" command="cmd_netExportAuto"
