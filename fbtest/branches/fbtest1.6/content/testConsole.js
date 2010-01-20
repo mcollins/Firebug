@@ -262,18 +262,10 @@ FBTestApp.TestConsole =
 
             var doc = event.target;
 
-            // Some CSS from Firebug namespace.
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/console.css"));
+            FBTestApp.TestConsole.addStyleSheets(doc);
 
-            // Append specific FBTest CSS.
-            var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
-            for (var i=0; i<styles.length; i++)
-                addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
+            var win = FBTestApp.TestConsole.findTestListWindow(doc);
 
-            var win = doc.defaultView.wrappedJSObject;
             if (!win.testList)
             {
                 if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
@@ -329,7 +321,7 @@ FBTestApp.TestConsole =
                 // Build new test list UI.
                 self.refreshTestList();
 
-                // Remember sucessfully loaded test within test history.
+                // Remember successfully loaded test within test history.
                 self.appendToHistory(testListPath, self.testCasePath, self.driverBaseURI);
 
                 self.updateURLBars();
@@ -351,8 +343,34 @@ FBTestApp.TestConsole =
         this.updateURLBars();
     },
 
+    addStyleSheets: function(doc)
+    {
+        // Some CSS from Firebug namespace.
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css"));
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css")); // XXXjjb ???? Honza why duplicates?
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/console.css"));
+
+        // Append specific FBTest CSS.
+        var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
+        for (var i=0; i<styles.length; i++)
+            addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
+    },
+
+    findTestListWindow: function(doc)
+    {
+        var win = doc.defaultView.wrappedJSObject;
+        if (win.testList)
+            return win;
+
+        var iframe = doc.getElementById("FBTest");
+        if (iframe)
+            return subwin.contentWindow.wrappedJSObject;
+    },
+
     notifyObservers: function(subject, topic, data)
     {
+        FBTrace.sysout("notifiyObservers of topic "+topic);
         observerService.notifyObservers({wrappedJSObject: this}, topic, data);
     },
 
