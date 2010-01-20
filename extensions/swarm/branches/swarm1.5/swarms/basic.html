@@ -1,6 +1,15 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
+<meta http-equiv="content-type"
+        content="text/html;charset=utf-8" />
+
 <style>
+.swarmUI {
+    display: none;
+}
 .swarmTitle {
   text-align: center;
   font-weight: bold;
@@ -72,6 +81,7 @@ ol {
 </style>
 </head>
 <body>
+<div class="swarmUI">
 <img src="http://getfirebug.com/header.png" class="header"/>
 <div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
  <h2 class="swarmTitle">Basic Swarm For
@@ -131,12 +141,13 @@ ol {
 </ol>
 <div class="certification">
 <h2><img src="http://getfirebug.com/images/firebug3.jpg"><span class="date"><i>to be dated by FBTest</i></span></h2>
-<iframe width="100%" name="FBTest1.6" src="http://getfirebug.com/tests/content/testlists/firebug1.5.html"></iframe>
+<!--  FBTest looks for this iframe by name FBTest -->
+<iframe id="FBTest" width="100%" name="FBTest" src="http://getfirebug.com/tests/content/testlists/firebug1.5.html"></iframe>
 </div>
 </div>
 <!-- The prevSibling.innerHTML is signed -->
 <div class="signature">Signature <span class="signatureHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Not </span>Verified</div>
-
+</div>
 
 
 </body>

@@ -8,8 +8,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
-
-Components.utils.import("resource://swarm/XULApplication.js");
+const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // ************************************************************************************************
 
@@ -19,21 +18,18 @@ var FirebugSwarmTest =
 {
     // initialization -------------------------------------------------------------------
 
-    initialize: function()
+    addSigningButton: function(doc)
     {
-        this.addSigningButton();
-    },
-
-    addSigningButton: function()
-    {
-        FBTrace.sysout("addSigningButton goes here");
-        var toolbar = $("consoleToolbar");
-        var signingButton = document.createElement('toolbarbutton');
+        FBTrace.sysout("addSigningButton to doc ", doc );
+        this.doc = doc;
+        var toolbar = doc.getElementById("consoleToolbar");
+        var signingButton = doc.createElement('toolbarbutton');
         signingButton.setAttribute("label", "fbSwarm.cmd.signSwarm");
         signingButton.setAttribute("class", "toolbar-image-button");
         signingButton.setAttribute("tooltiptext","fbSwarm.signSwarm");
-        toolbar.insertBefore(signingButton, $('FBTestButtons_end'));
-        signingButton.addEventListener('click', bind(this, this.doSigning), true);
+        var endOfButtons = doc.getElementById('FBTestButtons_end');
+        toolbar.insertBefore(signingButton, endOfButtons);
+        signingButton.addEventListener('click', boundDoSigning, true);
     },
 
     getKeyService: function()
@@ -69,13 +65,46 @@ var FirebugSwarmTest =
     doSigning: function(event)
     {
         FBTrace.sysout("FirebugSwarmTest doSigning ", event);
+        debugger;
         var keyservice = this.getKeyService();
         FBTrace.sysout("FirebugSwarmTest doSigning keyservice: "+this.keyservice);
         if (!keyservice)
             return;
     },
 
+    // sync with FBTest -------------------------------------------------------------------
+    observe: function(subject, topic, data)
+    {
+        try
+        {
+            FBTrace.sysout("swarm-test observe topic "+topic+ "data "+data);
+            if (data == "initialize")
+            {
+                FBTrace.sysout("swarm test initialize")
+            }
+            else if (data == "shutdown")
+            {
+                observerService.removeObserver(FirebugSwarmTest, "fbtest");
+            }
+            else if (data == "restart")
+            {
+                var fbtest = subject;
+                FirebugSwarmTest.analyze();
+            }
+
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("observe FAILS "+exc, exc);
+        }
+    },
+
     // real work -------------------------------------------------------------------
+
+    analyze: function()
+    {
+        this.doc.getElementById("progressMessage").value = "Swarm Tester checking extensions";
+    },
 
     installKeyServiceInstructionsURL: "chrome://swarm/content/installKeyService.html",
     downloadAndInstallKeyService: function()
@@ -134,12 +163,16 @@ var FirebugSwarmTest =
             var location = safeGetWindowLocation(win);
             FBTrace.sysout("FirebugSwarmTest onWindowTitleChange location: "+location);
             if (location === "chrome://fbtest/content/testConsole.xul")
-                FBTrace.sysout("FirebugSwarmTest onWindowTitleChange FOUND");
+            {
+                FBTrace.sysout("FirebugSwarmTest onWindowTitleChange FOUND at location "+location);
+                FirebugSwarmTest.addSigningButton(win.document);
+            }
         }
     },
 
 };
 
+// XXXjjb I can't figure out how to get the chrome manifest to do the overlay bit.
 window.addEventListener('load',function registerForWindow()
 {
     var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
@@ -148,7 +181,12 @@ window.addEventListener('load',function registerForWindow()
     window.removeEventListener('load', registerForWindow, true);
 } , true);
 
+function boundDoSigning(event)
+{
+    FirebugSwarmTest.doSigning(event);
+}
 
+observerService.addObserver(FirebugSwarmTest, "fbtest", false);
 
 //************************************************************************************************
 }});
