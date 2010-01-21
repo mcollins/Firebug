@@ -55,10 +55,12 @@
         <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
         <command id="cmd_refreshTestList" oncommand="FBTestApp.TestConsole.onRefreshTestList()"/>
         <command id="cmd_restartFirefox" oncommand="FBTestApp.TestConsole.onRestartFirefox()"/>
+        <command id="cmd_close" oncommand="window.close()" />
     </commandset>
 
     <keyset id="mainKeyset">
         <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
+        <key id="key_close"  key="w" command="cmd_close" modifiers="accel"/>
     </keyset>
 
     <toolbox id="consoleToolbox">
