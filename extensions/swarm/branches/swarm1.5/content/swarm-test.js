@@ -1,5 +1,7 @@
 /* See license.txt for terms of usage */
-FBL.ns(function() { with (FBL) {
+
+// This code runs in the FBTest Window.
+FBTestApp.ns(function() { with (FBL) {
 
 // ************************************************************************************************
 // Constants
@@ -11,8 +13,6 @@ const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBran
 const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // ************************************************************************************************
-
-// This code runs in the FBTest Window.
 
 var FirebugSwarmTest =
 {
@@ -80,7 +80,8 @@ var FirebugSwarmTest =
             FBTrace.sysout("swarm-test observe topic "+topic+ "data "+data);
             if (data == "initialize")
             {
-                FBTrace.sysout("swarm test initialize")
+                FBTrace.sysout("swarm test initialize");
+                FirebugSwarmTest.addSigningButton(document);
             }
             else if (data == "shutdown")
             {
@@ -103,7 +104,49 @@ var FirebugSwarmTest =
 
     analyze: function()
     {
-        this.doc.getElementById("progressMessage").value = "Swarm Tester checking extensions";
+        var browser = $("consoleFrame");
+        var doc = browser.contentDocument;
+        if(doc.getElementsByClassName('swarm').length == 0)
+        {
+            this.progress("Not a swarm test document");
+            return;
+        }
+        else
+        {
+            this.installDeclaredExtensions(doc);
+        }
+    },
+
+    installDeclaredExtensions: function(doc)
+    {
+        this.progress("Swarm Tester checking your extensions");
+        var declaredExtensions = this.getDeclaredExtensions(doc);
+        this.progress("Swarm document declares "+declaredExtensions.length+" extensions");
+        var installedExtensions = this.getInstalledExtensions();
+        this.progress("Profile has "+installedExtensions.length+" installed");
+    },
+
+    getDeclaredExtensions: function(doc)
+    {
+        var extensionElts = doc.getElementsByClassName("extensionURL");
+        var extensions = [];
+        for (var i = 0; i < extensionElts.length; i++)
+        {
+            var elt = extensionElts[i];
+
+            extensions.push({name: elt.innerHTML, href: elt.getAttribute('href'), hash: elt.getAttribute('hash') });
+        }
+        return extensions;
+    },
+
+    getInstalledExtensions: function()
+    {
+        return FBTestApp.extensions.getInstalledExtensions();
+    },
+
+    progress: function(msg)
+    {
+        document.getElementById("progressMessage").value = msg;
     },
 
     installKeyServiceInstructionsURL: "chrome://swarm/content/installKeyService.html",
@@ -171,15 +214,6 @@ var FirebugSwarmTest =
     },
 
 };
-
-// XXXjjb I can't figure out how to get the chrome manifest to do the overlay bit.
-window.addEventListener('load',function registerForWindow()
-{
-    var windowManager = Components.classes['@mozilla.org/appshell/window-mediator;1']
-        .getService(Components.interfaces.nsIWindowMediator);
-    windowManager.addListener(FirebugSwarmTest);
-    window.removeEventListener('load', registerForWindow, true);
-} , true);
 
 function boundDoSigning(event)
 {

@@ -4,6 +4,6 @@
 <?xml-stylesheet href="chrome://swarm/skin/swarm.css"?>
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    <script src="chrome://swarm/content/swarm-test.js" type="application/x-javascript"/>
-
+    <script src="chrome://swarm/content/swarmExtensions.js" type="text/javascript"/>
+    <script src="chrome://swarm/content/swarm-test.js" type="text/javascript"/>
 </overlay>
