@@ -13,17 +13,24 @@ const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBran
 const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // ************************************************************************************************
+// Monitors reloads in the FBTest window.
+// When a swarm is detected, prepare for swarm testing and certification
 
 var FirebugSwarmTest =
 {
     // initialization -------------------------------------------------------------------
 
+    /*
+     * Add UI button to sign then export the final certified document.
+     * @param doc the HTML document to be signed and exported.
+     */
     addSigningButton: function(doc)
     {
         FBTrace.sysout("addSigningButton to doc ", doc );
         this.doc = doc;
         var toolbar = doc.getElementById("consoleToolbar");
         var signingButton = doc.createElement('toolbarbutton');
+        signingButton.setAttribute("id", "fbSwarmSigningButton");
         signingButton.setAttribute("label", "fbSwarm.cmd.signSwarm");
         signingButton.setAttribute("class", "toolbar-image-button");
         signingButton.setAttribute("tooltiptext","fbSwarm.signSwarm");
@@ -32,6 +39,10 @@ var FirebugSwarmTest =
         signingButton.addEventListener('click', boundDoSigning, true);
     },
 
+    /*
+     * Obtain the Public Key Infrastructure service.
+     * It may not be installed!
+     */
     getKeyService: function()
     {
         if (!this.keyService)
@@ -59,7 +70,8 @@ var FirebugSwarmTest =
 
     enableSigningButton: function(enable)
     {
-
+        var button = document.getElementById("fbSwarmSigningButton");
+        button.disabled = enable ? false : true;
     },
 
     doSigning: function(event)
@@ -109,39 +121,14 @@ var FirebugSwarmTest =
         if(doc.getElementsByClassName('swarm').length == 0)
         {
             this.progress("Not a swarm test document");
+            this.enableSigningButton(false);
             return;
         }
         else
         {
-            this.installDeclaredExtensions(doc);
+            this.enableSigningButton(true);  // TODO may want to delay until install/test
+            FBTestApp.extensions.prepareDeclaredExtensions(doc, this.progress);
         }
-    },
-
-    installDeclaredExtensions: function(doc)
-    {
-        this.progress("Swarm Tester checking your extensions");
-        var declaredExtensions = this.getDeclaredExtensions(doc);
-        this.progress("Swarm document declares "+declaredExtensions.length+" extensions");
-        var installedExtensions = this.getInstalledExtensions();
-        this.progress("Profile has "+installedExtensions.length+" installed");
-    },
-
-    getDeclaredExtensions: function(doc)
-    {
-        var extensionElts = doc.getElementsByClassName("extensionURL");
-        var extensions = [];
-        for (var i = 0; i < extensionElts.length; i++)
-        {
-            var elt = extensionElts[i];
-
-            extensions.push({name: elt.innerHTML, href: elt.getAttribute('href'), hash: elt.getAttribute('hash') });
-        }
-        return extensions;
-    },
-
-    getInstalledExtensions: function()
-    {
-        return FBTestApp.extensions.getInstalledExtensions();
     },
 
     progress: function(msg)
@@ -156,6 +143,8 @@ var FirebugSwarmTest =
         var consoleFrame = $("consoleFrame");
         consoleFrame.addEventListener("load", function onInstructionsLoaded(event)
         {
+            consoleFrame.removeEventListener("load",onInstructionsLoaded, true);
+
             var doc = event.target;
             var elt = doc.getElementById("openFBTestComponentDirectory");
             elt.addEventListener("click", function onClickDirectory(event)

@@ -7,9 +7,6 @@
         content="text/html;charset=utf-8" />
 
 <style>
-.swarmUI {
-    display: none;
-}
 .swarmTitle {
   text-align: center;
   font-weight: bold;
@@ -19,7 +16,14 @@ body {
   margin: 45px;
   background-color: #FFFFFF;
 }
-.signed {
+.swarmUI { /* indicate the area toggled by the button */
+   border-style: solid;
+   border-width: 1px;
+   border-color: #CCCCCC;
+   padding: 5px;
+}
+
+.signed { /* indicate the area signed */
    border-style: solid;
    border-width: 1px;
    border-color: #FF9933;
@@ -55,47 +59,103 @@ ol {
    border-width: 3px;
    margin: -3px; /* causes the borders to overlay one another */
 }
+.extensionAuthor {
+   font-weight: bold;
+}
 .extensionURL {
    font-weight: bold;
 }
 .extensionHash {
    display: none;
 }
-.extensionStatus {
-   float: right;
-   font-weight: bold;
-   color: #FF9933;
-}
+
 .extensionMoreInfo {
    float: right;
 }
 .certificationTests {
    padding-left: 40px;
 }
-.swarmInactive {
+/* status */
+.extensionStatus {
+   float: right;
+   font-weight: bold;
+   color: #FF9933;
+}
+.extensionStatus:before {
+    content: "Version "
+}
+.extensionNotInstalled:after {
+    content: " not installed";
+}
+.extensionSameVersion:after {
+    content: " same version installed";
+}
+.extensionOlderVersion:after {
+    content: " older version installed";
+}
+.extensionNewerVersion:after {
+    content: " newer version installed";
+}
+.swarmInstall {
+    display: none;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: bold;
+    color: #FF9933;
+}
+/* Overall toggle */
+button.swarmInactive:after {
+    content: "Show Swarm";
+}
+button.swarmActive:after {
+    content: "Hide Swarm";
+}
+div.swarmInactive {
     display: none;
 }
-.swarmActive {
-    display: inline;
+div.swarmActive {
+    display: block;
 }
+
 </style>
+<script>
+function toggleSwarmUI()
+{
+    var ui = document.getElementById("basicSwarmUI");
+    toggleSwarmActivity(ui);
+    var button = document.getElementById("toggleSwarmUI");
+    toggleSwarmActivity(button);
+}
+
+function toggleSwarmActivity(elt)
+{
+    var classes = elt.getAttribute('class');
+    var toggled = classes.replace("swarmInactive", "swarmActive");
+    if (toggled == classes)  // then replace failed, try the other one
+        var toggled = classes.replace("swarmActive", "swarmInactive");
+    elt.setAttribute('class', toggled);
+}
+</script>
 </head>
 <body>
-<div class="swarmUI">
+<button id="toggleSwarmUI" class="swarmActive" onclick="toggleSwarmUI()"> </button>
+<div id="basicSwarmUI" class="swarmUI swarmActive">
 <img src="http://getfirebug.com/header.png" class="header"/>
 <div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
  <h2 class="swarmTitle">Basic Swarm For
  <a class="swarmWith" href="http://getfirebug.com/releases/firebug/1.5X/firebug-1.5X.0b3.xpi">Firebug 1.5</a>
  </h2>
- <button class="swarmInstall">Install</button> <!-- must be child of "firebug signed swarm" -->
+ <button class="swarmInstall">Install This Swarm</button> <!-- must be child of "firebug signed swarm" -->
  <ol>
  <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
+  <span class="extensionAuthor">Team Firebug's</span>
   <span class="extensionURL"
         href="http://getfirebug.com/releases/eventbug/1.5/eventbug-0.1a2.xpi"
         hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        id="eventbug@getfirebug.com"
         >eventbug</span>
-  <span class="extensionStatus">not installed</span>
+  <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>This extension brings a new <b>Events</b> panel that lists all of the event handlers
    on the page grouped by event type. The panel also nicely integrates with other Firebug
@@ -108,11 +168,13 @@ ol {
 </li>
 <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
+  <span class="extensionAuthor">Kevin Decker's </span>
   <span class="extensionURL"
         href="http://www.incaseofstairs.com/download/firediff/firediff1.0a1.xpi"
         hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        id="firediff@johnjbarton.com"
         >Firediff</span>
-  <span class="extensionStatus">not installed</span>
+  <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>Firediff is a Firebug extension that tracks changes to a pages DOM and CSS.
 
@@ -123,11 +185,13 @@ ol {
 </li>
 <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
+  <span class="extensionAuthor">Jan 'Honza' Odvarko's</span>
   <span class="extensionURL"
         href="http://getfirebug.com/releases/export/1.5/netExport-0.7b7.xpi"
         hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        id="netexport@getfirebug.com"
         >NetExport</span>
-  <span class="extensionStatus">not installed</span>
+  <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>NetExport is a Firebug extension that allows exporting data from the Net panel.
 
