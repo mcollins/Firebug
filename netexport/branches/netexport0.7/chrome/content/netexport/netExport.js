@@ -18,11 +18,17 @@ Firebug.NetExport = extend(Firebug.Module,
     initialize: function(owner)
     {
         Firebug.Module.initialize.apply(this, arguments);
+
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.addListener(this.TraceListener);
     },
 
     shutdown: function()
     {
         Firebug.Module.shutdown.apply(this, arguments);
+
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.removeListener(this.TraceListener);
     },
 
     internationalizeUI: function(doc)
@@ -81,6 +87,27 @@ Firebug.NetExport = extend(Firebug.Module,
             this.Automation.activate();
     }
 });
+
+// ************************************************************************************************
+
+Firebug.NetExport.TraceListener =
+{
+    onLoadConsole: function(win, rootNode)
+    {
+        var doc = rootNode.ownerDocument;
+        var styleSheet = createStyleSheet(doc, 
+            "chrome://netexport/skin/netExport.css");
+        styleSheet.setAttribute("id", "netExportLogs");
+        addStyleSheet(doc, styleSheet);
+    },
+
+    onDump: function(message)
+    {
+        var index = message.text.indexOf("netexport.");
+        if (index == 0)
+            message.type = "DBG_NETEXPORT";
+    }
+};
 
 // ************************************************************************************************
 // Registration
