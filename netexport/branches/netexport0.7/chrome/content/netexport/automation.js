@@ -35,8 +35,6 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
     {
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.Automation; unwatchWindow");
-
-        //this.removePageObserver(win);
     },
 
     // Make sure the Auto Export button is properly updated withing the Net panel.
@@ -118,6 +116,7 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
 
     onRequestBegin: function(request, win)
     {
+        win = getRootWindow(win);
         var pageObserver = this.pageObservers[win];
         if (!pageObserver)
         {
@@ -132,6 +131,7 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
 
     onRequestEnd: function(request, win)
     {
+        win = getRootWindow(win);
         var pageObserver = this.pageObservers[win];
         if (!pageObserver)
         {
