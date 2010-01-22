@@ -126,7 +126,8 @@ Firebug.NetExport.Exporter =
         }
         catch (err)
         {
-            alert(err.toString());
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.Exporter; Failed to export net data " + err.toString());
         }
 
         return false;

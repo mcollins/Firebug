@@ -73,11 +73,6 @@ Firebug.NetExport = extend(Firebug.Module,
         cancelEvent(event);
     },
 
-    onDefaultLogDirectory: function(event)
-    {
-        cancelEvent(event);
-    },
-
     // Auto export
     toggleAutoExport: function(context)
     {

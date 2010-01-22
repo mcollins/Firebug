@@ -38,7 +38,7 @@
                             <menuitem id="netExportLogDir"
                                 label="netexport.menu.label.Default Log Directory"
                                 tooltiptext="netexport.menu.tooltip.Default_Log_Directory"
-                                oncommand="Firebug.NetExport.onDefaultLogDirectory(event)"
+                                oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)"
                                 option="netexport.logDir" />
                         </menupopup>
                     </toolbarbutton>

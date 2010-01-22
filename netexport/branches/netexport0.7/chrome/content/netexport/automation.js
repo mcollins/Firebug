@@ -6,6 +6,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 var autoExportButton = $("netExportAuto");
+var prefDomain = "extensions.firebug.netexport";
 
 // ************************************************************************************************
 // Controller for automatic export.
@@ -14,10 +15,10 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
 {
     active: false,
     pageObservers: {},
+    logFolder: null,
 
     initialize: function(owner)
     {
-        
     },
 
     shutdown: function()
@@ -69,7 +70,7 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
         this.active = false;
         this.updateUI();
 
-        HttpObserver.unregisgter();
+        HttpObserver.unregister();
     },
 
     updateUI: function()
@@ -85,8 +86,33 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
     {
         this.removePageObserver(win);
 
+        var file = Logger.getDefaultFolder();
+        var now = new Date();
+
+        function f(n, c) {
+            if (!c) c = 2;
+            var s = new String(n);
+            while (s.length < c) s = "0" + s;
+            return s;
+        }
+
+        var fileName = win.location.host + "." + now.getFullYear() + "-" +
+            f(now.getMonth()+1) + "-" + f(now.getDate()) + "." + f(now.getHours()) + "-" +
+            f(now.getMinutes()) + "-" + f(now.getSeconds());
+
+        file.append(fileName + ".har");
+        file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
+
+        // Export current context.
+        var context = TabWatcher.getContextByWindow(win);
+        if (context)
+        {
+            var jsonString = Firebug.NetExport.Exporter.buildData(context);
+            Firebug.NetExport.Exporter.saveToFile(file, jsonString, context);
+        }
+
         if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Automation; onPageLoaded, EXPORT");
+            FBTrace.sysout("netexport.Automation; onPageLoaded & EXPORTED: " + file.path);
     },
 
     // Page load observers
@@ -294,11 +320,56 @@ Firebug.NetExport.HttpObserver =
 }
 
 // ************************************************************************************************
+
+Firebug.NetExport.Logger =
+{
+    getDefaultFolder: function()
+    {
+        var dir;
+        var path = Firebug.getPref(prefDomain, "defaultLogDir");
+        if (!path)
+        {
+            // Create default folder for automated net logs.
+            const dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+            var dir = dirService.get("ProfD", Ci.nsILocalFile);
+            dir.append("firebug");
+            dir.append("netexport");
+            dir.append("logs");
+        }
+        else
+        {
+            dir = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
+            dir.initWithPath(path);
+        }
+
+        return dir;
+    },
+
+    // Handle user command.
+    onDefaultLogDirectory: function(event)
+    {
+        // Open File dialog and let the user to pick target directory for automated logs.
+        var nsIFilePicker = Ci.nsIFilePicker;
+        var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
+        fp.displayDirectory = this.getDefaultFolder();
+        fp.init(window, "Select target folder for automated logs:", //xxxHonza: localization
+            nsIFilePicker.modeGetFolder);
+
+        var rv = fp.show();
+        if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
+            Firebug.setPref(prefDomain, "defaultLogDir", fp.file.path);
+
+        cancelEvent(event);
+    },
+}
+
+// ************************************************************************************************
 // Shortcuts for this namespace
 
 var Automation = Firebug.NetExport.Automation;
 var HttpObserver = Firebug.NetExport.HttpObserver;
 var PageLoadObserver = Firebug.NetExport.PageLoadObserver;
+var Logger = Firebug.NetExport.Logger;
 
 // ************************************************************************************************
 
