@@ -74,6 +74,8 @@ FBTestApp.extensions =
             onStateChange: function(index, state, value )
             {
                 FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+value);
+                if (this.states[state] === "install_done")
+                    FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
             },
             onProgress: function(index, value, maxValue )
             {
@@ -171,5 +173,62 @@ FBTestApp.extensions =
         return -1;
     },
 }
+
+var errorNameByCode =
+{
+        "-200":"BAD_PACKAGE_NAME",
+        "-201":"UNEXPECTED_ERROR",
+        "-202":"ACCESS_DENIED",
+        "-203":"EXECUTION_ERROR",
+        "-204":"NO_INSTALL_SCRIPT",
+        "-205":"NO_CERTIFICATE",
+        "-206":"NO_MATCHING_CERTIFICATE",
+        "-207":"CANT_READ_ARCHIVE",
+        "-208":"INVALID_ARGUMENTS",
+        "-209":"ILLEGAL_RELATIVE_PATH",
+        "-210":"USER_CANCELLED",
+        "-211":"INSTALL_NOT_STARTED",
+        "-212":"SILENT_MODE_DENIED",
+        "-213":"NO_SUCH_COMPONENT",
+        "-214":"DOES_NOT_EXIST",
+        "-215":"READ_ONLY",
+        "-216":"IS_DIRECTORY",
+        "-217":"NETWORK_FILE_IS_IN_USE",
+        "-218":"APPLE_SINGLE_ERR",
+        "-219":"INVALID_PATH_ERR",
+        "-220":"PATCH_BAD_DIFF",
+        "-221":"PATCH_BAD_CHECKSUM_TARGET",
+        "-222":"PATCH_BAD_CHECKSUM_RESULT",
+        "-223":"UNINSTALL_FAILED",
+        "-224":"PACKAGE_FOLDER_NOT_SET",
+        "-225":"EXTRACTION_FAILED",
+        "-226":"FILENAME_ALREADY_USED",
+        "-227":"INSTALL_CANCELLED",
+        "-228":"DOWNLOAD_ERROR",
+        "-229":"SCRIPT_ERROR",
+        "-230":"ALREADY_EXISTS",
+        "-231":"IS_FILE",
+        "-232":"SOURCE_DOES_NOT_EXIST",
+        "-233":"SOURCE_IS_DIRECTORY",
+        "-234":"SOURCE_IS_FILE",
+        "-235":"INSUFFICIENT_DISK_SPACE",
+        "-236":"FILENAME_TOO_LONG",
+        "-237":"UNABLE_TO_LOCATE_LIB_FUNCTION",
+        "-238":"UNABLE_TO_LOAD_LIBRARY",
+        "-239":"CHROME_REGISTRY_ERROR",
+        "-240":"MALFORMED_INSTALL",
+        "-241":"KEY_ACCESS_DENIED",
+        "-242":"KEY_DOES_NOT_EXIST",
+        "-243":"VALUE_DOES_NOT_EXIST",
+        "-244":"UNSUPPORTED_TYPE",
+        "-260":"INVALID_SIGNATURE",
+        "-261":"INVALID_HASH",
+        "-262":"INVALID_HASH_TYPE",
+        "-299":"OUT_OF_MEMORY",
+        "-5550":"GESTALT_UNKNOWN_ERR",
+        "-5551":"GESTALT_INVALID_ARGUMENT",
+        "0":"SUCCESS",
+        "999":"REBOOT_NEEDED",
+};
 
 }});
