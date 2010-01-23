@@ -29,5 +29,14 @@
     <em:description>Track Page Focus in Firebug</em:description>
     <em:creator>Kevin Decker</em:creator>
     <em:homepageURL>http://www.incaseofstairs.com/firefocus</em:homepageURL>
+
+    <em:translator>erglo (de-DE)</em:translator>
+    <em:translator>Goofy (fr)</em:translator>
+    <em:translator>akarlovic (hr-HR)</em:translator>
+    <em:translator>m4dbra1n (it-IT)</em:translator>
+    <em:translator>renegade06 (mr-MK)</em:translator>
+    <em:translator>Ghelman (pt-BR)</em:translator>
+    <em:translator>funalien (ru-RU)</em:translator>
+    <em:translator>Jiane (zh-CN)</em:translator>
   </Description>
 </RDF>
