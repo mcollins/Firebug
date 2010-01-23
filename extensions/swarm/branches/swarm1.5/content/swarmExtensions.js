@@ -74,12 +74,36 @@ FBTestApp.extensions =
             onStateChange: function(index, state, value )
             {
                 FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+value);
+
+                var classes = swarm[index].statusElement.getAttribute('class');
+                var m = /installedVersion-[^\s]*/.exec(classes);
+                if (m)
+                    removeClass(swarm[index].statusElement, m[0]);
+
+                m = /installing-[^\s]*/.exec(classes);
+                if (m)
+                    removeClass(swarm[index].statusElement, m[0]);
+
                 if (this.states[state] === "install_done")
-                    FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
+                {
+                    if (value != 0)
+                    {
+                        FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
+                        swarm[index].statusElement.innerHTML += ": "+errorNameByCode[value+""];
+                        setClass(swarm[index].statusElement, "install-failed");
+                    }
+                    else
+                        setClass(swarm[index].statusElement, "installing-"+this.states[state]);
+                }
+                else
+                {
+                    setClass(swarm[index].statusElement, "installing-"+this.states[state]);
+                }
             },
             onProgress: function(index, value, maxValue )
             {
                 FBTrace.sysout("onStateChange "+swarm[index].name+": "+value+"/"+maxValue);
+                swarm[index].statusElement.innerHTML = swarm[index].version +" "+Math.ceil(100*value/maxValue)+"%";
             },
             QueryInterface: function(iid)
             {
@@ -140,6 +164,7 @@ FBTestApp.extensions =
             var declaredExtensionStatus = declaredExtension.element.parentNode.getElementsByClassName("extensionStatus")[0];
             if (!declaredExtensionStatus)
                 declaredExtension.element.innerHTML = "ERROR this element should have a sybling with class extensionStatus";
+            declaredExtension.statusElement = declaredExtensionStatus;
 
             var j = this.getExtensionIndexById(installedExtensions, declaredExtension.id);
             if (j != -1)
@@ -147,16 +172,16 @@ FBTestApp.extensions =
                 var relative = versionComparator.compare(installedExtensions[j].version, declaredExtension.version);
 
                 if (relative === 0)
-                    setClass(declaredExtensionStatus, "extensionSameVersion");
+                    setClass(declaredExtensionStatus, "installedVersion-Same");
                 else if (relative < 0)
-                    setClass(declaredExtensionStatus, "extensionNewerVersion");
+                    setClass(declaredExtensionStatus, "installedVersion-Newer");
                 else if (relative > 0)
-                    setClass(declaredExtensionStatus, "extensionOlderVersion");
+                    setClass(declaredExtensionStatus, "installedVersion-Older");
 
                 installedButNotDeclared.splice(j, 1);
             }
             else
-                setClass(declaredExtensionStatus, "extensionNotInstalled");
+                setClass(declaredExtensionStatus, "installedVersion-None");
 
             declaredExtensionStatus.innerHTML = declaredExtension.version;
         }

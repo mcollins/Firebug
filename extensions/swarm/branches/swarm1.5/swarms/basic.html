@@ -84,18 +84,41 @@ ol {
 .extensionStatus:before {
     content: "Version "
 }
-.extensionNotInstalled:after {
+.installedVersion-None:after {
     content: " not installed";
 }
-.extensionSameVersion:after {
+.installedVersion-Same:after {
     content: " same version installed";
 }
-.extensionOlderVersion:after {
+.installedVersion-Older:after {
     content: " older version installed";
 }
-.extensionNewerVersion:after {
+.installedVersion-Newer:after {
     content: " newer version installed";
 }
+.installing-download_start:after {
+    content: " download started";
+}
+.installing-download_start:after {
+    content: " download complete";
+    color: blue;
+}
+.installing-download_done:after {
+    content: " download complete";
+    color: green;
+}
+.installing-install_start:after {
+    content: " install started";
+    color: blue;
+}
+.installing-install_done:after {
+    content: " install complete";
+    color: green;
+}
+.install-failed {
+    color: red;
+}
+
 .swarmInstall {
     display: none;
     margin-left: auto;
