@@ -16,6 +16,8 @@ var windowMediator = Cc["@mozilla.org/appshell/window-mediator;1"]
 var windowWatcher = Cc["@mozilla.org/embedcomp/window-watcher;1"]
                        .getService(Ci.nsIWindowWatcher);
 
+const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+
 var panelName = "window";
 
 const reChromebug = /^chrome:\/\/chromebug\//;
@@ -323,6 +325,32 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     },
 
     //***********************************************************************************
+    // observers
+
+    unwatchXULWindow :
+    {
+        observe: function(subject, topic, data)
+        {
+            FBTrace.sysout("xulapp unwatchXULWindow.observe xul-window-destroyed == "+topic, {subject: subject, data: data});
+            // The subject is null, the window is gone, see http://mxr.mozilla.org/mozilla-central/source/xpfe/appshell/src/nsXULWindow.cpp#556
+
+            var closers = Chromebug.XULAppModule.closers;
+
+            while(closers.length)
+                (closers.pop())();
+        },
+    },
+
+    watchXULWindow :
+    {
+        observe: function(subject, topic, data)
+        {
+            FBTrace.sysout("xulapp unwatchXULWindow.observe xul-window-registered == "+topic, {subject: subject, data: data});
+
+        },
+    },
+
+    //***********************************************************************************
     // nsIWindowMediatorListener
 
     onOpenWindow: function(xul_window)
@@ -394,7 +422,14 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         }
     },
 
+    closers: [],
+
     onCloseWindow: function(xul_win)
+    {
+        this.closers.push(bind(this.cleanUpXULWindow, this, xul_win));
+    },
+
+    cleanUpXULWindow: function(xul_win)
     {
         try
         {
@@ -423,15 +458,13 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 {
                     if (FBTrace.DBG_CHROMEBUG)
                         FBTrace.sysout("XULAppModule.onclose: removing getXULWindowIndex="+mark+"\n");
-                    setTimeout(function checkForCleanedUp()
-                    {
+
                         Firebug.Chromebug.eachContext( function findContextsInXULWindow(context)
                         {
                             if (context.xul_window == xul_win)
                                 FBTrace.sysout("XULAppModule found context attached to dead XUL window! "+context.getName(), xul_win);
-                                //TabWatcher.unwatchTopWindow(context.window);
+                            //TabWatcher.unwatchTopWindow(context.window);
                         });
-                    }, 5555);
 
                     var tag = this.xulWindowTags[mark];
                     this.xulWindows.splice(mark,1);
@@ -519,12 +552,6 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         else
             FBTrace.sysout("XULAppModule.reload, no domWindow for xul_window_tag:"+xul_window_tag+"\n");
         return false;
-    },
-    // *****************************************************
-    // nsIWindowWatcher observer
-    observe: function(subject, topic, data)
-    {
-        FBTrace.sysout("xulapp observe "+subject+" with topic "+topic); // we never see this??
     },
 
     // *****************************************************
@@ -1023,6 +1050,9 @@ Chromebug.XULAppModule.CacheEntry = function(url, lines)
 
 // ************************************************************************************************
 // Registration
+
+observerService.addObserver(Chromebug.XULAppModule.unwatchXULWindow, "xul-window-destroyed", false);
+observerService.addObserver(Chromebug.XULAppModule.watchXULWindow, "xul-window-registered", false);
 
 Firebug.registerModule(Chromebug.XULAppModule);
 Firebug.registerPanel(Chromebug.XULAppPanel);

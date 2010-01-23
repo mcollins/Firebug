@@ -111,7 +111,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
     {
         try
         {
-            FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location, event);
+            //FBTrace.sysout("DOMWindowContext.unLoadHandler event.currentTarget.location: "+event.currentTarget.location, event);
             var outerDOMWindow = event.currentTarget; //Reference to the currently registered target for the event.
             var domWindow = event.target.defaultView;
 
@@ -131,7 +131,11 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             if (context)
             {
                 FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
-                Chromebug.globalScopeInfos.remove(context.globalScope);
+                setTimeout(function delayCleanup() // to allow the unload handlers to complete
+                {
+                    TabWatcher.unwatchTopWindow(domWindow);
+                });
+
             }
             else
             {
