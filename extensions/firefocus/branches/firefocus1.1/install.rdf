@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>firefocus@incaseofstairs.com</em:id>
+    <em:version>1.0</em:version>
+    <em:type>2</em:type>
+    <em:optionsURL>chrome://firefocus/content/options.xul</em:optionsURL>
+
+    <!-- Any suitably modern toolkit application -->
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.9.0.11</em:minVersion>
+        <em:maxVersion>1.9.3.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:updateURL>http://www.incaseofstairs.com/download/firefocus/update.rdf</em:updateURL>
+    <em:updateKey>
+      MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCevYf3Ln2Ny3R8LvG4yaCZcNkOXm7ifO+ZEn
+      vqzZhDU165gsqq+yWJpKo6fwslDTVufdSylhbZ0o1iMXrt8LB3CAvbvOg+eSsZAJKV6ynCsTOT
+      HKQVoq0TVSeiua0hxwuaEvuXCYuxaa4tTV2iTeQGz0x3YpfAJwOQimikgWxJ2QIDAQAB
+    </em:updateKey>
+
+    <em:name>Firefocus</em:name>
+    <em:description>Track Page Focus in Firebug</em:description>
+    <em:creator>Kevin Decker</em:creator>
+    <em:homepageURL>http://www.incaseofstairs.com/firefocus</em:homepageURL>
+  </Description>
+</RDF>
