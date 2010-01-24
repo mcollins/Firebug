@@ -108,12 +108,16 @@ var ChromebugOverrides = {
     },
 
     // Override debugger
-    supportsGlobal: function(frameWin, frame)  // (set the breakContext and return true) or return false;
+    supportsGlobal: function(global, frame)  // (set the breakContext and return true) or return false;
     {
         try {
             if (frame)
             {
-                var context = ChromebugOverrides.getContextByFrame(frame, previousContext);
+                var fileName = normalizeURL(frame.script.fileName);
+                if (fileName && Firebug.Chromebug.isChromebugURL(fileName))
+                    return false;
+
+                var context = ChromebugOverrides.getContextByFrame(global, frame, previousContext);
             }
             this.breakContext = context;
 
@@ -138,48 +142,11 @@ var ChromebugOverrides = {
      * @param previousContext returned from a previous call to this function, optional
      * @return a context
      */
-    getContextByFrame: function(frame, previousContext)
+    getContextByFrame: function(global, frame, previousContext)
     {
         if (!frame || !frame.isValid)
             return previousContext;
 
-        // To map this frame to a context, we want the outermost scope of the current frame.
-        // This is unlike Firebug, where we want to be in a Window, not just any scope.
-        var scope = frame.scope;
-        if (scope)
-        {
-            while(scope.jsParent) // walk to the oldest scope
-                scope = scope.jsParent;
-            try
-            {
-                var global = null;
-                if (scope.jsClassName == "Sandbox")
-                {
-                    var proto = scope.jsPrototype;
-                    if (proto.jsClassName == "XPCNativeWrapper")  // this is the path if we have web page in a sandbox
-                    {
-                        proto = proto.jsParent;
-                        if (proto.jsClassName == "Window")
-                            global = new XPCNativeWrapper(proto.getWrappedValue());
-                    }
-                }
-                if (!global)
-                {
-                    var unwrapped = scope.getWrappedValue();
-                    if (unwrapped instanceof Ci.nsISupports) // https://bugzilla.mozilla.org/show_bug.cgi?id=522527#c49
-                        global = new XPCNativeWrapper(unwrapped);
-                    else
-                        global = unwrapped;
-                }
-            }
-            catch(exc)
-            {
-                FBTrace.sysout("ChromebugOverrides.getContextByFrame FAILS for "+scope.getWrappedValue()+": "+exc);
-            }
-
-            if (FBTrace.DBG_TOPLEVEL)
-                FBTrace.sysout("ChromebugOverrides.getContextByFrame found oldest scope: "+scope.jsClassName, global);
-        }
         var context = null;
 
         if (previousContext && global == previousContext.global)
@@ -390,7 +357,8 @@ function overrideFirebugFunctions()
             if (object instanceof Ci.jsdIStackFrame)
             {
                 var context = FirebugContext;
-                context = ChromebugOverrides.getContextByFrame(object, context);
+                var global = Firebug.Chromebug.getGlobalByFrame(object);
+                context = ChromebugOverrides.getContextByFrame(global, object, context);
                 if (context != FirebugContext)
                     Firebug.Chromebug.selectContext(context);
             }

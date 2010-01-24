@@ -1120,7 +1120,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     isChromebugURL: function(URL)
     {
         if (URL)
-            return (URL.indexOf("/chromebug/") != -1 || URL.indexOf("/fb4cb/") != -1);
+            return (URL.indexOf("/chromebug/") != -1 || URL.indexOf("/fb4cb/") != -1 || URL.indexOf("/firebug-service.js") != -1);
         else
             return false;
     },
@@ -1298,6 +1298,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         pkg.appendContext(context);
         if (FBTrace.DBG_SOURCEFILES)
             FBTrace.sysout("onSourceFileCreated sourceFile "+sourceFile.href+" in  "+pkg.name+" context "+context.getName());
+    },
+
+    getGlobalByFrame: function(frame)
+    {
+        return fbs.getOutermostScope(frame);
     },
     //******************************************************************************
     // traceModule listener
