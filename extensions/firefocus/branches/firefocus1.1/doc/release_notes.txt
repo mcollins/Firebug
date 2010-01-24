@@ -1,0 +1,10 @@
+01/24/2009 - 1.1
+
+Changes:
+- Added de-DE, fr, hr-HR, it-IT, mk-MK, pt-BR, ru-RU, and zh-CN locales
+- Official support for Firefox 3.6
+
+----
+
+11/01/2009 - 1.0
+Initial implementation.
