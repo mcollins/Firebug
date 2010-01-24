@@ -23,13 +23,30 @@
             </em:targetApplication>
           </RDF:Description>
         </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.1</em:version>
+
+            <!-- Any suitably modern toolkit application -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>toolkit@mozilla.org</em:id>
+                <em:minVersion>1.9.0.11</em:minVersion>
+                <em:maxVersion>1.9.3.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.1.xpi</em:updateLink>
+                <em:updateHash>sha1:cdf1b2674308d3bd8566534fdb2a493bf45a9b21</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
       </RDF:Seq>
     </em:updates>
 
     <em:signature>
-      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAITVQ/PU5QpS4lSAlk4OXdckFHjZ4kghdahyCS89pL18MZ
-      F5/YCrHhWRJuwmrP4cCKLzAd0Si2spvzUuZsT47Ue4ah5BQd/s3uJQ9/Y+hLru5lxuGKxAZbN8
-      OlcX7bPDAnG7WAy6N/Z5C0Y41MdgYiB7B/Rq93SxEAsWzC/egb0w
+      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAHGojUUTU0b3UA6dANfx6sX7ih6MhnPIk8Mf4b49dxgetm
+      Xp/YUymJMwIWwOoedE4xcUlwPGkIyiLdEKXoVn2pVtHNsY33yXOVqz2Pkw6lgxySqQlWfDE5F1
+      LBvIO7AbpPdBN/QkQV9V7qeKguc7a7Jx3ppvxcdrULgHD+ygixjy
     </em:signature>
   </RDF:Description>
 </RDF:RDF>
