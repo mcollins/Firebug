@@ -5,6 +5,8 @@ FBL.ns(function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+const dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+
 var autoExportButton = $("netExportAuto");
 var prefDomain = "extensions.firebug.netexport";
 
@@ -102,6 +104,11 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
             f(now.getMinutes()) + "-" + f(now.getSeconds());
 
         file.append(fileName + ".har");
+
+        // Default file extension is zip if compressing is on.
+        if (Firebug.getPref(prefDomain, "compress"))
+            file.append(fileName + ".zip");
+
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
 
         // Export data from the current context.
@@ -345,7 +352,6 @@ Firebug.NetExport.Logger =
         if (!path)
         {
             // Create default folder for automated net logs.
-            const dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
             var dir = dirService.get("ProfD", Ci.nsILocalFile);
             dir.append("firebug");
             dir.append("netexport");

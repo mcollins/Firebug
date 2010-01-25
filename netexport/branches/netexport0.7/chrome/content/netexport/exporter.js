@@ -134,35 +134,64 @@ Firebug.NetExport.Exporter =
             convertor.init(foStream, "UTF-8", 0, 0);
             convertor.writeString(jsonString);
             convertor.close(); // this closes foStream
-
-            // Compress the file if the option says so.
-            if (Firebug.getPref(prefDomain, "compress"))
-            {
-                if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("netexport.Exporter; Zipping log file " + file.path);
-
-                var zipFile = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
-                zipFile.initWithPath(file.path + ".zip");
-
-                var zip = new ZipWriter();
-                zip.open(zipFile, 0x02 | 0x08 | 0x20); // write, create, truncate;
-                zip.addEntryFile(file.leafName, Ci.nsIZipWriter.COMPRESSION_DEFAULT, file, false);
-                zip.close();
-
-                // Remove the original file (now zipped).
-                file.remove(true);
-            }
-
-            return true;
         }
         catch (err)
         {
             if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("netexport.Exporter; Failed to export net data " + err.toString());
+
+            return false;
+        }
+
+        // If no compressing then bail out.
+        if (!Firebug.getPref(prefDomain, "compress"))
+            return true;
+
+        // Remember name of the original file, it'll be replaced by a zip file.
+        var originalFilePath = file.path;
+        var originalFileName = file.leafName;
+
+        try
+        {
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.Exporter; Zipping log file " + file.path);
+
+            // Rename using unique name (the file is going to be removed).
+            file.moveTo(null, "temp" + (new Date()).getTime() + ".har");
+
+            // Create compressed file with the original file path name.
+            var zipFile = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
+            zipFile.initWithPath(originalFilePath);
+
+            // The file within the zipped file doesn't use .zip extension.
+            var fileName = originalFileName;
+            if (fileName.indexOf(".zip") == fileName.length - 4)
+                fileName = fileName.substr(0, fileName.indexOf(".zip"));
+
+            // But if there is no .har extension - append it.
+            if (fileName.indexOf(".har") != fileName.length - 4)
+                fileName += ".har";
+
+            var zip = new ZipWriter();
+            zip.open(zipFile, 0x02 | 0x08 | 0x20); // write, create, truncate;
+            zip.addEntryFile(fileName, Ci.nsIZipWriter.COMPRESSION_DEFAULT, file, false);
+            zip.close();
+
+            // Remove the original file (now zipped).
+            file.remove(true);
+            return true;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.Exporter; Failed to zip log file " + err.toString());
+
+            // Something went wrong (disk space?) rename the original file back.
+            file.moveTo(null, originalFileName);
         }
 
         return false;
-    }
+    },
 };
 
 // ************************************************************************************************
