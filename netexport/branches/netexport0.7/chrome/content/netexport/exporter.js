@@ -81,7 +81,7 @@ Firebug.NetExport.Exporter =
     },
 
     // Build JSON string from the Net panel data.
-    buildData: function(context)
+    buildData: function(context, forceExport)
     {
         var jsonString = "";
 
@@ -94,7 +94,7 @@ Firebug.NetExport.Exporter =
                 FBTrace.sysout("netexport.buildData; entries: " + jsonData.log.entries.length,
                     jsonData);
 
-            if (!jsonData.log.entries.length)
+            if (!jsonData.log.entries.length && !forceExport)
             {
                 alert($STR("netexport.message.Nothing to export"));
                 return null;
@@ -132,17 +132,21 @@ Firebug.NetExport.Exporter =
             convertor.writeString(jsonString);
             convertor.close(); // this closes foStream
 
-            // Compress the file if the options says so.
+            // Compress the file if the option says so.
             if (Firebug.getPref(prefDomain, "compress"))
             {
+                if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("netexport.Exporter; Zipping log file " + file.path);
+
                 var zipFile = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
-                zipFile.initWithPath(file.path);
+                zipFile.initWithPath(file.path + ".zip");
 
                 var zip = new ZipWriter();
                 zip.open(zipFile, 0x02 | 0x08 | 0x20); // write, create, truncate;
                 zip.addEntryFile(file.leafName, Ci.nsIZipWriter.COMPRESSION_DEFAULT, file, false);
                 zip.close();
 
+                // Remove the original file (now zipped).
                 file.remove(true);
             }
 
@@ -150,7 +154,7 @@ Firebug.NetExport.Exporter =
         }
         catch (err)
         {
-            if (FBTrace.DBG_ERRORS)
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
                 FBTrace.sysout("netexport.Exporter; Failed to export net data " + err.toString());
         }
 

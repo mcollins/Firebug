@@ -14,7 +14,6 @@ var prefDomain = "extensions.firebug.netexport";
 Firebug.NetExport.Automation = extend(Firebug.Module,
 {
     active: false,
-    pageObservers: {},
     logFolder: null,
 
     initialize: function(owner)
@@ -24,18 +23,6 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
     shutdown: function()
     {
         
-    },
-
-    watchWindow: function(context, win)
-    {
-        if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Automation; watchWindow");
-    },
-
-    unwatchWindow: function(context, win)
-    {
-        if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Automation; unwatchWindow");
     },
 
     // Make sure the Auto Export button is properly updated withing the Net panel.
@@ -84,7 +71,20 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
     // Callback, the page has been loaded.
     onPageLoaded: function(win)
     {
-        this.removePageObserver(win);
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.Automation; PAGE LOADED : " + safeGetWindowLocation(win));
+
+        HttpObserver.removePageObserver(win);
+
+        // Export current context.
+        var context = TabWatcher.getContextByWindow(win);
+        if (!context)
+        {
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.Automation; ERROR: NO CONTEXT to export: " +
+                    safeGetWindowLocation(win));
+            return;
+        }
 
         var file = Logger.getDefaultFolder();
         var now = new Date();
@@ -97,78 +97,19 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
         }
 
         var loc = Firebug.NetExport.safeGetWindowLocation(win);
-        var fileName = (loc ? loc.host : "unknown") + "." + now.getFullYear() + "-" +
-            f(now.getMonth()+1) + "-" + f(now.getDate()) + "." + f(now.getHours()) + "-" +
+        var fileName = (loc ? loc.host : "unknown") + "+" + now.getFullYear() + "-" +
+            f(now.getMonth()+1) + "-" + f(now.getDate()) + "+" + f(now.getHours()) + "-" +
             f(now.getMinutes()) + "-" + f(now.getSeconds());
 
         file.append(fileName + ".har");
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
 
-        // Export current context.
-        var context = TabWatcher.getContextByWindow(win);
-        if (context)
-        {
-            var jsonString = Firebug.NetExport.Exporter.buildData(context);
-            Firebug.NetExport.Exporter.saveToFile(file, jsonString, context);
-        }
+        // Export data from the current context.
+        var jsonString = Firebug.NetExport.Exporter.buildData(context, true);
+        Firebug.NetExport.Exporter.saveToFile(file, jsonString, context);
 
         if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Automation; onPageLoaded & EXPORTED: " + file.path);
-    },
-
-    // Page load observers
-    addPageObserver: function(win)
-    {
-        if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Automation; Page load observer created for: " +
-                safeGetWindowLocation(win));
-
-        this.pageObservers[win] = new PageLoadObserver(win);
-    },
-
-    removePageObserver: function(win)
-    {
-        var pageObserver = this.pageObservers[win];
-        if (!pageObserver)
-        {
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.Automation; ERROR Can't remove page observer for: " +
-                    safeGetWindowLocation(win));
-            return;
-        }
-
-        pageObserver.destroy();
-        delete this.pageObservers[win];
-    },
-
-    onRequestBegin: function(request, win)
-    {
-        win = getRootWindow(win);
-        var pageObserver = this.pageObservers[win];
-        if (!pageObserver)
-        {
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.Automation.onRequestBegin; ERROR No page-observer for " +
-                    safeGetRequestName(request), this.pageObservers);
-            return;
-        }
-
-        pageObserver.addRequest(request);
-    },
-
-    onRequestEnd: function(request, win)
-    {
-        win = getRootWindow(win);
-        var pageObserver = this.pageObservers[win];
-        if (!pageObserver)
-        {
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.Automation.onRequestEnd; ERROR No page-observer for " +
-                    safeGetRequestName(request), this.pageObservers);
-            return;
-        }
-
-        pageObserver.removeRequest(request);
+            FBTrace.sysout("netexport.Automation; PAGE EXPORTED: " + file.path);
     }
 });
 
@@ -197,7 +138,7 @@ Firebug.NetExport.PageLoadObserver.prototype =
             return;
 
         if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.PageObserver; Looks like all requests are finished" +
+            FBTrace.sysout("netexport.PageObserver; Looks like this could be the last response: " +
                 safeGetRequestName(request));
 
         // Wait yet a little bit to catch even delayed XHR.
@@ -221,9 +162,10 @@ Firebug.NetExport.PageLoadObserver.prototype =
 // ************************************************************************************************
 // HTTP Observer
 
-Firebug.NetExport.HttpObserver = 
+Firebug.NetExport.HttpObserver =
 {
     registered: false,
+    pageObservers: {},
 
     register: function()
     {
@@ -268,10 +210,6 @@ Firebug.NetExport.HttpObserver =
             if (!tabId)
                 return;
 
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.observe " + topic.toUpperCase() +
-                    ", " + safeGetRequestName(subject));
-
             if (topic == "http-on-modify-request")
                 this.onModifyRequest(subject, win);
             else if (topic == "http-on-examine-response" )
@@ -297,15 +235,15 @@ Firebug.NetExport.HttpObserver =
             request.loadGroup && request.loadGroup.groupObserver &&
             win == win.parent && !isRedirect)
         {
-            Automation.addPageObserver(win);
+            this.addPageObserver(win);
         }
 
-        Automation.onRequestBegin(request, win);
+        this.onRequestBegin(request, win);
     },
 
     onExamineResponse: function(request, win)
     {
-        Automation.onRequestEnd(request, win);
+        this.onRequestEnd(request, win);
     },
 
     /* nsISupports */
@@ -317,6 +255,82 @@ Firebug.NetExport.HttpObserver =
          }
 
         throw Cr.NS_ERROR_NO_INTERFACE;
+    },
+
+    // Page load observers
+    addPageObserver: function(win)
+    {
+        var observer = this.pageObservers[win];
+        if (observer)
+        {
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.Automation; Page load observer detected for: " +
+                    safeGetWindowLocation(win));
+
+            // In cases where an existing page is reloaded before the previous load
+            // finished, let's export what we have.
+            Automation.onPageLoaded(win);
+        }
+
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.Automation; Page load observer created for: " +
+                safeGetWindowLocation(win));
+
+        this.pageObservers[win] = new PageLoadObserver(win);
+    },
+
+    removePageObserver: function(win)
+    {
+        var pageObserver = this.pageObservers[win];
+        if (!pageObserver)
+        {
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.Automation; ERROR Can't remove page observer for: " +
+                    safeGetWindowLocation(win));
+            return;
+        }
+
+        pageObserver.destroy();
+        delete this.pageObservers[win];
+
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.Automation; Page load observer removed for: " +
+                safeGetWindowLocation(win));
+    },
+
+    onRequestBegin: function(request, win)
+    {
+        win = getRootWindow(win);
+        var pageObserver = this.pageObservers[win];
+        if (!pageObserver)
+        {
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.Automation.onRequestBegin; ERROR No page-observer for " +
+                    safeGetRequestName(request), this.pageObservers);
+            return;
+        }
+
+        pageObserver.addRequest(request);
+    },
+
+    onRequestEnd: function(request, win)
+    {
+        win = getRootWindow(win);
+        var pageObserver = this.pageObservers[win];
+        if (!pageObserver)
+        {
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.Automation.onRequestEnd; ERROR No page-observer for " +
+                    safeGetRequestName(request), this.pageObservers);
+            return;
+        }
+
+        pageObserver.removeRequest(request);
+    },
+
+    getPageObserver: function(win)
+    {
+        return this.pageObservers[win];
     }
 }
 
