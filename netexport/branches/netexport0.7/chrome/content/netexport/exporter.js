@@ -33,7 +33,7 @@ Firebug.NetExport.Exporter =
         if (numberOfRequests > 0)
         {
             // Get target file for exported data. Bail out, if the user presses cancel.
-            var file = this.getTargetFile();
+            var file = this.getTargetFile(context);
             if (!file)
                 return;
         }
@@ -53,7 +53,7 @@ Firebug.NetExport.Exporter =
     },
 
     // Open File Save As dialog and let the user to pick proper file location.
-    getTargetFile: function()
+    getTargetFile: function(context)
     {
         var nsIFilePicker = Ci.nsIFilePicker;
         var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
@@ -61,7 +61,9 @@ Firebug.NetExport.Exporter =
         fp.appendFilter("HTTP Archive Files","*.har; *.json");
         fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
         fp.filterIndex = 1;
-        fp.defaultString = "netData.har";
+
+        var loc = Firebug.NetExport.safeGetWindowLocation(context.window);
+        fp.defaultString = (loc ? loc.host : "netData") + ".har";
 
         var rv = fp.show();
         if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)

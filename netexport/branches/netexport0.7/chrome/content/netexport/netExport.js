@@ -105,6 +105,36 @@ Firebug.NetExport.TraceListener =
 };
 
 // ************************************************************************************************
+// Shared functions for NetExport extension.
+
+Firebug.NetExport.safeGetWindowLocation = function(win)
+{
+    try
+    {
+        if (!win)
+            return null;
+
+        if (win.closed)
+            return null;
+
+        if ("location" in win)
+        {
+            if (typeof(win.location) == 'object' && "toString" in win.location)
+                return win.location;
+            else if (typeof (win.location) == 'string' )
+                return win.location;
+        }
+    }
+    catch(exc)
+    {
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.getWindowLocation; EXCEPTION window:", win);
+    }
+
+    return null;
+}
+
+// ************************************************************************************************
 // Registration
 
 Firebug.registerStringBundle("chrome://netexport/locale/netExport.properties");
