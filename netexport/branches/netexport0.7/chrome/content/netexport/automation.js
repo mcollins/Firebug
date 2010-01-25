@@ -103,20 +103,23 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
             f(now.getMonth()+1) + "-" + f(now.getDate()) + "+" + f(now.getHours()) + "-" +
             f(now.getMinutes()) + "-" + f(now.getSeconds());
 
-        file.append(fileName + ".har");
-
-        // Default file extension is zip if compressing is on.
+        // Default file extension is zip if compressing is on, otherwise just har.
+        var fileExt = ".har";
         if (Firebug.getPref(prefDomain, "compress"))
-            file.append(fileName + ".zip");
+            fileExt += ".zip";
 
+        file.append(fileName + fileExt);
         file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
+
+        // Just for tracing purposes (can be changed within the saveToFile).
+        var filePath = file.path;
 
         // Export data from the current context.
         var jsonString = Firebug.NetExport.Exporter.buildData(context, true);
         Firebug.NetExport.Exporter.saveToFile(file, jsonString, context);
 
         if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.Automation; PAGE EXPORTED: " + file.path);
+            FBTrace.sysout("netexport.Automation; PAGE EXPORTED: " + filePath);
     }
 });
 

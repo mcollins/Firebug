@@ -94,7 +94,7 @@ Firebug.NetExport.Exporter =
             var builder = new Firebug.NetExport.HARBuilder();
             var jsonData = builder.build(context);
             if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.buildData; entries: " + jsonData.log.entries.length,
+                FBTrace.sysout("netexport.buildData; Number of entries: " + jsonData.log.entries.length,
                     jsonData);
 
             if (!jsonData.log.entries.length && !forceExport)
@@ -112,7 +112,7 @@ Firebug.NetExport.Exporter =
         }
 
         if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.data", jsonData);
+            FBTrace.sysout("netexport.buildData; Exported data:", jsonData);
 
         return jsonString;
     },
