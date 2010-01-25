@@ -96,7 +96,7 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
             return s;
         }
 
-        var loc = Firebug.NetExport.safeGetWindowLocation(context.window);
+        var loc = Firebug.NetExport.safeGetWindowLocation(win);
         var fileName = (loc ? loc.host : "unknown") + "." + now.getFullYear() + "-" +
             f(now.getMonth()+1) + "-" + f(now.getDate()) + "." + f(now.getHours()) + "-" +
             f(now.getMinutes()) + "-" + f(now.getSeconds());

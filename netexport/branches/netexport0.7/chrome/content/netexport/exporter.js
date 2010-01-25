@@ -6,8 +6,10 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 const appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+const ZipWriter = Components.Constructor("@mozilla.org/zipwriter;1", "nsIZipWriter");
 
 const harVersion = "1.1";
+const prefDomain = "extensions.firebug.netexport";
 
 // ************************************************************************************************
 
@@ -58,12 +60,18 @@ Firebug.NetExport.Exporter =
         var nsIFilePicker = Ci.nsIFilePicker;
         var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
         fp.init(window, null, nsIFilePicker.modeSave);
-        fp.appendFilter("HTTP Archive Files","*.har; *.json");
+        fp.appendFilter("HTTP Archive Files","*.har; *.json; *.zip");
         fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
         fp.filterIndex = 1;
 
         var loc = Firebug.NetExport.safeGetWindowLocation(context.window);
-        fp.defaultString = (loc ? loc.host : "netData") + ".har";
+        var defaultFileName = (loc ? loc.host : "netData") + ".har";
+
+        // Default file extension is zip if compressing is on.
+        if (Firebug.getPref(prefDomain, "compress"))
+            defaultFileName += ".zip";
+
+        fp.defaultString = defaultFileName;
 
         var rv = fp.show();
         if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
@@ -123,6 +131,20 @@ Firebug.NetExport.Exporter =
             convertor.init(foStream, "UTF-8", 0, 0);
             convertor.writeString(jsonString);
             convertor.close(); // this closes foStream
+
+            // Compress the file if the options says so.
+            if (Firebug.getPref(prefDomain, "compress"))
+            {
+                var zipFile = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
+                zipFile.initWithPath(file.path);
+
+                var zip = new ZipWriter();
+                zip.open(zipFile, 0x02 | 0x08 | 0x20); // write, create, truncate;
+                zip.addEntryFile(file.leafName, Ci.nsIZipWriter.COMPRESSION_DEFAULT, file, false);
+                zip.close();
+
+                file.remove(true);
+            }
 
             return true;
         }

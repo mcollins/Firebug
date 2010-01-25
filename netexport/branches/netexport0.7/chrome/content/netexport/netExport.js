@@ -5,6 +5,8 @@ FBL.ns(function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+const extensionManager = CCSV("@mozilla.org/extensions/manager;1", "nsIExtensionManager");
+
 // ************************************************************************************************
 // Module implementation
 
@@ -36,7 +38,10 @@ Firebug.NetExport = extend(Firebug.Module,
         if (FBTrace.DBG_NETEXPORT)
             FBTrace.sysout("netexport.internationalizeUI");
 
-        var elements = ["netExport", "netExportCompress", "netExportAuto", "netExportLogDir"];
+        var elements = ["netExport", "netExportCompress", "netExportAuto",
+            "netExportOptions", "netExportLogDir", "netExportHelp",
+            "netExportAbout"];
+
         for (var i=0; i<elements.length; i++)
         {
             var element = $(elements[i], doc);
@@ -73,6 +78,24 @@ Firebug.NetExport = extend(Firebug.Module,
         cancelEvent(event);
     },
 
+    onOptionsShowing: function(popup)
+    {
+        for (var child = popup.firstChild; child; child = child.nextSibling)
+        {
+            if (child.localName == "menuitem")
+            {
+                var option = child.getAttribute("option");
+                if (option)
+                {
+                    var checked = Firebug.getPref(Firebug.prefDomain, option);
+                    child.setAttribute("checked", checked);
+                }
+            }
+        }
+
+        return true;
+    },
+
     // Auto export
     toggleAutoExport: function(context)
     {
@@ -80,6 +103,23 @@ Firebug.NetExport = extend(Firebug.Module,
             this.Automation.deactivate();
         else
             this.Automation.activate();
+    },
+
+    onHelp: function(event)
+    {
+        // xxxHonza: use Firebug wiki as soon as there is a page for NetExport.
+        openNewTab("http://www.softwareishard.com/blog/netexport/");
+        cancelEvent(event);
+    },
+
+    onAbout: function(event, context)
+    {
+        var parent = context.chrome.window;
+        parent.openDialog("chrome://mozapps/content/extensions/about.xul", "",
+            "chrome,centerscreen,modal", "urn:mozilla:item:netexport@getfirebug.com",
+            extensionManager.datasource);
+
+        cancelEvent(event);
     }
 });
 

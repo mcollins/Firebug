@@ -28,18 +28,31 @@
                         tooltiptext="netexport.menu.tooltip.Export Options"
                         type="menu-button">
                         <menupopup>
-                            <menuitem id="netExportCompress" type="checkbox"
-                                label="netexport.menu.label.Compress Exported Data"
-                                tooltiptext="netexport.menu.tooltip.Compress Exported Data"
-                                oncommand="Firebug.NetExport.onToggleOption(event, this)"
-                                option="netexport.compress"
-                                checked="false" />
+                            <menu id="netExportOptions" label="netexport.menu.label.Options">
+                                <menupopup onpopupshowing="return Firebug.NetExport.onOptionsShowing(this);">
+                                    <menuitem id="netExportCompress" type="checkbox"
+                                        label="netexport.menu.label.Compress Exported Data"
+                                        tooltiptext="netexport.menu.tooltip.Compress Exported Data"
+                                        oncommand="Firebug.NetExport.onToggleOption(event, this)"
+                                        option="netexport.compress"
+                                        checked="false" />
+                               </menupopup>
+                            </menu>
                             <menuseparator />
                             <menuitem id="netExportLogDir"
                                 label="netexport.menu.label.Default Log Directory"
                                 tooltiptext="netexport.menu.tooltip.Default_Log_Directory"
                                 oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)"
                                 option="netexport.logDir" />
+                            <menuseparator />
+                            <menuitem id="netExportHelp"
+                                label="netexport.menu.label.Help"
+                                tooltiptext="netexport.menu.tooltip.Help"
+                                oncommand="Firebug.NetExport.onHelp(event)" />
+                            <menuitem id="netExportAbout"
+                                label="netexport.menu.label.About"
+                                tooltiptext="netexport.menu.tooltip.About"
+                                oncommand="Firebug.NetExport.onAbout(event, FirebugContext)" />
                         </menupopup>
                     </toolbarbutton>
                     <toolbarbutton id="netExportAuto" command="cmd_netExportAuto"
