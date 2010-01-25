@@ -40,7 +40,7 @@ Firebug.NetExport = extend(Firebug.Module,
 
         var elements = ["netExport", "netExportCompress", "netExportAuto",
             "netExportOptions", "netExportLogDir", "netExportHelp",
-            "netExportAbout"];
+            "netExportAbout", "netExportShowPreview"];
 
         for (var i=0; i<elements.length; i++)
         {

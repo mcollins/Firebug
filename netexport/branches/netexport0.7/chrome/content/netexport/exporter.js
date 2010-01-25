@@ -49,7 +49,10 @@ Firebug.NetExport.Exporter =
         if (!this.saveToFile(file, jsonString, context))
             return;
 
-        var viewerURL = Firebug.getPref(Firebug.prefDomain, "netexport.viewerURL");
+        if (!Firebug.getPref(prefDomain, "showPreview"))
+            return;
+
+        var viewerURL = Firebug.getPref(prefDomain, "viewerURL");
         if (viewerURL)
             Firebug.NetExport.ViewerOpener.openViewer(viewerURL, jsonString);
     },

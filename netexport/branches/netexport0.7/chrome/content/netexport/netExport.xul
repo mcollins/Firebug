@@ -34,8 +34,12 @@
                                         label="netexport.menu.label.Compress Exported Data"
                                         tooltiptext="netexport.menu.tooltip.Compress Exported Data"
                                         oncommand="Firebug.NetExport.onToggleOption(event, this)"
-                                        option="netexport.compress"
-                                        checked="false" />
+                                        option="netexport.compress" />
+                                    <menuitem id="netExportShowPreview" type="checkbox"
+                                        label="netexport.menu.label.Show Preview"
+                                        tooltiptext="netexport.menu.tooltip.Show Preview"
+                                        oncommand="Firebug.NetExport.onToggleOption(event, this)"
+                                        option="netexport.showPreview" />
                                </menupopup>
                             </menu>
                             <menuseparator />
