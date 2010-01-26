@@ -1238,7 +1238,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             var src = "<invalid script>";
         }
 
-        FBTrace.sysout("ChromeBugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc, "source:"+src);
+        FBTrace.sysout("ChromeBugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc+" in "+frame.script.fileName, "source:"+src);
 
         var cbContextList = document.getElementById('cbContextList');
         cbContextList.setAttribute("highlight", "true");
@@ -1268,6 +1268,8 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (FBTrace.DBG_INITIALIZE)
                 FBTrace.sysout("ChromeBugPanel.onResume previousContext:"+ location);
         }
+        FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+
     },
 
     onThrow: function(context, frame, rv)
