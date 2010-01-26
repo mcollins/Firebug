@@ -130,11 +130,12 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             var context = Firebug.Chromebug.getContextByGlobal(domWindow);
             if (context)
             {
-                FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" and domWindow.location.href="+domWindow.location.href+"\n");
-                setTimeout(function delayCleanup() // to allow the unload handlers to complete
-                {
+                FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
+               // setTimeout(function delayCleanup() // to allow the unload handlers to complete
+               // {
+                //    FBTrace.sysout("Firebug.Chromebug.delayCleanup for context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
                     TabWatcher.unwatchTopWindow(domWindow);
-                });
+              //  });
 
             }
             else
