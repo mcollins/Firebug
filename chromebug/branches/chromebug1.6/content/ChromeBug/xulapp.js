@@ -393,7 +393,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             xul_window.docShell.addProgressListener(progressListener, Ci.nsIWebProgress.NOTIFY_ALL );
         }
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("Chromebug.XULAppModule.addXULWindow complete length="+this.xulWindows.length, " index="+this.getXULWindowIndex(xul_window));
+            FBTrace.sysout("Chromebug.XULAppModule.addXULWindow "+outerDOMWindow.location.href+ " complete length="+this.xulWindows.length, " index="+this.getXULWindowIndex(xul_window));
 
         return newTag;
     },

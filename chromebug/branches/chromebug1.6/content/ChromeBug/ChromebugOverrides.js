@@ -333,15 +333,14 @@ function overrideFirebugFunctions()
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
 
         // Override with added function: set the toolbar to match FirebugContext
-        ChromebugOverrides.setFirebugContext = top.Firebug.chrome.setFirebugContext;
+        ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
         top.Firebug.chrome.setFirebugContext = function(context)
         {
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("setFirebugContext to "+(context?context.getName():"NULL"));
             if (context)
             {
-                ChromebugOverrides.setFirebugContext(context);
-                Chromebug.contextList.setCurrentLocation( context );
+                ChromebugOverrides.firebugSetFirebugContext(context);
             }
             else
             {
@@ -366,8 +365,11 @@ function overrideFirebugFunctions()
         };
 
 
-        Firebug.Chromebug.syncResumeBox = Firebug.chrome.syncResumeBox;
-        top.Firebug.chrome.syncResumeBox = function(context) { if (context) Firebug.Chromebug.syncResumeBox(context); }
+        Firebug.Chromebug.firebugSyncResumeBox = Firebug.syncResumeBox;
+        top.Firebug.syncResumeBox = function(context)
+        {
+            if (context) Firebug.Chromebug.firebugSyncResumeBox(context);
+        }
 
         top.Firebug.chrome.syncTitle = ChromebugOverrides.syncTitle;
 
@@ -406,6 +408,13 @@ function overrideFirebugFunctions()
         {
             return Chromebug.DomWindowContext;
         };
+
+
+        Firebug.TraceModule.getTraceConsoleURL =  function getChromebugTraceConsoleURL()
+        {
+            return "chrome://fb4cb/content/traceConsole.xul";
+        };
+
 
         FBL.getRootWindow = function(win) { return win; };
 

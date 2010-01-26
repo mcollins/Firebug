@@ -594,8 +594,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (!this.contexts)
             this.contexts = TabWatcher.contexts;
 
-        Firebug.disabledAlways = true; // The Chromebug will enable Firebug for specific windows
-
         window.arguments[0] = {browser: this.fakeTabBrowser};
 
         Chromebug.XULAppModule.addListener(this);  // XUL window creation monitoring
@@ -868,7 +866,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("createContext data url stored in to context under "+(props.fileName?props.fileName+ " & ":"just dataURL ")+url);
         }
         if (FBTrace.DBG_ACTIVATION)
-            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext ', context);
+            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext nsIDOMWindow: '+(global instanceof Ci.nsIDOMWindow)+" name: "+context.getName(), context);
         context.onLoadWindowContent = true; // all Chromebug contexts are active
         return context;
     },
@@ -927,8 +925,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (!this.contexts)
             this.contexts = TabWatcher.contexts;
 
+
         if (global instanceof Window)
-            return TabWatcher.getContextByWindow(global);
+        {
+            var docShellType = Chromebug.XULAppModule.getDocumentTypeByDOMWindow(global);
+            if (docShellType === "Content")
+                return TabWatcher.getContextByWindow(global);
+        }
 
         for (var i = 0; i < this.contexts.length; ++i)
         {
