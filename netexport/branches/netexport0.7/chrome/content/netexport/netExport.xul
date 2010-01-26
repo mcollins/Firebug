@@ -9,6 +9,7 @@
     <script src="chrome://netexport/content/exporter.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/harBuilder.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/automation.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/pageLoader.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_netExport" oncommand="Firebug.NetExport.exportData(FirebugContext)"/>
@@ -43,11 +44,15 @@
                                </menupopup>
                             </menu>
                             <menuseparator />
+                            <menuitem id="netRunPageSuite"
+                                label="netexport.menu.label.Run Automated Loads"
+                                tooltiptext="netexport.menu.tooltip.Run Automated Loads"
+                                oncommand="Firebug.NetExport.onRunPageSuite(event)" />
+                            <menuseparator />
                             <menuitem id="netExportLogDir"
                                 label="netexport.menu.label.Default Log Directory"
-                                tooltiptext="netexport.menu.tooltip.Default_Log_Directory"
-                                oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)"
-                                option="netexport.logDir" />
+                                tooltiptext="netexport.menu.tooltip.Default Log Directory"
+                                oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)" />
                             <menuseparator />
                             <menuitem id="netExportHelp"
                                 label="netexport.menu.label.Help"

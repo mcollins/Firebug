@@ -20,11 +20,12 @@ Firebug.NetExport.Automation = extend(Firebug.Module,
 
     initialize: function(owner)
     {
+        HttpObserver.addListener(this);
     },
 
     shutdown: function()
     {
-        
+        HttpObserver.removeListener(this);
     },
 
     // Make sure the Auto Export button is properly updated withing the Net panel.
@@ -159,7 +160,7 @@ Firebug.NetExport.PageLoadObserver.prototype =
     {
         // If no reqeusts appeared, the page is loaded.
         if (this.requests.length == 0)
-            Automation.onPageLoaded(this.window);
+            HttpObserver.onPageLoaded(this.window);
     },
 
     destroy: function()
@@ -172,7 +173,7 @@ Firebug.NetExport.PageLoadObserver.prototype =
 // ************************************************************************************************
 // HTTP Observer
 
-Firebug.NetExport.HttpObserver =
+Firebug.NetExport.HttpObserver = extend(new Firebug.Listener(),
 {
     registered: false,
     pageObservers: {},
@@ -229,8 +230,8 @@ Firebug.NetExport.HttpObserver =
         }
         catch (err)
         {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("net.observe EXCEPTION", err);
+            if (FBTrace.DBG_ERRORS || FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.observe EXCEPTION", err);
         }
     },
 
@@ -341,8 +342,13 @@ Firebug.NetExport.HttpObserver =
     getPageObserver: function(win)
     {
         return this.pageObservers[win];
+    },
+
+    onPageLoaded: function(win)
+    {
+        dispatch("onPageLoaded", [win]);
     }
-}
+});
 
 // ************************************************************************************************
 

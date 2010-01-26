@@ -40,7 +40,7 @@ Firebug.NetExport = extend(Firebug.Module,
 
         var elements = ["netExport", "netExportCompress", "netExportAuto",
             "netExportOptions", "netExportLogDir", "netExportHelp",
-            "netExportAbout", "netExportShowPreview"];
+            "netExportAbout", "netExportShowPreview", "netRunPageSuite"];
 
         for (var i=0; i<elements.length; i++)
         {
@@ -118,6 +118,17 @@ Firebug.NetExport = extend(Firebug.Module,
         parent.openDialog("chrome://mozapps/content/extensions/about.xul", "",
             "chrome,centerscreen,modal", "urn:mozilla:item:netexport@getfirebug.com",
             extensionManager.datasource);
+
+        cancelEvent(event);
+    },
+
+    onRunPageSuite: function(event, context)
+    {
+        var PageLoader = Firebug.NetExport.PageLoader;
+
+        // Load default suite of pages to be loaded and run.
+        var pageSuite = PageLoader.loadSuite();
+        PageLoader.runSuite(pageSuite);
 
         cancelEvent(event);
     }
