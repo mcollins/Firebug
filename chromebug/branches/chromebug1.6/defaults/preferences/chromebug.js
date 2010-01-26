@@ -26,7 +26,6 @@ pref("extensions.chromebug.shoutAboutObserverEvents", false);
 
 pref("extensions.chromebug.enableTraceConsole", true);
 // Global
-pref("extensions.chromebug.disabledAlways", false);
 pref("extensions.chromebug.allowSystemPages", false);
 pref("extensions.chromebug.disabledFile", true);
 pref("extensions.chromebug.defaultPanelName", "html");
