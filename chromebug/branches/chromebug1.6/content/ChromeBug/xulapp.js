@@ -429,6 +429,11 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         this.closers.push(bind(this.cleanUpXULWindow, this, xul_win));
     },
 
+    addCloser: function(closer)
+    {
+        this.closers.push(closer);
+    },
+
     cleanUpXULWindow: function(xul_win)
     {
         try
@@ -457,14 +462,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 if (mark != -1)
                 {
                     if (FBTrace.DBG_CHROMEBUG)
-                        FBTrace.sysout("XULAppModule.onclose: removing getXULWindowIndex="+mark+"\n");
-
-                        Firebug.Chromebug.eachContext( function findContextsInXULWindow(context)
-                        {
-                            if (context.xul_window == xul_win)
-                                FBTrace.sysout("XULAppModule found context attached to dead XUL window! "+context.getName(), xul_win);
-                            //TabWatcher.unwatchTopWindow(context.window);
-                        });
+                        FBTrace.sysout("XULAppModule.onclose: removing getXULWindowIndex="+mark);
 
                     var tag = this.xulWindowTags[mark];
                     this.xulWindows.splice(mark,1);
@@ -476,8 +474,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                     var url = new String(outerDOMWindow.location);
                     if (reChromebug.test(url))
                         return; // ignore self
-                    FBTrace.sysout("XULAppModule.onclose: xul_window is unknown to us at location "+outerDOMWindow.location+"\n"+getStackDump());
-                    throw "NO, do not exit";
+                    FBTrace.sysout("XULAppModule.onclose: xul_window is unknown to us at location "+outerDOMWindow.location);
                 }
              }
              else

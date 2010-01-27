@@ -34,6 +34,12 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
         else
             var name ="mystery";
 
+        if (name == "Sandbox")
+        {
+            var parts = browser.currentURI.spec.split('/');
+            name += " in " + parts.splice(-3).join('/');
+        }
+
         this.setName("noWindow://"+name);
     }
 
@@ -87,8 +93,10 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             // then we had one, say from a Frame
             var oldName = context.getName();
             this.clearName();  // remove name cache
-             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
-             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
             Chromebug.globalScopeInfos.remove(context.globalScope);
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("loadHandler found context with sourceFileMap ", context.sourceFileMap);
@@ -130,12 +138,19 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             var context = Firebug.Chromebug.getContextByGlobal(domWindow);
             if (context)
             {
-                FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
-               // setTimeout(function delayCleanup() // to allow the unload handlers to complete
-               // {
-                //    FBTrace.sysout("Firebug.Chromebug.delayCleanup for context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
+                if (domWindow == outerDOMWindow)
+                {
+                    FBTrace.sysout("Firebug.Chromebug.unloadHandler found outerDOMWindow with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
+                    Chromebug.XULAppModule.addCloser(function delayUntilOnCloseWindow()
+                    {
+                        TabWatcher.unwatchTopWindow(domWindow);
+                    });
+                }
+                else
+                {
+                    FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
                     TabWatcher.unwatchTopWindow(domWindow);
-              //  });
+                }
 
             }
             else

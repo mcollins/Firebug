@@ -483,7 +483,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     // Browsers in ChromeBug hold our context info
 
-    createBrowser: function(domWindow)
+    createBrowser: function(domWindow, fileName)
     {
         var browser = document.createElement("browser");  // in chromebug.xul
         // Ok, this looks dubious. Firebug has a context for every browser (tab), we have a tabbrowser but don;t use the browser really.
@@ -508,6 +508,9 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout('isDataURL props ', props);
             browserName = props['decodedfileName'];
         }
+
+        if (!browserName)
+            browserName = fileName;
 
         if (!browserName)
             var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
@@ -628,6 +631,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         setTimeout( function stopTrying()
         {
             Firebug.Chromebug.stopRestoration();  // if the window is not up by now give up.
+            var context = Chromebug.contextList.getCurrentLocation();
+            if (context)
+                Chromebug.contextList.setDefaultLocation(context);
+
         }, 5000);
 
         window.addEventListener("unload", function whyIsThis(event)
@@ -844,13 +851,13 @@ Firebug.Chromebug = extend(Firebug.Module,
     },
 
     // ******************************************************************************
-    createContext: function(global)
+    createContext: function(global, frame)
     {
         var persistedState = null; // TODO
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
 
-        var browser = Firebug.Chromebug.createBrowser(global);
+        var browser = Firebug.Chromebug.createBrowser(global, (frame?frame.script.fileName:null));
         if (global instanceof Ci.nsIDOMWindow)
             var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
         else
@@ -908,14 +915,14 @@ Firebug.Chromebug = extend(Firebug.Module,
          });
     },
 
-    getOrCreateContext: function(global)
+    getOrCreateContext: function(global, frame)
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
 
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created"));
         if (!context)
-            context = Firebug.Chromebug.createContext(global);
+            context = Firebug.Chromebug.createContext(global, frame);
 
         return context;
     },
@@ -941,7 +948,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("getContextByGlobal; null and not instanceof Window "+safeToString(global));
+            FBTrace.sysout("getContextByGlobal; no find and not instanceof Content Window "+safeToString(global));
 
         return null;
     },
@@ -951,7 +958,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_CHROMEBUG)
         {
                 try {
-                    FBTrace.sysout("Firebug.Chromebug.Module.initContext "+this.dispatchName+" context: "+context.getName()+" FirebugContext="+(FirebugContext?FirebugContext.getName():"undefined")+"\n");
+                    FBTrace.sysout("Firebug.Chromebug.Module.initContext "+this.dispatchName+" context: "+context.uid+", "+context.getName()+" FirebugContext="+(FirebugContext?FirebugContext.getName():"undefined")+"\n");
                     //window.dump(getStackDump());
                 } catch(exc) {
                     FBTrace.sysout("Firebug.Chromebug.Module.initContext "+exc+"\n");
@@ -986,9 +993,15 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         else
         {
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("!!!! CONTEXT IS NULL !!!!!!");
-            this.setStatusText("context (>> unset << )/"+this.contexts.length);
+            var context = Chromebug.contextList.getDefaultLocation();
+            if (context)
+                Firebug.Chromebug.selectContext(context);
+            else
+            {
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("!!!! CONTEXT IS NULL !!!!!!");
+                this.setStatusText("context (>> unset << )/"+this.contexts.length);
+            }
         }
     },
 
@@ -2005,8 +2018,17 @@ Chromebug.contextList =
 
     getDefaultLocation: function()
     {
+        if (this.defaultContext && Firebug.Chromebug.contexts.indexOf(this.defaultContext) != -1)
+            return this.defaultContext;
+
         var locations = this.getLocationList();
         if (locations && locations.length > 0) return locations[0];
+    },
+
+    setDefaultLocation: function(context)
+    {
+        if (context)
+            this.defaultContext = context;
     },
 
     getObjectLocation: function(context)

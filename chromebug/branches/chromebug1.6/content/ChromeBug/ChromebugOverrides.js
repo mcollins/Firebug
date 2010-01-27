@@ -153,7 +153,7 @@ var ChromebugOverrides = {
             context = previousContext;
 
         if (!context && global)
-            context = Firebug.Chromebug.getOrCreateContext(global);
+            context = Firebug.Chromebug.getOrCreateContext(global, frame);
 
         if (context)
         {
