@@ -35,7 +35,7 @@
                 <em:maxVersion>1.9.3.*</em:maxVersion>
 
                 <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.1.xpi</em:updateLink>
-                <em:updateHash>sha1:cdf1b2674308d3bd8566534fdb2a493bf45a9b21</em:updateHash>
+                <em:updateHash>sha1:9eabc60ef403916d19373220976b72d993f5a069</em:updateHash>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
@@ -44,9 +44,9 @@
     </em:updates>
 
     <em:signature>
-      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAHGojUUTU0b3UA6dANfx6sX7ih6MhnPIk8Mf4b49dxgetm
-      Xp/YUymJMwIWwOoedE4xcUlwPGkIyiLdEKXoVn2pVtHNsY33yXOVqz2Pkw6lgxySqQlWfDE5F1
-      LBvIO7AbpPdBN/QkQV9V7qeKguc7a7Jx3ppvxcdrULgHD+ygixjy
+      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAKaLP8iLDAcWn92ejszzzSfNZ8vGVfknVRiFvemCLPefyl
+      fk3x+KRAFpoSmm30Lktw+kVvyoMRxCTH61X9/oYRrK8hd8FcuKc3kqYHU/FWwlBWQddizoxk8w
+      sp+9TLVs3Jps55zEa+avlnRCM8qgX7FKNpYqD+ZrHFG/MlimHMCD
     </em:signature>
   </RDF:Description>
 </RDF:RDF>
