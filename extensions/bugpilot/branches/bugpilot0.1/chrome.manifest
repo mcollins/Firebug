@@ -1,0 +1,5 @@
+content bugpilot  chrome/content/
+skin    bugpilot  classic/1.0    chrome/skin/classic/
+locale  bugpilot  en-US          chrome/locale/en-US/
+
+overlay chrome://firebug/content/firebugOverlay.xul         chrome://bugpilot/content/bugPilot.xul

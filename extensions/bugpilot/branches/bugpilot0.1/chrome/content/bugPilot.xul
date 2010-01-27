@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<?xml-stylesheet href="chrome://bugpilot/skin/bugPilot.css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
+    <script src="chrome://bugpilot/content/bugPilot.js" type="application/x-javascript"/>
+
+    <commandset id="mainCommandSet">
+    </commandset>
+
+    <!-- Firebug Tools & Icon menu -->
+    <menupopup id="fbFirebugMenuPopup">
+        <menuseparator insertbefore="menu_aboutSeparator"/>
+
+        <!-- Bug Pilot menu -->
+        <menu id="bugPilotMenu" label="bugpilot.label.Bug Pilot"
+            tooltiptext="bugpilot.tooltip.Bug Pilot"
+            insertbefore="menu_aboutSeparator">
+            <menupopup>
+                <menuitem id="bugPilotSendReport" label="bugpilot.label.Send Report"
+                    tooltiptext="bugpilot.tooltip.Send Report"
+                    oncommand="Firebug.BugPilot.sendReport()"/>
+                <menuseparator/>
+                <menuitem id="bugPilotHelp" label="bugpilot.label.Help"
+                    oncommand="Firebug.BugPilot.onHelp()"/>
+                <menuitem id="bugPilotAbout" label="bugpilot.label.About"
+                    oncommand="Firebug.BugPilot.onAbout(FirebugContext)"/>
+            </menupopup>
+        </menu>
+    </menupopup>
+</overlay>
