@@ -59,7 +59,7 @@ const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
 const reResource = /resource:\/\/([^\/]*)\//;
 const reModules = /:\/\/(.*)\/modules\//; // chrome:// or file://
 const reWeb = /(^http:|^ftp:|^mailto:|^https:|^ftps:)\//;
-const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
+const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 
 const fbBox = $("fbContentBox");
 const interfaceList = $("cbInterfaceList");
@@ -862,19 +862,24 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         var browser = Firebug.Chromebug.createBrowser(global, (frame?frame.script.fileName:null));
         if (global instanceof Ci.nsIDOMWindow)
+        {
             var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
-        else
-            var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
 
         var url = safeToString(global ? global.location : null);
-        if (isDataURL(url))
-        {
-            var lines = context.sourceCache.load(url);
-            var props = splitDataURL(url);
-            if (props.fileName)
-                context.sourceCache.storeSplitLines(props.fileName, lines);
-            FBTrace.sysout("createContext data url stored in to context under "+(props.fileName?props.fileName+ " & ":"just dataURL ")+url);
+            if (isDataURL(url))
+            {
+                var lines = context.sourceCache.load(url);
+                var props = splitDataURL(url);
+                if (props.fileName)
+                    context.sourceCache.storeSplitLines(props.fileName, lines);
+                FBTrace.sysout("createContext data url stored in to context under "+(props.fileName?props.fileName+ " & ":"just dataURL ")+url);
+            }
         }
+        else
+        {
+            var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
+        }
+
         if (FBTrace.DBG_ACTIVATION)
             FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext nsIDOMWindow: '+(global instanceof Ci.nsIDOMWindow)+" name: "+context.getName(), context);
         context.onLoadWindowContent = true; // all Chromebug contexts are active
@@ -1146,8 +1151,6 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         this.buildEnumeratedSourceFiles(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName);
 
-        for (var url in xulScriptsByURL)
-            Firebug.Chromebug.onXULScriptCreated(url, xulScriptsByURL);
     },
 
     buildEnumeratedSourceFiles: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
@@ -1161,6 +1164,10 @@ Firebug.Chromebug = extend(Firebug.Module,
                         FBTrace.sysout("buildEnumeratedSourceFiles got bad URL from script.fileName:"+script.fileName, script);
                     return;
                 }
+
+                if (script.isValid)
+                    script.clearBreakpoint(0);  // just in case
+
                 if (Firebug.Chromebug.isChromebugURL(url))
                 {
                     delete globalTagByScriptTag[script.tag];
@@ -1170,19 +1177,16 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var globalsTag = globalTagByScriptTag[script.tag];
                 if (typeof (globalsTag) == 'undefined' )
                 {
-                    if (! reXUL.test(script.fileName) )
+                    globalsTag = globalTagByScriptFileName[script.fileName];
+                    if ( typeof (globalsTag) == 'undefined' )
                     {
-                        globalsTag = globalTagByScriptFileName[script.fileName];
-                        if ( typeof (globalsTag) == 'undefined' )
-                        {
-                            if (FBTrace.DBG_ERRORS)
-                                FBTrace.sysout("buildEnumeratedSourceFiles NO globalTag for script tag "+script.tag+" in "+script.fileName);
-                            return;
-                        }
-                        else
-                        {
-                            FBTrace.sysout("buildEnumeratedSourceFiles globalTag: "+globalsTag+" for script tag "+script.tag+" in "+script.fileName);
-                        }
+                        //if (FBTrace.DBG_ERRORS)
+                            FBTrace.sysout("buildEnumeratedSourceFiles not XUL and NO  globalTag for script tag "+script.tag+" in "+script.fileName);
+                        return;
+                    }
+                    else
+                    {
+                        FBTrace.sysout("buildEnumeratedSourceFiles globalTag: "+globalsTag+" for "+script.fileName);
                     }
                 }
 
@@ -1202,6 +1206,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                         Firebug.Chromebug.unreachablesContext = Firebug.Chromebug.createContext();
                         Firebug.Chromebug.unreachablesContext.setName("chrome://unreachable/");
                     context =  Firebug.Chromebug.unreachablesContext;
+                    FBTrace.sysout("buildEnumeratedSourceFiles NO context for script tag "+script.tag+" in "+script.fileName+" with globalsTag "+globalsTag);
                 }
                 previousContext = context;
 
@@ -1306,10 +1311,33 @@ Firebug.Chromebug = extend(Firebug.Module,
     onXULScriptCreated: function(url, innerScripts)
     {
         FBTrace.sysout("Chromebug onXULScriptCreated "+url);
-        // find context by URL
-        // create XULSourceFile with innerScripts
-        // add sourceFile to context
 
+        // find context by URL
+        var context = Chromebug.contextList.getContextByURL(url);
+
+        FBTrace.sysout("onXULScriptCreated found context "+(context?context.getName():"NONE")+ " for "+url+" with "+innerScripts.length+" innerScripts");
+
+        if (!context)
+            return;
+
+        // create XULSourceFile with innerScripts
+        var innerScriptEnumerator =
+        {
+                index: innerScripts.length,
+
+                hasMoreElements: function()
+                {
+                    return this.index;
+                },
+
+                getNext: function()
+                {
+                    return innerScripts[this.index--];
+                }
+        }
+        var sourceFile = new Firebug.XULSourceFile(url, innerScriptEnumerator);
+        // add sourceFile to context
+        context.addSourceFile(sourceFile);
     },
 
     onFunctionConstructor: function(context, frame, ctor_script, url)
@@ -2110,6 +2138,15 @@ Chromebug.contextList =
 
             child = child.nextSibling;
         }
+    },
+
+    getContextByURL: function(url)
+    {
+        return Firebug.Chromebug.eachContext(function matchURL(context)
+        {
+            if (safeToString(context.global.location) === url)
+                return context;
+        });
     }
 }
 
@@ -2118,9 +2155,6 @@ Chromebug.contextListLocator = function(xul_element)
     var list = Chromebug.contextList;
     return connectedList(xul_element, list);
 }
-
-
-
 
 Chromebug.interfaceList = {
 
