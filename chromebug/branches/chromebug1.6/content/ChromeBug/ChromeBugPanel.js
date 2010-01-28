@@ -45,6 +45,8 @@ const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverServ
 const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
 const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
 const directoryService = CCSV("@mozilla.org/file/directory_service;1", "nsIProperties");
+const Application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
+
 
 const PrefService = Cc["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
@@ -57,6 +59,7 @@ const reExtensionInFileURL = /file:.*\/extensions\/([^\/]*)/;
 const reResource = /resource:\/\/([^\/]*)\//;
 const reModules = /:\/\/(.*)\/modules\//; // chrome:// or file://
 const reWeb = /(^http:|^ftp:|^mailto:|^https:|^ftps:)\//;
+const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
 
 const fbBox = $("fbContentBox");
 const interfaceList = $("cbInterfaceList");
@@ -1080,14 +1083,12 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            var startupObserver = Chromebug.getStartupObserver();
-            var jsdState = startupObserver.jsdState;
+            var jsdState = Application.storage.get('jsdState', null);
             if (!jsdState || !jsdState._chromebug)
             {
                 setTimeout(function waitForFBTrace()
                 {
-                    var startupObserver = Chromebug.getStartupObserver();
-                    FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
+                    FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! Applcation:", Application);
                 }, 1500);
                 return;
             }
@@ -1169,12 +1170,19 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var globalsTag = globalTagByScriptTag[script.tag];
                 if (typeof (globalsTag) == 'undefined' )
                 {
-                    globalsTag = globalTagByScriptFileName[script.fileName];
-                    if ( typeof (globalsTag) == 'undefined' )
+                    if (! reXUL.test(script.fileName) )
                     {
-                        if (FBTrace.DBG_ERRORS)
-                            FBTrace.sysout("buildEnumeratedSourceFiles NO globalTag for script tag "+script.tag+" in "+script.fileName);
-                        return;
+                        globalsTag = globalTagByScriptFileName[script.fileName];
+                        if ( typeof (globalsTag) == 'undefined' )
+                        {
+                            if (FBTrace.DBG_ERRORS)
+                                FBTrace.sysout("buildEnumeratedSourceFiles NO globalTag for script tag "+script.tag+" in "+script.fileName);
+                            return;
+                        }
+                        else
+                        {
+                            FBTrace.sysout("buildEnumeratedSourceFiles globalTag: "+globalsTag+" for script tag "+script.tag+" in "+script.fileName);
+                        }
                     }
                 }
 
@@ -2917,17 +2925,15 @@ Chromebug.pathListLocator = function(xul_element)
 
 
 
-Chromebug.getStartupObserver = function()
-{
-    var chromebugAppStartClass = Components.classes["@getfirebug.com/chromebug-startup-observer;1"];
-    var startupObserver = chromebugAppStartClass.getService(Ci.nsISupports);
-    return startupObserver.wrappedJSObject;
-}
+
 
 Chromebug.dumpFileTrack = function()
 {
-    var startupObserver = Chromebug.getStartupObserver();
-    fbs.dumpFileTrack(startupObserver.getJSDState().getAllTrackedFiles());
+    var jsdState = Application.storage.get('jsdState', null);
+    if (jsdState)
+        fbs.dumpFileTrack(jsdState.getAllTrackedFiles());
+    else
+        FBTrace.sysout("dumpFileTrack, no jsdState!");
 }
 
 function getFrameWindow(frame)

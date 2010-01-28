@@ -15,6 +15,7 @@ const STARTUP_TOPIC = "app-startup";
 
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
+var Application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
 
 const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
 const trace = false;
@@ -30,7 +31,7 @@ function StartupObserver()
     // registered at this moment).
     FBTrace = Cc["@joehewitt.com/firebug-trace-service;1"]
        .getService(Ci.nsISupports).wrappedJSObject.getTracer("extensions.firebug");
-    this.jsdState = {};
+
     this.observers = [];
 }
 
@@ -61,7 +62,7 @@ StartupObserver.prototype =
 
        this.setJSDFilters(jsd);
 
-       this.hookJSDContexts(jsd,  gStartupObserverSingleton.jsdState);
+       this.hookJSDContexts(jsd,  this.getJSDState());
        Components.utils.reportError("FYI: Chromebug started jsd engine; JIT will be disabled");
    },
 
@@ -256,7 +257,12 @@ StartupObserver.prototype =
 
    getJSDState: function()
    {
-       return gStartupObserverSingleton.jsdState;
+       if (!Application.storage.has('jsdState'))
+       {
+           gStartupObserverSingleton.jsdState = {};
+           Application.storage.set('jsdState', gStartupObserverSingleton.jsdState);
+       }
+       return Application.storage.get('jsdState', gStartupObserverSingleton.jsdState);
    },
 
    /*  END API */
@@ -336,12 +342,15 @@ StartupObserver.prototype =
             add: function(script)
             {
                 var name = new String(script.fileName);
-                this.allFiles[name] = [script.functionName];  // overwrite slot each time for same file
+                if (!this.allFiles[name])
+                    this.allFiles[name] = [script.tag+""];
+                else
+                    this.allFiles[name].push(script.tag+"");
             },
-            drop: function(fileName)
+            drop: function(fileName, mismatch)
             {
                 var name = new String(fileName);
-                this.allFiles[name].push("dropped");
+                this.allFiles[name].push("dropped because of "+mismatch);
             },
             def: function(scriptFileName, scopeName, scriptTag, frameGlobalTag)
             {
@@ -349,7 +358,7 @@ StartupObserver.prototype =
                 if (! (name in this.allFiles))
                     this.allFiles[name]=["no onScriptCreated for this filename"];
 
-                this.allFiles[name].push(scopeName+" outer script tag: "+scriptTag+" frameGlobalTag: "+frameGlobalTag+" (from cbcl)");
+                this.allFiles[name].push("[cbso] "+scopeName+" outer script tag: "+scriptTag+" frameGlobalTag: "+frameGlobalTag);
             },
             dump: function()
             {
@@ -418,6 +427,76 @@ function safeToString(ob)
     }
     return "[object has no toString() function]";
 };
+var fbs = {
+        getOutermostScope: function(frame)
+        {
+            var scope = frame.scope;
+            if (scope)
+            {
+                while(scope.jsParent)
+                    scope = scope.jsParent;
+
+                // These are just determined by trial and error.
+                if (scope.jsClassName == "Window" || scope.jsClassName == "ChromeWindow" || scope.jsClassName == "ModalContentWindow")
+                {
+                    lastWindowScope = wrapIfNative(scope.getWrappedValue());
+                    return  lastWindowScope;
+                }
+
+        /*        if (scope.jsClassName == "DedicatedWorkerGlobalScope")
+                {
+                    //var workerScope = new XPCNativeWrapper(scope.getWrappedValue());
+
+                    //if (FBTrace.DBG_FBS_FINDDEBUGGER)
+                    //        FBTrace.sysout("fbs.getFrameScopeRoot found WorkerGlobalScope: "+scope.jsClassName, workerScope);
+                    // https://bugzilla.mozilla.org/show_bug.cgi?id=507930 if (FBTrace.DBG_FBS_FINDDEBUGGER)
+                    //        FBTrace.sysout("fbs.getFrameScopeRoot found WorkerGlobalScope.location: "+workerScope.location, workerScope.location);
+                    return null; // https://bugzilla.mozilla.org/show_bug.cgi?id=507783
+                }
+        */
+                if (scope.jsClassName == "Sandbox")
+                {
+                    var proto = scope.jsPrototype;
+                    if (proto.jsClassName == "XPCNativeWrapper")  // this is the path if we have web page in a sandbox
+                    {
+                        proto = proto.jsParent;
+                        if (proto.jsClassName == "Window")
+                            return wrapIfNative(proto.getWrappedValue());
+                    }
+                    else
+                    {
+                        return wrapIfNative(scope.getWrappedValue());
+                    }
+                }
+
+                if (FBTrace.DBG_FBS_FINDDEBUGGER)
+                    FBTrace.sysout("fbs.getFrameScopeRoot found scope chain bottom, not Window: "+scope.jsClassName, scope);
+
+                return wrapIfNative(scope.getWrappedValue());  // not a window or a sandbox
+            }
+            else
+            {
+                return null;
+            }
+        },
+
+};
+
+function wrapIfNative(obj)
+{
+    try
+    {
+        if (obj instanceof Ci.nsISupports)
+            return XPCNativeWrapper(obj);
+        else
+            return obj;
+    }
+    catch(exc)
+    {
+        if (FBTrace.DBG_FBS_ERRORS)
+            FBTrace.sysout("fbs.wrapIfNative FAILED: "+exc, obj);
+    }
+}
 
 function analyzeScope(cb, frame, jsdState)
 {
@@ -425,7 +504,7 @@ function analyzeScope(cb, frame, jsdState)
     while(scope.jsParent) // walk to the oldest scope
         scope = scope.jsParent;
 
-    var frameGlobal = new XPCNativeWrapper(scope.getWrappedValue());
+    var frameGlobal = fbs.getOutermostScope(frame);
     var frameGlobalTag = cb.globals.indexOf(frameGlobal);
     if (frameGlobalTag < 0)
     {
@@ -440,10 +519,16 @@ function analyzeScope(cb, frame, jsdState)
         if (globalName)
             scopeName = "noWindow://"+globalName;
     }
-    gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName, frame.script.tag, frameGlobalTag);
-    if (!scopeName || !jsdState.avoidSelf(scopeName)) // then the scopeName is undefined or not self
+    if (jsdState.avoidSelf(scopeName))
+    {
+        gStartupObserverSingleton.trackFiles.drop(frame.script.fileName, scopeName);
+
+        if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
+    }
+    else
     {
         if (trace) Components.utils.reportError("assigning "+frameGlobalTag+" to "+frame.script.fileName+"\n");
+
         cb.globalTagByScriptTag[frame.script.tag] = frameGlobalTag;
         cb.globalTagByScriptFileName[frame.script.fileName] = frameGlobalTag;
         // add the unassigned innerscripts
@@ -454,10 +539,7 @@ function analyzeScope(cb, frame, jsdState)
                 if (trace) Components.utils.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
             cb.globalTagByScriptTag[script.tag] = frameGlobalTag;
         }
-    }
-    else
-    {
-        if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
+        gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName, frame.script.tag, cb.globalTagByScriptTag[frame.script.tag]);
     }
     cb.innerScripts = [];
 }
