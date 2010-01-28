@@ -8,9 +8,7 @@ const  nsICommandLine        = Components.interfaces.nsICommandLine;
 const  nsICommandLineHandler = Components.interfaces.nsICommandLineHandler;
 const  nsIFactory            = Components.interfaces.nsIFactory;
 const  nsIModule             = Components.interfaces.nsIModule;
-const  nsIWindowWatcher      = Components.interfaces.nsIWindowWatcher;
-const  jsdIExecutionHook 	 = Components.interfaces.jsdIExecutionHook;
-const  jsdIFilter            = Components.interfaces.jsdIFilter;
+
 
 const PrefService = Components.classes["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
@@ -307,58 +305,3 @@ function tmpout(text)
     fbs.foStream.write(text, text.length);
 }
 
-fbs.trackFiles  = {
-    allFiles: {},
-    avoidSelf: function(URI)
-    {
-        return (URI.indexOf("/chromebug/") != -1 || URI.indexOf("/fb4cb/") != -1);
-    },
-    add: function(script)
-    {
-        var name = new String(script.fileName);
-        this.allFiles[name] = [script.functionName];
-    },
-    drop: function(fileName)
-    {
-        var name = new String(fileName);
-        this.allFiles[name].push("dropped");
-    },
-    def: function(frame)
-    {
-        var scopeName = "noJSContext";
-        var jscontext = frame.executionContext;
-        if (jscontext)
-        {
-            frameGlobal = new XPCNativeWrapper(jscontext.globalObject.getWrappedValue());
-            scopeName = fbs.getLocationSafe(frameGlobal);
-            if (!scopeName)
-                scopeName = "noGlobalObjectLocationInJSContext:"+(jscontext?jscontext.tag:"none");
-        }
-
-        var name = new String(frame.script.fileName);
-        if (! (name in this.allFiles))
-            this.allFiles[name]=["not added"];
-
-        this.allFiles[name].push(scopeName+" (from cbcl)");
-    },
-    dump: function()
-    {
-        var n = 0;
-        for (var p in this.allFiles)
-        {
-            tmpout( (++n) + ") "+p);
-            var where = this.allFiles[p];
-            if (where.length > 0)
-            {
-                for (var i = 0; i < where.length; i++)
-                {
-                    tmpout(", "+where[i]);
-                }
-                tmpout("\n");
-            }
-            else
-                tmpout("     bp did not hit\n");
-
-        }
-    },
-}
