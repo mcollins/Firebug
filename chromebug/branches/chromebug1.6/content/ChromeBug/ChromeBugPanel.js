@@ -866,7 +866,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
             var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
 
-        var url = safeToString(global.location);
+        var url = safeToString(global ? global.location : null);
         if (isDataURL(url))
         {
             var lines = context.sourceCache.load(url);
