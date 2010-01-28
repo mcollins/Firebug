@@ -17,7 +17,7 @@ var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObs
 var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 var Application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
 
-const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
+const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 const trace = false;
 // ************************************************************************************************
 // Startup Request Observer implementation
@@ -133,7 +133,6 @@ StartupObserver.prototype =
            {
                if (jsdState.avoidSelf(script.fileName))
                    return;
-                gStartupObserverSingleton.trackFiles.add(script);
 
                 var cb = jsdState._chromebug;
                 if (!cb)
@@ -142,23 +141,29 @@ StartupObserver.prototype =
                      //if (trace) jsdState.dump("onScriptCreated No jsdState._chromebug for script:"+script.fileName+"\n");
                      return;
                 }
+                if ( reXUL.test(script.fileName) )
+                {
+                    if (!(script.fileName in cb.xulScriptsByURL))
+                        cb.xulScriptsByURL[script.fileName] = [];
+                    cb.xulScriptsByURL[script.fileName].push(script); // test for valid when removed
+                    cb.breakpointedScripts[script.tag] = script;
+                    script.setBreakpoint(0);
+                    //gStartupObserverSingleton.trackFiles.add(script,"XUL");
+                    return;
+                }
                 if (!script.functionName) // top or eval-level
                 {
                     if (cb.breakpointedScripts)  // should never be false but is once
                     {
                         cb.breakpointedScripts[script.tag] = script;
                         script.setBreakpoint(0);
+                        //gStartupObserverSingleton.trackFiles.add(script, "bp");
                         return;
                     }
                 }
-                else if ( reXUL.test(script.fileName) )
-                {
-                    if (!(script.fileName in cb.xulScriptsByURL))
-                        cb.xulScriptsByURL[script.fileName] = [];
-                    cb.xulScriptsByURL[script.fileName].push(script); // test for valid when removed
-                    return;
-                }
                 cb.innerScripts.push(script);
+                //gStartupObserverSingleton.trackFiles.add(script, "inner");
+                return;
            },
            onScriptDestroyed: function(script)
            {
@@ -204,6 +209,26 @@ StartupObserver.prototype =
                    delete cb.breakpointedScripts[script.tag];
                }
 
+               if ( reXUL.test(script.fileName) ) // we set a bp in every script with these names
+               {
+                  // here we are treating the first bp that hits as the outer script
+                   var scripts = cb.xulScriptsByURL[script.fileName];
+                   for (var i = 0; i < scripts.length; i++)
+                   {
+                       var s = scripts[i];
+                       s.clearBreakpoint[0];
+                       delete cb.breakpointedScripts[s.tag];
+                       if (s.tag === script.tag)
+                           scripts.splice(i,1); // remove the 'outerscript' so the inner ones remain
+                   }
+                   var saveInner = [];
+                   for (var i = 0; i < cb.innerScripts.length; i++)
+                       saveInner[i] = cb.innerScripts[i];
+
+                   cb.innerScripts = scripts;
+                   analyzeScope(cb, frame, jsdState);
+                   cb.innerScripts = saveInner;
+               }
                if (!frame.callingFrame) // then top-level
                {
                    if (frame.scope)
@@ -211,12 +236,7 @@ StartupObserver.prototype =
                    else // no scope, looks like this is where command line handlers end up
                        if (trace) Components.utils.reportError("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
                }
-               else // looks like .xml/.xul ends up here.
-               {
-                   if (trace) Components.utils.reportError("callingFrame for "+frame.script.fileName+"\n");
-                   if ( reXUL.test(script.fileName) )
-                       analyzeScope(cb, frame, jsdState);
-               }
+
                return Ci.jsdIExecutionHook.RETURN_CONTINUE;
            }
        };
@@ -339,14 +359,15 @@ StartupObserver.prototype =
     trackFiles: {
             allFiles: {},
 
-            add: function(script)
+            add: function(script, comment)
             {
                 var name = new String(script.fileName);
                 if (!this.allFiles[name])
-                    this.allFiles[name] = [script.tag+""];
+                    this.allFiles[name] = [script.tag+(comment?comment:"")];
                 else
-                    this.allFiles[name].push(script.tag+"");
+                    this.allFiles[name].push(script.tag+(comment?comment:""));
             },
+
             drop: function(fileName, mismatch)
             {
                 var name = new String(fileName);
@@ -379,6 +400,10 @@ StartupObserver.prototype =
                         tmpout("     bp did not hit\n");
 
                 }
+                var jsdState = StartupObserver.prototype.getJSDState();
+                var a = jsdState._chromebug.globalTagByScriptTag;
+                for (var p in a)
+                    tmpout(p+": "+a[p]+"\n");
             },
         },
 
@@ -521,7 +546,7 @@ function analyzeScope(cb, frame, jsdState)
     }
     if (jsdState.avoidSelf(scopeName))
     {
-        gStartupObserverSingleton.trackFiles.drop(frame.script.fileName, scopeName);
+        //gStartupObserverSingleton.trackFiles.drop(frame.script.fileName, scopeName);
 
         if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
     }
@@ -539,7 +564,7 @@ function analyzeScope(cb, frame, jsdState)
                 if (trace) Components.utils.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
             cb.globalTagByScriptTag[script.tag] = frameGlobalTag;
         }
-        gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName, frame.script.tag, cb.globalTagByScriptTag[frame.script.tag]);
+        //gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName+" with "+cb.innerScripts.length, frame.script.tag, cb.globalTagByScriptTag[frame.script.tag]);
     }
     cb.innerScripts = [];
 }
