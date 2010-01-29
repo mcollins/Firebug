@@ -36,8 +36,13 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
 
         if (name == "Sandbox")
         {
-            var parts = browser.currentURI.spec.split('/');
-            name += " in " + parts.splice(-3).join('/');
+            if (browser.currentURI.spec)
+            {
+                var parts = browser.currentURI.spec.split('/');
+                name += " in " + parts.splice(-3).join('/');
+            }
+            else
+                name += " in " + browser.currentURI;
         }
 
         this.setName("noWindow://"+name);

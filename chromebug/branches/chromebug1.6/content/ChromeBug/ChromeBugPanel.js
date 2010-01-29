@@ -486,7 +486,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     // Browsers in ChromeBug hold our context info
 
-    createBrowser: function(domWindow, fileName)
+    createBrowser: function(global, fileName)
     {
         var browser = document.createElement("browser");  // in chromebug.xul
         // Ok, this looks dubious. Firebug has a context for every browser (tab), we have a tabbrowser but don;t use the browser really.
@@ -498,37 +498,49 @@ Firebug.Chromebug = extend(Firebug.Module,
             isLoadingDocument: false // we are already in Firefox so we must not be loading...
         };
         browser.addProgressListener = function() {}
-        browser.contentWindow = domWindow;
+        browser.contentWindow = global;
         browser.tag = this.fakeTabBrowser.browsers.length;
 
         var browserName = null;
-        if (domWindow && domWindow.location)
-            var browserName = safeToString(domWindow.location);
-
-        if (isDataURL(browserName))
+        var browserNameFrom = "global.location";
+        if (global && global instanceof Window && global.location)
+        {
+            var browserName = safeToString(global.location);
+        }
+        else if (isDataURL(browserName))
         {
             var props = splitDataURL(browserName);
             FBTrace.sysout('isDataURL props ', props);
+            browserNameFrom = "dataURL";
             browserName = props['decodedfileName'];
         }
-
-        if (!browserName)
-            browserName = fileName;
-
-        if (!browserName)
+        else if (fileName)
+        {
+            browserNameFrom = "fileName";
+            if (fileName.indexOf('jetpack') > 0) // hack around jetpack hack
+            {
+                browserName = "chrome://jetpack/content/js/jquery-sandbox.js"
+            }
+            else
+                browserName = fileName;
+        }
+        else
+        {
+            browserNameFrom = "fake tag";
             var browserName = "chrome://chromebug/fakeTabBrowser/"+browser.tag;
+        }
 
         browser.currentURI = makeURI(browserName);
 
         if (!browser.currentURI)
         {
-            FBTrace.sysout("createBrowser "+browser.tag+" for browserName "+browserName+' FAILED makeURI ' + (domWindow?safeToString(domWindow):"no domWindow") );
+            FBTrace.sysout("createBrowser create name from "+browserNameFrom+" gave browserName "+browserName+' FAILED makeURI ' + (global?safeToString(global):"no global") );
         }
 
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
         this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
-        FBTrace.sysout("createBrowser "+browser.tag+" domWindow:"+(domWindow?safeToString(domWindow):"no domWindow")+" for browserName "+browserName+' with URI '+browser.currentURI.spec);
+        FBTrace.sysout("createBrowser "+browser.tag+" global:"+(global?safeToString(global):"no global")+" for browserName "+browserName+' with URI '+browser.currentURI.spec);
         return browser;
     },
 
