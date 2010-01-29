@@ -1149,12 +1149,6 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
     {
-        this.buildEnumeratedSourceFiles(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName);
-
-    },
-
-    buildEnumeratedSourceFiles: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
-    {
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
             {
                 var url = normalizeURL(script.fileName);
@@ -1181,7 +1175,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     if ( typeof (globalsTag) == 'undefined' )
                     {
                         //if (FBTrace.DBG_ERRORS)
-                            FBTrace.sysout("buildEnumeratedSourceFiles not XUL and NO  globalTag for script tag "+script.tag+" in "+script.fileName);
+                            FBTrace.sysout("buildEnumeratedSourceFiles NO globalTag for script tag "+script.tag+" in "+script.fileName);
                         return;
                     }
                     else
@@ -1193,6 +1187,12 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var global = globals[globalsTag];
                 if (global)
                 {
+                    if (Firebug.Chromebug.isChromebugURL(safeToString(global.location)))
+                    {
+                        delete globalTagByScriptTag[script.tag];
+                        return;
+                    }
+
                     var context = null;
                     if (previousContext.global == global)
                         context = previousContext;
@@ -1307,38 +1307,6 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
     },
 
-
-    onXULScriptCreated: function(url, innerScripts)
-    {
-        FBTrace.sysout("Chromebug onXULScriptCreated "+url);
-
-        // find context by URL
-        var context = Chromebug.contextList.getContextByURL(url);
-
-        FBTrace.sysout("onXULScriptCreated found context "+(context?context.getName():"NONE")+ " for "+url+" with "+innerScripts.length+" innerScripts");
-
-        if (!context)
-            return;
-
-        // create XULSourceFile with innerScripts
-        var innerScriptEnumerator =
-        {
-                index: innerScripts.length,
-
-                hasMoreElements: function()
-                {
-                    return this.index;
-                },
-
-                getNext: function()
-                {
-                    return innerScripts[this.index--];
-                }
-        }
-        var sourceFile = new Firebug.XULSourceFile(url, innerScriptEnumerator);
-        // add sourceFile to context
-        context.addSourceFile(sourceFile);
-    },
 
     onFunctionConstructor: function(context, frame, ctor_script, url)
     {
