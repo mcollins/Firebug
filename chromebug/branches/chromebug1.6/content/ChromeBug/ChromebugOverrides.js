@@ -25,7 +25,7 @@ var ChromebugOverrides = {
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Location interface provider for binding.xml panelFileList
-
+/*
     getLocationProvider: function()
     {
         // a function that returns an object with .getObjectDescription() and .getLocationList()
@@ -55,7 +55,7 @@ var ChromebugOverrides = {
             return locatorDelegator;
         }
      },
-
+*/
 
     // Override Firebug.HTMLPanel.prototype
 
@@ -328,7 +328,7 @@ function overrideFirebugFunctions()
     try {
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
-        top.Firebug.chrome.getLocationProvider = ChromebugOverrides.getLocationProvider;
+        //top.Firebug.chrome.getLocationProvider = ChromebugOverrides.getLocationProvider;
         top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
 
