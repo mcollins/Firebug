@@ -558,13 +558,16 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Chromebug.selectBrowser(context.browser);
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+safeGetWindowLocation(context.window) );
-        if (context.window && context.window instanceof Ci.nsIDOMWindow && !context.window.closed)
-            TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
         if (FirebugContext)
             context.panelName = FirebugContext.panelName; // don't change the panel with the context in Chromebug
 
+        if (context.window && context.window instanceof Ci.nsIDOMWindow && !context.window.closed)
+            TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
+
         Firebug.showContext(context.browser, context);  // sets FirebugContext and syncs the tool bar
+
+        Chromebug.contextList.setCurrentLocation(context);
     },
 
     dispatchName: "chromebug",
@@ -645,10 +648,18 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.retryRestoreID = setInterval( bind(Firebug.Chromebug.restoreState, this), 500);
         setTimeout( function stopTrying()
         {
-            Firebug.Chromebug.stopRestoration();  // if the window is not up by now give up.
-            var context = Chromebug.contextList.getCurrentLocation();
-            if (context)
-                Chromebug.contextList.setDefaultLocation(context);
+            if(Firebug.Chromebug.stopRestoration())  // if the window is not up by now give up.
+            {
+                var context = Chromebug.contextList.getCurrentLocation();
+                if (context)
+                    Chromebug.contextList.setDefaultLocation(context);
+                else
+                    context = Chromebug.contextList.getDefaultLocation();
+
+                Firebug.Chromebug.selectContext(context);
+                if (FBTrace.DBG_INITIALIZE)
+                    FBTrace.sysout("Had to stop restoration, set context to "+context.getName());
+            }
 
         }, 5000);
 
