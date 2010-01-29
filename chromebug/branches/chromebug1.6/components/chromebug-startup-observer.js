@@ -22,16 +22,8 @@ const trace = false;
 // ************************************************************************************************
 // Startup Request Observer implementation
 
-var FBTrace = null;
-
-
 function StartupObserver()
 {
-    // Get firebug-trace service for logging (the service should be already
-    // registered at this moment).
-    FBTrace = Cc["@joehewitt.com/firebug-trace-service;1"]
-       .getService(Ci.nsISupports).wrappedJSObject.getTracer("extensions.firebug");
-
     this.observers = [];
 }
 
@@ -131,8 +123,8 @@ StartupObserver.prototype =
        {
            onScriptCreated: function(script)
            {
-               if (jsdState.avoidSelf(script.fileName))
-                   return;
+               //if (jsdState.avoidSelf(script.fileName))
+               //    return;
 
                 var cb = jsdState._chromebug;
                 if (!cb)
@@ -167,8 +159,8 @@ StartupObserver.prototype =
            },
            onScriptDestroyed: function(script)
            {
-               if (jsdState.avoidSelf(script.fileName))
-                   return;
+               //if (jsdState.avoidSelf(script.fileName))
+               //    return;
                var cb = jsdState._chromebug;
 
                if (!script.functionName) // top or eval-level
@@ -400,10 +392,6 @@ StartupObserver.prototype =
                         tmpout("     bp did not hit\n");
 
                 }
-                var jsdState = StartupObserver.prototype.getJSDState();
-                var a = jsdState._chromebug.globalTagByScriptTag;
-                for (var p in a)
-                    tmpout(p+": "+a[p]+"\n");
             },
         },
 
@@ -468,18 +456,7 @@ var fbs = {
                     return  lastWindowScope;
                 }
 
-        /*        if (scope.jsClassName == "DedicatedWorkerGlobalScope")
-                {
-                    //var workerScope = new XPCNativeWrapper(scope.getWrappedValue());
-
-                    //if (FBTrace.DBG_FBS_FINDDEBUGGER)
-                    //        FBTrace.sysout("fbs.getFrameScopeRoot found WorkerGlobalScope: "+scope.jsClassName, workerScope);
-                    // https://bugzilla.mozilla.org/show_bug.cgi?id=507930 if (FBTrace.DBG_FBS_FINDDEBUGGER)
-                    //        FBTrace.sysout("fbs.getFrameScopeRoot found WorkerGlobalScope.location: "+workerScope.location, workerScope.location);
-                    return null; // https://bugzilla.mozilla.org/show_bug.cgi?id=507783
-                }
-        */
-                if (scope.jsClassName == "Sandbox")
+              if (scope.jsClassName == "Sandbox")
                 {
                     var proto = scope.jsPrototype;
                     if (proto.jsClassName == "XPCNativeWrapper")  // this is the path if we have web page in a sandbox
@@ -493,9 +470,6 @@ var fbs = {
                         return wrapIfNative(scope.getWrappedValue());
                     }
                 }
-
-                if (FBTrace.DBG_FBS_FINDDEBUGGER)
-                    FBTrace.sysout("fbs.getFrameScopeRoot found scope chain bottom, not Window: "+scope.jsClassName, scope);
 
                 return wrapIfNative(scope.getWrappedValue());  // not a window or a sandbox
             }
@@ -518,8 +492,6 @@ function wrapIfNative(obj)
     }
     catch(exc)
     {
-        if (FBTrace.DBG_FBS_ERRORS)
-            FBTrace.sysout("fbs.wrapIfNative FAILED: "+exc, obj);
     }
 }
 
@@ -544,7 +516,7 @@ function analyzeScope(cb, frame, jsdState)
         if (globalName)
             scopeName = "noWindow://"+globalName;
     }
-    if (jsdState.avoidSelf(scopeName))
+    if (false) //jsdState.avoidSelf(scopeName))
     {
         //gStartupObserverSingleton.trackFiles.drop(frame.script.fileName, scopeName);
 
