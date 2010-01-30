@@ -349,6 +349,14 @@ function overrideFirebugFunctions()
             }
         }
 
+        // We don't want the context to show as windows load in Chromebug. Instead we wait for the user to select one.
+        Firebug.Chromebug.firebugShowContext = Firebug.showContext;
+        Firebug.showContext = function(browser, context)
+        {
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("Chromebug skips showContext ");
+        }
+
         Firebug.Chromebug.chromeSelect = Firebug.chrome.select;
         Firebug.chrome.select = function(object, panelName, sidePanelName, forceUpdate)
         {

@@ -565,9 +565,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (context.window && context.window instanceof Ci.nsIDOMWindow && !context.window.closed)
             TabWatcher.watchTopWindow(context.window, context.browser.currentURI, false);
 
-        Firebug.showContext(context.browser, context);  // sets FirebugContext and syncs the tool bar
-
         Chromebug.contextList.setCurrentLocation(context);
+
+        Firebug.chrome.setFirebugContext(context); // the context becomes the default for its view
+
+        dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
+
+        Firebug.syncResumeBox(context);
     },
 
     dispatchName: "chromebug",
@@ -1002,9 +1006,10 @@ Firebug.Chromebug = extend(Firebug.Module,
          if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Firebug.Chromebug.Module.loadedContext context: "+context.getName()+"\n");
     },
-
+/*
     showContext: function(browser, context)
     {
+        FBTrace.sysout("ChromebugPanel.showContext "+(context?context.getName():"null"));
         if (context)
         {
             for( var i = 0; i < this.contexts.length; i++)
@@ -1035,7 +1040,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             }
         }
     },
-
+*/
     reattachContext: function(browser, context) // FirebugContext from chrome.js
     {
         // this is called after the chromebug window has opened.
