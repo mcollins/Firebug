@@ -347,7 +347,6 @@ FBTestApp.TestConsole =
     {
         // Some CSS from Firebug namespace.
         addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css"));
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css")); // XXXjjb ???? Honza why duplicates?
         addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
         addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/console.css"));
 
