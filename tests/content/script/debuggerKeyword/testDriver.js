@@ -60,6 +60,16 @@ function runTest()
 function executeTest(testId, lineNo, nextTest)
 {
     var chrome = FW.Firebug.chrome;
+
+    // xxxHonza: TODO there shouldn't be a 100 ms timeout (see below), but rather
+    // an async wait till the "stopped" attribute is really set to "false".
+    var stopped = chrome.getGlobalAttribute("fbDebuggerButtons", "stopped");
+    if (!FBTest.ok(stopped == "false", "The debugger must be resumed by now"))
+    {
+        FBTestFirebug.testDone("debuggerKeyword.DONE");
+        return;
+    }
+
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
         FBTestFirebug.clickContinueButton();
