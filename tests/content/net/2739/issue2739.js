@@ -20,14 +20,14 @@ function runTest()
             // Asynchronously wait for two requests beeing displayed.
             onRequestDisplayed(function(netRow)
             {
-                FBTest.progress("onRequestDisplayed " + counter+1);
+                FBTest.progress("onRequestDisplayed " + (counter+1));
                 if (++counter == 2)
                     onVerifyResponses(netRow);
             });
 
             onRequestDisplayed(function(netRow)
             {
-                FBTest.progress("onRequestDisplayed " + counter+1);
+                FBTest.progress("onRequestDisplayed " + (counter+1));
                 if (++counter == 2)
                     onVerifyResponses(netRow);
             });
@@ -66,7 +66,7 @@ function onRequestDisplayed(callback)
     // Create listener for mutation events.
     var doc = FBTestFirebug.getPanelDocument();
     var recognizer = new MutationRecognizer(doc.defaultView, "tr",
-        {"class": "netRow category-xhr loaded"});
+        {"class": "netRow category-xhr hasHeaders loaded"});
 
     // Wait for a XHR log to appear in the Net panel.
     recognizer.onRecognizeAsync(callback);
