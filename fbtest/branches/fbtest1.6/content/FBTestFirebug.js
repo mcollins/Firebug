@@ -487,9 +487,10 @@ this.openURL = function(url, callback)
     var onLoadURL = function(event)
     {
         browser.removeEventListener("load", onLoadURL, true);
+
         setTimeout(function()
         {
-            var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
+            var win = browser.contentWindow;
 
             // This is a workaround for missing wrappedJSObject property,
             // if the test case comes from http (and not from chrome)
@@ -520,7 +521,7 @@ this.reload = function(callback)
 
         setTimeout(function()
         {
-            var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
+            var win = browser.contentWindow;
 
             // This is a workaround for missing wrappedJSObject property,
             // if the test case comes from http (and not from chrome)
@@ -998,8 +999,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
 
     // Wait for the UI modification that shows the source line where break happened.
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
-
-    lookBP.onRecognize(function onBreak(sourceRow)
+    lookBP.onRecognizeAsync(function onBreak(sourceRow)
     {
         FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exe_line" +
             (breakpoint ? " and breakpoint" : ""));
