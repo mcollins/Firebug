@@ -74,6 +74,7 @@ MutationRecognizer.prototype.onRecognizeAsync = function(handler, delay)
 
     return new MutationEventFilter(this, function(element) {
         setTimeout(function() {
+            FBTest.sysout("testFirebug.MutationEventFilter.onRecognizeAsync:", element);
             handler(element);
         }, delay);
     });
