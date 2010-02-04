@@ -15,40 +15,44 @@ function runTest()
         {
             var panel = FW.FirebugChrome.selectPanel("net");
 
-            var counter = 0;
-
             // Asynchronously wait for two requests beeing displayed.
-            onRequestDisplayed(function(netRow)
-            {
-                FBTest.progress("onRequestDisplayed " + (counter+1));
-                if (++counter == 2)
-                    onVerifyResponses(netRow);
-            });
+            waitForResponse(panel);
 
-            onRequestDisplayed(function(netRow)
-            {
-                FBTest.progress("onRequestDisplayed " + (counter+1));
-                if (++counter == 2)
-                    onVerifyResponses(netRow);
-            });
-
+            // Execute test.
             FBTest.click(win.document.getElementById("testButton"));
         });
     });
 }
 
-function onVerifyResponses(netRow)
+function waitForResponse(panel)
 {
-    verifyResponses(netRow);
+    // The mutation-recognizer callback can be fired more time for the same
+    // netRow (as its attributes are changing).
+    onRequestDisplayed(function(netRow)
+    {
+        var netRows = panel.panelNode.getElementsByClassName(
+            "netRow category-xhr hasHeaders loaded");
+
+        if (netRows.length == 2)
+        {
+            onVerifyResponses();
+            return;
+        }
+
+        // Wait for the other request to be displayed.
+        waitForResponse(panel);
+    });
+}
+
+function onVerifyResponses()
+{
+    verifyResponses();
     FBTestFirebug.testDone("issue2696.DONE");
 }
 
 function verifyResponses(netRow)
 {
     var panel = FW.FirebugChrome.selectPanel("net");
-    var netRows = panel.panelNode.getElementsByClassName("netRow category-xhr hasHeaders loaded");
-    if (!FBTest.compare(2, netRows.length, "There must be two xhr requests."))
-        return;
 
     FBTestFirebug.expandElements(panel.panelNode, "category-xhr");
     FBTestFirebug.expandElements(panel.panelNode, "netInfoResponseTab");
