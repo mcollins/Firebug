@@ -565,7 +565,9 @@ FBTestApp.Preferences =
             if (prefName.indexOf("DBG_") == -1 &&
                 prefName.indexOf("filterSystemURLs") == -1)
             {
-                this.values[prefName] = Firebug.getPref(Firebug.prefDomain, prefName);
+                var value = Firebug.getPref(Firebug.prefDomain, prefName);
+                if (typeof(value) != 'undefined')
+                    this.values[prefName] = value;
             }
         }
     },
