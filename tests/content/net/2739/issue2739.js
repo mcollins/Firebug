@@ -44,6 +44,7 @@ function waitForResponse(panel)
     });
 }
 
+// Called as soon as both XHR requests are displayed in the Net panel.
 function onVerifyResponses()
 {
     verifyResponses();
