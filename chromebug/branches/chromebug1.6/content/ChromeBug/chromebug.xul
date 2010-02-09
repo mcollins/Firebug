@@ -166,7 +166,7 @@
                     <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
                               label="XPCOM Explorer"/>
                     <menuitem id="menu_chromebugTraceConsole" command="cmd_toggleCBTraceConsole"
-                            key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole"/>
+                            key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole" />
                     <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
                     <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
@@ -208,6 +208,11 @@
                             <menuitem type="checkbox" label="&firebug.ShadeBoxModel;"
                                       oncommand="FirebugChrome.onToggleOption(this)"
                                       option="shadeBoxModel"/>
+                                      
+                           <menuitem id="ChromebugMenu_Options_alwaysOpenTraceConsole"
+                    				type="checkbox" label="Always Open Chromebug Tracing"
+                    				oncommand="FirebugChrome.onToggleOption(this)"
+                    				option="alwaysOpenTraceConsole"/>
                         </menupopup>
                     </menu>
                 </menupopup>
