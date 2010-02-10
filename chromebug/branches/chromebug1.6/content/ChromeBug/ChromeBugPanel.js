@@ -625,6 +625,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Debugger.addListener(this);
         Firebug.Debugger.setDefaultState(true);
 
+        Firebug.registerUIListener(Chromebug.allFilesList);
+        
         Chromebug.packageList.addListener(Chromebug.allFilesList);  // how changes to the package filter are sensed by AllFilesList
 
         Firebug.TraceModule.addListener(this);
@@ -1297,6 +1299,14 @@ Firebug.Chromebug = extend(Firebug.Module,
         var cbContextList = document.getElementById('cbContextList');
         cbContextList.setAttribute("highlight", "true");
 
+        // The argument 'context' is stopped, but other contexts on the stack are not stopped.
+        while (frame = frame.callingFrame)
+        {
+        	var callingContext = Firebug.Debugger.getContextByFrame(frame);
+        	if (callingContext) 
+        		callingContext.stopped = true;
+        }
+        
         return -1;
     },
 
@@ -1322,6 +1332,12 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (FBTrace.DBG_INITIALIZE)
                 FBTrace.sysout("ChromeBugPanel.onResume previousContext:"+ location);
         }
+        
+        Firebug.Chromebug.eachContext(function clearStopped(context)
+        {
+        	delete context.stopped;
+        });
+        
         FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
 
     },
@@ -2244,7 +2260,7 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
 
     supports: function(sourceFile)
     {
-        return getDescription(sourceFile);
+        return this.getDescription(sourceFile);
     },
 
     getPackageNames: function()
@@ -2531,6 +2547,22 @@ Chromebug.allFilesList = extend(new SourceFileListBase(), {
                 return (description && (targetName == description.pkgName) );
             });
         }
+    },
+    
+    //**************************************************************************
+    // Sync the Chromebug file list to the context's Script file list.
+    onPanelNavigate: function(object, panel)
+    {
+    	if (panel.name !== "script")
+    		return;
+    	
+    	var sourceFile = object;
+    	
+    	if (FBTrace.DBG_LOCATIONS)
+    		FBTrace.sysout("onPanelNavigate "+sourceFile, panel);
+    	
+    	if (sourceFile)
+   			$('cbAllFilesList').location = this.getDescription(sourceFile);
     },
 
 });
