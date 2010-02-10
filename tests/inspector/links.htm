@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <script>
+            function createLinks() {
+                var i, frag,
+                    s = [],
+                    titles = [68, 123, 190, 200, 308, 699, 1168, 1345, 1800, 2188, 2273, 2373],
+                    listLen = titles.length,
+                    linkFrag = '<a href="#" onclick="linkClicked(this.text);">Issue [[LINKTEXT]]</a><br />';
+                
+                for(i=0; i<listLen; i++) {
+                    frag = linkFrag.replace("[[LINKTEXT]]", titles[i])
+                    s.push(frag);
+                }
+                
+                document.getElementById("linkDiv").innerHTML = s.join("");
+            }
+            
+            function linkClicked(linkText) {
+                switch(linkText) {
+                    case "Issue 2373":
+                        top.contentFrame.location.href = linkText + ".xhtm";
+                        top.detailFrame.location.href = linkText + " Desc.htm";
+                        break;
+                    default:
+                        top.contentFrame.location.href = linkText + ".htm";
+                        top.detailFrame.location.href = linkText + " Desc.htm";
+                        break;
+                }
+            }
+        </script>
+    </head>
+    <body onload="createLinks();">
+        <div id="linkDiv"></div>
+    </body>
+</html>
