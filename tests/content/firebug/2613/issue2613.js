@@ -13,7 +13,7 @@ function runTest()
         // The reload functions will be called three times. Once for each panel.
         var testSuite = [];
         testSuite.push(function(callback) {
-            reload("css", callback);
+            reload("stylesheet", callback);
         });
         testSuite.push(function(callback) {
             reload("html", callback);
