@@ -29,6 +29,9 @@ function runTest() {
         + "      p {\n"
         + "        margin: 100;\n"
         + "      }\n"
+        + "      div:after {\n"
+        + "        content: \"test\";\n"
+        + "      }\n"
         + "    </style>\n"
         // This is an issue with the firefox parser. Not much that we can do about this right now
         // Expected:

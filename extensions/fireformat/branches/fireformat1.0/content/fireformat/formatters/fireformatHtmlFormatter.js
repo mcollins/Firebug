@@ -255,7 +255,11 @@ FBL.ns(function() { with (FBL) {
       }
     },
     printText: function(text) {
-      this.writer.write({ value: replaceEntities(text.data), nowrap: true, preformatted: true });
+      var parentTag = ((text.parentNode || {}).tagName || ""),
+          cdata = parentTag == "SCRIPT"
+                || parentTag == "STYLE";
+      
+      this.writer.write({ value: !cdata ? replaceEntities(text.data) : text.data, nowrap: true, preformatted: true });
     },
     printAttr: function(attr, first) {
       this.writer.write({
