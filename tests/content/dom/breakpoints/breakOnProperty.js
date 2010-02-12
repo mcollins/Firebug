@@ -4,42 +4,28 @@ function runTest()
     FBTestFirebug.openNewTab(basePath + "dom/breakpoints/breakOnProperty.html", function(win)
     {
         FBTestFirebug.openFirebug();
-        FBTestFirebug.enableScriptPanel(function(win)
+        FBTestFirebug.enableAllPanels();
+
+        FBTestFirebug.selectPanel("dom");
+
+        // Reload window to activate debugger and run breakOnTest.
+        FBTestFirebug.reload(function(win)
         {
-            var panel = FBTestFirebug.selectPanel("dom");
+            var panel = FBTestFirebug.getPanel("dom");
             var row = getPropertyRow(panel, "anObject");
-            if (!FBTest.ok(row, "anObject must be available"))
+            onPropertyDisplayed(row, "anObject", function(row)
             {
-                FBTestFirebug.testDone("dom.breakpoints; FAILED");
-                return;
-            }
-
-            var recognizer = new MutationRecognizer(panel.document.defaultView,
-                "Text", {}, "_testProperty");
-
-            // Wait till _testProperty row in the UI is available. This row displays
-            // the _testProperty and we need to created a breakpoint on it.
-            recognizer.onRecognize(function (element)
-            {
-                var row = getPropertyRow(panel, "_testProperty");
-                if (!FBTest.ok(row, "_testProperty must be available"))
+                // Wait till _testProperty row in the UI is available. This row displays
+                // the _testProperty and we need to created a breakpoint on it.
+                onPropertyDisplayed(null, "_testProperty", function(element)
                 {
-                    FBTestFirebug.testDone("dom.breakpoints; DONE");
-                    return;
-                }
+                    // Set breakpoint.
+                    panel.breakOnProperty(element);
 
-                // OK, the row exists, but we need to wait till the
-                // domObject property is set. This is done by domplate just
-                // after the row is inserted into the document.
-                row.watch("domObject", function(prop, oldVal, newVal)
-                {
-                    row.unwatch("domObject");
-
-                    row.domObject = newVal;
-                    panel.breakOnProperty(row);
-
+                    var doc = element.ownerDocument;
                     var testSuite = [];
                     testSuite.push(function(callback) {
+                        FBTest.progress("4 " + win.wrappedJSObject);
                         breakOnMutation(win, "changeProperty", 45, callback);
                     });
                     testSuite.push(function(callback) {
@@ -53,19 +39,34 @@ function runTest()
                         breakOnMutation(win, "changeProperty", 45, callback);
                     });
 
-                    runTestSuite(testSuite);
-                })
-            });
+                    runTestSuite(testSuite, function() {
+                        FBTestFirebug.testDone("dom.breakpoints; DONE");
+                    });
+                });
 
-            // Click to expand object's properties.
-            var label = row.getElementsByClassName("memberLabel").item(0);
-            FBTest.click(label);
+                // Click to expand object's properties.
+                var label = row.getElementsByClassName("memberLabel").item(0);
+                FBTest.click(label);
+            });
         });
     });
 }
 
+function onPropertyDisplayed(element, propName, callback)
+{
+    if (element)
+        return callback(element);
+
+    var panel = FBTestFirebug.getPanel("dom");
+    var recognizer = new MutationRecognizer(panel.document.defaultView,
+        "Text", {}, propName);
+    recognizer.onRecognizeAsync(callback);
+}
+
 function breakOnMutation(win, buttonId, lineNo, callback)
 {
+    FBTest.progress("breakOnMutation; " + buttonId);
+
     FBTestFirebug.selectPanel("dom");
 
     var chrome = FW.Firebug.chrome;
@@ -91,23 +92,3 @@ function getPropertyRow(panel, propName)
     }
     return null;
 }
-
-// ************************************************************************************************
-// Helpers
-
-function runTestSuite(tests)
-{
-    setTimeout(function()
-    {
-        FBTestFirebug.selectPanel("html");
-
-        var test = tests.shift();
-        test.call(this, function() {
-            if (tests.length > 0)
-                runTestSuite(tests);
-            else
-                FBTestFirebug.testDone("dom.breakpoints; DONE");
-        });
-    }, 100);
-}
-
