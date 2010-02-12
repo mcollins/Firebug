@@ -523,7 +523,8 @@ FBTestApp.Test.prototype =
         if (!this.error)
             return "";
 
-        var text = "[FAILED] " + this.uri + ": " + this.desc + "\n";
+        var status = (this.category == "fails") ? "[FAILED, NOT BLOCKING]" : "[FAILED]";
+        var text = status + " " + this.uri + ": " + this.desc + "\n";
         for (var i=0; i<this.results.length; i++)
         {
             var testResult = this.results[i];
