@@ -22,7 +22,6 @@ function runTest()
     });
 }
 
-
 function fireTest(win)
 {
     var panelDoc = FBTestFirebug.getPanelDocument();
@@ -74,7 +73,7 @@ function fireTest(win)
     });
 
     var panel = FBTestFirebug.getSelectedPanel();
-    panel.rebuild();  // This is cheating, should push the buttons
+    FBTestFirebug.reload();
 }
 
 function editSomething()
