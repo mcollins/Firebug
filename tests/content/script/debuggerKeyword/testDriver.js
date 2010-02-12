@@ -52,7 +52,7 @@ function runTest()
             win = testWindow;
 
             // Start all async tests.
-            runTestSuite(testSuite, function() {
+            FBTestFirebug.runTestSuite(testSuite, function() {
                 FBTestFirebug.testDone("debuggerKeyword.DONE");
             });
         });

@@ -114,7 +114,7 @@ function runTest()
 
         // Reload window to activate debugger and run all tests.
         FBTestFirebug.reload(function(win) {
-            runTestSuite(testSuite, function() {
+            FBTestFirebug.runTestSuite(testSuite, function() {
                 FBTestFirebug.testDone("html.onMutate; DONE");
             });
         })

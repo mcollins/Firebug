@@ -39,7 +39,7 @@ function runTest()
                         breakOnMutation(win, "changeProperty", 45, callback);
                     });
 
-                    runTestSuite(testSuite, function() {
+                    FBTestFirebug.runTestSuite(testSuite, function() {
                         FBTestFirebug.testDone("dom.breakpoints; DONE");
                     });
                 });

@@ -23,7 +23,7 @@ function runTest()
         });
 
         // Run test suite.
-        runTestSuite(testSuite, function() {
+        FBTestFirebug.runTestSuite(testSuite, function() {
             FBTestFirebug.testDone("issue2613; DONE");
         });
     });

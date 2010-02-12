@@ -71,7 +71,7 @@ function runTest()
                 });
             });
 
-            runTestSuite(testSuite, function() {
+            FBTestFirebug.runTestSuite(testSuite, function() {
                 FBTestFirebug.testDone("search; DONE");
             });
         });
