@@ -30,7 +30,7 @@ function checkConsoleSourceLinks(elt)
     FBTest.progress("checking source links");
     var panelNode = elt.parentNode.parentNode;
     FBTest.sysout("Using panelNode "+panelNode.getAttribute("class"));
-    var links = panelNode.getElementsByTagName("A");
+    var links = panelNode.getElementsByClassName("objectLink-sourceLink");
     FBTest.compare("2 sourcelinks", links.length+" sourcelinks", "The test case shows two source links");
 
     var initLink = links[0].firstChild; // after R4847 there is a div around the text of the link
