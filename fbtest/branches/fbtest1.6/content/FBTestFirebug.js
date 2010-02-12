@@ -1209,9 +1209,6 @@ this.TestHandlers.prototype =
 };
 
 // ************************************************************************************************
-};
-
-// ************************************************************************************************
 // Support for asynchronous test suites (within a FBTest).
 
 /**
@@ -1237,14 +1234,14 @@ this.TestHandlers.prototype =
  *      FBTestFirebug.testDone("DONE");
  *  });</pre>
  */
-function runTestSuite(tests, callback)
+this.runTestSuite = function(tests, callback)
 {
     setTimeout(function()
     {
         var test = tests.shift();
         test.call(this, function() {
             if (tests.length > 0)
-                runTestSuite(tests, callback);
+                FBTestFirebug.runTestSuite(tests, callback);
             else
                 callback();
         });
@@ -1252,6 +1249,10 @@ function runTestSuite(tests, callback)
 }
 
 // ************************************************************************************************
+};
+
+// ************************************************************************************************
+// Initialization
 
 function initializeFBTestFirebug()
 {
