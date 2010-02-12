@@ -914,7 +914,10 @@ this.clickToolbarButton = function(chrome, buttonID)
     FBTest.sysout("Click toolbar button " + buttonID, button);
 
     // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
-    this.synthesizeMouse(button);
+    // Do not use synthesizeMouse, if the button isn't visible coordinates are wrong
+    // and the click event is not fired.
+    //this.synthesizeMouse(button);
+    button.doCommand();
 }
 
 this.synthesizeMouse = function(node)
