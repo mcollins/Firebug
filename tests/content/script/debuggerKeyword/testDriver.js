@@ -6,12 +6,43 @@ function runTest()
     FBTest.sysout("debuggerKeyword.START");
 
     // List of handlers for entire asynchronous test.
-    testSuite = new FBTest.Firebug.TestHandlers("debuggerKeyword");
+    var testSuite = [];
 
-    // Open new page.
-    testSuite.add(function onNewPage(event)
+    // Test 1: debugger simple
+    testSuite.push(function debuggerSimple(callback)
     {
-        // Open Firebug UI, enable Script panel, reload and start first test.
+        executeTest("debuggerSimple", 29, callback);
+    });
+
+    // Test 2: debugger shallow
+    testSuite.push(function debuggerShallow(callback)
+    {
+        executeTest("debuggerShallow", 35, callback);
+    });
+
+    // Test 3: debugger deep
+    testSuite.push(function debuggerDeep(callback)
+    {
+        executeTest("debuggerDeep", 61, callback);
+    });
+
+    // Test 4: debugger in XHR
+    testSuite.push(function debuggerInXHR(callback)
+    {
+        executeTest("debuggerInXHR", 14, callback);
+    });
+
+    // Test 5: debugger in script
+    testSuite.push(function debuggerInScript(callback)
+    {
+        executeTest("debuggerInScript", 16, callback);
+    });
+
+    // Load test case page
+    FBTestFirebug.openNewTab(basePath +
+        "script/debuggerKeyword/testPage.html", function(testWindow)
+    {
+        // Open Firebug UI, enable Script panel, reload and start tests.
         FBTestFirebug.openFirebug();
         FBTestFirebug.clearCache();
         FBTestFirebug.selectPanel("script");
@@ -19,45 +50,16 @@ function runTest()
         FBTestFirebug.enableScriptPanel(function(testWindow)
         {
             win = testWindow;
-            testSuite.fire("debuggerSimple");
+
+            // Start all async tests.
+            runTestSuite(testSuite, function() {
+                FBTestFirebug.testDone("debuggerKeyword.DONE");
+            });
         });
     });
-
-    // Test 1: debugger simple
-    testSuite.add(function debuggerSimple(event)
-    {
-        executeTest("debuggerSimple", 29, "debuggerShallow");
-    });
-
-    // Test 2: debugger shallow
-    testSuite.add(function debuggerShallow(event)
-    {
-        executeTest("debuggerShallow", 35, "debuggerDeep");
-    });
-
-    // Test 3: debugger deep
-    testSuite.add(function debuggerDeep(event)
-    {
-        executeTest("debuggerDeep", 61, "debuggerInXHR");
-    });
-
-    // Test 4: debugger in XHR
-    testSuite.add(function debuggerInXHR(event)
-    {
-        executeTest("debuggerInXHR", 14, "debuggerInScript");
-    });
-
-    // Test 5: debugger in script
-    testSuite.add(function debuggerInScript(event)
-    {
-        executeTest("debuggerInScript", 16);
-    });
-
-    // Start all test cases.
-    testSuite.fireOnNewPage("onNewPage", basePath + "script/debuggerKeyword/testPage.html");
 }
 
-function executeTest(testId, lineNo, nextTest)
+function executeTest(testId, lineNo, callback)
 {
     var chrome = FW.Firebug.chrome;
 
@@ -73,11 +75,7 @@ function executeTest(testId, lineNo, nextTest)
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
     {
         FBTestFirebug.clickContinueButton();
-
-        if (nextTest) 
-            setTimeout(function() { testSuite.fire(nextTest) }, 100);
-        else 
-            FBTestFirebug.testDone("debuggerKeyword.DONE");
+        callback();
     });
 
     // Execute a method with debuggger; keyword in it. This is done
