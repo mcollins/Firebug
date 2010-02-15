@@ -1030,6 +1030,30 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     FBTest.sysout("fbTestFirebug.waitForBreakInDebugger recognizing ", lookBP);
 }
 
+/**
+ * Set a breakpoint
+ * @param {Object} chrome Firebug chrome object. If null, the default is used.
+ * @param {Object} url URL of the target file. If null, the current file is used.
+ * @param {Object} lineNo Source line number.
+ * @param {Object} callback Asynchronous callback is called as soon as the breakpoint is set.
+ */
+this.setBreakpoint = function(chrome, url, lineNo, callback)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var panel = FBTestFirebug.getPanel("script");
+    if (!url)
+        url = panel.location.href;
+
+    FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
+    {
+        if (row.getAttribute("breakpoint") != "true")
+            panel.toggleBreakpoint(lineNo);
+        callback(row);
+    });
+}
+
 // ************************************************************************************************
 // Error handling
 /*
@@ -1074,13 +1098,27 @@ this.selectPanelLocationByName = function(panel, name)
  * Example:<br/>
  * <code>FBTest.Firebug.selectSourceLine(sourceFile.href, 1143, "js")</code>
  */ 
-this.selectSourceLine = function(url, lineNo, category, chrome)
+this.selectSourceLine = function(url, lineNo, category, chrome, callback)
 {
     var sourceLink = new FBTest.FirebugWindow.FBL.SourceLink(url, lineNo, category);
     if (chrome)
         chrome.select(sourceLink);
     else
         FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
+
+    if (!callback)
+        return;
+
+    var tries = 5;
+    var checking = setInterval(function checkScrolling()
+    {
+        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+        if (!row && --tries)
+            return;
+
+        clearInterval(checking);
+        callback(row);
+    }, 50);
 }
 
 // ************************************************************************************************

@@ -764,22 +764,25 @@ var FBTest = FBTestApp.FBTest =
     setToKnownState: function()
     {
         FBTest.sysout("FBTestFirebug setToKnownState");
-        if(FBTest.FirebugWindow.Firebug.Activation)
+
+        var Firebug = FBTest.FirebugWindow.Firebug;
+        if(Firebug.Activation)
         {
-            FBTest.FirebugWindow.Firebug.Activation.toggleAll("off");
-            FBTest.FirebugWindow.Firebug.Activation.toggleAll("none");
-            FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
+            Firebug.Activation.toggleAll("off");
+            Firebug.Activation.toggleAll("none");
+            Firebug.Activation.clearAnnotations();
         }
         else
         {
-            FBTest.FirebugWindow.Firebug.toggleAll("off");
-            FBTest.FirebugWindow.Firebug.toggleAll("none");
+            Firebug.toggleAll("off");
+            Firebug.toggleAll("none");
         }
 
-        if (FBTest.FirebugWindow.Firebug.isDetached())
-            FBTest.FirebugWindow.Firebug.toggleDetachBar();
+        if (Firebug.isDetached())
+            Firebug.toggleDetachBar();
 
-        FBTest.FirebugWindow.Firebug.resetAllOptions(false);
+        Firebug.resetAllOptions(false);
+        Firebug.Debugger.clearAllBreakpoints(null);
     },
 
     // *************************************************************************************************
