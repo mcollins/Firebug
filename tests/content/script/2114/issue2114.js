@@ -26,7 +26,6 @@ function runTest()
                         var stopped = chrome.getGlobalAttribute("fbDebuggerButtons", "stopped");
                         FBTest.compare("true", stopped, "The debugger must be stopped by now");
                         FBTestFirebug.clickContinueButton(chrome);
-                        FBTestFirebug.clearAllBreakpoints();
                         FBTestFirebug.testDone("issue2114.DONE");
                     }, 200);
                 });
