@@ -1162,6 +1162,75 @@ this.runTestSuite = function(tests, callback)
 }
 
 // ************************************************************************************************
+// Screen copy
+
+this.getImageDataFromWindow = function(win, width, height)
+{
+    var canvas = createCanvas(width, height);
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.scale(1, 1);
+    ctx.drawWindow(win, 0, 0, width, height, "rgb(255,255,255)");
+    ctx.restore();
+    return canvas.toDataURL("image/png", "");
+}
+
+this.loadImageData = function(url, callback)
+{
+    var image = new Image();
+    image.onload = function()
+    {
+        var width = image.width;
+        var height = image.height;
+
+        var canvas = createCanvas(image.width, image.height);
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, width, height);
+        callback(canvas.toDataURL("image/png", ""));
+    }
+
+    image.src = url;
+    return image;
+}
+
+this.saveCanvas = function(canvas, destFile)
+{
+    // convert string filepath to an nsIFile
+    var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+    file.initWithPath(destFile);
+
+    // create a data url from the canvas and then create URIs of the source and targets
+    var io = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+    var source = io.newURI(canvas.toDataURL("image/png", ""), "UTF8", null);
+    var target = io.newFileURI(file);
+
+    // prepare to save the canvas data
+    var persist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"].createInstance(Ci.nsIWebBrowserPersist);
+
+    persist.persistFlags = Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+    persist.persistFlags |= Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
+
+    // displays a download dialog (remove these 3 lines for silent download)
+    var xfer = Cc["@mozilla.org/transfer;1"].createInstance(Ci.nsITransfer);
+    xfer.init(source, target, "", null, null, null, persist);
+    persist.progressListener = xfer;
+
+    // save the canvas data to the file
+    persist.saveURI(source, null, null, null, null, file);
+}
+
+function createCanvas(width, height)
+{
+     var canvas = document.createElement("canvas");
+     canvas.style.width = width + "px";
+     canvas.style.height = height + "px";
+     canvas.width = width;
+     canvas.height = height;
+     return canvas;
+}
+
+// ************************************************************************************************
 };
 
 // ************************************************************************************************
