@@ -1231,6 +1231,29 @@ function createCanvas(width, height)
 }
 
 // ************************************************************************************************
+// Inspector
+
+this.inspectUsingFrame = function(elt)
+{
+    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "frame", null);
+}
+
+this.inspectUsingBoxModel = function(elt)
+{
+    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "boxModel", null);
+}
+
+this.inspectUsingBoxModelWithRulers = function(elt)
+{
+    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "boxModel", "content");
+}
+
+this.inspectorClear = function()
+{
+    FW.Firebug.Inspector.highlightObject(null);
+}
+
+// ************************************************************************************************
 };
 
 // ************************************************************************************************
