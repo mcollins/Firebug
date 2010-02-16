@@ -45,8 +45,6 @@ const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverServ
 const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
 const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
 const directoryService = CCSV("@mozilla.org/file/directory_service;1", "nsIProperties");
-const Application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
-
 
 const PrefService = Cc["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
@@ -626,7 +624,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Debugger.setDefaultState(true);
 
         Firebug.registerUIListener(Chromebug.allFilesList);
-        
+
         Chromebug.packageList.addListener(Chromebug.allFilesList);  // how changes to the package filter are sensed by AllFilesList
 
         Firebug.TraceModule.addListener(this);
@@ -1118,12 +1116,14 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            var jsdState = Application.storage.get('jsdState', null);
+            var startupObserver = Cc.classes["@getfirebug.com/chromebug-startup-observer;1"].getService(Ci.nsISupports).wrappedJSObject;
+
+            var jsdState = startupObserver.getJSDState();
             if (!jsdState || !jsdState._chromebug)
             {
                 setTimeout(function waitForFBTrace()
                 {
-                    FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! Applcation:", Application);
+                    FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
                 }, 1500);
                 return;
             }
@@ -1302,11 +1302,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         // The argument 'context' is stopped, but other contexts on the stack are not stopped.
         while (frame = frame.callingFrame)
         {
-        	var callingContext = Firebug.Debugger.getContextByFrame(frame);
-        	if (callingContext) 
-        		callingContext.stopped = true;
+            var callingContext = Firebug.Debugger.getContextByFrame(frame);
+            if (callingContext)
+                callingContext.stopped = true;
         }
-        
+
         return -1;
     },
 
@@ -1332,12 +1332,12 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (FBTrace.DBG_INITIALIZE)
                 FBTrace.sysout("ChromeBugPanel.onResume previousContext:"+ location);
         }
-        
+
         Firebug.Chromebug.eachContext(function clearStopped(context)
         {
-        	delete context.stopped;
+            delete context.stopped;
         });
-        
+
         FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
 
     },
@@ -2548,21 +2548,21 @@ Chromebug.allFilesList = extend(new SourceFileListBase(), {
             });
         }
     },
-    
+
     //**************************************************************************
     // Sync the Chromebug file list to the context's Script file list.
     onPanelNavigate: function(object, panel)
     {
-    	if (panel.name !== "script")
-    		return;
-    	
-    	var sourceFile = object;
-    	
-    	if (FBTrace.DBG_LOCATIONS)
-    		FBTrace.sysout("onPanelNavigate "+sourceFile, panel);
-    	
-    	if (sourceFile)
-   			$('cbAllFilesList').location = this.getDescription(sourceFile);
+        if (panel.name !== "script")
+            return;
+
+        var sourceFile = object;
+
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("onPanelNavigate "+sourceFile, panel);
+
+        if (sourceFile)
+               $('cbAllFilesList').location = this.getDescription(sourceFile);
     },
 
 });

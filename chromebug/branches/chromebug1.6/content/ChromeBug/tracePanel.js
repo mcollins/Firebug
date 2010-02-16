@@ -50,6 +50,7 @@ Firebug.Chromebug.TraceConsoleModule = extend(Firebug.Module,
         if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("cb.TraceConsoleModule.destroyContext; " +
                 context.getName() + " - " + context.getTitle());
+        return true; // do not remove
     },
 
     // nsIObserver

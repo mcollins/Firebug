@@ -15,7 +15,7 @@ const STARTUP_TOPIC = "app-startup";
 
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
-var Application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
+
 
 const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 const trace = false;
@@ -29,34 +29,34 @@ function StartupObserver()
 
 StartupObserver.prototype =
 {
-   debug: false,
+    debug: false,
 
-   getWindow: function()
-   {
-       if (!gStartupObserverSingleton.window)
-       {
-           var appShellService = Cc["@mozilla.org/appshell/appShellService;1"].getService(Ci.nsIAppShellService);
-           gStartupObserverSingleton.window = appShellService.hiddenDOMWindow;
-       }
-       return gStartupObserverSingleton.window;
-   },
+    getWindow: function()
+    {
+        if (!gStartupObserverSingleton.window)
+        {
+            var appShellService = Cc["@mozilla.org/appshell/appShellService;1"].getService(Ci.nsIAppShellService);
+            gStartupObserverSingleton.window = appShellService.hiddenDOMWindow;
+        }
+        return gStartupObserverSingleton.window;
+    },
 
-   startJSD: function()
-   {
-       if (trace) Components.utils.reportError("chromebug starting jsd");
-       var DebuggerService = Cc["@mozilla.org/js/jsd/debugger-service;1"];
-       var jsdIDebuggerService = Ci["jsdIDebuggerService"];
-       jsd = DebuggerService.getService(jsdIDebuggerService);
+    startJSD: function()
+    {
+        if (trace) Components.utils.reportError("chromebug starting jsd");
+        var DebuggerService = Cc["@mozilla.org/js/jsd/debugger-service;1"];
+        var jsdIDebuggerService = Ci["jsdIDebuggerService"];
+        jsd = DebuggerService.getService(jsdIDebuggerService);
 
-       jsd.on();
-       jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
-       jsd.initAtStartup = false;
+        jsd.on();
+        jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
+        jsd.initAtStartup = false;
 
-       this.setJSDFilters(jsd);
+        this.setJSDFilters(jsd);
 
-       this.hookJSDContexts(jsd,  this.getJSDState());
-       Components.utils.reportError("FYI: Chromebug started jsd engine; JIT will be disabled");
-   },
+        this.hookJSDContexts(jsd,  this.getJSDState());
+        Components.utils.reportError("FYI: Chromebug started jsd engine; JIT will be disabled");
+    },
 
    setJSDFilters: function(jsd)
    {
@@ -269,12 +269,9 @@ StartupObserver.prototype =
 
    getJSDState: function()
    {
-       if (!Application.storage.has('jsdState'))
-       {
+       if (!gStartupObserverSingleton.jsdState)
            gStartupObserverSingleton.jsdState = {};
-           Application.storage.set('jsdState', gStartupObserverSingleton.jsdState);
-       }
-       return Application.storage.get('jsdState', gStartupObserverSingleton.jsdState);
+       return gStartupObserverSingleton.jsdState;
    },
 
    /*  END API */
