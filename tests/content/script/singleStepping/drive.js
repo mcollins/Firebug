@@ -76,10 +76,7 @@ function stepInto()
         stepIntoLineNo, false, checkStepInto);
 
     FBTest.progress("Press single step button");
-    var singleStepButton = FW.document.getElementById("fbStepIntoButton");
-    FBTest.click(singleStepButton);  // WHY doesn't this work???
-
-    FW.Firebug.Debugger.stepInto(FW.FirebugContext);
+    FBTestFirebug.clickToolbarButton(FW.Firebug.chrome, "fbStepIntoButton");
 };
 
 var stepIntoFileName = "index.html";
@@ -99,8 +96,6 @@ function stepOver()
 
     FBTest.progress("Press single over button");
     FBTestFirebug.clickToolbarButton(FW.Firebug.chrome, "fbStepOverButton");
-
-    FW.Firebug.Debugger.stepOver(FW.FirebugContext);
 }
 
 var stepOverLineNo = FF3p5OrLess ? 15 : 14;
@@ -123,7 +118,6 @@ function stepOut()
 
     FBTest.progress("Press single StepOut button");
     FBTestFirebug.clickToolbarButton(FW.Firebug.chrome, "fbStepOutButton");
-    FW.Firebug.Debugger.stepOut(FW.FirebugContext);
 }
 
 var stepOutLineNo = 2;
