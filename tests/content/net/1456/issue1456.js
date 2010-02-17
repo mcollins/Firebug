@@ -5,17 +5,6 @@ function runTest()
     FBTest.sysout("issue1456.START");
     var responseText = "$('tb').shake();\n$('tb').value='Some Response';\n";
 
-    // Server side handler.
-    FBTest.registerPathHandler("/net/1456/issue1456.txt", function (metadata, response)
-    {
-        FBTest.sysout("issue1456.onPathHandler; Server side handler executed.", metadata);
-
-        response.setHeader("Pragma", "no-cache", false);
-        response.setHeader("Cache-Control", "no-store, no-cache, max-age=0, must-revalidate", false);
-        response.setHeader("Content-type", "text/javascript", false);
-        response.write(responseText);
-    });
-
     FBTestFirebug.openNewTab(basePath + "net/1456/issue1456.htm", function(win)
     {
         // Open Firebug UI and enable Net panel.

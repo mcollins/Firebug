@@ -4,15 +4,6 @@ function runTest()
 {
     FBTest.sysout("issue846.START");
 
-    // Server side handler.
-    FBTest.registerPathHandler("/net/846/Issue846.php", function (metadata, response)
-    {
-        response.setHeader("Content-type", "text/plain", false);
-
-        var responseText = "<div>" + (new Date()).getTime() + "</div>";
-        response.write(responseText);
-    });
-
     FBTestFirebug.openNewTab(basePath + "net/846/Issue846.htm", function(win)
     {
         // Disable XHR spy.

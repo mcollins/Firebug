@@ -7,13 +7,6 @@ function runTest()
 {
     FBTest.sysout("issue700.START");
 
-    // Server side handler.
-    FBTest.registerPathHandler("/net/700/issue700.php", function (metadata, response)
-    {
-        response.setHeader("Content-Type", "text/html", false);
-        response.write(htmlResponse);
-    });
-
     FBTestFirebug.openNewTab(basePath + "net/700/issue700.html", function(win)
     {
         FBTestFirebug.enableNetPanel(function(win)

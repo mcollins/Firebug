@@ -2,13 +2,6 @@ function runTest()
 {
     FBTest.sysout("issue369.jsonViewer.START");
 
-    FBTest.registerPathHandler("/net/369/issue369-1.txt", requestHandler1);
-    FBTest.registerPathHandler("/net/369/issue369-2.txt", requestHandler2);
-    FBTest.registerPathHandler("/net/369/issue369-3.txt", requestHandler3);
-    FBTest.registerPathHandler("/net/369/issue369-4.txt", requestHandler4);
-    FBTest.registerPathHandler("/net/369/issue369-5.txt", requestHandler5);
-    FBTest.registerPathHandler("/net/369/issue369-6.txt", requestHandler6);
-
     FBTestFirebug.openNewTab(basePath + "net/369/issue369.htm", function(win)
     {
         FBTestFirebug.openFirebug();

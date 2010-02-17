@@ -2,10 +2,6 @@ function runTest()
 {
     FBTest.sysout("issue176.START");
 
-    // Register request handler for two different URLs
-    FBTest.registerPathHandler("/net/176/issue176.flv", requestHandler);
-    FBTest.registerPathHandler("/net/176/issue176.txt", requestHandler);
-
     FBTestFirebug.openNewTab(basePath + "net/176/issue176.html", function(win)
     {
         FBTestFirebug.enableNetPanel(function(win)
