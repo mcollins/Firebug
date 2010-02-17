@@ -358,7 +358,7 @@ FBTestApp.TestResultTabView = domplate(
                     )
                 ),
                 TR(
-                    TD({"class": "testResultResult", colspan: 2})
+                    TD({"class": "testResultActual", colspan: 2})
                 ),
                 TR({"class": "testResultCompareTitle diff",
                     $collapsed: "$result|hideDiffGroup"},
@@ -371,6 +371,9 @@ FBTestApp.TestResultTabView = domplate(
                 )
             )
         ),
+
+    resultFrameTag:
+        IFRAME({"class": "testResultFrame"}),
 
     hideStackTab: function(result)
     {
@@ -453,8 +456,18 @@ FBTestApp.TestResultTabView = domplate(
             tabCompareBody.updated = true;
             this.compareTag.replace({result: result}, tabCompareBody, this);
 
-            this.insertXml(result.expected, getElementByClass(viewBody, "testResultExpected"));
-            this.insertXml(result.result, getElementByClass(viewBody, "testResultResult"));
+            var expectedNode = getElementByClass(viewBody, "testResultExpected");
+            var actualNode = getElementByClass(viewBody, "testResultActual");
+
+            if (this.isImage(result.expected))
+                this.insertImage(result.expected, expectedNode);
+            else
+                this.insertXml(result.expected, expectedNode);
+
+            if (this.isImage(result.result))
+                this.insertImage(result.result, actualNode);
+            else
+                this.insertXml(result.result, actualNode);
 
             // The diff is generated only if there are any differences.
             if (result.expected != result.result) {
@@ -474,13 +487,18 @@ FBTestApp.TestResultTabView = domplate(
         }
     },
 
+    isImage: function(text)
+    {
+        return (text && text.indexOf("data:image/") == 0);
+    },
+
     onSwitchView: function(event)
     {
         var target = event.target;
         var expected = hasClass(target, "expected");
         var infoRow = getAncestorByClass(target, "testResultInfoRow");
         var result = infoRow.repObject;
-        var sourceBody = getElementByClass(infoRow, expected ? "testResultExpected" : "testResultResult");
+        var sourceBody = getElementByClass(infoRow, expected ? "testResultExpected" : "testResultActual");
 
         clearNode(sourceBody);
 
@@ -552,6 +570,12 @@ FBTestApp.TestResultTabView = domplate(
         for (var i=0; i<docElem.childNodes.length; i++)
             Firebug.HTMLPanel.CompleteElement.getNodeTag(docElem.childNodes[i]).
                 append({object: docElem.childNodes[i]}, parentNode);
+    },
+
+    insertImage: function(data, parentNode)
+    {
+        var frame = this.resultFrameTag.replace({}, parentNode, this);
+        frame.setAttribute("src", data);
     }
 });
 
