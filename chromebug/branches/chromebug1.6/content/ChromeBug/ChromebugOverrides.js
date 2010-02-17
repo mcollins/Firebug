@@ -6,7 +6,6 @@ FBL.ns(function chromebug() { with (FBL) {
 const Ci = Components.interfaces;
 const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
 
-var previousContext = {global: null};
 
 var ChromebugOverrides = {
 
@@ -117,14 +116,10 @@ var ChromebugOverrides = {
                 if (fileName && Firebug.Chromebug.isChromebugURL(fileName))
                     return false;
 
-                var context = ChromebugOverrides.getContextByFrame(global, frame, previousContext);
+                // global is the outmost scope
+                var context = ChromebugOverrides.getContextByFrame(frame, global);
             }
             this.breakContext = context;
-
-            if (context)
-                previousContext = context; // private to this function
-            else
-                previousContext = {global: null};
 
             return !!context;
         }
@@ -137,24 +132,22 @@ var ChromebugOverrides = {
     },
 
     /*
-     * Map the frame to a context, using optional previoucsContext cache
+     * Map the frame to a context
      * @param frame jsdIStackFrame
-     * @param previousContext returned from a previous call to this function, optional
+     * @param global option previously computed from FBS
      * @return a context
      */
-    getContextByFrame: function(global, frame, previousContext)
+    getContextByFrame: function(frame, global)
     {
-        if (!frame || !frame.isValid)
-            return previousContext;
-
         var context = null;
+        if (frame && frame.isValid)
+        {
+            if (!global)
+                global = Firebug.Chromebug.getGlobalByFrame(frame);
 
-        if (previousContext && global == previousContext.global)
-            context = previousContext;
-
-        if (!context && global)
-            context = Firebug.Chromebug.getOrCreateContext(global, frame);
-
+            if (global)
+                context = Firebug.Chromebug.getOrCreateContext(global, frame);
+        }
         if (context)
         {
             if (FBTrace.DBG_TOPLEVEL)
@@ -336,17 +329,13 @@ function overrideFirebugFunctions()
         ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
         top.Firebug.chrome.setFirebugContext = function(context)
         {
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("setFirebugContext to "+(context?context.getName():"NULL"));
-            if (context)
-            {
-                ChromebugOverrides.firebugSetFirebugContext(context);
-            }
-            else
+            if (!context)
             {
                 var context = Chromebug.contextList.getDefaultLocation();
                 Firebug.Chromebug.selectContext(context);
             }
+            if (FBTrace.DBG_CHROMEBUG)
+                FBTrace.sysout("setFirebugContext NULL set to "+(context?context.getName():"NULL"));
         }
 
         // We don't want the context to show as windows load in Chromebug. Instead we wait for the user to select one.
@@ -363,9 +352,7 @@ function overrideFirebugFunctions()
             // Some objects need to cause context changes.
             if (object instanceof Ci.jsdIStackFrame)
             {
-                var context = FirebugContext;
-                var global = Firebug.Chromebug.getGlobalByFrame(object);
-                context = ChromebugOverrides.getContextByFrame(global, object, context);
+                context = ChromebugOverrides.getContextByFrame(object);
                 if (context != FirebugContext)
                     Firebug.Chromebug.selectContext(context);
             }

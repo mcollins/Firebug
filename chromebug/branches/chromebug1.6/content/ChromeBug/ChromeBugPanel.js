@@ -565,7 +565,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Chromebug.contextList.setCurrentLocation(context);
 
-        Firebug.chrome.setFirebugContext(context); // the context becomes the default for its view
+        FirebugContext = context; // the context becomes the default for its view
 
         dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
 
@@ -892,7 +892,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
 
-        var url = safeToString(global ? global.location : null);
+            var url = safeToString(global ? global.location : null);
             if (isDataURL(url))
             {
                 var lines = context.sourceCache.load(url);
@@ -1286,7 +1286,9 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.showContext(context.browser, context);
 
         var stopName = getExecutionStopNameFromType(type);
-        FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName+ " context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+        if (FBTrace.DBG_UI_LOOP)
+            FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName+ " context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+
         try
         {
             var src = frame.script.isValid ? frame.script.functionSource : "<invalid script>";
@@ -1294,7 +1296,8 @@ Firebug.Chromebug = extend(Firebug.Module,
             var src = "<invalid script>";
         }
 
-        FBTrace.sysout("ChromeBugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc+" in "+frame.script.fileName, "source:"+src);
+        if (FBTrace.DBG_UI_LOOP)
+            FBTrace.sysout("ChromeBugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc+" in "+frame.script.fileName, "source:"+src);
 
         var cbContextList = document.getElementById('cbContextList');
         cbContextList.setAttribute("highlight", "true");
@@ -1303,6 +1306,8 @@ Firebug.Chromebug = extend(Firebug.Module,
         while (frame = frame.callingFrame)
         {
             var callingContext = Firebug.Debugger.getContextByFrame(frame);
+            if (FBTrace.DBG_UI_LOOP)
+                FBTrace.sysout("ChromeBugPanel.onStop stopping context: "+(callingContext?callingContext.getName():null));
             if (callingContext)
                 callingContext.stopped = true;
         }
