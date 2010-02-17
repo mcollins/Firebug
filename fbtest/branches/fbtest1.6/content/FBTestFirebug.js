@@ -1166,6 +1166,12 @@ this.runTestSuite = function(tests, callback)
 
 this.getImageDataFromWindow = function(win, width, height)
 {
+    var canvas = this.getCanvasFromWindow(win, width, height);
+    return canvas.toDataURL("image/png", "");
+}
+
+this.getCanvasFromWindow = function(win, width, height)
+{
     var canvas = createCanvas(width, height);
     var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
@@ -1173,7 +1179,7 @@ this.getImageDataFromWindow = function(win, width, height)
     ctx.scale(1, 1);
     ctx.drawWindow(win, 0, 0, width, height, "rgb(255,255,255)");
     ctx.restore();
-    return canvas.toDataURL("image/png", "");
+    return canvas;
 }
 
 this.loadImageData = function(url, callback)
@@ -1194,8 +1200,10 @@ this.loadImageData = function(url, callback)
     return image;
 }
 
-this.saveCanvas = function(canvas, destFile)
+this.saveWindowImageToFile = function(win, width, height, destFile)
 {
+    var canvas = this.getCanvasFromWindow(win, width, height);
+
     // convert string filepath to an nsIFile
     var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
     file.initWithPath(destFile);
