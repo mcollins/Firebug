@@ -6,14 +6,6 @@ function runTest()
     var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
     FBTestFirebug.setPref("showXMLHttpRequests", false);
 
-    // Server side handler.
-    FBTest.registerPathHandler("/net/601/issue601.php", function (metadata, response)
-    {
-        response.setHeader("Content-type", "text/plain", false);
-        var postData = FW.FBL.readFromStream(metadata.bodyInputStream);
-        response.write(postData);
-    });
-
     FBTestFirebug.openNewTab(basePath + "net/601/issue601.html", function(win)
     {
         FBTestFirebug.enableNetPanel(function(win)
@@ -21,10 +13,12 @@ function runTest()
             var date = (new Date()).toUTCString();
             var postData = "date=" + date;
 
-            win.wrappedJSObject.postRequest(postData, function(request)
+            FBTestFirebug.selectPanel("net");
+
+            onRequestDisplayed(function(row)
             {
                 // Expand Net's panel UI so, it's populated with data.
-                var panelNode = FBTestFirebug.selectPanel("net").panelNode;
+                var panelNode = FBTestFirebug.getPanel("net").panelNode;
                 FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr");
                 FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 
@@ -36,6 +30,16 @@ function runTest()
                 FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue601.DONE");
             });
+
+            FBTest.click(win.document.getElementById("testButton"));
         });
     });
+}
+
+function onRequestDisplayed(callback)
+{
+    var doc = FBTestFirebug.getPanelDocument();
+    var recognizer = new MutationRecognizer(doc.defaultView, "tr",
+        {"class": "netRow category-xhr loaded"});
+    recognizer.onRecognizeAsync(callback);
 }
