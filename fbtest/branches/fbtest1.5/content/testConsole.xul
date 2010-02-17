@@ -16,7 +16,7 @@
         xmlns:html="http://www.w3.org/1999/xhtml"
         id="TestConsole"
         windowtype="FBTestConsole"
-        title="Firebug Test Console XUL Window"
+        title="Firebug Test Console 1.5"
         width="640" height="480"
         screenX="10" screenY="10"
         persist="screenX screenY width height sizemode">

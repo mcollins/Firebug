@@ -21,6 +21,16 @@ var Ci = Components.interfaces;
    // now fire a UI event
  */
 
+/**
+ * @constructor This object is intended for handling HTML changes that can occur on a page.
+ * This is useful e.g. in cases when a test expects specific element to be created and
+ * wants to asynchronously wait for it.
+ * @param {Window} win Parent window.
+ * @param {String} tagName Name of the element.
+ * @param {Object} attributes List of attributes that identifies the element.
+ * @param {String} text Specific text that should be created. The tagName must be set to
+ * <i>Text</i> in this case.
+ */
 var MutationRecognizer = function(win, tagName, attributes, text)
 {
    this.win = win;
@@ -40,11 +50,23 @@ MutationRecognizer.prototype.getDescription = function()
     return JSON.stringify(obj);
 };
 
+/**
+ * Passes a callback handler that is called when specific HTML change
+ * occurs on the page.
+ * @param {Function} handler Callback handler gets one parameter specifing the founded element.
+ */
 MutationRecognizer.prototype.onRecognize = function(handler)
 {
     return new MutationEventFilter(this, handler);
 }
 
+/**
+ * Passes a callback handler that is called when specific HTML change
+ * occurs on the page. After the change is catched, the handler is executed yet
+ * asynchronously.
+ * @param {Function} handler Callback handler gets one parameter specifing the founded element.
+ * @delay {Number} delay Number of milliseconds delay (10ms by default).
+ */
 MutationRecognizer.prototype.onRecognizeAsync = function(handler, delay)
 {
     if (!delay)
@@ -52,6 +74,7 @@ MutationRecognizer.prototype.onRecognizeAsync = function(handler, delay)
 
     return new MutationEventFilter(this, function(element) {
         setTimeout(function() {
+            FBTest.sysout("testFirebug.MutationEventFilter.onRecognizeAsync:", element);
             handler(element);
         }, delay);
     });
@@ -311,11 +334,10 @@ var chrome = window.parent.parent;
 
 /**
  * Open/close Firebug UI. If forceOpen is true, Firebug is only opened if closed.
+ * @param {Boolean} forceOpen Set to true if Firebug should stay opened. 
  */
 this.pressToggleFirebug = function(forceOpen)
 {
-    //FBTest.progress("pressToggleFirebug");
-
     // Don't close if it's open and should stay open.
     if (forceOpen && this.isFirebugOpen())
         return;
@@ -323,17 +345,26 @@ this.pressToggleFirebug = function(forceOpen)
     FBTest.pressKey(123); // F12
 };
 
+/**
+ * Open Firebug UI. If it's already opened, it stays opened.
+ */
 this.openFirebug = function()
 {
     this.pressToggleFirebug(true);
 }
 
+/**
+ * Detach Firebug into a new separate window. 
+ */
 this.detachFirebug = function()
 {
     this.openFirebug();
     return FW.Firebug.detachBar();
 }
 
+/**
+ * Closes Firebug UI. if the UI is closed, it stays closed.
+ */
 this.closeFirebug = function()
 {
     if (this.isFirebugOpen())
@@ -405,6 +436,8 @@ this.manualVerify = function(verifyMsg, instructions)
 
 /**
  * Opens specific URL in a new tab and calls the callback as soon as the tab is ready.
+ * @param {String} url URL to be opened in the new tab.
+ * @param {Function} callback Callback handler that is called as soon as the page is loaded. 
  */
 this.openNewTab = function(url, callback)
 {
@@ -445,6 +478,8 @@ this.openNewTab = function(url, callback)
 
 /**
  * Opens specific URL in the current tab and calls the callback as soon as the tab is ready.
+ * @param {String} url URL to be opened.
+ * @param {Function} callback Callback handler that is called as soon as the page is loaded.
  */
 this.openURL = function(url, callback)
 {
@@ -453,9 +488,10 @@ this.openURL = function(url, callback)
     var onLoadURL = function(event)
     {
         browser.removeEventListener("load", onLoadURL, true);
+
         setTimeout(function()
         {
-            var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
+            var win = browser.contentWindow;
 
             // This is a workaround for missing wrappedJSObject property,
             // if the test case comes from http (and not from chrome)
@@ -473,7 +509,8 @@ this.openURL = function(url, callback)
 }
 
 /**
- * Refresh the current tab.
+ * Refres the current tab.
+ * @param {Function} callback Callback handler that is called as soon as the page is reloaded.
  */
 this.reload = function(callback)
 {
@@ -485,7 +522,7 @@ this.reload = function(callback)
 
         setTimeout(function()
         {
-            var win = tabbrowser.selectedBrowser.contentDocument.defaultView;
+            var win = browser.contentWindow;
 
             // This is a workaround for missing wrappedJSObject property,
             // if the test case comes from http (and not from chrome)
@@ -548,6 +585,7 @@ this.closeFirebugOnAllTabs = function()
         this.closeFirebug();
     }
 }
+
 // ************************************************************************************************
 // DOM Helpers
 
@@ -581,41 +619,71 @@ this.updateModelState = function(model, callbackTriggersReload, enable)
         this.reload(callbackTriggersReload);
 }
 
+/**
+ * Disables the Net panel and reloads if a callback is specified.
+ * @param {Function} callback A handler that is called as soon as the page is reloaded.
+ */
 this.disableNetPanel = function(callback)
 {
     this.updateModelState(FW.Firebug.NetMonitor, callback, false);
 }
 
+/**
+ * Enables the Net panel and reloads if a callback is specified.
+ * @param {Function} callback A handler that is called as soon as the page is reloaded.
+ */
 this.enableNetPanel = function(callback)
 {
     this.updateModelState(FW.Firebug.NetMonitor, callback, true);
 }
 
+/**
+ * Disables the Script panel and reloads if a callback is specified.
+ * @param {Function} callback A handler that is called as soon as the page is reloaded.
+ */
 this.disableScriptPanel = function(callback)
 {
     this.updateModelState(FW.Firebug.Debugger, callback, false);
 }
 
+/**
+ * Enables the Script panel and reloads if a callback is specified.
+ * @param {Function} callback A handler that is called as soon as the page is reloaded.
+ */
 this.enableScriptPanel = function(callback)
 {
     this.updateModelState(FW.Firebug.Debugger, callback, true);
 }
 
+/**
+ * Disables the Console panel and reloads if a callback is specified.
+ * @param {Function} callback A handler that is called as soon as the page is reloaded.
+ */
 this.disableConsolePanel = function(callback)
 {
     this.updateModelState(FW.Firebug.Console, callback, false);
 }
 
+/**
+ * Enables the Script panel and reloads if a callback is specified.
+ * @param {Function} callback A handler that is called as soon as the page is reloaded.
+ */
 this.enableConsolePanel = function(callback)
 {
     this.updateModelState(FW.Firebug.Console, callback, true);
 }
 
+/**
+ * Disables all activable panels.
+ */
 this.disableAllPanels = function()
 {
     FW.Firebug.ModuleManager.disableModules()
 }
 
+/**
+ * Enables all activable panels.
+ */
 this.enableAllPanels = function()
 {
     FW.Firebug.ModuleManager.enableModules();
@@ -623,6 +691,9 @@ this.enableAllPanels = function()
 
 /**
  * Select specific panel in the UI.
+ * @param {Object} panelName Name of the panel (e.g. <i>console</i>, <i>dom</i>, <i>script</i>,
+ * <i>net</i>, <i>css</i>).
+ * @param {Object} chrome Firebug chrome object.
  */
 this.selectPanel = function(panelName, chrome)
 {
@@ -661,6 +732,10 @@ this.getSelectedPanel = function()
     return panelBar1.selectedPanel; // may be null
 }
 
+/**
+ * Returns document object of Firebug content UI (content of all panels is presented
+ * in this document).
+ */
 this.getPanelDocument = function()
 {
     var panel = this.getSelectedPanel();
@@ -685,7 +760,11 @@ this.isPanelTabDisabled = function(name)
     return null;
 }
 
-
+/**
+ * Returns panel object that represents a specified panel. In order to get root element of
+ * panels's content use <i>panel.panelNode</i>, where <i>panel</i> is the returned value. 
+ * @param {Object} name Name of the panel to be returned (e.g. <i>net</i>).
+ */
 this.getPanel = function(name)
 {
     return FW.FirebugContext.getPanel(name);
@@ -733,11 +812,24 @@ this.OneShotHandler = function(eventTarget, eventName, onEvent, capturing)
 // ************************************************************************************************
 // Firebug preferences
 
+/**
+ * Sets Firebug preference.
+ * @param {Object} pref Name of the preference without <i>extensions.firebug</i> prefix.
+ * For instance: <i>activateSameOrigin</i>. Always use this method for seting a preference.
+ * Notice that FBTest automatically resets all preferences before every single test is executed.
+ * @param {Object} value New value of the preference.
+ */
 this.setPref = function(pref, value)
 {
     FW.Firebug.setPref(FW.Firebug.prefDomain, pref, value);
 }
 
+/**
+ * Returns value of specified Firebug preference.
+ * @param {Object} pref Name of the preference without <i>extensions.firebug</i> prefix.
+ * For instance: <i>showXMLHttpRequests</i>. Notice that FBTest automatically resets all
+ * preferences before every single test is executed.
+ */
 this.getPref = function(pref)
 {
     return FW.Firebug.getPref(FW.Firebug.prefDomain, pref);
@@ -763,21 +855,25 @@ this.executeCommand = function(expr, chrome)
 }
 
 // ************************************************************************************************
-// Debugger
+// Toolbar buttons
 
+/**
+ * Simulates click on the Continue button that is available in the Script panel when
+ * Firebug is halted in the debugger. This action resumes the debugger (of course, the debugger
+ * can stop at another breakpoint).
+ * @param {Object} chrome Firebug.chrome object.
+ */
 this.clickContinueButton = function(chrome)
 {
-    if (!chrome)
-        chrome = FW.FirebugChrome;
-
-    var doc = chrome.window.document;
-    var button = doc.getElementById("fbContinueButton");
-    FBTest.sysout("clickContinueButton", button);
-
-    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
-    this.synthesizeMouse(button);
+    this.clickToolbarButton(chrome, "fbContinueButton");
 }
 
+/**
+ * Simulates click on the Break On Next button that is available in main Firebug toolbar.
+ * The specific action (e.g. break on next XHR or break on next HTML mutation) depends
+ * on the current panel.
+ * @param {Object} chrome Firebug.chrome object.
+ */
 this.clickBreakOnNextButton = function(chrome)
 {
     if (!chrome)
@@ -798,6 +894,32 @@ this.clickBreakOnNextButton = function(chrome)
     this.synthesizeMouse(button);
 }
 
+/**
+ * Simulates click on the Persist button that is available in the Script and Net panels.
+ * Having this button pressed causes persistence of the appropriate panel content across reloads.
+ * @param {Object} chrome Firebug.chrome object.
+ */
+this.clickPersistButton = function(chrome)
+{
+    this.clickToolbarButton(chrome, "fbConsolePersist");
+}
+
+this.clickToolbarButton = function(chrome, buttonID)
+{
+    if (!chrome)
+        chrome = FW.FirebugChrome;
+
+    var doc = chrome.window.document;
+    var button = doc.getElementById(buttonID);
+    FBTest.sysout("Click toolbar button " + buttonID, button);
+
+    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
+    // Do not use synthesizeMouse, if the button isn't visible coordinates are wrong
+    // and the click event is not fired.
+    //this.synthesizeMouse(button);
+    button.doCommand();
+}
+
 this.synthesizeMouse = function(node)
 {
     var doc = node.ownerDocument;
@@ -811,6 +933,9 @@ this.synthesizeMouse = function(node)
         utils.sendMouseEvent("mouseup", rect.left, rect.top, 0, 1, 0);
     }
 }
+
+// ************************************************************************************************
+// Debugger
 
 this.getSourceLineNode = function(lineNo, chrome)
 {
@@ -856,7 +981,8 @@ this.getSourceLineNode = function(lineNo, chrome)
 }
 
 /**
- * Registers handler for break in Debugger.
+ * Registers handler for break in Debugger. The handler is called as soon as Firebug
+ * breaks the JS execution on a breakpoint or due a <i>Break On Next<i> active feature.
  * @param {Object} chrome Current Firebug's chrome object (e.g. FW.Firebug.chrome)
  * @param {Number} lineNo Expected source line number where the break should happen.
  * @param {Object} breakpoint Set to true if breakpoint should be displayed in the UI.
@@ -877,8 +1003,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
 
     // Wait for the UI modification that shows the source line where break happened.
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
-
-    lookBP.onRecognize(function onBreak(sourceRow)
+    lookBP.onRecognizeAsync(function onBreak(sourceRow)
     {
         FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exe_line" +
             (breakpoint ? " and breakpoint" : ""));
@@ -905,6 +1030,30 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     FBTest.sysout("fbTestFirebug.waitForBreakInDebugger recognizing ", lookBP);
 }
 
+/**
+ * Set a breakpoint
+ * @param {Object} chrome Firebug chrome object. If null, the default is used.
+ * @param {Object} url URL of the target file. If null, the current file is used.
+ * @param {Object} lineNo Source line number.
+ * @param {Object} callback Asynchronous callback is called as soon as the breakpoint is set.
+ */
+this.setBreakpoint = function(chrome, url, lineNo, callback)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var panel = FBTestFirebug.getPanel("script");
+    if (!url)
+        url = panel.location.href;
+
+    FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
+    {
+        if (row.getAttribute("breakpoint") != "true")
+            panel.toggleBreakpoint(lineNo);
+        callback(row);
+    });
+}
+
 // ************************************************************************************************
 // Error handling
 /*
@@ -922,9 +1071,12 @@ window.onerror = function(errType, errURL, errLineNum)
 // ************************************************************************************************
 // Panel Navigation
 
-// Select a location, eg a sourcefile in the Script panel, using the string the user sees
-// var panel = FW.FirebugChrome.selectPanel("script");
-// FBTestFirebug.selectPanelLocationByName(panel, "foo.js");
+/**
+ * Select a location, eg a sourcefile in the Script panel, using the string the user sees.<br/><br/>
+ * Example:<br/>
+ * <code>var panel = FW.FirebugChrome.selectPanel("script");<br/>
+ * FBTestFirebug.selectPanelLocationByName(panel, "foo.js");<code>
+ */
 this.selectPanelLocationByName = function(panel, name)
 {
     var locations = panel.getLocationList();
@@ -941,153 +1093,44 @@ this.selectPanelLocationByName = function(panel, name)
     return false;
 };
 
-// jump to a file@line
-// FBTest.Firebug.selectSourceLine(sourceFile.href, 1143, "js")
-this.selectSourceLine = function(url, lineNo, category, chrome)
+/**
+ * Jump to a file@line.<br/><br/>
+ * Example:<br/>
+ * <code>FBTest.Firebug.selectSourceLine(sourceFile.href, 1143, "js")</code>
+ */ 
+this.selectSourceLine = function(url, lineNo, category, chrome, callback)
 {
     var sourceLink = new FBTest.FirebugWindow.FBL.SourceLink(url, lineNo, category);
     if (chrome)
         chrome.select(sourceLink);
     else
         FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
+
+    if (!callback)
+        return;
+
+    var tries = 5;
+    var checking = setInterval(function checkScrolling()
+    {
+        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+        if (!row && --tries)
+            return;
+
+        clearInterval(checking);
+        callback(row);
+    }, 50);
 }
-
-//************************************************************************************************
-// Test Handlers  XXXjjb I would like to get rid of this one
-
-// var fooTest = new FBTest.Firebug.TestHandlers("TestFoo");
-this.TestHandlers = function(testName)
-{
-    this.testName = testName;
-    this.progressElement = document.getElementById("firebugTestElement");
-    if (!this.progressElement)
-        throw new Error("TestHandlers object requires element firebugTestElement in document "+document.title);
-    this.windowLocation = new String(window.location);
-
-    FBTest.Firebug.cleanUpTestTabs();  // before we start
-};
-
-this.TestHandlers.prototype =
-{
-    // fooTest.add("openFirebug", onOpenFirebug);
-    add: function(handlerFunction)
-    {
-        var eventName = handlerFunction.name;
-        this.progressElement.addEventListener(eventName, handlerFunction, true);
-    },
-    // function onOpenFirebug(event) { ...; fooTest.fire("enablePanels"); }
-    fire: function(eventName)
-    {
-        var event = this.progressElement.ownerDocument.createEvent("Event");
-        event.initEvent(eventName, true, false); // bubbles and not cancelable
-        if (window.closed)
-            throw "CLOSED "+this.windowLocation;
-        FBTest.progress(eventName);
-        //FBTest.sysout("fire this", this);
-        //debugger;
-        this.progressElement.dispatchEvent(event);
-    },
-
-    setFirebugHooks: function(url, extensionCallbacks)
-    {
-        var TabWatcher = FW.TabWatcher;
-        var scopeName = new String(window.location.toString());
-        var hookFirebug =
-        {
-                dispatchName: "FBTest",
-                initContext: function(context)
-                {
-                    var uriString = context.getWindowLocation();
-                    if (uriString == url)
-                    {
-                        FBTest.sysout("fireOnNewPage register extensionCallbacks in "+url, extensionCallbacks);
-                        if (extensionCallbacks.moduleListener) FW.Firebug.registerModule(extensionCallbacks.moduleListener);
-                        if (extensionCallbacks.uiListener) FW.Firebug.registerUIListener(extensionCallbacks.uiListener);
-                        if (extensionCallbacks.tabWatchListener) FW.TabWatcher.addListener(extensionCallbacks.tabWatchListener);
-                    }
-                    else
-                    {
-                        FBTest.sysout("fireOnNewPage initContext skip "+uriString +" != "+url);
-                    }
-                    return null;
-                },
-                destroyContext: function(context)
-                {
-                    if (window.closed)
-                        throw new Error("destroyContext called in scope of a closed window "+scopeName);
-                }
-        };
-        FW.TabWatcher.addListener(hookFirebug);
-
-        window.addEventListener("unload", function cleanUp(event)
-        {
-            if (extensionCallbacks.moduleListener) FW.Firebug.unregisterModule(extensionCallbacks.moduleListener);
-            if (extensionCallbacks.uiListener) FW.Firebug.unregisterUIListener(extensionCallbacks.uiListener);
-            if (extensionCallbacks.tabWatchListener) FW.TabWatcher.removeListener(extensionCallbacks.tabWatchListener);
-            FW.TabWatcher.removeListener(hookFirebug);
-
-            FBTest.sysout("FBTestFirebug unload removing extensionCallbacks event.target.location "+event.target.location);
-        }, true);
-    },
-
-    // fooTest.fireOnNewPage("openFirebug", "http://getfirebug.com");
-    fireOnNewPage: function(eventName, url, extensionCallbacks)
-    {
-        if (extensionCallbacks)
-            this.setFirebugHooks(url, extensionCallbacks);
-
-        var tabbrowser = FW.getBrowser();
-
-        FBTest.sysout("fireOnNewPage adding tab for "+url);
-        // Add tab, then make active (https://developer.mozilla.org/en/Code_snippets/Tabbed_browser)
-        var newTab = tabbrowser.addTab(url);
-        newTab.setAttribute("firebug", "test");
-        FBTest.sysout("fireOnNewPage selectedTab = newTab for "+url);
-        tabbrowser.selectedTab = newTab;
-        var browser = tabbrowser.getBrowserForTab(newTab);
-        FBTest.sysout("fireOnNewPage getBrowserForTab "+url);
-
-        var testHandler = this;
-        var onLoadURLInNewTab = function(event)
-        {
-            // This event come late compared with most of Firebug's work.
-            var win = event.target;   // actually  tab XUL elt
-            FBTest.sysout("fireOnNewPage onLoadURLInNewTab win.location: "+win.location);
-            FW.getBrowser().selectedTab = win;
-            //FBTest.sysout("selectedTab ", FW.getBrowser().selectedTab);
-            var selectedBrowser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
-            //FBTest.sysout("selectedBrowser "+selectedBrowser.currentURI.spec);
-            browser.removeEventListener('load', onLoadURLInNewTab, true);
-
-            var DOMWindow = browser.contentWindow;
-
-            if (eventName)
-                testHandler.fire(eventName);
-        }
-
-
-        browser.addEventListener("load", onLoadURLInNewTab, true);
-        FBTest.sysout("fireOnNewPage added load event listener to browser for "+url, browser);
-    },
-
-    // function onEnablePanels(event) {...; fooTest.done();}
-    done: function()
-    {
-        FBTest.progress(this.testName +" done");
-        FBTest.testDone();
-    }
-};
-
-// ************************************************************************************************
-};
 
 // ************************************************************************************************
 // Support for asynchronous test suites (within a FBTest).
 
 /**
- * Example:
- *
- *  // A suite of asynchronous tests.
+ * Support for set of asynchronouse actions within a FBTest.
+ * @param {Array} tests List of asynchronous functions to be executed in order.
+ * @param {Function} callback A callback that is executed as soon as all fucntions
+ * in the list are finished.<br/><br/>
+ * Example:<br/>
+ *  <pre>// A suite of asynchronous tests.
  *  var testSuite = [];
  *  testSuite.push(function(callback) {
  *      // TODO: test implementation
@@ -1099,21 +1142,19 @@ this.TestHandlers.prototype =
  *      // Continue with other tests.
  *      callback();
  *  });
-
  *  // Run entire suite.
  *  runTestSuite(testSuite, function() {
  *      FBTestFirebug.testDone("DONE");
- *  });
- *
+ *  });</pre>
  */
-function runTestSuite(tests, callback)
+this.runTestSuite = function(tests, callback)
 {
     setTimeout(function()
     {
         var test = tests.shift();
         test.call(this, function() {
             if (tests.length > 0)
-                runTestSuite(tests, callback);
+                FBTestFirebug.runTestSuite(tests, callback);
             else
                 callback();
         });
@@ -1121,6 +1162,110 @@ function runTestSuite(tests, callback)
 }
 
 // ************************************************************************************************
+// Screen copy
+
+this.getImageDataFromWindow = function(win, width, height)
+{
+    var canvas = this.getCanvasFromWindow(win, width, height);
+    return canvas.toDataURL("image/png", "");
+}
+
+this.getCanvasFromWindow = function(win, width, height)
+{
+    var canvas = createCanvas(width, height);
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.scale(1, 1);
+    ctx.drawWindow(win, 0, 0, width, height, "rgb(255,255,255)");
+    ctx.restore();
+    return canvas;
+}
+
+this.loadImageData = function(url, callback)
+{
+    var image = new Image();
+    image.onload = function()
+    {
+        var width = image.width;
+        var height = image.height;
+
+        var canvas = createCanvas(image.width, image.height);
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, width, height);
+        callback(canvas.toDataURL("image/png", ""));
+    }
+
+    image.src = url;
+    return image;
+}
+
+this.saveWindowImageToFile = function(win, width, height, destFile)
+{
+    var canvas = this.getCanvasFromWindow(win, width, height);
+
+    // convert string filepath to an nsIFile
+    var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+    file.initWithPath(destFile);
+
+    // create a data url from the canvas and then create URIs of the source and targets
+    var io = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+    var source = io.newURI(canvas.toDataURL("image/png", ""), "UTF8", null);
+    var target = io.newFileURI(file);
+
+    // prepare to save the canvas data
+    var persist = Cc["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"].createInstance(Ci.nsIWebBrowserPersist);
+
+    persist.persistFlags = Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
+    persist.persistFlags |= Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
+
+    // displays a download dialog (remove these 3 lines for silent download)
+    var xfer = Cc["@mozilla.org/transfer;1"].createInstance(Ci.nsITransfer);
+    xfer.init(source, target, "", null, null, null, persist);
+    persist.progressListener = xfer;
+
+    // save the canvas data to the file
+    persist.saveURI(source, null, null, null, null, file);
+}
+
+function createCanvas(width, height)
+{
+     var canvas = document.createElement("canvas");
+     canvas.style.width = width + "px";
+     canvas.style.height = height + "px";
+     canvas.width = width;
+     canvas.height = height;
+     return canvas;
+}
+
+// ************************************************************************************************
+// Inspector
+
+this.inspectUsingFrame = function(elt)
+{
+    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "frame", null);
+}
+
+this.inspectUsingBoxModel = function(elt)
+{
+    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "boxModel", null);
+}
+
+this.inspectUsingBoxModelWithRulers = function(elt)
+{
+    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "boxModel", "content");
+}
+
+this.inspectorClear = function()
+{
+    FW.Firebug.Inspector.highlightObject(null);
+}
+
+// ************************************************************************************************
+};
+
+// ************************************************************************************************
+// Initialization
 
 function initializeFBTestFirebug()
 {
