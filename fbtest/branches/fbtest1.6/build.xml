@@ -8,7 +8,7 @@
     <property name="build.dir" value="release"/>
 
     <!-- Properties -->
-    <property file="ant.properties"/>
+    <property file="content/fbtest.properties"/>
 
     <!-- Clean -->
     <target name="clean">
@@ -63,8 +63,8 @@
         <copy file="install.rdf" todir="${build.dir}"/>
         <copy file="license.txt" todir="${build.dir}"/>
 
-        <!-- Update release version from ant.properties file -->
-        <replace file="${build.dir}/install.rdf" propertyFile="ant.properties">
+        <!-- Update release version from fbtest.properties file -->
+        <replace file="${build.dir}/install.rdf" propertyFile="content/fbtest.properties">
             <replacefilter token="@VERSION@" property="VERSION"/>
             <replacefilter token="@RELEASE@" property="RELEASE"/>
         </replace>

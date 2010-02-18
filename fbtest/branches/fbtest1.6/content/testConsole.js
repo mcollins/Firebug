@@ -13,7 +13,6 @@ var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSub
 var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-
 var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
 
@@ -22,6 +21,8 @@ var nsIFilePicker = Ci.nsIFilePicker;
 
 // Global variables
 var gFindBar;
+
+var versionURL = "chrome://fbtest/content/fbtest.properties";
 
 // ************************************************************************************************
 
@@ -34,8 +35,8 @@ FBTestApp.TestConsole =
     testListPath: null, // full path to the test list, eg a URL for the testList.html
     driverBaseURI: null,  // base for test drivers, must be a secure location, chrome or https
     testCasePath: null,  // base for testcase pages. These are normal web pages
-
     groups: null,
+    version: null,
 
     initialize: function()
     {
@@ -45,6 +46,11 @@ FBTestApp.TestConsole =
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
+
+            // Update test console window title.
+            var version = this.getVersion();
+            if (version)
+                window.document.title = "Firebug Test Console " + version;
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
@@ -76,6 +82,13 @@ FBTestApp.TestConsole =
 
             alert("There may be a useful message on the Error Console: "+e);
         }
+    },
+
+    getVersion: function()
+    {
+        if (!this.version)
+            this.version = Firebug.loadVersion(versionURL);
+        return this.version;
     },
 
     getDefaultTestList: function()
