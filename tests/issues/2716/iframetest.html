@@ -3,8 +3,20 @@
     <head>
         <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+        <script type="text/javascript">
+            function popFrame() {
+                document.getElementById("frame").src = "test1.html";
+            }
+
+            function closeFrame() {
+                document.getElementById("frame").src = "about:blank";
+            }
+        </script>
     </head>
     <body>
-        <iframe src="test1.html"/>
+
+        <button onclick="popFrame()" >open frame</button>
+        <button onclick="closeFrame()" >close frame</button>
+        <iframe id="frame" src="about:blank"/>
     </body>
 </html>
