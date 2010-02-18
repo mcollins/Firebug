@@ -2,24 +2,29 @@ function runTest()
 {
     FBTest.sysout("issue68Box.START");
         
-    FBTestFirebug.openNewTab(basePath + "inspector/Issue68BoxExpected.htm", function(win)
+    FBTestFirebug.openNewTab(basePath + "inspector/InspectorTestIframe.htm?url=Issue68BoxExpected.htm", function(win)
     {
         var actualImage, expectedImage,
-            width = win.document.body.clientWidth,
-            height = 200;
+            ifr = win.document.getElementById('testIframe'),
+            width = ifr.contentDocument.body.clientWidth,
+            height = ifr.contentDocument.body.clientHeight;
             
-        // To get full html for expected page: win.document.documentElement.innerHTML
-        expectedImage = FBTestFirebug.getImageDataFromWindow(win, width, height);
+        expectedImage = FBTestFirebug.getImageDataFromWindow(ifr.contentWindow, width, height);
         
-        FBTestFirebug.openURL(basePath + "inspector/Issue68BoxActual.htm", function(win)
+        FBTestFirebug.openURL(basePath + "inspector/InspectorTestIframe.htm?url=Issue68BoxActual.htm", function(win)
         {
             FBTestFirebug.openFirebug();
 
-            var target = win.document.getElementById("testTarget1");
+            ifr = win.document.getElementById('testIframe');
+
+            var target = ifr.contentDocument.getElementById("testTarget1");
+
+            // To get full html for expected page break here and use: ifr.contentDocument.documentElement.innerHTML            
+            
             FBTestFirebug.inspectUsingBoxModel(target);
 
-            actualImage = FBTestFirebug.getImageDataFromWindow(win, width, height);
-           
+            actualImage = FBTestFirebug.getImageDataFromWindow(ifr.contentWindow, width, height);
+
             FBTest.compare(expectedImage, actualImage, "The screen must be in expected state");
             FBTestFirebug.testDone("issue68Box.DONE");
         });
