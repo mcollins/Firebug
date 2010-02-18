@@ -1303,13 +1303,17 @@ Firebug.Chromebug = extend(Firebug.Module,
         cbContextList.setAttribute("highlight", "true");
 
         // The argument 'context' is stopped, but other contexts on the stack are not stopped.
+        var calledFrame = frame;
         while (frame = frame.callingFrame)
         {
             var callingContext = Firebug.Debugger.getContextByFrame(frame);
             if (FBTrace.DBG_UI_LOOP)
                 FBTrace.sysout("ChromeBugPanel.onStop stopping context: "+(callingContext?callingContext.getName():null));
             if (callingContext)
+            {
                 callingContext.stopped = true;
+                callingContext.debugFrame = calledFrame;
+            }
         }
 
         return -1;
@@ -1341,6 +1345,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Chromebug.eachContext(function clearStopped(context)
         {
             delete context.stopped;
+            delete context.debugFrame;
         });
 
         FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
@@ -2408,8 +2413,9 @@ SourceFileListBase.prototype = extend(new Firebug.Listener(),
         var context = description.context;
         if (context)
         {
-             var sourceFile= context.sourceFileMap[description.href];
-            FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+description.href, description);
+            var sourceFile= context.sourceFileMap[description.href];
+            if (FBTrace.DBG_LOCATIONS)
+                FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+description.href, description);
             Firebug.Chromebug.selectContext(context);
 
             FirebugChrome.select(sourceFile, "script", "watch", true);  // SourceFile
@@ -2445,7 +2451,8 @@ Chromebug.parseNoWindowURI = function(uri)
     if (uri.indexOf('noWindow')==0)
     {
         var split =  FBL.splitURLBase(uri);
-        FBTrace.sysout("parseNoWindowURI "+uri, split);
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("parseNoWindowURI "+uri, split);
         return {path: uri.substr(0,9), name: uri.substr(10), kind: "noWindow", pkgName: "noWindow" }
     }
 }
@@ -2455,7 +2462,9 @@ Chromebug.parseDataURI = function(URI)
     if (isDataURL(URI))
     {
         var split = splitURLBase(URI);
-        FBTrace.sysout("parseDataURI "+URI, split);
+
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("parseDataURI "+URI, split);
         return {path: "data:", name: split.path+'/'+split.name, kind:"data", pkgName: "data:"};
     }
 }
