@@ -528,10 +528,7 @@ FBTestApp.Test.prototype =
         for (var i=0; i<this.results.length; i++)
         {
             var testResult = this.results[i];
-            if (testResult.pass)
-                continue;
-
-            text += "- " + testResult.msg + " [ERROR]\n";
+            text += "- " + testResult.msg + (testResult.pass ? "" : " [ERROR]") + "\n";
         }
         return text;
     }
