@@ -37,6 +37,6 @@ function runTest()
         });
 
         // Run test implemented on the page.
-        win.wrappedJSObject.onExecuteTest();
+        FBTest.click(win.document.getElementById("testButton"));
     });
 }

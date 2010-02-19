@@ -1,12 +1,10 @@
 function runTest()
 {
-    FBTestFirebug.openNewTab(basePath + "net/1862/issue1862.html", function(win)
+    FBTest.sysout("issue1862.START");
+    FBTestFirebug.openNewTab(basePath + "net/1862/issue1862.html", function()
     {
-        FBTest.sysout("issue1862.START", win);
-
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.openFirebug();
-        FBTestFirebug.enableNetPanel();
         FBTestFirebug.enableConsolePanel();
         FBTestFirebug.clearCache();
 
@@ -14,18 +12,20 @@ function runTest()
         var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
         FBTestFirebug.setPref("showXMLHttpRequests", true);
 
+        FW.FirebugChrome.selectPanel("net");
+
         // Reload test page.
-        FBTestFirebug.reload(function()
+        FBTestFirebug.enableNetPanel(function(win)
         {
             win.wrappedJSObject.getXMLResponse(function(request)
             {
                 // Verify Net panel response
-                var panel = FW.FirebugChrome.selectPanel("net");
+                var panel = FBTestFirebug.getPanel("net");
                 FBTestFirebug.expandElements(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
                 verifyResponse(panel);
 
                 // Verify Console panel response
-                panel = FW.FirebugChrome.selectPanel("console");
+                panel = FBTestFirebug.selectPanel("console");
                 var spyLogRow = FW.FBL.getElementByClass(panel.panelNode, "logRow", "logRow-spy", "loaded");
                 var xhr = FW.FBL.getElementByClass(spyLogRow, "spyTitleCol", "spyCol");
                 FBTest.click(xhr);
@@ -37,6 +37,17 @@ function runTest()
             })
         });
     })
+}
+
+function onRequestDisplayed(callback)
+{
+    // Create listener for mutation events.
+    var doc = FBTestFirebug.getPanelDocument();
+    var recognizer = new MutationRecognizer(doc.defaultView, "tr",
+        {"class": "netRow category-xhr loaded"});
+
+    // Wait for a XHR log to appear in the Net panel.
+    recognizer.onRecognizeAsync(callback);
 }
 
 function verifyResponse(panel)
