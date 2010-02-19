@@ -92,25 +92,30 @@ MutationRecognizer.prototype.matches = function(elt)
     {
         if (elt.data && elt.data.indexOf(this.characterData) != -1)
         {
-            FBTest.sysout("MutationRecognizer matches Text character data "+this.characterData);
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("MutationRecognizer matches Text character data "+this.characterData);
             return true;
         }
         else
         {
-            FBTest.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data,{element: elt, recogizer: this});
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data,{element: elt, recogizer: this});
             return false;
         }
     }
 
     if (!(elt instanceof Element))
     {
-        FBTest.sysout("MutationRecognizer Node not an Element ", elt);
+        if (FBTrace.DBG_TESTCASE_MUTATION)
+            FBTrace.sysout("MutationRecognizer Node not an Element ", elt);
         return false;
     }
 
     if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
     {
-        FBTest.sysout("MutationRecognizer no match on tagName "+this.tagName+" vs "+elt.tagName.toLowerCase(), {element: elt, recogizer: this});
+        if (FBTrace.DBG_TESTCASE_MUTATION)
+            FBTrace.sysout("MutationRecognizer no match on tagName "+this.tagName+
+                " vs "+elt.tagName.toLowerCase(), {element: elt, recogizer: this});
         return false;
     }
 
@@ -121,7 +126,9 @@ MutationRecognizer.prototype.matches = function(elt)
             var eltP = elt.getAttribute(p);
             if (!eltP)
             {
-                FBTest.sysout("MutationRecognizer no attribute "+p+" in "+FW.FBL.getElementHTML(elt), {element: elt, recogizer: this});
+                if (FBTrace.DBG_TESTCASE_MUTATION)
+                    FBTrace.sysout("MutationRecognizer no attribute "+p+" in "+
+                        FW.FBL.getElementHTML(elt), {element: elt, recogizer: this});
                 return false;
             }
             if (this.attributes[p] != null)
@@ -130,15 +137,18 @@ MutationRecognizer.prototype.matches = function(elt)
                 {
                     if (!FW.FBL.hasClass.apply(FW.FBL, [elt, this.attributes[p]]))
                     {
-                        FBTest.sysout("MutationRecognizer no match for class " +
-                            this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class') +
-                            " indexOf: "+eltP.indexOf(this.attributes[p]));
+                        if (FBTrace.DBG_TESTCASE_MUTATION)
+                            FBTrace.sysout("MutationRecognizer no match for class " +
+                                this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class') +
+                                " indexOf: "+eltP.indexOf(this.attributes[p]));
                         return false;
                     }
                 }
                 else if (eltP != this.attributes[p])
                 {
-                    FBTest.sysout("MutationRecognizer no match for attribute "+p+": "+this.attributes[p]+" vs "+eltP,{element: elt, recogizer: this});
+                    if (FBTrace.DBG_TESTCASE_MUTATION)
+                        FBTrace.sysout("MutationRecognizer no match for attribute "+p+": "+
+                            this.attributes[p]+" vs "+eltP,{element: elt, recogizer: this});
                     return false;
                 }
             }
@@ -149,7 +159,9 @@ MutationRecognizer.prototype.matches = function(elt)
     {
         if (elt.textContent.indexOf(this.characterData) < 0)
         {
-            FBTest.sysout("MutationRecognizer no match for characterData "+this.characterData+" vs "+elt.textContent, {element: elt, recogizer: this});
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("MutationRecognizer no match for characterData "+this.characterData+
+                    " vs "+elt.textContent, {element: elt, recogizer: this});
             return false;
         }
     }
@@ -173,12 +185,16 @@ function MutationEventFilter(recognizer, handler)
         if (!recognizer.attributes)
             return; // we don't care about attribute mutation
 
-        FBTest.sysout("onMutateAttr "+event.attrName+"=>"+event.newValue+" on "+event.target+" in "+event.target.ownerDocument.location, event.target);
+        if (FBTrace.DBG_TESTCASE_MUTATION)
+            FBTrace.sysout("onMutateAttr "+event.attrName+"=>"+event.newValue+" on "+event.target+
+                " in "+event.target.ownerDocument.location, event.target);
 
         // We care about some attribute mutation.
         if (!recognizer.attributes.hasOwnProperty(event.attrName))
         {
-            FBTest.sysout("onMutateAttr not interested in "+event.attrName+"=>"+event.newValue+" on "+event.target+" in "+event.target.ownerDocument.location, event.target);
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("onMutateAttr not interested in "+event.attrName+"=>"+event.newValue+
+                    " on "+event.target+" in "+event.target.ownerDocument.location, event.target);
             return;  // but not the one that changed.
         }
 
@@ -189,7 +205,8 @@ function MutationEventFilter(recognizer, handler)
         }
         catch(exc)
         {
-            FBTest.sysout("onMutateNode FAILS "+exc, exc);
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("onMutateNode FAILS "+exc, exc);
         }
     }
 
@@ -199,7 +216,8 @@ function MutationEventFilter(recognizer, handler)
         if (window.closed)
             throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
 
-        FBTest.sysout("onMutateNode "+event.target+" in "+event.target.ownerDocument.location, event.target);
+        if (FBTrace.DBG_TESTCASE_MUTATION)
+            FBTrace.sysout("onMutateNode "+event.target+" in "+event.target.ownerDocument.location, event.target);
 
         try
         {
@@ -208,7 +226,8 @@ function MutationEventFilter(recognizer, handler)
         }
         catch(exc)
         {
-            FBTest.sysout("onMutateNode FAILS "+exc, exc);
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("onMutateNode FAILS "+exc, exc);
         }
     }
 
@@ -221,7 +240,8 @@ function MutationEventFilter(recognizer, handler)
             return; // we don't care about text
 
         // We care about text and the text for this element mutated.  If it matches we must have hit.
-        FBTest.sysout("onMutateText =>"+event.newValue+" on "+event.target.ownerDocument.location, event.target);
+        if (FBTrace.DBG_TESTCASE_MUTATION)
+            FBTrace.sysout("onMutateText =>"+event.newValue+" on "+event.target.ownerDocument.location, event.target);
 
         try
         {
@@ -230,7 +250,8 @@ function MutationEventFilter(recognizer, handler)
         }
         catch(exc)
         {
-            FBTest.sysout("onMutateNode FAILS "+exc, exc);
+            if (FBTrace.DBG_TESTCASE_MUTATION)
+                FBTrace.sysout("onMutateNode FAILS "+exc, exc);
         }
     }
 

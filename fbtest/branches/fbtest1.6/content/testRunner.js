@@ -246,6 +246,7 @@ FBTestApp.TestRunner =
 
                 // Inject FBTest object into the test page before we get to the script tag compiles.
                 win.FBTest = FBTestApp.FBTest;
+                win.FBTrace = FBTrace;
 
                 win.addEventListener("load", FBTestApp.TestRunner.eventListener, true);
 
