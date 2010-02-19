@@ -1143,6 +1143,38 @@ this.selectSourceLine = function(url, lineNo, category, chrome, callback)
 }
 
 // ************************************************************************************************
+// Network
+
+/**
+ * Executes passed callbeck as soon as a network response is received and appropriate entry
+ * is displayed in the Net or Consolea panel. A node repreenting the entry is passed into the
+ * callback.
+ * @param {String} panelName Name of the panel, must be set to 'console' or 'net'.
+ * @param {Function] callback A callback function.
+ */
+this.waitForDisplayedResponse = function(panelName, config, callback)
+{
+    if (panelName != "net" && panelName != "console")
+        FBTest.sysout("waitForDisplayedResponse; ERROR Uknown panel name specified.");
+
+    if (!config)
+    {
+        var net = (panelName == "net");
+        config = {
+            tagName: net ? "tr" : "div",
+            classes: net ? "netRow category-xhr hasHeaders loaded" : "logRow logRow-spy loaded"
+        }
+    }
+
+    FW.FirebugChrome.selectPanel(panelName);
+
+    var doc = FBTestFirebug.getPanelDocument();
+    var recognizer = new MutationRecognizer(doc.defaultView, config.tagName,
+        {"class": config.classes});
+    recognizer.onRecognizeAsync(callback);
+}
+
+// ************************************************************************************************
 // Support for asynchronous test suites (within a FBTest).
 
 /**
