@@ -33,6 +33,7 @@
                <include name="*.xml"/>
                <include name="*.xul"/>
                <include name="*.html"/>
+               <include name="*.properties"/>
             </fileset>
         </copy>
 
