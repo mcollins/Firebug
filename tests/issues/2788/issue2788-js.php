@@ -1,4 +1,23 @@
-/*
+<?php
+	$last = time();sleep(10);//
+	$etag = md5('409-3-#$0' . $last . strtolower($_SERVER['REQUEST_URI'])); 
+	$lastModifiedGMT = gmdate('D, d M Y H:i:s', $last).' GMT';
+	header("Pragma: public");
+	header('ETag: "'.$etag.'"');
+	header("Last-Modified: $lastModifiedGMT");
+	$expiresOffset = -10000 ; //no cache -- force revalidation using etag	
+	header("Content-type: text/javascript; charset=ISO-8859-1");
+	header("Vary: Accept-Encoding");  // Handle proxies
+	header("Expires: " . @gmdate("D, d M Y H:i:s", @time() + $expiresOffset) . " GMT");
+	if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
+		if (strpos($_SERVER['HTTP_IF_NONE_MATCH'], $etag) !== false) {
+			header("Pragma: public", true, 304);
+			exit;
+		}
+	}
+?>
+Ext.dojo=true;
+/*	
 	Copyright (c) 2004-2009, The Dojo Foundation All Rights Reserved.
 	Available via Academic Free License >= 2.1 OR the modified BSD license.
 	see: http://dojotoolkit.org/license for details

@@ -2,9 +2,10 @@
 <html>
 <head>
   <title>Test Case for Issue #2788</title>
+  <script src="issue2788-long-js-1.php"></script>
+  <script src="issue2788-js.php"></script>
+  <script src="issue2788-long-js-2.php"></script>
   <script src="issue2788.js"></script>
-  <script src="issue2788-1.js"></script>
-  <script src="har.js"></script>
   <script>
       function test()
       {
@@ -24,8 +25,12 @@
 
 <ol>
 <li>Open Firebug and enable the Script panel.</li>
-<li>Open the issue2788.js file from the location list.</li>
-<li>Verify that the file has 6068 lines.</li>
+<li>Open the issue2788-long-js-2.php file from the location list.</li>
+<li>Verify that the file issue2788-long-js-2.php has 70517 lines.</li>
+<li>Reload the page.</li>
+<li>Verify that the file issue2788-long-js-2.php has 70517 lines.</li>
+<li>Reload the page.</li>
+<li>Verify that the file issue2788-long-js-2.php has 70517 lines.</li>
 </ol>
   
 </body>
