@@ -146,7 +146,7 @@ var ChromebugOverrides = {
                 global = Firebug.Chromebug.getGlobalByFrame(frame);
 
             if (global)
-                context = Firebug.Chromebug.getOrCreateContext(global, frame);
+                context = Firebug.Chromebug.getOrCreateContext(global, frame.script.fileName);
         }
         if (context)
         {

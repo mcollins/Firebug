@@ -39,10 +39,10 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
             if (browser.currentURI.spec)
             {
                 var parts = browser.currentURI.spec.split('/');
-                name += " in " + parts.splice(-3).join('/');
+                name += " containing " + parts.splice(-3).join('/');
             }
             else
-                name += " in " + browser.currentURI;
+                name += " containing " + browser.currentURI;
         }
 
         this.setName("noWindow://"+name);
@@ -108,7 +108,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
         }
         else
         {
-            var context = Firebug.Chromebug.getOrCreateContext(domWindow); // subwindow
+            var context = Firebug.Chromebug.getOrCreateContext(domWindow, safeGetWindowLocation(domWindow)); // subwindow
 
             if (!context.onUnload)
                 context.onUnload = bind(context.unloadHandler, context)

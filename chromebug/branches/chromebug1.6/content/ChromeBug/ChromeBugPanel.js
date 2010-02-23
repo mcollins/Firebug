@@ -309,7 +309,7 @@ Chromebug.globalScopeInfos =
 
     addHiddenWindow: function(hidden_window)
     {
-        var context = Firebug.Chromebug.getOrCreateContext(hidden_window);  // addHiddenWindow
+        var context = Firebug.Chromebug.getOrCreateContext(hidden_window, "HiddenWindow");  // addHiddenWindow
         this.hiddenWindow = new HiddenWindow(hidden_window, context);
         this.add(context, this.hiddenWindow);
         if (FBTrace.DBG_CHROMEBUG)
@@ -459,7 +459,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         try
         {
-            var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow);
+            var context = Firebug.Chromebug.getOrCreateContext(outerDOMWindow, "XUL Window");
             context.xul_window = xul_window;
             var gs = new ChromeRootGlobalScopeInfo(xul_window, context);
             Chromebug.globalScopeInfos.add(context, gs);
@@ -881,13 +881,15 @@ Firebug.Chromebug = extend(Firebug.Module,
     },
 
     // ******************************************************************************
-    createContext: function(global, frame)
+    createContext: function(global, name)
     {
         var persistedState = null; // TODO
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
-
-        var browser = Firebug.Chromebug.createBrowser(global, (frame?frame.script.fileName:null));
+FBTrace.sysout("createContext name "+name+" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+if (name=='undefined')
+    FBTrace.sysout(getStackDump())
+        var browser = Firebug.Chromebug.createBrowser(global, name);
         if (global instanceof Ci.nsIDOMWindow)
         {
             var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
@@ -950,14 +952,14 @@ Firebug.Chromebug = extend(Firebug.Module,
          });
     },
 
-    getOrCreateContext: function(global, frame)
+    getOrCreateContext: function(global, name)
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created"));
+            FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created as "+name));
         if (!context)
-            context = Firebug.Chromebug.createContext(global, frame);
+            context = Firebug.Chromebug.createContext(global, name);
 
         return context;
     },
@@ -1188,7 +1190,6 @@ Firebug.Chromebug = extend(Firebug.Module,
                         FBTrace.sysout("buildEnumeratedSourceFiles got bad URL from script.fileName:"+script.fileName, script);
                     return;
                 }
-
                 if (script.isValid)
                     script.clearBreakpoint(0);  // just in case
 
@@ -1227,7 +1228,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     if (previousContext.global == global)
                         context = previousContext;
                     else
-                        context = Firebug.Chromebug.getOrCreateContext(global);
+                        context = Firebug.Chromebug.getOrCreateContext(global, url);
                 }
 
                 if (!context)
@@ -2101,7 +2102,7 @@ Chromebug.contextList =
 
         d = {
            path: d ? d.path : "parseURI fails",
-           name: context.getName() +(title?"   "+title:""),
+           name: (d ? d.name : context.getName()) +(title?"   "+title:""),
            label: context.getName(),
            href: context.getName(),
            highlight: context.stoppped,
@@ -2450,10 +2451,11 @@ Chromebug.parseNoWindowURI = function(uri)
 {
     if (uri.indexOf('noWindow')==0)
     {
-        var split =  FBL.splitURLBase(uri);
-        if (FBTrace.DBG_LOCATIONS)
-            FBTrace.sysout("parseNoWindowURI "+uri, split);
-        return {path: uri.substr(0,9), name: uri.substr(10), kind: "noWindow", pkgName: "noWindow" }
+        var sandbox = uri.indexOf('Sandbox');
+        if (sandbox > 0)
+            return {path: "Sandbox", name: uri.substr(11), kind: "sandbox", pkgName: "Sandbox"};
+
+        return {path: uri.substr(0,9), name: uri.substr(11), kind: "noWindow", pkgName: "noWindow" }
     }
 }
 
@@ -2474,7 +2476,11 @@ Chromebug.parseURI = function(URI)
     if (!URI || Firebug.Chromebug.isChromebugURL(URI))
         return null;
 
-    var description = Chromebug.componentList.parseURI(URI);
+    var description = null;
+    if (!description)
+        description = Chromebug.parseNoWindowURI(URI);
+    if (!description)
+        description = Chromebug.componentList.parseURI(URI);
     if (!description)
         description = Chromebug.extensionList.parseURI(URI);
     if (!description)
@@ -2483,8 +2489,6 @@ Chromebug.parseURI = function(URI)
         description = Chromebug.parseSystemURI(URI);
     if (!description)
         description = Chromebug.parseWebURI(URI);
-    if (!description)
-        description = Chromebug.parseNoWindowURI(URI);
     if (!description)
         description = Chromebug.parseDataURI(URI);
 
