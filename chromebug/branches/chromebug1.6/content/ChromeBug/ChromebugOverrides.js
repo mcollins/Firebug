@@ -377,6 +377,7 @@ function overrideFirebugFunctions()
 
         top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
+        top.Firebug.Debugger.breakNowURLPrefix = "chrome://fb4cb/",
         top.Firebug.Debugger.getContextByFrame = ChromebugOverrides.getContextByFrame;
         top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromebugOverrides.showThisSourceFile;
         top.Firebug.SourceFile.getSourceFileByScript = ChromebugOverrides.getSourceFileByScript;
