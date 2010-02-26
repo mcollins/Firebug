@@ -17,5 +17,3 @@ locale    chromebuglister      en-US                   chrome://chromelist/local
 
 overlay chrome://explorer/content/tools/extension-project.xul chrome://chromebug/content/overlays/extension-project.xul
 
-# Add Firebug command set to xpcom explorer
-overlay chrome://chromebug/content/xpcomExplorer.xul        chrome://firebug/content/firebugOverlay.xul

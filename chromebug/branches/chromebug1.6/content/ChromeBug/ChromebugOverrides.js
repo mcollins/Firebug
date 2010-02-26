@@ -170,7 +170,7 @@ var ChromebugOverrides = {
 
         var description = Chromebug.parseURI(sourceFile.href);
 
-        if (Chromebug.allFilesList.isWantedDescription(description))
+        if (Firebug.Chromebug.allFilesList.isWantedDescription(description))
             return true;
         else
             return false;
@@ -331,7 +331,7 @@ function overrideFirebugFunctions()
         {
             if (!context)
             {
-                var context = Chromebug.contextList.getDefaultLocation();
+                var context = Firebug.Chromebug.contextList.getDefaultLocation();
                 Firebug.Chromebug.selectContext(context);
             }
             if (FBTrace.DBG_CHROMEBUG)
@@ -470,7 +470,7 @@ Chromebug.Activation =
 
     shouldCreateContext: function(browser, url, userCommands)
     {
-        FBTrace.sysout("Chromebug.Activation "+url, browser);
+        FBTrace.sysout("Chromebug.Activation "+url+" browser "+browser.getAttribute('id'), browser);
         return !Firebug.Chromebug.isChromebugURL(url);
     },
 

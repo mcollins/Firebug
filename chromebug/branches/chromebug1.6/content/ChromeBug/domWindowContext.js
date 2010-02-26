@@ -102,7 +102,6 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
-            Chromebug.globalScopeInfos.remove(context.globalScope);
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("loadHandler found context with sourceFileMap ", context.sourceFileMap);
         }
@@ -116,8 +115,6 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
         }
-        var gs = new Chromebug.ContainedDocument(context.xul_window, context);
-        Chromebug.globalScopeInfos.add(context, gs);
     },
 
     unloadHandler: function(event)

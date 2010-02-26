@@ -40,14 +40,21 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     getDocShellByDOMWindow: function(domWindow)
     {
        if (domWindow instanceof Ci.nsIInterfaceRequestor)
-        {
-            var navi = domWindow.getInterface(Ci.nsIWebNavigation);
-            if (navi instanceof Ci.nsIDocShellTreeItem)
-            {
-                return navi;
-            }
-            else
-                FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
+       {
+           try
+           {
+               var navi = domWindow.getInterface(Ci.nsIWebNavigation);
+           }
+           catch (exc)
+           {
+               FBTrace.sysout("Chromebug getDocShellByDOMWindow, domWindow.getInterface FAILS", domWindow);
+           }
+           if (navi instanceof Ci.nsIDocShellTreeItem)
+           {
+               return navi;
+           }
+           else
+               FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDowShellTreeItem");
         }
         else
         {
@@ -387,11 +394,6 @@ Chromebug.XULAppModule = extend(Firebug.Module,
 
         dispatch(this.fbListeners, "onXULWindowAdded", [xul_window, outerDOMWindow]);
 
-        if (xul_window.docShell instanceof Ci.nsIWebProgress)
-        {
-            var progressListener = new Chromebug.ProgressListener(xul_window, this);
-            xul_window.docShell.addProgressListener(progressListener, Ci.nsIWebProgress.NOTIFY_ALL );
-        }
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Chromebug.XULAppModule.addXULWindow "+outerDOMWindow.location.href+ " complete length="+this.xulWindows.length, " index="+this.getXULWindowIndex(xul_window));
 
@@ -566,7 +568,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     initializeUI: function()
     {
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("Chromebug.initializeUI -------------------------- start creating contexts --------");
+            FBTrace.sysout("xulapp.initializeUI -------------------------- start creating contexts --------");
         this.watchXULWindows();
     },
 

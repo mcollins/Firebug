@@ -64,6 +64,7 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/breakpoint.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>
 
+    <script type="application/x-javascript"  src="chrome://chromebug/content/Chromebug.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/globalObserver.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
@@ -92,6 +93,8 @@
     <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/xulapp.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
+    <script type="application/x-javascript" src="chrome://xpcomExplorer/content/xpcomExplorer.js"/>
+
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
         <command id="cmd_detachFirebug" oncommand="Firebug.detachBar()"/>
@@ -111,7 +114,6 @@
         <command id="cmd_delete" oncommand="goDoCommand('cmd_delete')" valueDefault="deleteCmd_label" disabled="true"/>
         <command id="cmd_selectAll" oncommand="goDoCommand('cmd_selectAll')" disabled="true"/>
         <command id="cmd_closeWindow" oncommand="window.close()"/>
-        <command id="cmd_toggleXPCOMBrowser" oncommand="Firebug.Chromebug.CategoryBrowser.toggleXPCOMBrowser()"/>
         <command id="cmd_firefox" oncommand="window.open().home();"/>
         <command id="cmd_chromeList" oncommand="Firebug.Chromebug.chromeList()"/>
         <command id="cmd_xulExplorer" oncommand="Firebug.Chromebug.openXULExplorer()"/>
@@ -208,11 +210,11 @@
                             <menuitem type="checkbox" label="&firebug.ShadeBoxModel;"
                                       oncommand="FirebugChrome.onToggleOption(this)"
                                       option="shadeBoxModel"/>
-                                      
+
                            <menuitem id="ChromebugMenu_Options_alwaysOpenTraceConsole"
-                    				type="checkbox" label="Always Open Chromebug Tracing"
-                    				oncommand="FirebugChrome.onToggleOption(this)"
-                    				option="alwaysOpenTraceConsole"/>
+                                    type="checkbox" label="Always Open Chromebug Tracing"
+                                    oncommand="FirebugChrome.onToggleOption(this)"
+                                    option="alwaysOpenTraceConsole"/>
                         </menupopup>
                     </menu>
                 </menupopup>
@@ -238,7 +240,7 @@
             <!-- Filter -->
             <!-- xxxHonza: localization -->
             <toolbarbutton label="(no filter)" id="cbPackageList"
-                locationProvider="Chromebug.packageListLocator;" title="Filter:"
+                locationProvider="Firebug.Chromebug.packageListLocator;" title="Filter:"
                 tooltiptext="chrome://&lt;package name&gt;/&lt;part&gt;/&lt;file&gt;"
                 labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
@@ -247,7 +249,7 @@
             <!-- List of all files -->
             <!-- xxxHonza: localization -->
             <toolbarbutton label="(no file)" id="cbAllFilesList"
-                locationProvider="Chromebug.allFilesListLocator;" title="File:"
+                locationProvider="Firebug.Chromebug.allFilesListLocator;" title="File:"
                 tooltiptext="All files known to Chromebug"
                 labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
@@ -256,7 +258,7 @@
             <!-- List of Chromebug contexts (windows) -->
             <!-- xxxHonza: localization -->
             <toolbarbutton label="context" id="cbContextList"
-                locationProvider="Chromebug.contextListLocator;" title="Context:"
+                locationProvider="Firebug.Chromebug.contextListLocator;" title="Context:"
                 tooltiptext="currently selected context"
                 labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"/>
 
@@ -286,7 +288,7 @@
         </vbox>
 
         <vbox id="cbOverlayViewer" flex="1" collapsed="true">
-            <!-- <browser src=... type="content" flex="1" /> -->
+            <browser id="cbOverlayBrower" src="about:blank" type="content" flex="1" />
         </vbox>
 
     </vbox>
