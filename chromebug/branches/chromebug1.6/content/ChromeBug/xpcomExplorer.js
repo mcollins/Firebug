@@ -583,20 +583,8 @@ XPCOMExplorer.OverlayPanel.prototype = extend(Firebug.HTMLPanel.prototype,
         var url = safeGetWindowLocation(this.context.window);
         if (url)
             var uri = makeURI(normalizeURL(url));
+        FBTrace.sysout("overlay.getOverlays for "+url, uri);
         return this.overlays.getList(uri);
-    },
-
-    getBrowserForOverlay: function(url)
-    {
-        FBTrace.sysout("overlay.getBrowserForOverlay "+url);
-
-        var browsers = this.overlayViewer.getElementsByTagName("browser");
-        if (browsers.length === 1)
-        {
-            browsers[0].setAttribute("src",  url);
-            return browsers[0];
-        }
-        throw new Error("Need browser element in "+this.overlayViewer);
     },
 
     overlays:

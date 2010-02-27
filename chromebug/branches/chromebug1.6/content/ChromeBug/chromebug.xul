@@ -93,7 +93,7 @@
     <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/xulapp.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
-    <script type="application/x-javascript" src="chrome://xpcomExplorer/content/xpcomExplorer.js"/>
+    <script type="application/x-javascript" src="chrome://chromebug/content/xpcomExplorer.js"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
