@@ -35,7 +35,7 @@ Firebug.Platform =
 
 };
 
-Firebug.Platform.ComponentClassCrashers = ["@mozilla.org/generic-factory;1", "QueryInterface"];
+Firebug.Platform.ComponentClassCrashers = ["@mozilla.org/generic-factory;1", "QueryInterface", "@mozilla.org/dom/storage;2"];
 Firebug.Platform.ComponentInterfaceCrashers = ["IDispatch"];
 
 const theCrashers = Firebug.Platform.ComponentClassCrashers;
@@ -189,6 +189,8 @@ Firebug.Platform.ComponentClassRep = domplate(Firebug.Rep,
             if (Firebug.Platform.ComponentClassCrashers.indexOf(object.name) != -1)
                 return "crasher";
 
+            //window.dump("getServiceOrCreateInstance "+object.name+"\n");
+
             aComponent = Cc[object.name].getService(Ci.nsISupports);
         }
         catch(exc) // not a service I guess
@@ -231,6 +233,8 @@ Firebug.Platform.ComponentClass.prototype =
                     //window.dump("skipping "+this.nsIJSCID.name+"\n");
                     return "crasher";
                 }
+                //window.dump("get serviceOrCreateInstance "+this.nsIJSCID.name+"\n");
+
                 this.obj = Cc[this.nsIJSCID.name].getService(Ci.nsISupports);
                 this.isA = 'service';
                 //window.dump("got service "+this.nsIJSCID.name+"\n");
@@ -257,6 +261,8 @@ Firebug.Platform.ComponentClass.prototype =
 
     get interfaces()
     {
+        if (!this.ifaces)
+            this.ifaces = getInterfaces(this.obj);  // QI it
         return this.ifaces;
     },
 
@@ -274,6 +280,9 @@ function getInterfaces(obj)
     {
         if (Firebug.Platform.ComponentInterfaceCrashers.indexOf(iface) != -1)
             continue;
+
+        // window.dump("getInterfaces "+iface+"\n");
+
 
         if (obj instanceof Ci[iface]) {
             var ifaceProps = ifaces[iface] = [];
