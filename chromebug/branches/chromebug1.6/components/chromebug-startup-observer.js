@@ -208,7 +208,7 @@ StartupObserver.prototype =
                    for (var i = 0; i < scripts.length; i++)
                    {
                        var s = scripts[i];
-                       s.clearBreakpoint[0];
+                       s.clearBreakpoint(0);
                        delete cb.breakpointedScripts[s.tag];
                        if (s.tag === script.tag)
                            scripts.splice(i,1); // remove the 'outerscript' so the inner ones remain
