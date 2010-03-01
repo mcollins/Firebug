@@ -9,11 +9,11 @@ function runTest()
     FBTest.sysout("issueXXXX.START");
 
     // 1) Load test case page
-    FBTestFirebug.openNewTab(basePath + "net/XXXX/issueXXXX.html", function(win)
+    FBTest.openNewTab(basePath + "net/XXXX/issueXXXX.html", function(win)
     {
         // 2) Open Firebug and enable the Net panel.
-        FBTestFirebug.openFirebug();
-        FBTestFirebug.enableNetPanel(function(win)
+        FBTest.openFirebug();
+        FBTest.enableNetPanel(function(win)
         {
             // 3) Select Net panel
             var panel = FW.FirebugChrome.selectPanel("net");
@@ -24,7 +24,7 @@ function runTest()
             // 5) TODO: Test driver code (can be asynchronous)
 
             // 6) Finish test
-            FBTestFirebug.testDone("issueXXXX.DONE");
+            FBTest.testDone("issueXXXX.DONE");
         });
     });
 }
