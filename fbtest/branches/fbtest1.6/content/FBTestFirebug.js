@@ -1146,23 +1146,33 @@ this.selectSourceLine = function(url, lineNo, category, chrome, callback)
 // Network
 
 /**
- * Executes passed callbeck as soon as a network response is received and appropriate entry
- * is displayed in the Net or Consolea panel. A node repreenting the entry is passed into the
- * callback.
- * @param {String} panelName Name of the panel, must be set to 'console' or 'net'.
- * @param {Function] callback A callback function.
+ * Executes passed callback as soon as an expected element is displayed within the
+ * specified panel. A DOM node representing the UI is passed into the callback as
+ * the only parameter.
+ * @param {String} panelName Name of the panel that shows the result.
+ * @param {Function] callback A callback function with one parameter.
  */
-this.waitForDisplayedResponse = function(panelName, config, callback)
+this.waitForDisplayedElement = function(panelName, config, callback)
 {
-    if (panelName != "net" && panelName != "console")
-        FBTest.sysout("waitForDisplayedResponse; ERROR Uknown panel name specified.");
-
     if (!config)
     {
-        var net = (panelName == "net");
-        config = {
-            tagName: net ? "tr" : "div",
-            classes: net ? "netRow category-xhr hasHeaders loaded" : "logRow logRow-spy loaded"
+        // Default configuration for specific panels.
+        config = {};
+        switch (panelName)
+        {
+            case "net":
+                config.tagName = "tr";
+                config.classes = "netRow category-xhr hasHeaders loaded";
+                break;
+
+            case "console":
+                config.tagName = "div";
+                config.classes = "logRow logRow-spy loaded";
+                break;
+
+            default:
+                FBTest.sysout("waitForDisplayedElement; ERROR Unknown panel name specified.");
+                return;
         }
     }
 

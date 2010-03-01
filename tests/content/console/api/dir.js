@@ -8,7 +8,7 @@ function runTest()
         FBTestFirebug.enableConsolePanel(function(win)
         {
             var config = {tagName: "div", classes: "logRow logRow-dir"};
-            FBTestFirebug.waitForDisplayedResponse("console", config, function(row)
+            FBTestFirebug.waitForDisplayedElement("console", config, function(row)
             {
                 var name = row.getElementsByClassName("memberLabelCell")[0];
                 var value = row.getElementsByClassName("memberValueCell")[0];

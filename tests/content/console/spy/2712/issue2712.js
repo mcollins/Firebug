@@ -9,7 +9,7 @@ function runTest()
         FBTestFirebug.enableConsolePanel(function(win)
         {
             // Wait for request being displayed in the Console panel.
-            FBTestFirebug.waitForDisplayedResponse("console", null, function(row)
+            FBTestFirebug.waitForDisplayedElement("console", null, function(row)
             {
                 FBTest.ok(!FW.FBL.hasClass(row, "error"),
                     "The request must not be marked as 'aborted'.");
