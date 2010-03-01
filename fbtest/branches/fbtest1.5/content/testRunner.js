@@ -246,6 +246,7 @@ FBTestApp.TestRunner =
 
                 // Inject FBTest object into the test page before we get to the script tag compiles.
                 win.FBTest = FBTestApp.FBTest;
+                win.FBTrace = FBTrace;
 
                 win.addEventListener("load", FBTestApp.TestRunner.eventListener, true);
 
@@ -401,7 +402,7 @@ FBTestApp.TestRunner =
         if (!this.wrapAJSFile)
             this.wrapAJSFile = getResource(wrapperURL);
 
-        var testFirebugLibURL = FBTestApp.TestServer.chromeToUrl(
+        var testFirebugLibURL = FBTestApp.TestConsole.chromeToUrl(
             "chrome://fbtest/content/FBTestFirebug.js");
 
         if (FBTrace.DBG_FBTEST)
@@ -565,7 +566,9 @@ FBTestApp.Preferences =
             if (prefName.indexOf("DBG_") == -1 &&
                 prefName.indexOf("filterSystemURLs") == -1)
             {
-                this.values[prefName] = Firebug.getPref(Firebug.prefDomain, prefName);
+                var value = Firebug.getPref(Firebug.prefDomain, prefName);
+                if (typeof(value) != 'undefined')
+                    this.values[prefName] = value;
             }
         }
     },

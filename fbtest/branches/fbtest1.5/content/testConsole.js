@@ -13,12 +13,16 @@ var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSub
 var filePicker = Cc["@mozilla.org/filepicker;1"].getService(Ci.nsIFilePicker);
 var cmdLineHandler = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTest"].getService(Ci.nsICommandLineHandler);
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
+var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.nsIChromeRegistry);
 
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
 
 // Global variables
 var gFindBar;
+
+var versionURL = "chrome://fbtest/content/fbtest.properties";
 
 // ************************************************************************************************
 
@@ -31,8 +35,8 @@ FBTestApp.TestConsole =
     testListPath: null, // full path to the test list, eg a URL for the testList.html
     driverBaseURI: null,  // base for test drivers, must be a secure location, chrome or https
     testCasePath: null,  // base for testcase pages. These are normal web pages
-
     groups: null,
+    version: null,
 
     initialize: function()
     {
@@ -42,6 +46,11 @@ FBTestApp.TestConsole =
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestConsole.initializing");
+
+            // Update test console window title.
+            var version = this.getVersion();
+            if (version)
+                window.document.title = "Firebug Test Console " + version;
 
             // Localize strings in XUL (using string bundle).
             this.internationalizeUI();
@@ -75,6 +84,13 @@ FBTestApp.TestConsole =
         }
     },
 
+    getVersion: function()
+    {
+        if (!this.version)
+            this.version = Firebug.loadVersion(versionURL);
+        return this.version;
+    },
+
     getDefaultTestList: function()
     {
         // 1) The default test list (suite) can be specified on the command line.
@@ -86,7 +102,7 @@ FBTestApp.TestConsole =
 
         // 3) If no list is specified, use the default from currently installed Firebug.
         if (!defaultTestList)
-            defaultTestList = "http://getfirebug.com/tests/content/testlists/firebug1.5.html";
+            defaultTestList = "http://getfirebug.com/tests/content/testlists/firebug1.6.html";
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestConsole.getDefaultTestList; " + defaultTestList);
@@ -128,7 +144,7 @@ FBTestApp.TestConsole =
     {
         var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
-            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar"];
+            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -259,18 +275,10 @@ FBTestApp.TestConsole =
 
             var doc = event.target;
 
-            // Some CSS from Firebug namespace.
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/dom.css"));
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://Firebug/skin/console.css"));
+            FBTestApp.TestConsole.addStyleSheets(doc);
 
-            // Append specific FBTest CSS.
-            var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
-            for (var i=0; i<styles.length; i++)
-                addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
+            var win = FBTestApp.TestConsole.findTestListWindow(doc);
 
-            var win = doc.defaultView.wrappedJSObject;
             if (!win.testList)
             {
                 if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
@@ -326,7 +334,7 @@ FBTestApp.TestConsole =
                 // Build new test list UI.
                 self.refreshTestList();
 
-                // Remember sucessfully loaded test within test history.
+                // Remember successfully loaded test within test history.
                 self.appendToHistory(testListPath, self.testCasePath, self.driverBaseURI);
 
                 self.updateURLBars();
@@ -348,8 +356,33 @@ FBTestApp.TestConsole =
         this.updateURLBars();
     },
 
+    addStyleSheets: function(doc)
+    {
+        // Some CSS from Firebug namespace.
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css"));
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/console.css"));
+
+        // Append specific FBTest CSS.
+        var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
+        for (var i=0; i<styles.length; i++)
+            addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
+    },
+
+    findTestListWindow: function(doc)
+    {
+        var win = doc.defaultView.wrappedJSObject;
+        if (win.testList)
+            return win;
+
+        var iframe = doc.getElementById("FBTest");
+        if (iframe)
+            return subwin.contentWindow.wrappedJSObject;
+    },
+
     notifyObservers: function(subject, topic, data)
     {
+        FBTrace.sysout("notifiyObservers of topic "+topic);
         observerService.notifyObservers({wrappedJSObject: this}, topic, data);
     },
 
@@ -537,6 +570,12 @@ FBTestApp.TestConsole =
         }
     },
 
+    onRestartFirefox: function()
+    {
+        Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup).
+            quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
+    },
+
     onRefreshTestList: function()
     {
         $("consoleFrame").setAttribute("src", "about:blank");
@@ -582,7 +621,111 @@ FBTestApp.TestConsole =
         var toolbar = $(menuItem.getAttribute("toolbar"));
         toolbar.collapsed = menuItem.getAttribute("checked") != "true";
         document.persist(toolbar.id, "collapsed");
-    }
+    },
+
+    // Directories
+    chromeToPath: function (aPath)
+    {
+        try
+        {
+            if (!aPath || !(/^chrome:/.test(aPath)))
+                return this.urlToPath( aPath );
+
+            var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci["nsIIOService"]);
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            var cr = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci["nsIChromeRegistry"]);
+            var rv = cr.convertChromeURL(uri).spec;
+
+            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+            {
+                var m = /(.*\/content\/)/.exec(rv);
+                if (m)
+                    rv = m[1];
+            }
+
+            if (/^file:/.test(rv))
+                rv = this.urlToPath(rv);
+            else
+                rv = this.urlToPath("file://"+rv);
+
+            return rv;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.chromeToPath EXCEPTION", err);
+        }
+
+        return null;
+    },
+
+    urlToPath: function (aPath)
+    {
+        try
+        {
+            if (!aPath || !/^file:/.test(aPath))
+                return;
+
+            return Cc["@mozilla.org/network/protocol;1?name=file"]
+                      .createInstance(Ci.nsIFileProtocolHandler)
+                      .getFileFromURLSpec(aPath);
+        }
+        catch (e)
+        {
+            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
+        }
+    },
+
+    chromeToUrl: function (aPath, aDir)
+    {
+        try
+        {
+            if (!aPath || !(/^chrome:/.test(aPath)))
+                return this.pathToUrl(aPath);
+
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            var rv = chromeRegistry.convertChromeURL(uri).spec;
+            if (aDir)
+                rv = rv.substr(0, rv.lastIndexOf("/") + 1);
+
+            if (/content\/$/.test(aPath)) // fix bug  in convertToChromeURL
+            {
+                var m = /(.*\/content\/)/.exec(rv);
+                if (m)
+                    rv = m[1];
+            }
+
+            if (!/^file:/.test(rv))
+                rv = this.pathToUrl(rv);
+
+            return rv;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.chromeToUrl EXCEPTION", err);
+        }
+
+        return null;
+    },
+
+    pathToUrl: function(aPath)
+    {
+        try
+        {
+            if (!aPath || !(/^file:/.test(aPath)))
+                return aPath;
+
+            var uri = ios.newURI(aPath, "UTF-8", null);
+            return Cc["@mozilla.org/network/protocol;1?name=file"]
+                .createInstance(Ci.nsIFileProtocolHandler)
+                .getURLSpecFromFile(uri).spec;
+        }
+        catch (e)
+        {
+            throw new Error("urlToPath fails for "+aPath+ " because of "+e);
+        }
+    },
 };
 
 // ************************************************************************************************
@@ -634,22 +777,25 @@ var FBTest = FBTestApp.FBTest =
     setToKnownState: function()
     {
         FBTest.sysout("FBTestFirebug setToKnownState");
-        if(FBTest.FirebugWindow.Firebug.Activation)
+
+        var Firebug = FBTest.FirebugWindow.Firebug;
+        if(Firebug.Activation)
         {
-            FBTest.FirebugWindow.Firebug.Activation.toggleAll("off");
-            FBTest.FirebugWindow.Firebug.Activation.toggleAll("none");
-            FBTest.FirebugWindow.Firebug.Activation.clearAnnotations();
+            Firebug.Activation.toggleAll("off");
+            Firebug.Activation.toggleAll("none");
+            Firebug.Activation.clearAnnotations();
         }
         else
         {
-            FBTest.FirebugWindow.Firebug.toggleAll("off");
-            FBTest.FirebugWindow.Firebug.toggleAll("none");
+            Firebug.toggleAll("off");
+            Firebug.toggleAll("none");
         }
 
-        if (FBTest.FirebugWindow.Firebug.isDetached())
-            FBTest.FirebugWindow.Firebug.toggleDetachBar();
+        if (Firebug.isDetached())
+            Firebug.toggleDetachBar();
 
-        FBTest.FirebugWindow.Firebug.resetAllOptions(false);
+        Firebug.resetAllOptions(false);
+        Firebug.Debugger.clearAllBreakpoints(null);
     },
 
     // *************************************************************************************************
@@ -774,23 +920,12 @@ var FBTest = FBTestApp.FBTest =
 
     getLocalURLBase: function()
     {
-        return FBTestApp.TestServer.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
+        return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
     },
 
     registerPathHandler: function(path, handler)
     {
-        var server = FBTestApp.TestServer.getServer();
-        return server.registerPathHandler(path, function(metadata, response)
-        {
-            try
-            {
-                handler.apply(null, [metadata, response]);
-            }
-            catch (err)
-            {
-                FBTrace.sysout("FBTest.registerPathHandler EXCEPTION", err);
-            }
-        });
+        // OBSOLETE
     },
 
     pressKey: function(keyCode, eltID)

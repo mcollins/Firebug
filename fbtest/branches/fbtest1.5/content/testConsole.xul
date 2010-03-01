@@ -16,7 +16,7 @@
         xmlns:html="http://www.w3.org/1999/xhtml"
         id="TestConsole"
         windowtype="FBTestConsole"
-        title="Firebug Test Console 1.5"
+        title="Firebug Test Console"
         width="640" height="480"
         screenX="10" screenY="10"
         persist="screenX screenY width height sizemode">
@@ -33,13 +33,10 @@
     <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
 
     <!-- FBTest -->
-    <script type="application/x-javascript" src="chrome://fbtest/content/httpd.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>
-
     <script type="application/x-javascript" src="chrome://fbtest/content/testCore.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testResultRep.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testListRep.js"/>
-    <script type="application/x-javascript" src="chrome://fbtest/content/testServer.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testRunner.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
 
@@ -57,10 +54,13 @@
         <command id="cmd_copy" oncommand="goDoCommand('cmd_copy')" disabled="true"/>
         <command id="cmd_openTestList" oncommand="FBTestApp.TestConsole.onOpenTestList()"/>
         <command id="cmd_refreshTestList" oncommand="FBTestApp.TestConsole.onRefreshTestList()"/>
+        <command id="cmd_restartFirefox" oncommand="FBTestApp.TestConsole.onRestartFirefox()"/>
+        <command id="cmd_close" oncommand="window.close()" />
     </commandset>
 
     <keyset id="mainKeyset">
         <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
+        <key id="key_close"  key="w" command="cmd_close" modifiers="accel"/>
     </keyset>
 
     <toolbox id="consoleToolbox">
@@ -83,7 +83,11 @@
                 tooltiptext="fbtest.cmd.tip.noTestTimeout"
                 command="cmd_noTestTimeout"/>
 
-            <toolbarseparator flex="1"/>
+            <toolbarseparator id="FBTestButtons_end" flex="1"/>
+            <toolbarbutton id="restartFirefox"
+                label="fbtest.cmd.Restart" class="toolbar-image-button"
+                tooltiptext="fbtest.cmd.tip.Restart"
+                command="cmd_restartFirefox"/>
             <toolbarbutton id="refreshList"
                 label="fbtest.cmd.Refresh" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.Refresh"
