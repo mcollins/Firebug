@@ -246,6 +246,7 @@ FBTestApp.TestRunner =
 
                 // Inject FBTest object into the test page before we get to the script tag compiles.
                 win.FBTest = FBTestApp.FBTest;
+                win.FBTestApp = FBTestApp;
                 win.FBTrace = FBTrace;
 
                 win.addEventListener("load", FBTestApp.TestRunner.eventListener, true);
@@ -403,7 +404,7 @@ FBTestApp.TestRunner =
             this.wrapAJSFile = getResource(wrapperURL);
 
         var testFirebugLibURL = FBTestApp.TestConsole.chromeToUrl(
-            "chrome://fbtest/content/FBTestFirebug.js");
+            "chrome://fbtest/content/FBTest.js");
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.wrapJS; Firebug lib file: " + testFirebugLibURL);
