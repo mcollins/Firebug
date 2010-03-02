@@ -56,7 +56,8 @@ this.compare = function(expected, actual, msg)
     }
     else
     {
-        result = (expected === actual);
+        // xxxHonza: TODO: lib/textSearch doesn't like '==='
+        result = (expected == actual);
     }
 
     FBTest.sysout("compare "+(result?"passes":"**** FAILS ****")+" "+msg);
