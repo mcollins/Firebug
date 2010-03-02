@@ -38,7 +38,7 @@ FBTestApp.TestResultRep = domplate(
                 ),
                 TD({"class": "testResultCol"},
                     DIV({"class": "testResultFileName testResultLabel"},
-                        "$result.fileName"
+                        "$result|getFileName"
                     )
                 )
             )
@@ -71,6 +71,12 @@ FBTestApp.TestResultRep = domplate(
     getMessage: function(result)
     {
         return cropString(result.msg, 100);
+    },
+
+    getFileName: function(result)
+    {
+        // xxxHonza: the file name is always content of the wrapAJSFile.html file.
+        return ""; //unescape(result.fileName);
     },
 
     isError: function(result)

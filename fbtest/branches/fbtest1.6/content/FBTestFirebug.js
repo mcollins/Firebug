@@ -48,17 +48,28 @@ this.ok = function(pass, msg)
  */
 this.compare = function(expected, actual, msg)
 {
-    FBTest.sysout("compare "+((expected == actual)?"passes":"**** FAILS ****")+" "+msg);
+    var result;
+    if (expected instanceof RegExp)
+    {
+        result = actual.match(expected);
+        expected = expected.toString();
+    }
+    else
+    {
+        result = (expected === actual);
+    }
+
+    FBTest.sysout("compare "+(result?"passes":"**** FAILS ****")+" "+msg);
 
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
-        expected == actual, msg, expected, actual));
+        result, msg, expected, actual));
 
-    if (expected != actual)
-        FBTest.onFailure(msg);
-    else
+    if (result)
         FBTestApp.TestRunner.setTestTimeout();
+    else
+        FBTest.onFailure(msg);
 
-    return (expected == actual);
+    return result;
 };
 
 /**
