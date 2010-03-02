@@ -53,13 +53,13 @@ try
     initialize();
 
     // Helper shortcuts
-    window.FW = FBTest.FirebugWindow;
+    window.FW = FBTest.FirebugWindow;   // Set by test harness
     window.basePath = FBTest.getHTTPURLBase();
     window.baseLocalPath = FBTest.getLocalURLBase();
 }
 catch (e)
 {
-	FBTrace.sysout("FBTest; EXCEPTION " + e, e);
+    FBTrace.sysout("FBTest; EXCEPTION " + e, e);
 }
 
 })();

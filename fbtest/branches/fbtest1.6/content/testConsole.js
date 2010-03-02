@@ -382,7 +382,9 @@ FBTestApp.TestConsole =
 
     notifyObservers: function(subject, topic, data)
     {
-        FBTrace.sysout("notifiyObservers of topic "+topic);
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("notifiyObservers of topic "+topic);
+
         observerService.notifyObservers({wrappedJSObject: this}, topic, data);
     },
 

@@ -8,12 +8,19 @@
  * into this scope by the Firebug test harness.
  */
 
-// Namespace for Test API
+// Namespace for Test APIs
 (function() {
 
 // ************************************************************************************************
-// Core test APIs
+// Core test APIs (direct access to FBTestApp)
 
+/**
+ * Verification method, prints result of a test. If the first <i>pass<i> parameter is true
+ * the test passes, otherwise fails.
+ * @param {Boolean} pass Result of a test.
+ * @param {String} msg A message to be displayed as a test results under the current test
+ *      within the test console.
+ */
 this.ok = function(pass, msg)
 {
     if (!pass)
@@ -31,6 +38,14 @@ this.ok = function(pass, msg)
     return pass;
 };
 
+/**
+ * Verification method. Compares expected and actuall string (typially from the Firebug UI).
+ * If <i>actuall</i> and <i>expected<i> parameters are equal the test passes, otherwise fails.
+ * @param {String} expected Expected value
+ * @param {String} actual Actual value
+ * @param {String} msg A message to be displayed as a test result under the current test
+ *      within the test console.
+ */
 this.compare = function(expected, actual, msg)
 {
     FBTest.sysout("compare "+((expected == actual)?"passes":"**** FAILS ****")+" "+msg);
@@ -46,11 +61,20 @@ this.compare = function(expected, actual, msg)
     return (expected == actual);
 };
 
+/**
+ * Logs an exception under the current test within the test console.
+ * @param {String} msg A message to be displayed under the current test within the test console.
+ * @param {Exception} err An exception object.
+ */
 this.exception = function(msg, err)
 {
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestException(window, msg, err));
 };
 
+/**
+ * Prints a message into test resutls (displayed under a test within test console).
+ * @param {String} msg A message to be displayed under the current test within the test console.
+ */
 this.progress = function(msg)
 {
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
@@ -58,39 +82,6 @@ this.progress = function(msg)
     FBTest.sysout("FBTest progress: ------------- "+msg+" -------------");
     FBTestApp.TestRunner.setTestTimeout();
 };
-
-// Use testDone in the test driver.
-function finishTest()
-{
-    FBTestApp.TestRunner.testDone(false);
-}
-
-this.manualVerify = function(verifyMsg, instructions, cleanupHandler)
-{
-    FBTestApp.TestRunner.manualVerify(verifyMsg, instructions, cleanupHandler);
-};
-
-this.onFailure = function(msg)
-{
-    if (FBTestApp.TestConsole.haltOnFailedTest)
-    {
-        FBTestApp.TestRunner.clearTestTimeout();
-        FBTest.sysout("Test failed, dropping into debugger "+msg);
-        debugger;
-    }
-};
-
-this.getHTTPURLBase = function()
-{
-    return FBTestApp.TestConsole.getHTTPURLBase();
-};
-
-this.getLocalURLBase = function()
-{
-    return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
-};
-
-// ************************************************************************************************
 
 /**
  * Finishes current test and prints info message (if any) to the status bar.
@@ -105,20 +96,54 @@ this.testDone = function(message)
         FBTest.sysout("testDone DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
         if (message)
             FBTest.progress(message);
-        finishTest();
+        FBTestApp.TestRunner.testDone(false);
     });
 }
 
 /**
+ * Returns URL of a directory with test cases (HTML pages with a manual test implementation)
+ */
+this.getHTTPURLBase = function()
+{
+    return FBTestApp.TestConsole.getHTTPURLBase();
+};
+
+/**
+ * Returns URL of a directory with test driver files.
+ */
+this.getLocalURLBase = function()
+{
+    return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
+};
+
+/**
  * Basic logging into the Firebug tracing console. All logs made through this function
  * appears only if 'TESTCASE' options is set.
- * @param {Object} text A message to log.
+ * @param {String} text A message to log.
  * @param {Object} obj An object to log.
  */
 this.sysout = function(text, obj)
 {
     if (FBTrace.DBG_TESTCASE)
         FBTrace.sysout(text, obj);
+};
+
+// ************************************************************************************************
+// APIs used by test harness (direct access to FBTestApp)
+
+/**
+ * Called by the test harness framework in case of a failing test. If <i>Fail Halt<i> option
+ * is set and <i>Chromebug</i> extension installed, the debugger will halt the test execution.
+ * @param {String} msg A message to be displayed under the current test within the test console.
+ */
+this.onFailure = function(msg)
+{
+    if (FBTestApp.TestConsole.haltOnFailedTest)
+    {
+        FBTestApp.TestRunner.clearTestTimeout();
+        FBTest.sysout("Test failed, dropping into debugger "+msg);
+        debugger;
+    }
 };
 
 /**
@@ -148,19 +173,28 @@ this.setToKnownState = function()
     Firebug.Debugger.clearAllBreakpoints(null);
 };
 
+// ************************************************************************************************
+// Manual verification (direct access to FBTestApp). These APIs should not be used in automated
+// test-suites
+
+function manualTest(verifyMsg, instructions, cleanupHandler)
+{
+    FBTestApp.TestRunner.manualVerify(verifyMsg, instructions, cleanupHandler);
+}
+
 this.manualVerify = function(verifyMsg, instructions)
 {
     var self = this;
-    FBTest.manualVerify(
+    manualTest(
         verifyMsg, instructions,
         function(passes)
         {
             FBTest.ok(passes, "Manual verification");
             self.closeFirebug();
             self.cleanUpTestTabs();
-            finishTest();
+            FBTestApp.TestRunner.testDone(false);
         });
-}
+};
 
 // ************************************************************************************************
 // Event automation
