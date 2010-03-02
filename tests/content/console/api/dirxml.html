@@ -15,9 +15,17 @@
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
 <li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li>The console panel should display a log (one row) with variable <b>a</b>
-    and value <b>b</b>.</li>
+<li>The console panel should display a following XML log:</li>
 </ol>
+
+<pre style="color:green">
+&lt;div id="content" style="display:none"&gt;
+    &lt;span&gt;a&lt;/span&gt;
+    &lt;span&gt;
+        &lt;span>b&lt;/span&gt;
+    &lt;/span&gt;
+&lt;/div&gt;
+</pre>
 
 <button id="testButton" onclick="onExecuteTest()">Execute Test</button>
 <br/><br/>
