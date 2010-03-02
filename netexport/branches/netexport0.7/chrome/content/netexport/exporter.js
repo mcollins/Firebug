@@ -61,7 +61,7 @@ Firebug.NetExport.Exporter =
     getTargetFile: function(context)
     {
         var nsIFilePicker = Ci.nsIFilePicker;
-        var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
+        var fp = CCIN("@mozilla.org/filepicker;1", "nsIFilePicker");
         fp.init(window, null, nsIFilePicker.modeSave);
         fp.appendFilter("HTTP Archive Files","*.har; *.json; *.zip");
         fp.appendFilters(nsIFilePicker.filterAll | nsIFilePicker.filterText);
