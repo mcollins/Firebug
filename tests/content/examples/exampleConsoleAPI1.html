@@ -5,9 +5,9 @@
 </head>
 <body>
 
-<h1>Console object API: time, timeEnd</h1>
+<h1>Console object API: log</h1>
 
-<p>This test-case is intended for <b>console.time</b> and <b>console.timeEnd</b> method.
+<p>This test-case is intended for <b>console.log</b> method.
 <br/>
 <i>Jan Odvarko, odvarko@gmail.com</i>
 </p>
@@ -15,7 +15,7 @@
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
 <li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li>The console panels should display elapsed time around 1000ms</li>
+<li>The Console panel should display: <span style="color:green">Hello World!</span></li>
 </ol>
 
 <button id="testButton" onclick="onExecuteTest()">Execute Test</button>
@@ -24,17 +24,8 @@
 <script type="text/javascript">
 function onExecuteTest()
 {
-    console.time("a");
-    var n = now();
-    while (now() < + n+1000) {
-        var a = 10;
-    }
-    console.timeEnd("a");
-}
-
-function now()
-{
-    return (new Date()).getTime();
+    // TODO: Usage of the console object e.g.
+    console.log("Hello World!");
 }
 </script>
   
