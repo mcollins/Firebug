@@ -1290,7 +1290,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Console.openGroup("Context Analysis", FirebugContext)
         Firebug.Console.log(Firebug.Chromebug.contexts, FirebugContext);
         Firebug.Console.log(Firebug.Chromebug.jsContexts, FirebugContext);
-        var ejs = fbs.getJSContexts();
+        var ejs = fbs.eachJSContext();
         if (ejs)
             Firebug.Console.log(ejs, FirebugContext);
         if (context)

@@ -221,7 +221,7 @@ XPCOMExplorer.jsContextList = {
 
     getLocationList: function()
     {
-        this.list = fbs.getJSContexts();
+        this.list = fbs.eachJSContext();
         return this.list;
     },
 
