@@ -1,4 +1,4 @@
 <?php
 header("Content-Type: ");
 ?>
-onScriptLoaded();
+//Response for test issue176 (no content type) 

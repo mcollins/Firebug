@@ -7,7 +7,15 @@ function runTest()
         FBTestFirebug.enableNetPanel(function(win)
         {
             FBTestFirebug.clearCache();
-            win.wrappedJSObject.runTest(function()
+
+            // Wait for two requests being displayed in the Net panel.
+            var config = {
+                counter: 2,
+                tagName: "tr",
+                classes: "netRow category-flash hasHeaders loaded",
+            };
+
+            waitForDisplayedElement("net", config, function(row)
             {
                 var panel = FW.FirebugChrome.selectPanel("net");
 
@@ -15,17 +23,25 @@ function runTest()
                 FW.Firebug.NetMonitor.onToggleFilter(FW.FirebugContext, "flash");
                 setTimeout(checkNetPanelUI, 300);
             });
+
+            // Execute test on the test page.
+            FBTest.click(win.document.getElementById("testButton"));
         });
     });
 }
 
-// Request handler (server side)
-function requestHandler(metadata, response)
+function waitForDisplayedElement(panelName, config, callback)
 {
-    var path = metadata.path;
-    var extension = path.substr(path.lastIndexOf(".") + 1);
-    response.setHeader("Content-Type", (extension == "txt" ? "video/x-flv" : ""), false);
-    response.write("onScriptLoaded();");
+    FBTestFirebug.waitForDisplayedElement(panelName, config, function(row)
+    {
+        var panelNode = FBTestFirebug.getPanel(panelName).panelNode;
+        var nodes = panelNode.getElementsByClassName(config.classes);
+
+        if (nodes.length < config.counter)
+            waitForDisplayedElement(panelName, config, callback);
+        else
+            callback();
+    });
 }
 
 // Make sure the Net panel's UI is properly filtered.
