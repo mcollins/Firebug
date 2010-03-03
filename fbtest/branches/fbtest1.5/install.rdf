@@ -21,9 +21,11 @@
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- firefox -->
-        <em:minVersion>1.5</em:minVersion>
+        <em:minVersion>3.0</em:minVersion>
         <em:maxVersion>3.7.*</em:maxVersion>
       </Description>
     </em:targetApplication>
-  </Description>
+
+    <em:updateURL>https://getfirebug.com/releases/fbtest/1.5/update.rdf</em:updateURL>
+    <em:homepageURL>http://getfirebug.com/wiki/index.php/Firebug_Tests</em:homepageURL>
 </RDF>
