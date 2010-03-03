@@ -28,4 +28,6 @@
 
     <em:updateURL>https://getfirebug.com/releases/fbtest/1.5/update.rdf</em:updateURL>
     <em:homepageURL>http://getfirebug.com/wiki/index.php/Firebug_Tests</em:homepageURL>
+
+  </Description>
 </RDF>
