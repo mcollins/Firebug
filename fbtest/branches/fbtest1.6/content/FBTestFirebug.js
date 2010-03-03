@@ -1086,7 +1086,23 @@ this.waitForDisplayedElement = function(panelName, config, callback)
     var doc = FBTestFirebug.getPanelDocument();
     var recognizer = new MutationRecognizer(doc.defaultView, config.tagName,
         {"class": config.classes});
-    recognizer.onRecognizeAsync(callback);
+
+    var tempCallback = callback;
+    if (config.counter)
+    {
+        tempCallback = function(element)
+        {
+            var panelNode = FBTestFirebug.getPanel(panelName).panelNode;
+            var nodes = panelNode.getElementsByClassName(config.classes);
+
+            if (nodes.length < config.counter)
+                FBTest.waitForDisplayedElement(panelName, config, callback);
+            else
+                callback(element);
+        }
+    }
+
+    recognizer.onRecognizeAsync(tempCallback);
 }
 
 // ************************************************************************************************
