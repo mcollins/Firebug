@@ -52,7 +52,7 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
     if (!persistedState.enabled)  // for now default all chromebug window to enabled.
         persistedState.enabled = "enable";
 
-    FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":"")+(this.global?" ":"NULL global ")+this.getName());
+    FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":"")+(this.global?" ":"NULL global ")+" and name "+this.getName());
 }
 
 Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
@@ -101,7 +101,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
             if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" -> "+context.getName()+"\n");
+                FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" to "+context.getName()+"\n");
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("loadHandler found context with sourceFileMap ", context.sourceFileMap);
         }

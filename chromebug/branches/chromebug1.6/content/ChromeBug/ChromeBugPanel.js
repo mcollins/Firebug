@@ -185,7 +185,8 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Chromebug.contextList.setCurrentLocation(context);
 
-        FirebugContext = context; // the context becomes the default for its view
+        Firebug.chrome.setFirebugContext(context);  // we've overridden this one to prevent Firebug code from doing...
+        FirebugContext = context;                   // ...this
 
         dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
 
@@ -328,7 +329,6 @@ Firebug.Chromebug = extend(Firebug.Module,
             {
                 var pkg = this.restoreFilter(previousState, context);
 
-                FirebugContext = context;
                 this.stopRestoration();
 
                 var panelName = previousState.panelName;
@@ -1626,10 +1626,10 @@ Firebug.Chromebug.contextList =
             if (!FirebugContext)
                 FirebugContext = context;
 
+            Firebug.Chromebug.selectContext(context);
+
             if (FBTrace.DBG_LOCATIONS)
                 FBTrace.sysout("Chromebug.contextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
-
-            Firebug.Chromebug.selectContext(context);
 
             event.currentTarget.location = context;
 

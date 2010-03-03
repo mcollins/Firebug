@@ -333,9 +333,10 @@ function overrideFirebugFunctions()
             {
                 var context = Firebug.Chromebug.contextList.getDefaultLocation();
                 Firebug.Chromebug.selectContext(context);
+
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("setFirebugContext NULL set to "+(context?context.getName():"NULL"));
             }
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("setFirebugContext NULL set to "+(context?context.getName():"NULL"));
         }
 
         // We don't want the context to show as windows load in Chromebug. Instead we wait for the user to select one.
