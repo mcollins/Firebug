@@ -1147,6 +1147,27 @@ this.runTestSuite = function(tests, callback)
 }
 
 // ************************************************************************************************
+// Task List (replaces the single runTestSuite method.
+
+this.TaskList = function()
+{
+    this.tasks = [];
+}
+
+this.TaskList.prototype =
+{
+    push: function(task)
+    {
+        this.tasks.push(task);
+    },
+
+    run: function(callback)
+    {
+        FBTest.runTestSuite(this.tasks, callback);
+    }
+};
+
+// ************************************************************************************************
 // Screen copy
 
 this.getImageDataFromWindow = function(win, width, height)
