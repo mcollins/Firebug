@@ -5,9 +5,9 @@
 </head>
 <body>
 
-<h1>Console object API: clear</h1>
+<h1>Console object API: count</h1>
 
-<p>This test-case is intended for <b>console.clear</b> method.
+<p>This test-case is intended for <b>console.count</b> method.
 <br/>
 <i>Jan Odvarko, odvarko@gmail.com</i>
 </p>
@@ -15,8 +15,10 @@
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
 <li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li>The Console panel should display only one log message:
-    <span style="color:green">This is a test log</span></li>
+<li>The Console panel should display two logs:<br/>
+    <span style="color:green">a 3</span><br/>
+    <span style="color:green">b 2</span><br/>
+</li>
 </ol>
 
 <button id="testButton" onclick="onExecuteTest()">Execute Test</button>
@@ -25,10 +27,11 @@
 <script type="text/javascript">
 function onExecuteTest()
 {
-    console.warn("This is a test warning");
-    console.error("This is a test error");
-    console.clear();
-    console.log("This is a test log");
+    console.count("a");
+    console.count("a");
+    console.count("a");
+    console.count("b");
+    console.count("b");
 }
 </script>
   
