@@ -7,6 +7,8 @@ const Ci = Components.interfaces;
 
 const extensionManager = CCSV("@mozilla.org/extensions/manager;1", "nsIExtensionManager");
 
+var prefDomain = "extensions.firebug.netexport";
+
 // ************************************************************************************************
 // Module implementation
 
@@ -40,7 +42,8 @@ Firebug.NetExport = extend(Firebug.Module,
 
         var elements = ["netExport", "netExportCompress", "netExportAuto",
             "netExportOptions", "netExportLogDir", "netExportHelp",
-            "netExportAbout", "netExportShowPreview", "netRunPageSuite"];
+            "netExportAbout", "netExportShowPreview", "netRunPageSuite",
+            "netExportSaveAs"];
 
         for (var i=0; i<elements.length; i++)
         {
@@ -48,6 +51,26 @@ Firebug.NetExport = extend(Firebug.Module,
             FBL.internationalize(element, "label");
             FBL.internationalize(element, "tooltiptext");
             FBL.internationalize(element, "buttontooltiptext");
+        }
+
+        // If a server is specified in the preferences, show a new menu item
+        // that allows to send HAR beacon to the server and localize it.
+        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
+        if (serverURL)
+        {
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.initialize; Beacon server specified: " + serverURL);
+
+            var menuItem = $("netExportSendTo");
+            var menuSeparator = $("netExportSendToSeparator");
+
+            menuItem.removeAttribute("collapsed");
+            menuSeparator.removeAttribute("collapsed");
+
+            // Update label & tooltip so it displayes the URL.
+            menuItem.setAttribute("label", $STR("netexport.menu.label.Send To") + " " + serverURL);
+            menuItem.setAttribute("tooltiptext", $STR("netexport.menu.tooltip.Send To") +
+                " " + serverURL);
         }
     },
 
@@ -66,6 +89,38 @@ Firebug.NetExport = extend(Firebug.Module,
     importData: function(context)
     {
         alert("TBD");
+    },
+
+    sendTo: function(context)
+    {
+        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
+        if (!serverURL)
+            return;
+
+        try
+        {
+            var jsonString = this.Exporter.buildData(context);
+            if (!jsonString)
+                return;
+
+            serverURL += "?url=" + encodeURIComponent(context.getName());
+
+            var stream = CCIN("@mozilla.org/io/string-input-stream;1", "nsIStringInputStream");
+            stream.setData(jsonString, jsonString.length);
+
+            var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
+            request.open("POST", serverURL, false);
+            request.setRequestHeader("Content-Type", "x-application/har+json");
+            request.send(stream);
+
+            if (FBTrace.DBG_NETEXPORT)
+                FBTrace.sysout("netexport.sendTo; HAR sent to: " + serverURL);
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.sendTo; EXCEPTION", e);
+        }
     },
 
     // Options

@@ -15,6 +15,7 @@
         <command id="cmd_netExport" oncommand="Firebug.NetExport.exportData(FirebugContext)"/>
         <command id="cmd_netImport" oncommand="Firebug.NetExport.importData(FirebugContext)"/>
         <command id="cmd_netExportAuto" oncommand="Firebug.NetExport.toggleAutoExport(FirebugContext)"/>
+        <command id="cmd_netExportSendTo" oncommand="Firebug.NetExport.sendTo(FirebugContext)"/>
     </commandset>
 
     <toolbar id="fbToolbar" align="center" role="toolbar">
@@ -23,12 +24,19 @@
                 <hbox id="fbNetButtonsFilter" class="noTabStop">
                     <toolbarbutton id="netExport"
                         class="toolbar-text-button fbmenubutton"
-                        insertbefore="fbNetFilter-all" command="cmd_netExport"
+                        insertbefore="fbNetFilter-all"
                         label="netexport.button.label.Export"
-                        buttontooltiptext="netexport.button.tooltip.Export HTTP Tracing"
-                        tooltiptext="netexport.menu.tooltip.Export Options"
-                        type="menu-button">
+                        tooltiptext="netexport.button.tooltip.Export HTTP Tracing"
+                        type="menu">
                         <menupopup>
+                            <menuitem id="netExportSaveAs" command="cmd_netExport"
+                                label="netexport.button.label.Save As"
+                                tooltiptext="netexport.button.tooltip.Save As"/>
+                            <menuitem id="netExportSendTo" collapsed="true"
+                                label="netexport.menu.label.Send To"
+                                tooltiptext="netexport.menu.tooltip.Send To"
+                                command="cmd_netExportSendTo" />
+                            <menuseparator id="netExportSendToSeparator" collapsed="true"/>
                             <menu id="netExportOptions" label="netexport.menu.label.Options">
                                 <menupopup onpopupshowing="return Firebug.NetExport.onOptionsShowing(this);">
                                     <menuitem id="netExportCompress" type="checkbox"
@@ -41,19 +49,19 @@
                                         tooltiptext="netexport.menu.tooltip.Show Preview"
                                         oncommand="Firebug.NetExport.onToggleOption(event, this)"
                                         option="netexport.showPreview" />
+                                    <menuseparator />
+                                    <menuitem id="netExportLogDir"
+                                        label="netexport.menu.label.Default Log Directory"
+                                        tooltiptext="netexport.menu.tooltip.Default Log Directory"
+                                        oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)" />
                                </menupopup>
                             </menu>
                             <menuseparator />
-                            <menuitem id="netRunPageSuite"
+                            <!--<menuitem id="netRunPageSuite"
                                 label="netexport.menu.label.Run Automated Loads"
                                 tooltiptext="netexport.menu.tooltip.Run Automated Loads"
                                 oncommand="Firebug.NetExport.onRunPageSuite(event)" />
-                            <menuseparator />
-                            <menuitem id="netExportLogDir"
-                                label="netexport.menu.label.Default Log Directory"
-                                tooltiptext="netexport.menu.tooltip.Default Log Directory"
-                                oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)" />
-                            <menuseparator />
+                            <menuseparator />-->
                             <menuitem id="netExportHelp"
                                 label="netexport.menu.label.Help"
                                 tooltiptext="netexport.menu.tooltip.Help"

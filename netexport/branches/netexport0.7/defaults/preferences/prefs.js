@@ -4,3 +4,4 @@ pref("extensions.firebug.netexport.viewerURL", "http://www.softwareishard.com/ha
 pref("extensions.firebug.netexport.compress", false);
 pref("extensions.firebug.netexport.defaultLogDir", "");
 pref("extensions.firebug.netexport.showPreview", true);
+pref("extensions.firebug.netexport.beaconServerURL", "http://www.showslow.com/beacon/har");
