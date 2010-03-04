@@ -982,17 +982,18 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
 
 // ************************************************************************************************
 // Error handling
-/*
+
 window.onerror = function(errType, errURL, errLineNum)
 {
     var path = window.location.pathname;
     var fileName = path.substr(path.lastIndexOf("/") + 1);
     var errorDesc = errType + " (" + errLineNum + ")" + " " + errURL;
     FBTest.sysout(fileName + " ERROR " + errorDesc);
+    FBTest.ok(false, fileName + " ERROR " + errorDesc);
     FBTestFirebug.testDone();
     return false;
 }
-*/
+
 
 // ************************************************************************************************
 // Panel Navigation
