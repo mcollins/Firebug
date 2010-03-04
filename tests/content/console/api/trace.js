@@ -9,7 +9,7 @@ function runTest()
             var config = {tagName: "div", classes: "logRow logRow-stackTrace"};
             FBTest.waitForDisplayedElement("console", config, function(row)
             {
-                var stackFrames = row.getElementsByClassNames("objectBox-stackFrame");
+                var stackFrames = row.getElementsByClassName("objectBox-stackFrame");
                 FBTest.compare(2, stackFrames.length, "There must be 2 stack frames.");
 
                 var reStack1 = /function onclick(event) {\s*onExecuteTest\(\);\s*}\s*(Object { name="event"})\s*1\s*\(line 2\)/;
