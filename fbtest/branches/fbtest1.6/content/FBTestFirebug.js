@@ -1156,9 +1156,11 @@ this.TaskList = function()
 
 this.TaskList.prototype =
 {
-    push: function(task)
+    push: function()
     {
-        this.tasks.push(task);
+        var args = FW.FBL.cloneArray(arguments);
+        args = FW.FBL.arrayInsert(args, 1, [window]);
+        this.tasks.push(FW.FBL.bind.apply(this, args));
     },
 
     run: function(callback)
