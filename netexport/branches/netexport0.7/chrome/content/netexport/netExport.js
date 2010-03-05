@@ -105,16 +105,25 @@ Firebug.NetExport = extend(Firebug.Module,
 
             serverURL += "?url=" + encodeURIComponent(context.getName());
 
-            var stream = CCIN("@mozilla.org/io/string-input-stream;1", "nsIStringInputStream");
-            stream.setData(jsonString, jsonString.length);
-
-            var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
-            request.open("POST", serverURL, false);
-            request.setRequestHeader("Content-Type", "x-application/har+json");
-            request.send(stream);
-
             if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.sendTo; HAR sent to: " + serverURL);
+                FBTrace.sysout("netexport.sendTo; " + serverURL);
+
+            //var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
+            //xxxHonza: just to see it in the Net panel.
+            var request = new context.window.XMLHttpRequest();
+            request.open("POST", serverURL, true);
+            request.setRequestHeader("Content-Type", "x-application/har+json");
+            request.setRequestHeader("Content-Length", jsonString.length);
+            request.onerror = function onError(event)
+            {
+                alert("Error " + event.target.status + " occurred while receiving the document.");
+            };
+            request.onload = function onLoad(event)
+            {
+                alert("Status: " + event.target.status + "\n" +
+                    "Response:\n" + request.responseText);
+            };
+            request.send(jsonString);
         }
         catch (e)
         {
