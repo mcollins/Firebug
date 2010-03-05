@@ -1,6 +1,6 @@
 function runTest()
 {
-    FBTest.sysout("console.API.START");
+    FBTest.sysout("examples.console.START");
     FBTest.openNewTab(basePath + "examples/exampleConsoleAPI1.html", function(win)
     {
         FBTest.openFirebug();
@@ -10,7 +10,7 @@ function runTest()
             FBTest.waitForDisplayedElement("console", config, function(row)
             {
                 FBTest.compare("Hello World!", row.textContent, "The proper message must be displayed.");
-                FBTest.testDone("console.dir.DONE");
+                FBTest.testDone("examples.console.DONE");
             });
 
             // Execute test implemented on the test page.
