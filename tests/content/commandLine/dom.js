@@ -45,7 +45,7 @@ function runTest()
 
             // Errors 
             taskList.push(executeAndVerify, "blah",
-                "ReferenceError: blah is not defined { message=\"blah is not defined\",  more...}",
+                " ReferenceError: blah is not defined { message=\"blah is not defined\",  more...}",
                 "a", "objectLink objectLink-object");
 
             // Assignment
