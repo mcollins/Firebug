@@ -16,28 +16,28 @@ Firebug.NetExport.HARUploader =
 {
     upload: function(context)
     {
-        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
-        if (!serverURL)
-            return;
-
-        if (Firebug.getPref(prefDomain, sendToConfirmation))
-        {
-            var uri = makeURI(serverURL);
-            var msg = $STR("netexport.sendTo.confirm.msg");
-            msg = msg.replace(/%S/g, uri.host);
-
-            var check = {value: false};
-            if (!prompts.confirmCheck(context.chrome.window, "NetExport", msg,
-                $STR("netexport.sendTo.confirm.checkMsg"), check))
-                return;
-
-            // Update sendToConfirmation confirmation option according to the value
-            // of the dialog's "do not show again" checkbox.
-            Firebug.setPref(prefDomain, sendToConfirmation, !check.value)
-        }
-
         try
         {
+            var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
+            if (!serverURL)
+                return;
+
+            if (Firebug.getPref(prefDomain, sendToConfirmation))
+            {
+                var uri = makeURI(serverURL);
+                var msg = $STR("netexport.sendTo.confirm.msg");
+                msg = msg.replace(/%S/g, uri.host);
+
+                var check = {value: false};
+                if (!prompts.confirmCheck(context.chrome.window, "NetExport", msg,
+                    $STR("netexport.sendTo.confirm.checkMsg"), check))
+                    return;
+
+                // Update sendToConfirmation confirmation option according to the value
+                // of the dialog's "do not show again" checkbox.
+                Firebug.setPref(prefDomain, sendToConfirmation, !check.value)
+            }
+
             var jsonString = Firebug.NetExport.Exporter.buildData(context);
             if (!jsonString)
                 return;

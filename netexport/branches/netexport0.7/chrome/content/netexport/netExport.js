@@ -61,27 +61,38 @@ Firebug.NetExport = extend(Firebug.Module,
 
     updateSendTo: function()
     {
-        // If a server is specified in the preferences, show a new menu item
-        // that allows to send HAR beacon to the server and localize it.
-        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
-        var menuItem = $("netExportSendTo");
-        var menuSeparator = $("netExportSendToSeparator");
-
-        if (serverURL)
+        try
         {
-            menuItem.removeAttribute("collapsed");
-            menuSeparator.removeAttribute("collapsed");
-        }
-        else
-        {
-            menuItem.setAttribute("collapsed");
-            menuSeparator.setAttribute("collapsed");
-        }
+            // If a server is specified in the preferences, show a new menu item
+            // that allows to send HAR beacon to the server and localize it.
+            var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
+            var uri = makeURI(serverURL);
+            var host = uri.host;
 
-        // Update label & tooltip so it displayes the URL.
-        menuItem.setAttribute("label", $STR("netexport.menu.label.Send To") + " " + serverURL);
-        menuItem.setAttribute("tooltiptext", $STR("netexport.menu.tooltip.Send To") +
-            " " + serverURL);
+            var menuItem = $("netExportSendTo");
+            var menuSeparator = $("netExportSendToSeparator");
+
+            if (serverURL)
+            {
+                menuItem.removeAttribute("collapsed");
+                menuSeparator.removeAttribute("collapsed");
+            }
+            else
+            {
+                menuItem.setAttribute("collapsed");
+                menuSeparator.setAttribute("collapsed");
+            }
+
+            // Update label & tooltip so it displayes the URL.
+            menuItem.setAttribute("label", $STR("netexport.menu.label.Send To") + " " + host);
+            menuItem.setAttribute("tooltiptext", $STR("netexport.menu.tooltip.Send To") +
+                " " + serverURL);
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("netexport.updateSendTo; EXCEPTION", e);
+        }
     },
 
     // Handle Export toolbar button.
@@ -217,7 +228,7 @@ Firebug.NetExport.safeGetWindowLocation = function(win)
     }
     catch(exc)
     {
-        if (FBTrace.DBG_NETEXPORT)
+        if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
             FBTrace.sysout("netexport.getWindowLocation; EXCEPTION window:", win);
     }
 
