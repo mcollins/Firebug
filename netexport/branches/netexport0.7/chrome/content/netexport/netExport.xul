@@ -27,7 +27,8 @@
                         insertbefore="fbNetFilter-all"
                         label="netexport.button.label.Export"
                         tooltiptext="netexport.button.tooltip.Export HTTP Tracing"
-                        type="menu">
+                        type="menu"
+                        onpopupshowing="return Firebug.NetExport.onMenuShowing(this);">
                         <menupopup>
                             <menuitem id="netExportSaveAs" command="cmd_netExport"
                                 label="netexport.button.label.Save As"

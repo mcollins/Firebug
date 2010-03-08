@@ -52,31 +52,36 @@ Firebug.NetExport = extend(Firebug.Module,
             FBL.internationalize(element, "tooltiptext");
             FBL.internationalize(element, "buttontooltiptext");
         }
-
-        // If a server is specified in the preferences, show a new menu item
-        // that allows to send HAR beacon to the server and localize it.
-        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
-        if (serverURL)
-        {
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.initialize; Beacon server specified: " + serverURL);
-
-            var menuItem = $("netExportSendTo");
-            var menuSeparator = $("netExportSendToSeparator");
-
-            menuItem.removeAttribute("collapsed");
-            menuSeparator.removeAttribute("collapsed");
-
-            // Update label & tooltip so it displayes the URL.
-            menuItem.setAttribute("label", $STR("netexport.menu.label.Send To") + " " + serverURL);
-            menuItem.setAttribute("tooltiptext", $STR("netexport.menu.tooltip.Send To") +
-                " " + serverURL);
-        }
     },
 
     initContext: function(context)
     {
         context.netExport = {};
+    },
+
+    updateSendTo: function()
+    {
+        // If a server is specified in the preferences, show a new menu item
+        // that allows to send HAR beacon to the server and localize it.
+        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
+        var menuItem = $("netExportSendTo");
+        var menuSeparator = $("netExportSendToSeparator");
+
+        if (serverURL)
+        {
+            menuItem.removeAttribute("collapsed");
+            menuSeparator.removeAttribute("collapsed");
+        }
+        else
+        {
+            menuItem.setAttribute("collapsed");
+            menuSeparator.setAttribute("collapsed");
+        }
+
+        // Update label & tooltip so it displayes the URL.
+        menuItem.setAttribute("label", $STR("netexport.menu.label.Send To") + " " + serverURL);
+        menuItem.setAttribute("tooltiptext", $STR("netexport.menu.tooltip.Send To") +
+            " " + serverURL);
     },
 
     // Handle Export toolbar button.
@@ -91,6 +96,12 @@ Firebug.NetExport = extend(Firebug.Module,
         alert("TBD");
     },
 
+    onMenuShowing: function(popup)
+    {
+        this.updateSendTo();
+        return true;
+    },
+
     sendTo: function(context)
     {
         var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
@@ -103,25 +114,45 @@ Firebug.NetExport = extend(Firebug.Module,
             if (!jsonString)
                 return;
 
-            serverURL += "?url=" + encodeURIComponent(context.getName());
+            var pageURL = encodeURIComponent(context.getName());
+            serverURL += "?url=" + pageURL;
 
             if (FBTrace.DBG_NETEXPORT)
                 FBTrace.sysout("netexport.sendTo; " + serverURL);
 
-            //var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
-            //xxxHonza: just to see it in the Net panel.
-            var request = new context.window.XMLHttpRequest();
+            var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
             request.open("POST", serverURL, true);
             request.setRequestHeader("Content-Type", "x-application/har+json");
             request.setRequestHeader("Content-Length", jsonString.length);
             request.onerror = function onError(event)
             {
-                alert("Error " + event.target.status + " occurred while receiving the document.");
+                if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("netexport.sendTo; ERROR " + event.target.status, e);
+
+                alert("Error: " + event.target.status);
             };
             request.onload = function onLoad(event)
             {
-                alert("Status: " + event.target.status + "\n" +
-                    "Response:\n" + request.responseText);
+                var index = serverURL.indexOf("beacon/har");
+                if (index < 0)
+                {
+                    if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("netexport.sendTo; ERROR wrong Beacon server: " + serverURL);
+                    return;
+                }
+
+                var showSlowURL = serverURL.substr(0, index);
+                var lastChar = showSlowURL.charAt(showSlowURL.length - 1);
+                if (lastChar != "/")
+                    showSlowURL += "/";
+
+                // Compute URL of the details page.
+                showSlowURL += "details/?url=" + pageURL;
+
+                if (FBTrace.DBG_NETEXPORT)
+                    FBTrace.sysout("netexport.sendTo; HAR Beacon sent, open Beacon server: " + showSlowURL);
+
+                gBrowser.selectedTab = gBrowser.addTab(showSlowURL);
             };
             request.send(jsonString);
         }
