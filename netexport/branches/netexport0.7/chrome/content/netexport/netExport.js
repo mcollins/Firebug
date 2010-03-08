@@ -104,63 +104,7 @@ Firebug.NetExport = extend(Firebug.Module,
 
     sendTo: function(context)
     {
-        var serverURL = Firebug.getPref(prefDomain, "beaconServerURL");
-        if (!serverURL)
-            return;
-
-        try
-        {
-            var jsonString = this.Exporter.buildData(context);
-            if (!jsonString)
-                return;
-
-            var pageURL = encodeURIComponent(context.getName());
-            serverURL += "?url=" + pageURL;
-
-            if (FBTrace.DBG_NETEXPORT)
-                FBTrace.sysout("netexport.sendTo; " + serverURL);
-
-            var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
-            request.open("POST", serverURL, true);
-            request.setRequestHeader("Content-Type", "x-application/har+json");
-            request.setRequestHeader("Content-Length", jsonString.length);
-            request.onerror = function onError(event)
-            {
-                if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("netexport.sendTo; ERROR " + event.target.status, e);
-
-                alert("Error: " + event.target.status);
-            };
-            request.onload = function onLoad(event)
-            {
-                var index = serverURL.indexOf("beacon/har");
-                if (index < 0)
-                {
-                    if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
-                        FBTrace.sysout("netexport.sendTo; ERROR wrong Beacon server: " + serverURL);
-                    return;
-                }
-
-                var showSlowURL = serverURL.substr(0, index);
-                var lastChar = showSlowURL.charAt(showSlowURL.length - 1);
-                if (lastChar != "/")
-                    showSlowURL += "/";
-
-                // Compute URL of the details page.
-                showSlowURL += "details/?url=" + pageURL;
-
-                if (FBTrace.DBG_NETEXPORT)
-                    FBTrace.sysout("netexport.sendTo; HAR Beacon sent, open Beacon server: " + showSlowURL);
-
-                gBrowser.selectedTab = gBrowser.addTab(showSlowURL);
-            };
-            request.send(jsonString);
-        }
-        catch (e)
-        {
-            if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("netexport.sendTo; EXCEPTION", e);
-        }
+        Firebug.NetExport.HARUploader.upload(context);
     },
 
     // Options

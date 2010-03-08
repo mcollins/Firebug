@@ -10,6 +10,7 @@
     <script src="chrome://netexport/content/harBuilder.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/automation.js" type="application/x-javascript"/>
     <script src="chrome://netexport/content/pageLoader.js" type="application/x-javascript"/>
+    <script src="chrome://netexport/content/harUploader.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_netExport" oncommand="Firebug.NetExport.exportData(FirebugContext)"/>
@@ -73,6 +74,9 @@
                                 oncommand="Firebug.NetExport.onAbout(event, FirebugContext)" />
                         </menupopup>
                     </toolbarbutton>
+                    <!-- Template for Upload progress metter. -->
+                    <progressmeter id="netExportUploadProgressTempl" class="netExportUploadProgress"
+                        mode="determined" value="0" collapsed="true" />
                     <toolbarbutton id="netExportAuto" command="cmd_netExportAuto"
                         insertbefore="fbNetFilter-all"
                         tooltiptext="netexport.menu.tooltip.Activate Auto Export" />
