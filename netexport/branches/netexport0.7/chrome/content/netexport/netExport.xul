@@ -23,6 +23,8 @@
         <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
             <hbox id="fbNetButtons" collapsed="true">
                 <hbox id="fbNetButtonsFilter" class="noTabStop">
+
+                    <!-- Export Net panel data as HAR -->
                     <toolbarbutton id="netExport"
                         class="toolbar-text-button fbmenubutton"
                         insertbefore="fbNetFilter-all"
@@ -39,6 +41,8 @@
                                 tooltiptext="netexport.menu.tooltip.Send To"
                                 command="cmd_netExportSendTo" />
                             <menuseparator id="netExportSendToSeparator" collapsed="true"/>
+
+                            <!-- Options -->
                             <menu id="netExportOptions" label="netexport.menu.label.Options">
                                 <menupopup onpopupshowing="return Firebug.NetExport.onOptionsShowing(this);">
                                     <menuitem id="netExportCompress" type="checkbox"
@@ -58,12 +62,14 @@
                                         oncommand="Firebug.NetExport.Logger.onDefaultLogDirectory(event)" />
                                </menupopup>
                             </menu>
-                            <menuseparator />
+                            <menuseparator id="netExportOptionsSeparator" />
+
                             <!--<menuitem id="netRunPageSuite"
                                 label="netexport.menu.label.Run Automated Loads"
                                 tooltiptext="netexport.menu.tooltip.Run Automated Loads"
                                 oncommand="Firebug.NetExport.onRunPageSuite(event)" />
                             <menuseparator />-->
+
                             <menuitem id="netExportHelp"
                                 label="netexport.menu.label.Help"
                                 tooltiptext="netexport.menu.tooltip.Help"
@@ -74,18 +80,28 @@
                                 oncommand="Firebug.NetExport.onAbout(event, FirebugContext)" />
                         </menupopup>
                     </toolbarbutton>
+
                     <!-- Template for Upload progress metter. -->
-                    <progressmeter id="netExportUploadProgressTempl" class="netExportUploadProgress"
+                    <progressmeter id="netExportUploadProgressTempl"
+                        class="netExportUploadProgress"
                         mode="determined" value="0" collapsed="true" />
+
+                    <!-- Import xxxHonza: TODO
+                        <toolbarbutton label="Import" class="toolbar-text-button"
+                        insertbefore="fbNetFilter-all"
+                        tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>-->
+
+                    <!-- Export Automation -->
                     <toolbarbutton id="netExportAuto" command="cmd_netExportAuto"
                         insertbefore="fbNetFilter-all"
                         tooltiptext="netexport.menu.tooltip.Activate Auto Export" />
-                    <!--<toolbarbutton label="Import" class="toolbar-text-button"
-                        insertbefore="fbNetFilter-all"
-                        tooltiptext="Import HTTP Tracing" command="cmd_netImport"/>-->
                     <toolbarseparator insertbefore="fbNetFilter-all"/>
                 </hbox>
             </hbox>
         </hbox>
     </toolbar>
+
+    <popupset id="mainPopupSet">
+        <popup id="netExportUploadAbort" />
+    </popupset>
 </overlay>

@@ -12,8 +12,6 @@ var sendToConfirmation = "sendToConfirmation";
 
 // ************************************************************************************************
 
-var uploaders = [];
-
 Firebug.NetExport.HARUploader =
 {
     upload: function(context)
@@ -50,9 +48,9 @@ Firebug.NetExport.HARUploader =
             if (FBTrace.DBG_NETEXPORT)
                 FBTrace.sysout("netexport.upload; " + serverURL);
 
+            // The instance is associated with the progress meter, which is removed at the end.
             var uploader = new Uploader(serverURL, pageURL);
             uploader.start(jsonString);
-            uploaders.push(uploader);
         }
         catch (e)
         {
@@ -85,8 +83,10 @@ Uploader.prototype =
 
         this.request.onerror = bind(this.onError, this);
         this.request.onload = bind(this.onFinished, this);
+        this.request.onabort = bind(this.onAbort, this);
 
         this.progress = this.createProgresMeter();
+        this.progress.repObject = this;
 
         this.request.send(jsonString);
     },
@@ -97,9 +97,7 @@ Uploader.prototype =
         progress = progress.cloneNode(true);
         progress.removeAttribute("id");
 
-        //var menuAbort = progress.getElementsByClassName("netExportUploadAbort")[0];
-        //menuAbort.addEventListener("command", bind(this.abort, this), false);
-        //menuAbort.setAttribute("label", $STR("netexport.menu.label.Abort Upload"));
+        progress.addEventListener("click", bind(this.onContextMenu, this), true);
 
         progress.setAttribute("tooltiptext", $STR("netexport.tooltip.Uploading_HAR_to") +
             " " + decodeURIComponent(this.serverURL));
@@ -111,16 +109,42 @@ Uploader.prototype =
         return progress;
     },
 
+    onContextMenu: function(event)
+    {
+        var popup = $("netExportUploadAbort");
+        FBL.eraseNode(popup);
+
+        var abort = {
+            label: "netexport.menu.label.Abort Upload",
+            command: bind(this.abort, this)
+        }
+
+        FBL.createMenuItem(popup, abort);
+        popup.showPopup(event.target, event.screenX, event.screenY, "popup", null, null);
+    },
+
     abort: function()
     {
         if (!this.request)
             return;
 
-        const NS_BINDING_ABORTED = 0x804b0002;
-        this.request.cancel(NS_BINDING_ABORTED);
+        this.request.abort();
 
         if (FBTrace.DBG_NETEXPORT)
-            FBTrace.sysout("netexport.uploader; Aborted " + serverURL);
+            FBTrace.sysout("netexport.uploader; Aborted " + this.serverURL);
+    },
+
+    onAbort: function(event)
+    {
+        // Remove reference to itself
+        this.progress.repObject = null;
+
+        // Remove progress bar from the UI.
+        this.progress.parentNode.removeChild(this.progress);
+
+        if (FBTrace.DBG_NETEXPORT)
+            FBTrace.sysout("netexport.uploader; ABORTED " + this.serverURL + " " +
+                event.target.status, event);
     },
 
     onUploadProgress: function(event)
@@ -135,7 +159,8 @@ Uploader.prototype =
 
     onFinished: function(event)
     {
-        remove(uploaders, this);
+        // Remove reference to itself
+        this.progress.repObject = null;
 
         // Remove progress bar from the UI.
         this.progress.parentNode.removeChild(this.progress);
@@ -167,14 +192,15 @@ Uploader.prototype =
 
     onError: function(event)
     {
-        remove(uploaders, this);
+        // Remove reference to itself
+        this.progress.repObject = null;
 
         // Remove progress bar from the UI.
         this.progress.parentNode.removeChild(this.progress);
 
         if (FBTrace.DBG_NETEXPORT || FBTrace.DBG_ERRORS)
             FBTrace.sysout("netexport.uploader; ERROR " + this.serverURL + " " +
-                event.target.status);
+                event.target.status, event);
 
         alert("Error: " + event.target.status);
     }
