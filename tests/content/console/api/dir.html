@@ -14,22 +14,28 @@
 
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
-<li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li>The console panel should display a log (one row) with variable <b>a</b>
-    and value <b>b</b>.</li>
+<li>Click on the <code style="color:green">Execute Test 1</code> button below:<br/>
+the console panel should display a log (one row) with variable <b>a</b>
+and value <b>b</b>.</li>
+<li>Click on the <code style="color:green">Execute Test 2</code> button below:<br/>
+the console panel should display a log (one row) with variable <b>a</b>
+and value <b>Object { b=Object }</b>.</li>
+<li>Expand the object <b>a</b>, expand the object <b>b</b>, collapse <b>b</b> and
+collapse <b>a</b>. All should work as expected.</li>
 </ol>
 
-<button id="testButton" onclick="onExecuteTest()">Execute Test</button>
+<button id="testButton1" onclick="onExecuteTest1()">Execute Test 1</button>
+<button id="testButton2" onclick="onExecuteTest2()">Execute Test 2</button>
 <br/><br/>
 
-<i>The log in the console panel corresponds to a following expression executed on the
-Firebug's command line: </i>
-<code style="color:green">console.dir({'a': 'b'});</code>
-
 <script type="text/javascript">
-function onExecuteTest()
+function onExecuteTest1()
 {
     console.dir({'a': 'b'});
+}
+function onExecuteTest2()
+{
+    console.dir({'a': {'b': {'c': 1}}});
 }
 </script>
   
