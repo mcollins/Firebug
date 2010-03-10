@@ -77,9 +77,9 @@ function runTest()
  * @param {String} tagName Name of the displayed element.
  * @param {String} class Class of the displayed element.
  */
-function executeAndVerify(callback, expression, expected, tagName, class)
+function executeAndVerify(callback, expression, expected, tagName, classes)
 {
-    var config = {tagName: tagName, classes: class};
+    var config = {tagName: tagName, classes: classes};
     FBTest.waitForDisplayedElement("console", config, function(row)
     {
         FBTest.compare(expected, row.textContent, "Verify: " +
