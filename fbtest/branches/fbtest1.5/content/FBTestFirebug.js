@@ -355,7 +355,7 @@ var chrome = window.parent.parent;
 
 /**
  * Open/close Firebug UI. If forceOpen is true, Firebug is only opened if closed.
- * @param {Boolean} forceOpen Set to true if Firebug should stay opened. 
+ * @param {Boolean} forceOpen Set to true if Firebug should stay opened.
  */
 this.pressToggleFirebug = function(forceOpen)
 {
@@ -375,7 +375,7 @@ this.openFirebug = function()
 }
 
 /**
- * Detach Firebug into a new separate window. 
+ * Detach Firebug into a new separate window.
  */
 this.detachFirebug = function()
 {
@@ -458,7 +458,7 @@ this.manualVerify = function(verifyMsg, instructions)
 /**
  * Opens specific URL in a new tab and calls the callback as soon as the tab is ready.
  * @param {String} url URL to be opened in the new tab.
- * @param {Function} callback Callback handler that is called as soon as the page is loaded. 
+ * @param {Function} callback Callback handler that is called as soon as the page is loaded.
  */
 this.openNewTab = function(url, callback)
 {
@@ -754,13 +754,13 @@ this.getSelectedPanel = function()
 }
 
 /**
- * Returns document object of Firebug content UI (content of all panels is presented
+ * Returns document object of Main Firebug content UI (content of all panels is presented
  * in this document).
  */
 this.getPanelDocument = function()
 {
-    var panel = this.getSelectedPanel();
-    return panel.panelNode.ownerDocument; // panel.html
+    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    return panelBar1.browser.contentDocument;
 }
 
 /* user sees panel tab disabled? */
@@ -867,7 +867,7 @@ this.executeCommand = function(expr, chrome)
     var doc = chrome.window.document;
     var cmdLine = doc.getElementById("fbCommandLine");
 
-    // Make sure the console is focused and command line API loaded. 
+    // Make sure the console is focused and command line API loaded.
     FBTest.focus(cmdLine);
 
     // Set expression and press enter.
@@ -1118,7 +1118,7 @@ this.selectPanelLocationByName = function(panel, name)
  * Jump to a file@line.<br/><br/>
  * Example:<br/>
  * <code>FBTest.Firebug.selectSourceLine(sourceFile.href, 1143, "js")</code>
- */ 
+ */
 this.selectSourceLine = function(url, lineNo, category, chrome, callback)
 {
     var sourceLink = new FBTest.FirebugWindow.FBL.SourceLink(url, lineNo, category);
