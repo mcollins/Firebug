@@ -14,7 +14,18 @@
 
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
-<li></li>
+<li>Execute following expressions in the command line and check the results
+    <i>'expression' -> 'result'</i>
+</li>
+<ol>
+    <li><code>$("test1") -> &lt;div id="test1"&gt;</code></li>
+    <li><code>$$(".a.c") -> [div.a, div.a]</code></li>
+    <li><code>$x("html/body/span/div[1]") -> [div.test]</code></li>
+    <li><code>dir(a) -> a: 10</code></li>
+    <li><code>dirxml($('test3')) -> &lt;div id="test3"&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;</code></li>
+    <li><code>keys(b) -> ["a", "name"]</code></li>
+    <li><code>values(b) -> [7, "a"]</code></li>
+</ol>
 </ol>
 
 <div id="test1"></div>
