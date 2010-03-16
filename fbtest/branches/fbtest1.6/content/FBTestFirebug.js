@@ -289,12 +289,15 @@ this.pressKey = function(keyCode, eltID)
 
 this.focus = function(node)
 {
+    // If the focus() method is available apply it, but don't return.
+    // Sometimes the event needs to be applied too (e.g. the command line).
     if (node.focus)
-        return node.focus();
+        node.focus();
 
+    // DOMFocusIn doesn't seem to work with the command line.
     var doc = node.ownerDocument, event = doc.createEvent("UIEvents");
-    event.initUIEvent("DOMFocusIn", true, true, doc.defaultView, 1);
-    return node.dispatchEvent(event);
+    event.initUIEvent("focus", true, true, doc.defaultView, 1);
+    node.dispatchEvent(event);
 };
 
 // ************************************************************************************************
