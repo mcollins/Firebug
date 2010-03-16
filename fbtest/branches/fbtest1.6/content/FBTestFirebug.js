@@ -1148,6 +1148,12 @@ this.runTestSuite = function(tests, callback)
     setTimeout(function()
     {
         var test = tests.shift();
+        if (!test)
+        {
+            callback();
+            return;
+        }
+
         test.call(this, function() {
             if (tests.length > 0)
                 FBTestFirebug.runTestSuite(tests, callback);

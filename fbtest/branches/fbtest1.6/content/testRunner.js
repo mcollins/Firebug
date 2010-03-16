@@ -85,11 +85,13 @@ FBTestApp.TestRunner =
     {
         // testDone maybe called in an event handler which may need to complete before we clean up
         var self = this;
-        setTimeout( function delayTestDone(){self.testDoneOnDelay.apply(self, [canceled]);} );
+        setTimeout(function delayTestDone() {
+            self.testDoneOnDelay.apply(self, [canceled]);
+        });
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.TestRunner.testDone: " + this.currentTest.path,
-                this.currentTest);
+            FBTrace.sysout("fbtest.TestRunner.testDone: " +
+                (this.currentTest ? this.currentTest.path : "NO CURRENT TEST"), this.currentTest);
     },
 
     testDoneOnDelay: function(canceled)
