@@ -1,6 +1,6 @@
 function runTest()
 {
-    FBTest.sysout("console.api.START");
+    FBTest.sysout("commandline.api.START");
     FBTest.openNewTab(basePath + "commandLine/api.html", function(win)
     {
         FBTest.openFirebug();
@@ -35,21 +35,6 @@ function runTest()
 
             tasks.push(executeAndVerify, "values(b)", "[7, \"a\"]",
                 "span", "objectBox objectBox-array");
-
-/*
-            tasks.push(executeAndVerify, "cd(frames[0])",
-                "[\"Current window:\", Window apiFrame.html]",
-                "span", "objectBox objectBox-array");
-
-
-            tasks.push(executeAndVerify, "$(\"test-iframe-1\")",
-                "<div id=\"test-iframe-1\">",
-                "a", "objectLink objectLink-element");
-
-            tasks.push(executeAndVerify, "cd(top)",
-                "[\"Current window:\", Window api.html]",
-                "span", "objectBox objectBox-array");
-*/
 
             tasks.run(function() {
                 FBTest.testDone("commandline.api.DONE");
