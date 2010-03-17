@@ -59,7 +59,10 @@ FBTestApp.TestRunner =
             // Show the test within the UI (expand parent group)
             var parentGroup = this.currentTest.group;
             FBTestApp.GroupList.expandGroup(parentGroup.row);
-            scrollIntoCenterView(this.currentTest.row);
+
+            var testRow = this.currentTest.row;
+            if (this.shouldScroll(testRow))
+                scrollIntoCenterView(testRow);
 
             // Start the test after the parent group is expanded so the row
             // exists and can reflect the UI state.
@@ -305,6 +308,26 @@ FBTestApp.TestRunner =
 
         // Execute a "runTest" method, that must be implemented within the test driver.
         FBTestApp.TestRunner.runTestCase(win);
+    },
+
+    shouldScroll: function(element)
+    {
+        var scrollBox = getOverflowParent(element);
+        var offset = getClientOffset(element);
+
+        FBTrace.sysout("fbtest.shouldScrollDown; " + offset.y + ", " + element.clientHeight +
+            ", " + scrollBox.scrollTop + ", " + scrollBox.clientHeight);
+
+        var scrollBottom = scrollBox.scrollTop + scrollBox.clientHeight;
+        var topLine = scrollBottom - (2 * element.clientHeight);
+        var bottomLine = scrollBottom + (2 * element.clientHeight);
+
+        // If the visual representation of the test (the test row) is close to the bottom
+        // side of the window or just behind it, return true.
+        if (offset.y > topLine && offset.y + element.clientHeight < bottomLine)
+            return true;
+
+        return false;
     },
 
     appendScriptTag: function(doc, srcURL)
