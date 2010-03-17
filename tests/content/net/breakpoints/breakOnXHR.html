@@ -15,11 +15,25 @@ Net panel.
 
 <ol>
 <li>Open Firebug and select the Net panel.</li>
+<li>Click the <span style="color:green">Execute Test</span> button.</li>
+<li>There should be a new request displayed in the Net panel.</li>
+<li>Click on the breakpoint column on the left side to create
+a new breakpoint for this request.</li>
+<li>Click the <span style="color:green">Execute Test</span> button again.</li>
+<li>The debugger must stop execution, the Script panel must be selected.</li>
+<li>Press Continue and go back to the Net panel.</li>
+<li>Left click on the breakpoint to open a condition editor and set
+the condition to <span style="color:green">param == 1</span>.</li>
+<li>Click the <span style="color:green">Execute Test</span> button again.</li>
+<br/>
+<i>Add #8, the same request is there twice and so is the breakpoint. Just pick
+one of them.</i>
 
-<button id="executeRequest1" onclick="executeRequest(1)">param == 1</button>
-<button id="executeRequest2" onclick="executeRequest(2)">param == 2</button>
+<br/><br/>
+<button id="executeRequest1" onclick="executeRequest(1)">Execute Test</button>
+<!--<button id="executeRequest2" onclick="executeRequest(2)">param == 2</button>
 <button onclick="executePostRequest('Example Posted Data')">postData == "Example Posted Data"</button>
-<button onclick="executePostRequest('Posted Data')">postData == "Posted Data"</button>
+<button onclick="executePostRequest('Posted Data')">postData == "Posted Data"</button>-->
 
 <script type="text/javascript">
 function executeRequest(value)
