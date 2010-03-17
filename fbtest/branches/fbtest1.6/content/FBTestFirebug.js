@@ -1157,12 +1157,22 @@ this.runTestSuite = function(tests, callback)
             return;
         }
 
-        test.call(this, function() {
+        function runNext()
+        {
             if (tests.length > 0)
                 FBTestFirebug.runTestSuite(tests, callback);
             else
                 callback();
-        });
+        }
+
+        try
+        {
+            test.call(this, runNext);
+        }
+        catch (err)
+        {
+            FBTest.progress("EXCEPTION " + err);
+        }
     }, 200);
 }
 
