@@ -5,54 +5,58 @@
 // 5. Click the Execute Test button.
 // 6. Switch back to Console tab
 // 7. The Console panel scroll position must be at the top.
+
+var theWindow;
 function runTest()
 {
     FBTest.sysout("issue2122.START");
 
-    // Step 1.
-    FBTestFirebug.openNewTab(basePath + "console/2122/issue2122.html", function(win)
+    FBTestFirebug.openNewTab(basePath + "console/2122/issue2122.html", function()
     {
         FBTestFirebug.openFirebug();
-        FBTestFirebug.enableConsolePanel(function()
+        FBTestFirebug.enableConsolePanel(function(win)
         {
             FBTestFirebug.selectPanel("console");
 
-            // Step 2.
-            step2(win);
+            theWindow = win;
+
+            var tests = [];
+            tests.push(test1);
+            tests.push(test2);
+            tests.push(test3);
+
+            FBTestFirebug.runTestSuite(tests, function() {
+                FBTestFirebug.testDone("issue2122; DONE");
+            });
         });
     });
 }
 
 // ************************************************************************************************
 
-function step2(win)
+function test1(callback)
 {
-    executeTest(win, function()
+    executeTest(theWindow, function()
     {
-        // Step 3.
         scrollToTop();
-
-        // Step 4.
         FBTestFirebug.selectPanel("html");
-
-        // Step 5.
-        step5(win);
+        callback();
     });
 };
 
-function step5(win)
+function test2(callback)
 {
-    executeTest(win, function()
+    executeTest(theWindow, function()
     {
-        // Step 6.
         FBTestFirebug.selectPanel("console");
-
-        // Step 7 - Verify.
-        FBTest.ok(isScrolledToTop(), "The Console panel must be scrolled to the top.");
-
-        // Done
-        FBTestFirebug.testDone("issue2122; DONE");
+        callback();
     });
+}
+
+function test3(callback)
+{
+    FBTest.ok(isScrolledToTop(), "The Console panel must be scrolled to the top.");
+    callback();
 }
 
 // ************************************************************************************************
@@ -73,15 +77,10 @@ function executeTest(win, callback)
 
 // ************************************************************************************************
 
-function isScrolledToBottom()
-{
-    var panel = FBTestFirebug.getPanel("console");
-    return FW.FBL.isScrolledToBottom(panel.panelNode);
-}
-
 function isScrolledToTop()
 {
     var panel = FBTestFirebug.getPanel("console");
+    FBTest.progress("scrollTop: " + panel.panelNode.scrollTop);
     return (panel.panelNode.scrollTop == 0);
 }
 

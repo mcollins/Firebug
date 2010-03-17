@@ -12,35 +12,44 @@ function runTest()
         {
             FBTestFirebug.selectPanel("console");
 
-            // Scroll to the top
-            scrollToTop();
+            theWindow = win;
 
-            // Reload
-            reload(function()
-            {
-                // It must be scrolled again to the top.
-                FBTest.ok(isScrolledToTop(), "The Console content must be scrolled to the top");
+            var tests = [];
+            tests.push(test1);
+            tests.push(test2);
 
-                // Scroll to the bottom
-                scrollToBottom();
-
-                // Reload
-                reload(function()
-                {
-                    var panelNode = FBTestFirebug.getPanel("console").panelNode;
-                    FBTest.progress("scroll position: " + panelNode.scrollTop + ", " +
-                        panelNode.scrollHeight + ", " + panelNode.scrollOffset);
-
-                    // It must be again scrolled to the bottom.
-                    FBTest.ok(isScrolledToBottom(), "The Console content must be scrolled to the bottom");
-                    FBTestFirebug.testDone("issue2160.DONE");
-                });
+            FBTestFirebug.runTestSuite(tests, function() {
+                FBTestFirebug.testDone("issue2160.DONE");
             });
         });
     });
 }
 
 // ************************************************************************************************
+
+function test1(callback)
+{
+    scrollToTop();
+    reload(function()
+    {
+        FBTest.ok(isScrolledToTop(), "The Console content must be scrolled to the top");
+        scrollToBottom();
+        callback();
+    });
+}
+
+function test2(callback)
+{
+    reload(function()
+    {
+        var panelNode = FBTestFirebug.getPanel("console").panelNode;
+        FBTest.progress("scroll position: " + panelNode.scrollTop + ", " +
+            panelNode.scrollHeight + ", " + panelNode.scrollOffset);
+
+        FBTest.ok(isScrolledToBottom(), "The Console content must be scrolled to the bottom");
+        callback();
+    });
+}
 
 function reload(callback)
 {
