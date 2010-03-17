@@ -1,5 +1,8 @@
 /* See license.txt for terms of usage */
 
+// Must be global within the browser window.
+var gFindBar;
+
 FBTestApp.ns(function() { with (FBL) {
 
 // ************************************************************************************************
@@ -18,9 +21,6 @@ var chromeRegistry = Cc['@mozilla.org/chrome/chrome-registry;1'].getService(Ci.n
 
 // Interfaces
 var nsIFilePicker = Ci.nsIFilePicker;
-
-// Global variables
-var gFindBar;
 
 var versionURL = "chrome://fbtest/content/fbtest.properties";
 
