@@ -192,18 +192,20 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         {
             var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
             var currLocale = Firebug.getPref("general.useragent", "locale");
-            var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag); 
+            var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
             var name = systemInfo.getProperty("name");
             var version = systemInfo.getProperty("version");
 
             // Store head info.
-            var text = "Firebug: " + Firebug.version + "\n" + 
-                appInfo.name + ": " + appInfo.version + ", " + 
-                appInfo.platformVersion + ", " + 
+            var text =
+                "FBTest: " + FBTestApp.TestConsole.getVersion() + "\n" +
+                "Firebug: " + Firebug.version + "\n" +
+                appInfo.name + ": " + appInfo.version + ", " +
+                appInfo.platformVersion + ", " +
                 appInfo.appBuildID + ", " + currLocale + "\n" +
                 "OS: " + name + " " + version + "\n" +
                 "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
-                "Export Date: " + (new Date()).toGMTString() + 
+                "Export Date: " + (new Date()).toGMTString() +
                 "\n==========================================\n\n";
 
             var groups = FBTestApp.TestConsole.groups;
@@ -520,11 +522,10 @@ FBTestApp.Test.prototype =
 
     getErrors: function()
     {
-        if (!this.error)
+        if (!this.error || this.category == "fails")
             return "";
 
-        var status = (this.category == "fails") ? "[FAILED, NOT BLOCKING]" : "[FAILED]";
-        var text = status + " " + this.uri + ": " + this.desc + "\n";
+        var text = "[FAILED] " + this.uri + ": " + this.desc + "\n";
         for (var i=0; i<this.results.length; i++)
         {
             var testResult = this.results[i];
