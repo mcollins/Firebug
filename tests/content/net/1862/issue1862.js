@@ -17,7 +17,7 @@ function runTest()
         // Reload test page.
         FBTestFirebug.enableNetPanel(function(win)
         {
-            win.wrappedJSObject.getXMLResponse(function(request)
+            onRequestDisplayed(function()
             {
                 // Verify Net panel response
                 var panel = FBTestFirebug.getPanel("net");
@@ -34,7 +34,9 @@ function runTest()
                 // Finish test
                 FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue1862.DONE");
-            })
+            });
+
+            FBTestFirebug.click(win.document.getElementById("testButton"));
         });
     })
 }
