@@ -315,9 +315,6 @@ FBTestApp.TestRunner =
         var scrollBox = getOverflowParent(element);
         var offset = getClientOffset(element);
 
-        FBTrace.sysout("fbtest.shouldScrollDown; " + offset.y + ", " + element.clientHeight +
-            ", " + scrollBox.scrollTop + ", " + scrollBox.clientHeight);
-
         var scrollBottom = scrollBox.scrollTop + scrollBox.clientHeight;
         var topLine = scrollBottom - (2 * element.clientHeight);
         var bottomLine = scrollBottom + (2 * element.clientHeight);
