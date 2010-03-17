@@ -1,3 +1,7 @@
+var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
+var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+var FF3p6OrLess = versionChecker.compare(appInfo.version, "3.6.*") <= 0;
+
 function runTest()
 {
     FBTest.sysout("testErrors.START");
@@ -15,8 +19,11 @@ function runTest()
 
 function fireTest(win, ith)
 {
+    var syntaxErrorMsg = FF3p6OrLess ? "missing ; before statement" :
+        "identifier starts immediately after numeric literal";
+
     var buttons = ["syntaxError", "shallowError", "deepError", "throw", "uncaughtException1891"];
-    var titles = ["missing ; before statement", "foops is not defined",
+    var titles = [syntaxErrorMsg, "foops is not defined",
                   "B3 is not defined", "uncaught exception: hi", 'String contains an invalid character"  code: "5'];
     var sources = ["2BeOrNot2Be(40)", "", "/*foo*/                    B3();\n", "", ""];
 
@@ -28,7 +35,7 @@ function fireTest(win, ith)
 
     var panelDoc = FBTestFirebug.getPanelDocument();
 
-    var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {class: "logRow-errorMessage"});
+    var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {"class": "logRow-errorMessage"});
 
     lookForLogRow.onRecognize(function sawLogRow(elt)
     {

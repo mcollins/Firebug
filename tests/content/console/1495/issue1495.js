@@ -12,8 +12,7 @@ function runTest()
         {
             var panel = FW.FirebugChrome.selectPanel("console");
 
-            // Run test implemented on the page.
-            win.wrappedJSObject.runTest(function(request)
+            onAllFourRequestsDisplayed(function()
             {
                 // Expand all XHR logs in the Console panel.
                 var rows = FW.FBL.getElementsByClass(panel.panelNode, "logRow", "logRow-spy", "loaded");
@@ -34,6 +33,28 @@ function runTest()
                 FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue1495.DONE");
             });
+
+            FBTest.click(win.document.getElementById("runTest"));
         });
+    });
+}
+
+function onAllFourRequestsDisplayed(callback)
+{
+    // Create listener for mutation events.
+    var doc = FBTestFirebug.getPanelDocument();
+    var recognizer = new MutationRecognizer(doc.defaultView, "div",
+        {"class": "logRow logRow-spy loaded"});
+
+    // Wait for a XHR log to appear in the Net panel.
+    recognizer.onRecognizeAsync(function()
+    {
+        var panelNode = FBTestFirebug.getPanel("console").panelNode;
+        var nodes = panelNode.getElementsByClassName("logRow logRow-spy loaded");
+
+        if (nodes.length == 4)
+            callback();
+        else
+            onAllFourRequestsDisplayed(callback);
     });
 }
