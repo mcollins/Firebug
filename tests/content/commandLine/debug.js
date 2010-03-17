@@ -9,7 +9,7 @@ function runTest()
         {
             var tasks = new FBTest.TaskList();
 
-            // Create breakpoint using 'debug(onTextExecute)' methodo on the cmd line.
+            // Create breakpoint using 'debug(onTextExecute)' method on the cmd line.
             tasks.push(createBreakpoint);
 
             // Execute breakpoint by pressing 'Execute Test' button on the page.
@@ -40,7 +40,7 @@ function createBreakpoint(callback)
 function executeBreakpoint(callback, win)
 {
     // Asynchronously wait for break in debugger.
-    FBTest.waitForBreakInDebugger(FW.Firebug.chrome, 25, false, function(row)
+    FBTest.waitForBreakInDebugger(FW.Firebug.chrome, 28, false, function(row)
     {
         FBTest.clickContinueButton();
         callback();
