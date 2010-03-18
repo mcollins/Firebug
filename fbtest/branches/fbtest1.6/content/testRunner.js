@@ -49,7 +49,13 @@ FBTestApp.TestRunner =
     runTest: function(testObj)
     {
         if (this.currentTest)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestRunner.runTest; there is already a running test!",
+                    this.currentTest);
+
             return;
+        }
 
         try
         {
@@ -61,6 +67,9 @@ FBTestApp.TestRunner =
             FBTestApp.GroupList.expandGroup(parentGroup.row);
 
             var testRow = this.currentTest.row;
+            if (FBTrace.DBG_FBTEST && !testRow)
+                FBTrace.sysout("fbtest.TestRunner.runTest; The test doesn't have a UI representation.");
+
             if (this.shouldScroll(testRow))
                 scrollIntoCenterView(testRow);
 
@@ -312,6 +321,9 @@ FBTestApp.TestRunner =
 
     shouldScroll: function(element)
     {
+        if (!element)
+            return false;
+
         var scrollBox = getOverflowParent(element);
         var offset = getClientOffset(element);
 
