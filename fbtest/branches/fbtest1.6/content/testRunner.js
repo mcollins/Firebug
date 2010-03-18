@@ -152,7 +152,18 @@ FBTestApp.TestRunner =
             this.startTime = null;
 
             FBTestApp.TestSummary.setMessage(message);
-            FBTestApp.FBTest.sysout("FBTest Suite Finished: " + message);
+
+            try
+            {
+                // xxxHonza: I have seen an exception here.
+                // FBTestApp.FBTest.sysout is not a function
+                FBTestApp.FBTest.sysout("FBTest Suite Finished: " + message);
+            }
+            catch (e)
+            {
+                if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERROR)
+                    FBTrace.sysout("fbtest.TestRunner.testDoneOnDelay; EXCEPTION " + e, e);
+            }
         }
 
         // Preferences could be changed by tests so restore the previous values.
@@ -330,19 +341,30 @@ FBTestApp.TestRunner =
         if (!element)
             return false;
 
-        var scrollBox = getOverflowParent(element);
-        var offset = getClientOffset(element);
+        try
+        {
+            var scrollBox = getOverflowParent(element);
+            if (!scrollBox)
+                return false;
 
-        var scrollBottom = scrollBox.scrollTop + scrollBox.clientHeight;
-        var topLine = scrollBottom - (2 * element.clientHeight);
-        var bottomLine = scrollBottom + (2 * element.clientHeight);
+            var offset = getClientOffset(element);
 
-        // If the visual representation of the test (the test row) is close to the bottom
-        // side of the window or just behind it, return true.
-        if (offset.y > topLine && offset.y + element.clientHeight < bottomLine)
-            return true;
+            var scrollBottom = scrollBox.scrollTop + scrollBox.clientHeight;
+            var topLine = scrollBottom - (2 * element.clientHeight);
+            var bottomLine = scrollBottom + (2 * element.clientHeight);
 
-        return false;
+            // If the visual representation of the test (the test row) is close to the bottom
+            // side of the window or just behind it, return true.
+            if (offset.y > topLine && offset.y + element.clientHeight < bottomLine)
+                return true;
+
+            return false;
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("fbtest.TestRunner.shouldScroll EXCEPTION " + e, e);
+        }
     },
 
     appendScriptTag: function(doc, srcURL)
@@ -464,7 +486,9 @@ FBTestApp.TestRunner =
     {
         if (!this.currentTest)
         {
-            FBTrace.sysout("test result came in after testDone!", result);
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("test result came in after testDone!", result);
+
             $("progressMessage").value = "test result came in after testDone!";
             FBTestApp.TestRunner.cleanUp();
             return;
