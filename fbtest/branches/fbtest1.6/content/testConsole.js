@@ -540,6 +540,9 @@ FBTestApp.TestConsole =
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.runAll; Number of tests: " + testQueue.length);
 
+        if (testQueue.length > 0)
+            scrollIntoCenterView(testQueue[0].row);
+
         // ... and execute them as one test suite.
         FBTestApp.TestRunner.runTests(testQueue, onFinishCallback);
     },
