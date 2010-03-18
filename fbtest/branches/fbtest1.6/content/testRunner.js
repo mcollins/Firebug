@@ -48,12 +48,18 @@ FBTestApp.TestRunner =
 
     runTest: function(testObj)
     {
+        if (!testObj)
+        {
+            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERROR)
+                FBTrace.sysout("fbtest.TestRunner.runTest; ERROR nothing to run!");
+            return;
+        }
+
         if (this.currentTest)
         {
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestRunner.runTest; there is already a running test!",
                     this.currentTest);
-
             return;
         }
 

@@ -161,6 +161,14 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         items.push("-");
 
         items.push({
+          label: $STR("fbtest.cmd.Run From Here"),
+          nol10n: true,
+          command: bindFixed(this.onRunFromHere, this, group)
+        });
+
+        items.push("-");
+
+        items.push({
           label: $STR("fbtest.cmd.Copy All Errors"),
           nol10n: true,
           command: bindFixed(this.onCopyAllErrors, this)
@@ -184,6 +192,22 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         var rows = cloneArray(table.firstChild.childNodes);
         for (var i=0; i<rows.length; i++)
             this.collapseGroup(rows[i]);
+    },
+
+    onRunFromHere: function(group)
+    {
+        var groups = FBTestApp.TestConsole.groups;
+        var index = groups.indexOf(group);
+
+        // Join all tests from this group and those which follow.
+        var tests = [];
+        for (var i=index; i<groups.length; i++)
+            tests.push.apply(tests, groups[i].tests);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.onRunFromHere; Number of tests: " + tests.length, tests);
+
+        FBTestApp.TestRunner.runTests(tests);
     },
 
     onCopyAllErrors: function()
@@ -381,6 +405,14 @@ FBTestApp.TestList = domplate(
         items.push("-");
 
         items.push({
+          label: $STR("fbtest.cmd.Run From Here"),
+          nol10n: true,
+          command: bindFixed(this.onRunFromHere, this, test)
+        });
+
+        items.push("-");
+
+        items.push({
           label: $STR("fbtest.cmd.Copy All Errors"),
           nol10n: true,
           command: bindFixed(FBTestApp.GroupList.onCopyAllErrors, FBTestApp.GroupList)
@@ -408,6 +440,28 @@ FBTestApp.TestList = domplate(
     {
         FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(
             FBTestApp.TestConsole.getHTTPURLBase() + test.testPage);
+    },
+
+    onRunFromHere: function(test)
+    {
+        var group = test.group;
+        var groups = FBTestApp.TestConsole.groups;
+        var groupIndex = groups.indexOf(group);
+
+        var tests = [];
+
+        // Get tests from the clicked one till the end of the parent group.
+        var testIndex = group.tests.indexOf(test);
+        tests.push.apply(tests, group.tests.slice(testIndex));
+
+        // Join all tests from all the following groups.
+        for (var i=groupIndex+1; i<groups.length; i++)
+            tests.push.apply(tests, groups[i].tests);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.onRunFromHere; Number of tests: " + tests.length, tests);
+
+        FBTestApp.TestRunner.runTests(tests);
     }
 });
 
