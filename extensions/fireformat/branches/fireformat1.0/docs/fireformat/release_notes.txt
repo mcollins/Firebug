@@ -1,0 +1,7 @@
+3/21/2010 - 1.0
+  Intial Release
+  Bundled with Firediff 1.0
+
+1/18/2010 - 1.0b1
+  Initial Beta
+  Bundled with Firediff 1.0b1
