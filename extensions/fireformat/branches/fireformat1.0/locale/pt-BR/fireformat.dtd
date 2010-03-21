@@ -1,0 +1,77 @@
+<!ENTITY fireformat.Options "Opções do Fireformat">
+<!ENTITY fireformat.Formatters "Formatadores">
+<!ENTITY fireformat.htmlFormatterSelector "Formatador HTML">
+<!ENTITY fireformat.cssFormatterSelector "Formatador CSS">
+<!ENTITY fireformat.wrap "Wrap">
+<!ENTITY fireformat.space "Espaço">
+<!ENTITY fireformat.tab "Aba">
+<!ENTITY fireformat.newline "Nova Linha">
+<!ENTITY fireformat.none "Nada">
+<!ENTITY fireformat.custom "Personalização...">
+<!ENTITY fireformat.preview "Pré-visualização">
+<!ENTITY fireformat.showWhitespace "Mostrar Whitespace">
+<!ENTITY fireformat.cssFormatter "Formatador CSS Fireformat">
+<!ENTITY fireformat.cssFormatter.generalOptions "Geral">
+<!ENTITY fireformat.cssFormatter.wrapSize "Coluna de encobrimento da linha (tamanho do wrap)">
+<!ENTITY fireformat.cssFormatter.indentChar "Marcador por letra">
+<!ENTITY fireformat.cssFormatter.indentCount "Marcador por Número">
+<!ENTITY fireformat.cssFormatter.tabSize "Tamanho da Aba">
+<!ENTITY fireformat.cssFormatter.selectorOptions "Seletor">
+<!ENTITY fireformat.cssFormatter.selectorText.selectorsPerLine "Seletores por Linha">
+<!ENTITY fireformat.cssFormatter.selectorText.spaceCount "Seletores por Separador de Número">
+<!ENTITY fireformat.cssFormatter.selectorText.indentLevel "Marcador por Número">
+<!ENTITY fireformat.cssFormatter.blockOptions "Bloco">
+<!ENTITY fireformat.cssFormatter.block.indentLevel "Marcador por Número para Bloco">
+<!ENTITY fireformat.cssFormatter.block.componentSeparator "Separador de Componente">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterLast "Separador Depois do Último Componente">
+<!ENTITY fireformat.cssFormatter.block.separatorBeforeOpen "Separador Antes do Colchete de Abertura">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterOpen "Separador Depois do Colchete de Abertura">
+<!ENTITY fireformat.cssFormatter.block.separatorBeforeClose "Separador Antes do Colchete de Fechamento">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterClose "Separador Depois do Colchete de Fechamento">
+<!ENTITY fireformat.cssFormatter.propertyOptions "Propriedades">
+<!ENTITY fireformat.cssFormatter.property.tokensPerLine "Tokens proprietários por linha">
+<!ENTITY fireformat.cssFormatter.property.indentLevel "Marcador por Número">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeColon "Espaços Antes dos Dois Pontos">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeValue "Espaços Antes do Valor">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforePriority "Espaços Antes da Prioridade">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeSemicolon "Espaços Antes do Ponto-e-Vírgula">
+<!ENTITY fireformat.cssFormatter.property.valueSpaceCount "Espaços Entre Valores">
+<!ENTITY fireformat.cssFormatter.atRuleOptions "Conforme as regras">
+<!ENTITY fireformat.cssFormatter.atRule.tokensPerLine "Tokens Por Linha">
+<!ENTITY fireformat.cssFormatter.atRule.indentLevel "Marcador por Número">
+<!ENTITY fireformat.cssFormatter.atRule.spaceBeforeValue "Espaços Antes do Valor">
+<!ENTITY fireformat.cssFormatter.atRule.spaceBeforeSemicolon "Espaços Antes do Ponto-e-Vírgula">
+<!ENTITY fireformat.cssFormatter.atRule.valueSpaceCount "Espaços Entre Valores">
+<!ENTITY fireformat.cssFormatter.atRule.typeSeparator "Separador de Tipo">
+<!ENTITY fireformat.htmlFormatter "Formatador HTML do Fireformat">
+<!ENTITY fireformat.htmlFormatter.generalOptions "Geral">
+<!ENTITY fireformat.htmlFormatter.wrapSize "Coluna de encobrimento da linha (tamanho do wrap)">
+<!ENTITY fireformat.htmlFormatter.indentChar "Marcador por Letra">
+<!ENTITY fireformat.htmlFormatter.indentCount "Marcador por Número">
+<!ENTITY fireformat.htmlFormatter.tabSize "Tamanho da Tabela">
+<!ENTITY fireformat.htmlFormatter.xmlDocOptions "XHTML">
+<!ENTITY fireformat.htmlFormatter.xmlDocTypeOptions "Tipo de Documento XML">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeVersion "Separador Antes da Versão">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeEncoding "Separador Antes da Codificação (Encoding)">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeStandalone "Separador Antes do Independente (Standalone)">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeClose "Separador Antes do Fechamento">
+<!ENTITY fireformat.htmlFormatter.piOptions "Instrução de Processamento">
+<!ENTITY fireformat.htmlFormatter.pi.beforeData "Separador Antes de Dados (Data)">
+<!ENTITY fireformat.htmlFormatter.docTypeOptions "Tipo de Documento">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeName "Separador Antes do Nome">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeExternalId "Separador Antes da Identidade (ID) Externa">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforePublicId "Separador Antes da Identidade (ID) Pública">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeSystemId "Separador Antes da Identidade (ID) do Sistema">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeInternalSubset "Separador Antes do Subset Interno">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeClose "Separador Antes do Fechamento">
+<!ENTITY fireformat.htmlFormatter.elOptions "Elemento">
+<!ENTITY fireformat.htmlFormatter.el.toLower "Nomes de Elementos HTML em Minúsculas">
+<!ENTITY fireformat.htmlFormatter.el.beforeAttr "Separador Antes da Lista de Atributos">
+<!ENTITY fireformat.htmlFormatter.el.beforeClose "Separador Antes do Fechamento">
+<!ENTITY fireformat.htmlFormatter.el.beforeSelfClose "Separador Antes do Auto-Encerramento">
+<!ENTITY fireformat.htmlFormatter.attrOptions "Atributo">
+<!ENTITY fireformat.htmlFormatter.attribute.attrsPerLine "Atributos por Linha">
+<!ENTITY fireformat.htmlFormatter.attribute.indentLevel "Marcador por Número">
+<!ENTITY fireformat.htmlFormatter.attribute.listSeparator "Separador de Atributos">
+<!ENTITY fireformat.htmlFormatter.attribute.separatorBeforeEquals "Separador Antes do Sinal de Igual">
+<!ENTITY fireformat.htmlFormatter.attribute.separatorBeforeValue "Separador Antes do Valor">

@@ -1,0 +1,77 @@
+<!ENTITY fireformat.Options "Fireformat - Einstellungen">
+<!ENTITY fireformat.Formatters "Formatierungen">
+<!ENTITY fireformat.htmlFormatterSelector "HTML-Formatierung">
+<!ENTITY fireformat.cssFormatterSelector "CSS-Formatierung">
+<!ENTITY fireformat.wrap "Zeilenumbruch">
+<!ENTITY fireformat.space "Leerzeichen">
+<!ENTITY fireformat.tab "Tabulator">
+<!ENTITY fireformat.newline "Zeilenende">
+<!ENTITY fireformat.none "Nichts">
+<!ENTITY fireformat.custom "Benutzerdefiniert...">
+<!ENTITY fireformat.preview "Vorschau">
+<!ENTITY fireformat.showWhitespace "Whitespace anzeigen">
+<!ENTITY fireformat.cssFormatter "Fireformat CSS-Formatierung">
+<!ENTITY fireformat.cssFormatter.generalOptions "Allgemein">
+<!ENTITY fireformat.cssFormatter.wrapSize "Max. Zeilenlänge">
+<!ENTITY fireformat.cssFormatter.indentChar "Zeichen für Zeileneinzug">
+<!ENTITY fireformat.cssFormatter.indentCount "Max. Zeileneinzug">
+<!ENTITY fireformat.cssFormatter.tabSize "Tabulatorbreite">
+<!ENTITY fireformat.cssFormatter.selectorOptions "Selektor">
+<!ENTITY fireformat.cssFormatter.selectorText.selectorsPerLine "Selektoren pro Zeile">
+<!ENTITY fireformat.cssFormatter.selectorText.spaceCount "Max. Selektorentrennung">
+<!ENTITY fireformat.cssFormatter.selectorText.indentLevel "Zeileneinzugstiefe">
+<!ENTITY fireformat.cssFormatter.blockOptions "Blockieren">
+<!ENTITY fireformat.cssFormatter.block.indentLevel "Zeileneinzugstiefe blockieren">
+<!ENTITY fireformat.cssFormatter.block.componentSeparator "Komponententrennung">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterLast "Trennung nach letzter Komponente">
+<!ENTITY fireformat.cssFormatter.block.separatorBeforeOpen "Trennung vor geöffneter Klammer">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterOpen "Trennung nach geöffneter Klammer">
+<!ENTITY fireformat.cssFormatter.block.separatorBeforeClose "Trennung vor geschlossener Klammer">
+<!ENTITY fireformat.cssFormatter.block.separatorAfterClose "Trennung nach geschlossener Klammer">
+<!ENTITY fireformat.cssFormatter.propertyOptions "Eigenschaften">
+<!ENTITY fireformat.cssFormatter.property.tokensPerLine "Eigenschafts-Token pro Zeile">
+<!ENTITY fireformat.cssFormatter.property.indentLevel "Zeileneinzugstiefe">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeColon "Leerzeichen vor Doppelpunkt">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeValue "Leerzeichen vor Wert">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforePriority "Leerzeichen vor Priorität">
+<!ENTITY fireformat.cssFormatter.property.spaceBeforeSemicolon "Leerzeichen vor Semikolon">
+<!ENTITY fireformat.cssFormatter.property.valueSpaceCount "Leerzeichen zwischen Werten">
+<!ENTITY fireformat.cssFormatter.atRuleOptions "Regelanwendung">
+<!ENTITY fireformat.cssFormatter.atRule.tokensPerLine "Token pro Zeile">
+<!ENTITY fireformat.cssFormatter.atRule.indentLevel "Zeileneinzugstiefe">
+<!ENTITY fireformat.cssFormatter.atRule.spaceBeforeValue "Leerzeichen vor Wert">
+<!ENTITY fireformat.cssFormatter.atRule.spaceBeforeSemicolon "Leerzeichen vor Semikolon">
+<!ENTITY fireformat.cssFormatter.atRule.valueSpaceCount "Leerzeichen zwischen Werten">
+<!ENTITY fireformat.cssFormatter.atRule.typeSeparator "Typentrennung">
+<!ENTITY fireformat.htmlFormatter "Fireformat HTML-Formatierung">
+<!ENTITY fireformat.htmlFormatter.generalOptions "Allgemein">
+<!ENTITY fireformat.htmlFormatter.wrapSize "Max. Zeilenlänge">
+<!ENTITY fireformat.htmlFormatter.indentChar "Zeichen für Zeileneinzug">
+<!ENTITY fireformat.htmlFormatter.indentCount "Max. Zeileneinzug">
+<!ENTITY fireformat.htmlFormatter.tabSize "Tabulatorbreite">
+<!ENTITY fireformat.htmlFormatter.xmlDocOptions "XHTML">
+<!ENTITY fireformat.htmlFormatter.xmlDocTypeOptions "XML-Dokumententyp">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeVersion "Trennung vor Versionsangaben">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeEncoding "Trennung vor Kodierungsangaben">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeStandalone "Trennung vor Standalone-Angaben">
+<!ENTITY fireformat.htmlFormatter.xmlDocType.separatorBeforeClose "Trennung vor Schließanweisungen">
+<!ENTITY fireformat.htmlFormatter.piOptions "Verarbeitungsanweisung">
+<!ENTITY fireformat.htmlFormatter.pi.beforeData "Trennung vor Daten">
+<!ENTITY fireformat.htmlFormatter.docTypeOptions "Dokumententyp">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeName "Trennung vor Namensangaben">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeExternalId "Trennung vor externer ID">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforePublicId "Trennung vor öffentlichen ID">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeSystemId "Trennung vor System-ID">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeInternalSubset "Trennung vor internem Subset">
+<!ENTITY fireformat.htmlFormatter.docType.separatorBeforeClose "Trennung vor Schließanweisungen">
+<!ENTITY fireformat.htmlFormatter.elOptions "Element">
+<!ENTITY fireformat.htmlFormatter.el.toLower "HTML-Elementnamen in Kleinbuchstaben">
+<!ENTITY fireformat.htmlFormatter.el.beforeAttr "Trennung vor Attributenliste">
+<!ENTITY fireformat.htmlFormatter.el.beforeClose "Trennung vor Schließanweisungen">
+<!ENTITY fireformat.htmlFormatter.el.beforeSelfClose "Trennung vor selbstständigen Schließanweisungen">
+<!ENTITY fireformat.htmlFormatter.attrOptions "Attribut">
+<!ENTITY fireformat.htmlFormatter.attribute.attrsPerLine "Attribute pro Zeile">
+<!ENTITY fireformat.htmlFormatter.attribute.indentLevel "Zeileneinzugstiefe">
+<!ENTITY fireformat.htmlFormatter.attribute.listSeparator "Attributentrennung">
+<!ENTITY fireformat.htmlFormatter.attribute.separatorBeforeEquals "Trennung vor Gleichheitszeichen">
+<!ENTITY fireformat.htmlFormatter.attribute.separatorBeforeValue "Trennung vor Wert">

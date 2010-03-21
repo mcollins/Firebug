@@ -29,5 +29,8 @@
     <em:description>Page source file formatter</em:description>
     <em:creator>Kevin Decker</em:creator>
     <em:homepageURL>http://www.incaseofstairs.com/fireformat</em:homepageURL>
+
+    <em:translator>erglo (de-DE)</em:translator>
+    <em:translator>edgard.magalhaes (pt-BR)</em:translator>
   </Description>
 </RDF>
