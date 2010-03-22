@@ -1,0 +1,6 @@
+content memorybug chrome/content/
+skin    memorybug classic/1.0 chrome/skin/classic/
+
+locale  memorybug en-US chrome/locale/en-US/
+
+overlay chrome://firebug/content/firebugOverlay.xul    chrome://memorybug/content/memorybug.xul

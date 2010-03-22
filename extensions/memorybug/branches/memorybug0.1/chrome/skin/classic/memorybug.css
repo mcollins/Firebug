@@ -1,0 +1,60 @@
+/* See license.txt for terms of usage */
+
+/* Support for FBTraceConsole */ 
+.DBG_MEMORYBUG {
+    color: rgb(61, 106, 106);
+}
+
+.panelNode-memory {
+    color: white;
+    background: black;
+    overflow-y: auto !important;
+}
+
+.reports {
+    padding: 10px;
+}
+
+.reports .p {
+    color: gray;
+}
+
+.reports h1, .reports h2 {
+    font-weight: normal;
+}
+
+.reports table, .reports td, .reports th {
+    width: 100%;
+    border: 0;
+}
+
+.reports td, .reports th {
+    padding: 0.5em;
+}
+
+.reports tr:nth-child(even) {
+    background-color: #111111;
+}
+
+.reports th {
+    border-bottom: 1px dotted gray;
+    font-weight: normal;
+}
+
+.reports td {
+    padding: 0.5em;
+    vertical-align: top;
+}
+
+.reports .object-name {
+    font-size: 8pt;
+    font-family: Monaco, Courier New, monospace;
+}
+
+.reports .clickable {
+    cursor: pointer;    
+}
+
+.reports .clickable:hover {
+    text-decoration: underline;
+}
