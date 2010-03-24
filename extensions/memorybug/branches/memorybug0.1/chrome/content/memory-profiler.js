@@ -8,14 +8,12 @@ const Cu = Components.utils;
 
 // ************************************************************************************************
 
-Firebug.registerStringBundle("chrome://eventbug/locale/eventbug.properties");
-
-// ************************************************************************************************
-
 Firebug.MemoryBug.Profiler = extend(Firebug.Module,
 {
     profile: function(context)
     {
+        Components.utils.forceGC();
+
         var fileName = "chrome://memorybug/content/memory-profiler.profiler.js";
         var code = getResource(fileName);
 
@@ -44,16 +42,14 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
             if (FBTrace.DBG_MEMORYBUG)
             {
                 FBTrace.sysout("memorybug.profile; SUCCESS result data:", result.data);
+
+                //xxHonza remove these logs.
                 FBTrace.sysout("memorybug.profile; Functions:",
                     [func for each (func in result.data.graph) if (func.nativeClass == "Function")]);
                 FBTrace.sysout("memorybug.profile; Objects:",
                     [func for each (func in result.data.graph) if (func.nativeClass == "Object")]);
                 FBTrace.sysout("memorybug.profile; Windows:",
                     [func for each (func in result.data.graph) if (func.nativeClass == "Window")]);
-                FBTrace.sysout("memorybug.profile; Shapes:",
-                    [func for each (func in result.data.graph) if (typeof (func.shape) != "undefined")]);
-                FBTrace.sysout("memorybug.profile; Big objectes:",
-                    [func for each (func in result.data.graph) if (func.size > 1000)]);
             }
 
 
@@ -196,7 +192,7 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
 
     objectRowTag:
         TR({"class": "resultRow objectRow"},
-            TD("$member.name"),
+            TD({title: "$member.name"}, "$member|getShapeName"),
             TD("$member.count")
         ),
 
@@ -239,6 +235,11 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
             TD("$member.isGlobal"),
             TD("$member.protoCount")
         ),
+
+    getShapeName: function(member)
+    {
+        return cropString(member.name, 80);
+    },
 
     onClick: function(event)
     {

@@ -5,10 +5,14 @@ FBL.ns(function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-// Fire Starter preferences.
+// Memorybug preferences.
 const mbPrefNames =
 [
 ];
+
+// ************************************************************************************************
+
+Firebug.registerStringBundle("chrome://memorybug/locale/memorybug.properties");
 
 // ************************************************************************************************
 // Module implementation
@@ -94,6 +98,31 @@ MemoryBugPanel.prototype = extend(Firebug.Panel,
 
     refresh: function()
     {
+        Firebug.MemoryBug.DefaultContent.tag.replace({}, this.panelNode);
+    }
+});
+
+// ************************************************************************************************
+
+Firebug.MemoryBug.DefaultContent = domplate(Firebug.Rep,
+{
+    tag:
+        TABLE({"class": "memoryProfilerDefaultTable", cellpadding: 0, cellspacing: 0},
+            TBODY(
+                TR({"class": "memoryProfilerDefaultRow"},
+                    TD({"class": "memoryProfilerDefaultCol"},
+                        BUTTON({"class": "memoryProfilerDefaultBtn", onclick: "$onRefresh"},
+                            $STR("memorybug.button.memorysnapshot")
+                        )
+                    )
+                )
+            )
+        ),
+
+    onRefresh: function(event)
+    {
+        var panel = Firebug.getElementPanel(event.target);
+        Firebug.MemoryBug.Profiler.profile(panel.context);
     }
 });
 

@@ -37,11 +37,11 @@ function analyzeResult(result)
 
     var nativeClass = info.nativeClass;
     if (nativeClass.indexOf("XPC") == 0)
-      nativeClass = "XPConnect Object Wrapper";
+        nativeClass = "XPConnect Object Wrapper";
     if (!(nativeClass in nativeClasses))
-      nativeClasses[nativeClass] = 1;
+        nativeClasses[nativeClass] = 1;
     else
-      nativeClasses[nativeClass]++;
+        nativeClasses[nativeClass]++;
 
     // Add function info.
     if (info.filename) {
@@ -115,22 +115,25 @@ function analyzeResult(result)
                               info.funcInfo.referents);
     });
 
-  // Generate object shape information about objects we care about.
-  for each (info in graph) {
-    if ("shape" in info) {
-      var shapeName = data.shapes[info.shape];
-      var curr = info;
-      while ("prototype" in curr && graph[curr.prototype]) {
-        var prote = graph[curr.prototype];
-        if ("shape" in prote)
-          shapeName += "," + data.shapes[prote.shape];
-        curr = prote;
-      }
-      if (!(shapeName in shapes))
-        shapes[shapeName] = 0;
-      shapes[shapeName]++;
+    // Generate object shape information about objects we care about.
+    for each (info in graph)
+    {
+        if ("shape" in info)
+        {
+            var shapeName = data.shapes[info.shape];
+            var curr = info;
+            while ("prototype" in curr && graph[curr.prototype])
+            {
+                var prote = graph[curr.prototype];
+                if ("shape" in prote)
+                    shapeName += "," + data.shapes[prote.shape];
+                curr = prote;
+            }
+            if (!(shapeName in shapes))
+                shapes[shapeName] = 0;
+            shapes[shapeName]++;
+        }
     }
-  }
 
   var windows = {};
   for (name in data.namedObjects) {
