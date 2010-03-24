@@ -6,8 +6,9 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-var MAX_SHAPE_NAME_LEN = 80;
-var ENTRIES_TO_SHOW = 10;
+// ************************************************************************************************
+
+Firebug.registerStringBundle("chrome://eventbug/locale/eventbug.properties");
 
 // ************************************************************************************************
 
@@ -41,7 +42,20 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         if (result.success)
         {
             if (FBTrace.DBG_MEMORYBUG)
+            {
                 FBTrace.sysout("memorybug.profile; SUCCESS result data:", result.data);
+                FBTrace.sysout("memorybug.profile; Functions:",
+                    [func for each (func in result.data.graph) if (func.nativeClass == "Function")]);
+                FBTrace.sysout("memorybug.profile; Objects:",
+                    [func for each (func in result.data.graph) if (func.nativeClass == "Object")]);
+                FBTrace.sysout("memorybug.profile; Windows:",
+                    [func for each (func in result.data.graph) if (func.nativeClass == "Window")]);
+                FBTrace.sysout("memorybug.profile; Shapes:",
+                    [func for each (func in result.data.graph) if (typeof (func.shape) != "undefined")]);
+                FBTrace.sysout("memorybug.profile; Big objectes:",
+                    [func for each (func in result.data.graph) if (func.size > 1000)]);
+            }
+
 
             var self = this;
             window.setTimeout(function()
@@ -82,7 +96,8 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
             if (FBTrace.DBG_MEMORYBUG)
                 FBTrace.sysout("memorybug.profile; Result data analyzed:", data);
 
-            showReports(context, data);
+            var panelNode = context.getPanel("memory").panelNode;
+            Firebug.MemoryBug.MemoryProfilerTable.tableTag.replace({results: data}, panelNode);
         };
 
         worker.onerror = function(error)
@@ -96,63 +111,217 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
 
 // ************************************************************************************************
 
-Firebug.MemoryBug.ProfilerRep = domplate(Firebug.Rep,
+Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
 {
-    tag:
-        DIV({"id": "reports", "class": "reports"},
-            DIV({"class": "report"},
-                H2("Window Information"),
-                P("This list includes the page itself and any iframes contained within it."),
-                TABLE({"id": "winTable", "class": "winTable"},
-                    TBODY(
-                        TR(
-                            TH("Window"),
-                            TH("References"),
-                            TH("Referent")
+    tableTag:
+        TABLE({"class": "memoryProfilerTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
+            TBODY(
+                TR({"class": "memoryProfilerRow windows", _repObject: "$results.windows"},
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "label", title: $STR("memorybug.results.windows.tooltip")},
+                            $STR("memorybug.results.windows")
                         )
+                    ),
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "desc"}, $STR("memorybug.results.windows.tooltip"))
                     )
-                )
-            ),
-            DIV({"class": "report"},
-                H2("Object Information"),
-                P("The shape of an object is just a list of its properties. Because JavaScript doesn't have a concrete notion of classes, shape detection is the most we can do to categorize objects."),
-                TABLE({"id": "objtable", "class": "objtable"},
-                    TBODY(
-                        TR(
-                            TH("Shape"),
-                            TH("Count")
+                ),
+                TR({"class": "memoryProfilerRow objects", _repObject: "$results.shapes"},
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "label", title: $STR("memorybug.results.objects.tooltip")},
+                            $STR("memorybug.results.objects")
                         )
+                    ),
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "desc"}, $STR("memorybug.results.objects.tooltip"))
                     )
-                )
-            ),
-            DIV({"class": "report"},
-                H2("Native Class Information"),
-                P("The native class of a JavaScript object is the name given to the C/C++ structure that defines the object's behavior."),
-                TABLE({"id": "nctable", "class": "nctable"},
-                    TBODY(
-                        TR(
-                            TH("Native Class"),
-                            TH("Instances")
+                ),
+                TR({"class": "memoryProfilerRow nativeClasses", _repObject: "$results.nativeClasses"},
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "label", title: $STR("memorybug.results.nativeclasses.tooltip")},
+                            $STR("memorybug.results.nativeclasses")
                         )
+                    ),
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "desc"}, $STR("memorybug.results.nativeclasses.tooltip"))
                     )
-                )
-            ),
-            DIV({"class": "report"},
-                H2("Function Information"),
-                P("You can click on a function name below to view its source code."),
-                TABLE({"id": "functable", "class": "functable"},
-                    TBODY(
-                        TR(
-                            TH("Function Name"),
-                            TH("Instances"),
-                            TH("Total Referents"),
-                            TH("Is Global"),
-                            TH("Times in Prototype Chains")
+                ),
+                TR({"class": "memoryProfilerRow functions", _repObject: "$results.functions"},
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "label", title: $STR("memorybug.results.functions.tooltip")},
+                            $STR("memorybug.results.functions")
                         )
+                    ),
+                    TD({"class": "memoryProfilerCol"},
+                        SPAN({"class": "desc"}, $STR("memorybug.results.functions.tooltip"))
                     )
                 )
             )
         ),
+
+    infoBodyTag:
+        TR({"class": "memoryProfilerBodyRow"},
+            TD({"class": "memoryProfilerBodyCol", colspan: 2},
+                TABLE({"class": "memoryProfilerInfoBodyTable", cellpadding: 0, cellspacing: 0},
+                    TBODY({"class": "infoBody"})
+                )
+            )
+        ),
+
+    loop:
+        FOR("member", "$members",
+            TAG("$rowTag", {member: "$member"})),
+
+    // Windows
+    windowHeaderTag:
+        TR({"class": "headerRow windowRow"},
+            TH(DIV("ID")),
+            TH(DIV("References")),
+            TH(DIV("Referents"))
+        ),
+
+    windowRowTag:
+        TR({"class": "resultRow windowRow"},
+            TD("$member.id"),
+            TD("$member.references"),
+            TD("$member.referents")
+        ),
+
+    // Objects/shapes
+    objectHeaderTag:
+        TR({"class": "headerRow objectRow"},
+            TH(DIV("Properties")),
+            TH(DIV("Count"))
+        ),
+
+    objectRowTag:
+        TR({"class": "resultRow objectRow"},
+            TD("$member.name"),
+            TD("$member.count")
+        ),
+
+    // Native classes
+    nativeClassHeaderTag:
+        TR({"class": "headerRow nativeClassRow"},
+            TH(DIV("Name")),
+            TH(DIV("Instances"))
+        ),
+
+    nativeClassRowTag:
+        TR({"class": "resultRow nativeClassRow"},
+            TD("$member.name"),
+            TD("$member.count")
+        ),
+
+    // Functions
+    functionHeaderTag:
+        TR({"class": "headerRow functionRow"},
+            TH(DIV("Name")),
+            TH(DIV("Size")),
+            TH(DIV("Function Size")),
+            TH(DIV("Script Size")),
+            TH(DIV("Instances")),
+            TH(DIV("Referents")),
+            TH(DIV("Is Global")),
+            TH({title: "Times in Prototype Chains"},
+                DIV("Lookup")
+            )
+        ),
+
+    functionRowTag:
+        TR({"class": "resultRow functionRow", _repObject: "$member"},
+            TD({onclick: "$onClickFunction"}, DIV("$member.name")),
+            TD("$member.size"),
+            TD("$member.functionSize"),
+            TD("$member.scriptSize"),
+            TD("$member.instances"),
+            TD("$member.referents"),
+            TD("$member.isGlobal"),
+            TD("$member.protoCount")
+        ),
+
+    onClick: function(event)
+    {
+        if (!isLeftClick(event))
+            return;
+
+        var row = getAncestorByClass(event.target, "memoryProfilerRow");
+        if (row)
+        {
+            this.toggleRow(row);
+            cancelEvent(event);
+        }
+    },
+
+    toggleRow: function(row, forceOpen)
+    {
+        var opened = hasClass(row, "opened");
+        if (opened && forceOpen)
+            return;
+
+        toggleClass(row, "opened");
+        if (hasClass(row, "opened"))
+        {
+            var infoBodyRow = this.infoBodyTag.insertRows({}, row)[0];
+            this.initBody(row, infoBodyRow);
+        }
+        else
+        {
+            var infoBodyRow = row.nextSibling;
+            row.parentNode.removeChild(infoBodyRow);
+        }
+    },
+
+    initBody: function(row, infoBodyRow)
+    {
+        var results = [result for each (result in row.repObject)];
+        var parentNode = infoBodyRow.getElementsByClassName("infoBody").item(0);
+
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryProfilerTable.initBody;", results);
+
+        var rowTag;
+        var headerTag;
+
+        if (hasClass(row, "windows"))
+        {
+            headerTag = this.windowHeaderTag
+            rowTag = this.windowRowTag;
+        }
+        else if (hasClass(row, "objects"))
+        {
+            headerTag = this.objectHeaderTag;
+            rowTag = this.objectRowTag;
+        }
+        else if (hasClass(row, "nativeClasses"))
+        {
+            headerTag = this.nativeClassHeaderTag;
+            rowTag = this.nativeClassRowTag;
+        }
+        else if (hasClass(row, "functions"))
+        {
+            headerTag = this.functionHeaderTag;
+            rowTag = this.functionRowTag;
+        }
+
+        headerTag.replace({}, parentNode);
+        this.loop.insertRows({members: results, rowTag: rowTag}, parentNode);
+    },
+
+    onClickFunction: function(event)
+    {
+        if (!isLeftClick(event))
+            return;
+
+        var row = getAncestorByClass(event.target, "functionRow");
+        if (row)
+        {
+            var func = row.repObject;
+            var sourceLink = new SourceLink(func.filename, func.lineStart, "js");
+            var panel = Firebug.getElementPanel(row);
+            FirebugReps.SourceLink.inspectObject(sourceLink, panel.context);
+        }
+    }
 });
 
 // ************************************************************************************************
@@ -163,116 +332,6 @@ function log(message, isInstant)
         FBTrace.sysout("memorybug.log; (" + isInstant + ") " + message);
 
     Firebug.Console.log("Memory Profiler: " + message);
-}
-
-function addTableEntries(table, infos, buildRow, onDone)
-{
-  var cellsPerRow = table.firstChild.firstChild.childNodes.length;
-
-  function addRow(info) {
-    var row = table.ownerDocument.createElement("tr");
-    var args = [info];
-    for (var i = 0; i < cellsPerRow; i++) {
-      var cell = table.ownerDocument.createElement("td");
-      args.push(cell);
-      row.appendChild(cell);
-    }
-    buildRow.apply(row, args);
-    table.firstChild.appendChild(row);
-  }
-
-  infos.forEach(addRow);
-}
-
-function makeViewSourceCallback(context, filename, lineNo)
-{
-    return function viewSource()
-    {
-        var sourceLink = new SourceLink(filename, lineNo, "js");
-
-        if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.sourceLink; " + filename + "(" + lineNo + ")");
-
-        FirebugReps.SourceLink.inspectObject(sourceLink, context);
-    };
-}
-
-function makeShapeName(name) {
-  if (name.length > MAX_SHAPE_NAME_LEN)
-    name = name.slice(0, MAX_SHAPE_NAME_LEN) + "\u2026";
-  name = name.replace(/,/g, "/");
-  if (name && name.charAt(name.length-1) == "/")
-    name = name.slice(0, name.length-1);
-  if (!name)
-    name = "(no properties)";
-  return name;
-}
-
-function showReports(context, data, onDone)
-{
-    var panelNode = context.getPanel("memory").panelNode;
-    Firebug.MemoryBug.ProfilerRep.tag.replace({}, panelNode);
-
-    var doc = panelNode.ownerDocument;
-    var reports = panelNode.getElementsByClassName("reports")[0];
-
-    // Windows
-    var winInfos = [info for each (info in data.windows)];
-    winInfos.sort(function(b, a) { return a.referents - b.referents; });
-
-    var windowNum = 1;
-    function buildWinInfoRow(info, name, references, referents) {
-        name.innerHTML = windowNum++;
-        references.innerHTML = info.references;
-        referents.innerHTML = info.referents;
-    }
-
-    if (FBTrace.DBG_MEMORYBUG)
-        FBTrace.sysout("memorybug.showReports; WINDOWS", winInfos);
-
-    addTableEntries(doc.getElementById("winTable"), winInfos, buildWinInfoRow);
-
-    // Native Classes
-    var ncInfos = [{name: name, instances: data.nativeClasses[name]}
-        for (name in data.nativeClasses)];
-    ncInfos.sort(function(b, a) { return a.instances - b.instances; });
-
-    function buildNcInfoRow(info, name, instances) {
-        name.innerHTML = info.name;
-        instances.innerHTML = info.instances;
-    }
-
-    addTableEntries(doc.getElementById("nctable"), ncInfos, buildNcInfoRow);
-
-    // Objects
-    var objInfos = [{name: name, count: data.shapes[name]}
-        for (name in data.shapes)];
-    objInfos.sort(function(b, a) { return a.count - b.count; });
-
-    function buildObjInfoRow(info, name, count) {
-        name.innerHTML = makeShapeName(info.name);
-        setClass(name, "object-name");
-        count.innerHTML = info.count;
-    }
-
-    addTableEntries(doc.getElementById("objtable"), objInfos, buildObjInfoRow);
-
-    // Functions
-    var funcInfos = [info for each (info in data.functions)];
-    funcInfos.sort(function(b, a) { return a.rating - b.rating; });
-
-    function buildFuncInfoRow(info, name, instances, referents, isGlobal, protoCount) {
-        name.innerHTML = info.name + "()";
-        setClass(name, "object-name");
-        setClass(name, "clickable");
-        name.addEventListener("click", makeViewSourceCallback(context, info.filename, info.lineStart), false);
-        instances.innerHTML = info.instances;
-        referents.innerHTML = info.referents;
-        isGlobal.innerHTML = info.isGlobal;
-        protoCount.innerHTML = info.protoCount;
-    }
-
-    addTableEntries(doc.getElementById("functable"), funcInfos, buildFuncInfoRow, onDone);
 }
 
 // ************************************************************************************************

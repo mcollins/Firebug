@@ -1,33 +1,38 @@
-function onmessage(event) {
-  postMessage(analyzeResult(event.data));
+/* See license.txt for terms of usage */
+
+function onmessage(event)
+{
+    postMessage(analyzeResult(event.data));
 }
 
-function analyzeResult(result) {
-  var data = JSON.parse(result);
-  var graph = data.graph;
-  var shapes = {};
+function analyzeResult(result)
+{
+    var data = JSON.parse(result);
+    var graph = data.graph;
+    var shapes = {};
 
-  // Convert keys in the graph from strings to ints.
-  // TODO: Can we get rid of this ridiculousness?
-  var newGraph = {};
-  for (id in graph) {
-    newGraph[parseInt(id)] = graph[id];
-  }
-  graph = newGraph;
+    // Convert keys in the graph from strings to ints.
+    // TODO: Can we get rid of this ridiculousness?
+    var newGraph = {};
+    for (id in graph)
+        newGraph[parseInt(id)] = graph[id];
+    graph = newGraph;
 
-  // Cull children to the ones that actually exist in our graph.
-  for (id in graph)
-    graph[id].children = [graph[childId]
-                          for each (childId in graph[id].children)
-                          if (childId in graph)];
+    // Cull children to the ones that actually exist in our graph.
+    for (id in graph)
+        graph[id].children = [graph[childId]
+            for each (childId in graph[id].children)
+            if (childId in graph)];
 
-  // Add function and referent information to the graph.
-  for (id in graph)
-    graph[id].referents = [];
-  var functions = {};
-  var graphFuncs = [];
-  var nativeClasses = {};
-  for (id in graph) {
+    // Add function and referent information to the graph.
+    for (id in graph)
+        graph[id].referents = [];
+
+    var functions = {};
+    var graphFuncs = [];
+    var nativeClasses = {};
+
+    for (id in graph) {
     var info = graph[id];
 
     var nativeClass = info.nativeClass;
@@ -50,6 +55,9 @@ function analyzeResult(result) {
                          filename: info.filename,
                          lineStart: info.lineStart,
                          lineEnd: info.lineEnd,
+                         size: info.size,
+                         functionSize: info.functionSize,
+                         scriptSize: info.scriptSize,
                          instances: 0,
                          referents: 0,
                          protoCount: 0,
@@ -130,9 +138,17 @@ function analyzeResult(result) {
     windows[id] = makeWindowInfo(id, graph[id]);
   }
 
+  var tempShapes = [];
+  for (name in shapes)
+    tempShapes.push({name: name, count: shapes[name]});
+
+  var tempNC = []
+  for (name in nativeClasses)
+    tempNC.push({name: name, count: nativeClasses[name]});
+
   return JSON.stringify({functions: functions,
-                         nativeClasses: nativeClasses,
+                         nativeClasses: tempNC,
                          windows: windows,
                          rejectedTypes: data.rejectedTypes,
-                         shapes: shapes});
+                         shapes: tempShapes});
 }
