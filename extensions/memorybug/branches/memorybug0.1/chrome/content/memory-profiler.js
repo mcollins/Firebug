@@ -40,22 +40,10 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         if (result.success)
         {
             if (FBTrace.DBG_MEMORYBUG)
-            {
                 FBTrace.sysout("memorybug.profile; SUCCESS result data:", result.data);
 
-                //xxHonza remove these logs.
-                FBTrace.sysout("memorybug.profile; Functions:",
-                    [func for each (func in result.data.graph) if (func.nativeClass == "Function")]);
-                FBTrace.sysout("memorybug.profile; Objects:",
-                    [func for each (func in result.data.graph) if (func.nativeClass == "Object")]);
-                FBTrace.sysout("memorybug.profile; Windows:",
-                    [func for each (func in result.data.graph) if (func.nativeClass == "Window")]);
-            }
-
-
             var self = this;
-            window.setTimeout(function()
-            {
+            window.setTimeout(function() {
                 self.analyzeResult(context, JSON.stringify(result.data), startTime, context.getTitle());
             }, 0);
         }
@@ -92,6 +80,21 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
             if (FBTrace.DBG_MEMORYBUG)
                 FBTrace.sysout("memorybug.profile; Result data analyzed:", data);
 
+            for (var i=0; i<data.windows.length; i++)
+            {
+                var win = data.windows[i];
+                win.url = safeGetWindowLocation(context.windows[i]).toString();
+
+                for (var index in data.objects) {
+                    var info = data.objects[index];
+                    if (info.name == win.url) {
+                        win.objectCount = info.count;
+                        win.lines = info.lines;
+                        break;
+                    }
+                }
+            }
+
             var panelNode = context.getPanel("memory").panelNode;
             Firebug.MemoryBug.MemoryProfilerTable.tableTag.replace({results: data}, panelNode);
         };
@@ -110,7 +113,8 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
 Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
 {
     tableTag:
-        TABLE({"class": "memoryProfilerTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
+        TABLE({"class": "memoryProfilerTable", cellpadding: 0, cellspacing: 0,
+            onclick: "$onClick", _repObject: "$results"},
             TBODY(
                 TR({"class": "memoryProfilerRow windows", _repObject: "$results.windows"},
                     TD({"class": "memoryProfilerCol"},
@@ -124,8 +128,8 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
                 ),
                 TR({"class": "memoryProfilerRow objects", _repObject: "$results.shapes"},
                     TD({"class": "memoryProfilerCol"},
-                        SPAN({"class": "label", title: $STR("memorybug.results.objects.tooltip")},
-                            $STR("memorybug.results.objects")
+                        SPAN({"class": "label", title: $STR("memorybug.results.shapes.tooltip")},
+                            $STR("memorybug.results.shapes")
                         )
                     ),
                     TD({"class": "memoryProfilerCol"},
@@ -171,14 +175,20 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
     // Windows
     windowHeaderTag:
         TR({"class": "headerRow windowRow"},
-            TH(DIV("ID")),
+            TH(DIV("URL")),
+            TH(DIV("Objects")),
             TH(DIV("References")),
             TH(DIV("Referents"))
         ),
 
     windowRowTag:
-        TR({"class": "resultRow windowRow"},
-            TD("$member.id"),
+        TR({"class": "resultRow windowRow", _repObject: "$member"},
+            TD(
+                DIV({"class": "windowUrlLabel", onclick: "$onClickWindow"},
+                    "$member|getWindowURL"
+                )
+            ),
+            TD("$member.objectCount"),
             TD("$member.references"),
             TD("$member.referents")
         ),
@@ -187,7 +197,7 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
     objectHeaderTag:
         TR({"class": "headerRow objectRow"},
             TH(DIV("Properties")),
-            TH(DIV("Count"))
+            TH(DIV("Instances"))
         ),
 
     objectRowTag:
@@ -236,6 +246,11 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
             TD("$member.protoCount")
         ),
 
+    getWindowURL: function(member)
+    {
+        return cropString(member.url, 100);
+    },
+
     getShapeName: function(member)
     {
         return cropString(member.name, 80);
@@ -278,9 +293,6 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
         var results = [result for each (result in row.repObject)];
         var parentNode = infoBodyRow.getElementsByClassName("infoBody").item(0);
 
-        if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.MemoryProfilerTable.initBody;", results);
-
         var rowTag;
         var headerTag;
 
@@ -319,6 +331,121 @@ Firebug.MemoryBug.MemoryProfilerTable = domplate(Firebug.Rep,
         {
             var func = row.repObject;
             var sourceLink = new SourceLink(func.filename, func.lineStart, "js");
+            var panel = Firebug.getElementPanel(row);
+            FirebugReps.SourceLink.inspectObject(sourceLink, panel.context);
+        }
+    },
+
+    onClickWindow: function(event)
+    {
+        if (!isLeftClick(event))
+            return;
+
+        var row = getAncestorByClass(event.target, "windowRow");
+        if (row)
+            Firebug.MemoryBug.ObjectListRep.toggle(row);
+    }
+});
+
+// ************************************************************************************************
+
+Firebug.MemoryBug.ObjectListRep = domplate(Firebug.Rep,
+{
+    infoBodyTag:
+        TR({"class": "windowBodyRow"},
+            TD({colspan: 4})
+        ),
+
+    objectTableTag:
+        TABLE({"class": "objectListTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
+            TBODY(
+                FOR("line", "$lines",
+                    TR({"class": "objectListRow", _repObject: "$line"},
+                        TD(
+                            SPAN({"class": "desc", "title": "$line|getTitle"},
+                                "$line|getDescription"
+                            ),
+                            SPAN({onclick: "$onClickSource"},
+                                A({"class": "objectLink objectLink-function"},
+                                    "$line|getSource"
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ),
+
+    getTitle: function(line)
+    {
+        var text = [];
+        for (var desc in line.descriptions)
+            text.push(line.descriptions[desc] + "x " + desc);
+        return text.join(",");
+    },
+
+    getDescription: function(line)
+    {
+        return line.count + " object(s) at line: " + line.number;
+    },
+
+    getSource: function(line)
+    {
+        return cropString(line.source, 120);
+    },
+
+    toggle: function(row, forceOpen)
+    {
+        var opened = hasClass(row, "opened");
+        if (opened && forceOpen)
+            return;
+
+        toggleClass(row, "opened");
+        if (hasClass(row, "opened"))
+        {
+            var infoBodyRow = this.infoBodyTag.insertRows({}, row)[0];
+            this.initBody(row, infoBodyRow);
+        }
+        else
+        {
+            var infoBodyRow = row.nextSibling;
+            row.parentNode.removeChild(infoBodyRow);
+        }
+    },
+
+    initBody: function(row, infoBodyRow)
+    {
+        var windowRow = getAncestorByClass(row, "windowRow");
+        var winInfo = windowRow.repObject;
+        var infoBody = infoBodyRow.firstChild;
+        var panel = Firebug.getElementPanel(row);
+
+        var lines = [];
+        for (var item in winInfo.lines)
+        {
+            var line = winInfo.lines[item];
+            lines.push(line);
+            line.source = panel.context.sourceCache.getLine(line.url, line.number);
+        }
+
+        this.objectTableTag.replace({lines: lines}, infoBody);
+    },
+
+    onClick: function(event)
+    {
+        
+    },
+
+    onClickSource: function(event)
+    {
+        if (!isLeftClick(event))
+            return;
+
+        var row = getAncestorByClass(event.target, "objectListRow");
+        if (row)
+        {
+            var line = row.repObject;
+            var sourceLink = new SourceLink(line.url, line.number, "js");
             var panel = Firebug.getElementPanel(row);
             FirebugReps.SourceLink.inspectObject(sourceLink, panel.context);
         }

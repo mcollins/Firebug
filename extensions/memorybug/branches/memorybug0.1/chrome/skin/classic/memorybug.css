@@ -23,7 +23,7 @@
 }
 
 .memoryProfilerCol {
-    border-bottom: 1px solid #CCCCCC;
+    border-bottom: 1px solid #EFEFEF;
     padding-bottom: 1px;
 }
 
@@ -65,7 +65,7 @@
 
 .memoryProfilerBodyCol {
     padding: 5px;
-    border-bottom: 1px solid #CCCCCC;
+    border-bottom: 1px solid #EFEFEF;
 }
 
 /************************************************************************************************/
@@ -164,4 +164,34 @@
 .memoryProfilerDefaultCol {
     text-align:center;
     color: gray;
+}
+
+/************************************************************************************************/
+/* Object List */
+
+.memoryProfilerBodyRow .resultRow > TD:first-child {
+    padding-left: 3px;
+    color: black;
+}
+
+.memoryProfilerBodyRow .windowUrlLabel {
+    background-image: url(chrome://firebug/skin/win/twistyClosed.png);
+    background-repeat: no-repeat;
+    background-position: 2px 1px;
+    padding-left: 18px;
+    cursor: pointer;
+}
+
+.opened.memoryProfilerBodyRow .windowUrlLabel {
+    background-image: url(chrome://firebug/skin/win/twistyOpen.png);
+}
+
+.objectListTable {
+    padding-left: 18px;
+}
+
+.objectListRow .desc {
+    color: gray;
+    font-style: italic;
+    padding-right: 10px;
 }

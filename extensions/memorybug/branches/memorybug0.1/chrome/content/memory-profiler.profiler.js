@@ -1,39 +1,118 @@
-function doProfiling() {
-  var namedObjects = getNamedObjects();
-  var graph = {};
-  var rejectedTypes = {};
-  var INTERESTING_TYPES = [
-    'Object', 'Function', 'Call', 'Window', 'Array', 'RegExp',
-    'Block', 'Date', 'String', 'StopIteration', 'Iterator',
-    'Error', 'Math', 'JSON', 'Boolean', 'With', 'Number',
-    'XML', 'Script', 'CanvasRenderingContext2D',
-    'PageTransitionEvent', 'MouseEvent',
-    'Location', 'Navigator', 'Generator', 'XPCNativeWrapper',
-    'XPCSafeJSObjectWrapper', 'XPCCrossOriginWrapper'
-  ];
-  var interestingTypes = {};
-  INTERESTING_TYPES.forEach(
-    function(name) { interestingTypes[name] = true; }
-  );
+function doProfiling()
+{
+    var namedObjects = getNamedObjects();
 
-  var shapes = {};
-  var maxShapeId = 0;
-  var windows = {};
+    var graph = {};
+    var rejectedTypes = {};
+    var INTERESTING_TYPES = [
+        'Object', 'Function', 'Call', 'Window', 'Array', 'RegExp',
+        'Block', 'Date', 'String', 'StopIteration', 'Iterator',
+        'Error', 'Math', 'JSON', 'Boolean', 'With', 'Number',
+        'XML', 'Script', 'CanvasRenderingContext2D',
+        'PageTransitionEvent', 'MouseEvent',
+        'Location', 'Navigator', 'Generator', 'XPCNativeWrapper',
+        'XPCSafeJSObjectWrapper', 'XPCCrossOriginWrapper'
+    ];
 
-  for (name in namedObjects) {
-    var id = namedObjects[name];
-    var info = getObjectInfo(id);
-    while (info.wrappedObject) {
-      id = info.wrappedObject;
-      info = getObjectInfo(info.wrappedObject);
+    var interestingTypes = {};
+
+    INTERESTING_TYPES.forEach(
+        function(name) { interestingTypes[name] = true; }
+    );
+
+    var shapes = {};
+    var maxShapeId = 0;
+    var windows = {};
+
+    for (name in namedObjects)
+    {
+        var id = namedObjects[name];
+        var info = getObjectInfo(id);
+        while (info.wrappedObject) {
+            id = info.wrappedObject;
+            info = getObjectInfo(info.wrappedObject);
+        }
+
+        if (info.innerObject)
+            id = info.innerObject;
+        namedObjects[name] = id;
+        windows[id] = true;
     }
-    if (info.innerObject)
-      id = info.innerObject;
-    namedObjects[name] = id;
-    windows[id] = true;
-  }
 
-  var table = getObjectTable();
+    var table = getObjectTable();
+
+    var byFiles = {};
+
+    // Check every JS object
+    var nativeClassWhitelist = {"Function":1,"Array":1,"String":1,"BackstagePass":1,"RegExp":1,"Date":1};
+    for (var i in table)
+    {
+        var info = getObjectInfo(parseInt(i));
+
+        if (!(info.parent in windows))
+            continue;
+
+        // For now, ignore native objects which seems to be all created in C++ layers
+        // There are considered as native because there wasn't JS stack frame during there creation.
+        if (info.isNative) 
+            continue;
+
+        var file = info.filename ? info.filename : "?";
+        var line = info.lineStart ? info.lineStart : "?";
+        var protoinfo = getObjectInfo(info.constr);
+        var proto = "?";
+
+        if (protoinfo && protoinfo.name)
+        {
+            desc = /*"p_"+*/protoinfo.name;
+        }
+        else if (nativeClassWhitelist[info.nativeClass]==1)
+        {
+            desc = /*"nw_"+*/info.nativeClass;
+        }
+        else if (info.nativeClass == "Object")
+        {
+            var properties = getObjectProperties(info.id);
+            var properties_list = [];
+            for(var name in properties)
+                properties_list.push(name);
+            properties_list.sort();
+            if (properties_list.length>0)
+                desc = /*"s_"+*/properties_list.join(', ');
+            else
+                desc = "Object"; //"o_Object";
+        }
+        else
+        {
+            desc = /*"nb_"+*/info.nativeClass;
+        }
+
+        if (!byFiles[file])
+        {
+            byFiles[file] = {
+                count: 0,
+                lines: {}
+            };
+        }
+
+        byFiles[file].count++;
+
+        if (!byFiles[file].lines[line])
+        {
+            byFiles[file].lines[line] = {
+                url: file,
+                number: line,
+                count: 0,
+                descriptions: {}
+            };
+        }
+
+        byFiles[file].lines[line].count++;
+        if (!byFiles[file].lines[line].descriptions[desc])
+            byFiles[file].lines[line].descriptions[desc] = 0;
+        byFiles[file].lines[line].descriptions[desc]++;
+    }
+
   for (id in table) {
     var nativeClass = table[id];
     if ((nativeClass in interestingTypes) ||
@@ -77,7 +156,8 @@ function doProfiling() {
   return {namedObjects: namedObjects,
           graph: graph,
           shapes: shapesArray,
-          rejectedTypes: rejectedList};
+          rejectedTypes: rejectedList,
+          objects: byFiles};
 }
 
 // This function uses the Python-inspired traceback functionality of the

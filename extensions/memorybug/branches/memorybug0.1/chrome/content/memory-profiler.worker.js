@@ -89,12 +89,6 @@ function analyzeResult(result)
     return info.protoCount;
   }
 
-  function makeWindowInfo(id, info) {
-    return {id: id,
-            references: info.children.length,
-            referents: info.referents.length};
-  }
-
   graphFuncs.forEach(
     function(info) {
       info.funcInfo.referents = info.referents.length;
@@ -135,23 +129,35 @@ function analyzeResult(result)
         }
     }
 
-  var windows = {};
-  for (name in data.namedObjects) {
-    var id = data.namedObjects[name];
-    windows[id] = makeWindowInfo(id, graph[id]);
-  }
+    // Create windows info structure.
+    var windows = [];
+    for (name in data.namedObjects)
+    {
+        var id = data.namedObjects[name];
+        var winInfo = graph[id];
+        windows.push({
+            id: id,
+            references: winInfo.children.length,
+            referents: winInfo.referents.length
+        });
+    }
 
   var tempShapes = [];
   for (name in shapes)
     tempShapes.push({name: name, count: shapes[name]});
 
-  var tempNC = []
+  var tempNC = [];
   for (name in nativeClasses)
     tempNC.push({name: name, count: nativeClasses[name]});
+
+  var tempObjects = [];
+  for (name in data.objects)
+    tempObjects.push({name: name, count: data.objects[name].count, lines: data.objects[name].lines});
 
   return JSON.stringify({functions: functions,
                          nativeClasses: tempNC,
                          windows: windows,
                          rejectedTypes: data.rejectedTypes,
-                         shapes: tempShapes});
+                         shapes: tempShapes,
+                         objects: tempObjects});
 }
