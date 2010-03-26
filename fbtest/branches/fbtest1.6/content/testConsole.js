@@ -25,7 +25,61 @@ var nsIFilePicker = Ci.nsIFilePicker;
 var versionURL = "chrome://fbtest/content/fbtest.properties";
 
 // ************************************************************************************************
+FBTestApp.TestWindowLoader =
+{
+    initialize: function()
+    {
+            this.initializeTracing();
 
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.TestConsole.initializing");
+
+            // Localize strings in XUL (using string bundle).
+            this.internationalizeUI();
+
+            FBTestApp.TestWindowLoader.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
+            this.setHaltOnFailedTestButton();
+    },
+
+    internationalizeUI: function()
+    {
+        var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
+            "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
+            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox"];
+
+        for (var i=0; i<buttons.length; i++)
+        {
+            var element = $(buttons[i]);
+            FBL.internationalize(element, "label");
+            FBL.internationalize(element, "tooltiptext");
+            FBL.internationalize(element, "pickerTooltiptext");
+            FBL.internationalize(element, "barTooltiptext");
+        }
+    },
+
+    initializeTracing: function()
+    {
+        // TraceModule isn't part of Firebug end-user version.
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.addListener(this.TraceListener);
+
+        // The tracing console can be already opened so, simulate onLoadConsole event.
+        iterateBrowserWindows("FBTraceConsole", function(win)
+        {
+            if (win.TraceConsole.prefDomain == "extensions.firebug")
+            {
+                FBTestApp.TestConsole.TraceListener.onLoadConsole(win, null);
+                return true;
+            }
+        });
+    },
+
+    setHaltOnFailedTestButton: function()
+    {
+        $('haltOnFailedTest').setAttribute('checked', FBTestApp.TestWindowLoader.haltOnFailedTest?'true':'false');
+    },
+
+};
 /**
  * This object represents main Test Console implementation.
  */
@@ -42,21 +96,7 @@ FBTestApp.TestConsole =
     {
         try
         {
-            this.initializeTracing();
-
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestConsole.initializing");
-
-            // Update test console window title.
-            var version = this.getVersion();
-            if (version)
-                window.document.title = "Firebug Test Console " + version;
-
-            // Localize strings in XUL (using string bundle).
-            this.internationalizeUI();
-
-            this.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
-            this.setHaltOnFailedTestButton();
+            FBTestApp.TestWindowLoader.initialize();
 
             this.notifyObservers(this, "fbtest", "initialize");
 
@@ -138,40 +178,6 @@ FBTestApp.TestConsole =
             url += "/";
 
         return url;
-    },
-
-    internationalizeUI: function()
-    {
-        var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
-            "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
-            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox"];
-
-        for (var i=0; i<buttons.length; i++)
-        {
-            var element = $(buttons[i]);
-            FBL.internationalize(element, "label");
-            FBL.internationalize(element, "tooltiptext");
-            FBL.internationalize(element, "pickerTooltiptext");
-            FBL.internationalize(element, "barTooltiptext");
-        }
-    },
-
-    initializeTracing: function()
-    {
-        // TraceModule isn't part of Firebug end-user version.
-        if (Firebug.TraceModule)
-            Firebug.TraceModule.addListener(this.TraceListener);
-
-        // The tracing console can be already opened so, simulate onLoadConsole event.
-        var self = this;
-        iterateBrowserWindows("FBTraceConsole", function(win)
-        {
-            if (win.TraceConsole.prefDomain == "extensions.firebug")
-            {
-                self.TraceListener.onLoadConsole(win, null);
-                return true;
-            }
-        });
     },
 
     shutdown: function()
@@ -590,14 +596,9 @@ FBTestApp.TestConsole =
 
     onToggleHaltOnFailedTest: function()
     {
-        this.haltOnFailedTest = !this.haltOnFailedTest;
-        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", this.haltOnFailedTest);
-        this.setHaltOnFailedTestButton();
-    },
-
-    setHaltOnFailedTestButton: function()
-    {
-        $('haltOnFailedTest').setAttribute('checked', this.haltOnFailedTest?'true':'false');
+        FBTestApp.TestWindowLoader.haltOnFailedTest = !FBTestApp.TestWindowLoader.haltOnFailedTest;
+        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", FBTestApp.TestWindowLoader.haltOnFailedTest);
+        FBTestApp.TestWindowLoader.setHaltOnFailedTestButton();
     },
 
     onToggleNoTestTimeout: function()
