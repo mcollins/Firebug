@@ -78,6 +78,8 @@ MemoryBugPanel.prototype = extend(Firebug.Panel,
         Firebug.Panel.initialize.apply(this, arguments);
 
         appendStylesheet(doc, "memoryBugStyles");
+
+        Firebug.MemoryBug.DefaultContent.tag.replace({}, this.panelNode);
     },
 
     show: function(state)
@@ -98,7 +100,6 @@ MemoryBugPanel.prototype = extend(Firebug.Panel,
 
     refresh: function()
     {
-        Firebug.MemoryBug.DefaultContent.tag.replace({}, this.panelNode);
     }
 });
 

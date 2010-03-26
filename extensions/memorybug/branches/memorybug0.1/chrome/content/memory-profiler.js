@@ -40,7 +40,14 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         if (result.success)
         {
             if (FBTrace.DBG_MEMORYBUG)
+            {
                 FBTrace.sysout("memorybug.profile; SUCCESS result data:", result.data);
+
+                FBTrace.sysout("memorybug.profile; Functions:",
+                    [func for each (func in result.data.graph) if (func.nativeClass == "Function")]);
+                FBTrace.sysout("memorybug.profile; Objects:",
+                    [func for each (func in result.data.graph) if (func.nativeClass == "Object")]);
+            }
 
             var self = this;
             window.setTimeout(function() {
@@ -84,13 +91,13 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
             {
                 var win = data.windows[i];
                 win.url = safeGetWindowLocation(context.windows[i]).toString();
+                win.objects = [];
 
                 for (var index in data.objects) {
                     var info = data.objects[index];
-                    if (info.name == win.url) {
+                    if (info.parent == win.id) {
                         win.objectCount = info.count;
-                        win.lines = info.lines;
-                        break;
+                        win.objects.push(info);
                     }
                 }
             }
@@ -362,6 +369,9 @@ Firebug.MemoryBug.ObjectListRep = domplate(Firebug.Rep,
                 FOR("line", "$lines",
                     TR({"class": "objectListRow", _repObject: "$line"},
                         TD(
+                            SPAN({"class": "url" },
+                                "$line|getUrl"
+                            ),
                             SPAN({"class": "desc", "title": "$line|getTitle"},
                                 "$line|getDescription"
                             ),
@@ -375,6 +385,11 @@ Firebug.MemoryBug.ObjectListRep = domplate(Firebug.Rep,
                 )
             )
         ),
+
+    getUrl: function(line)
+    {
+        return getFileName(line.url);
+    },
 
     getTitle: function(line)
     {
@@ -421,11 +436,24 @@ Firebug.MemoryBug.ObjectListRep = domplate(Firebug.Rep,
         var panel = Firebug.getElementPanel(row);
 
         var lines = [];
-        for (var item in winInfo.lines)
+        for (var object in winInfo.objects)
         {
-            var line = winInfo.lines[item];
-            lines.push(line);
-            line.source = panel.context.sourceCache.getLine(line.url, line.number);
+            var object = winInfo.objects[object];
+            lines.push.apply(lines, [l for each (l in object.lines)]);
+        }
+
+        for (var i=0; i<lines.length; i++)
+        {
+            var line = lines[i];
+            try
+            {
+                line.source = panel.context.sourceCache.getLine(line.url, line.number);
+            }
+            catch (e)
+            {
+                if (FBTrace.DBG_MEMORYBUG || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("memorybug.initBody; EXCEPTION " + e, e);
+            }
         }
 
         this.objectTableTag.replace({lines: lines}, infoBody);

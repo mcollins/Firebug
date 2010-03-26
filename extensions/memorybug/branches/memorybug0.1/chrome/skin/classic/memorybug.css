@@ -182,7 +182,7 @@
     cursor: pointer;
 }
 
-.opened.memoryProfilerBodyRow .windowUrlLabel {
+.memoryProfilerBodyRow .opened.windowRow .windowUrlLabel {
     background-image: url(chrome://firebug/skin/win/twistyOpen.png);
 }
 
@@ -190,8 +190,12 @@
     padding-left: 18px;
 }
 
+.objectListRow .url {
+    color: blue;
+    padding-right: 10px;
+}
+
 .objectListRow .desc {
     color: gray;
-    font-style: italic;
     padding-right: 10px;
 }

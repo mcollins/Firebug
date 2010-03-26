@@ -90,6 +90,7 @@ function doProfiling()
         if (!byFiles[file])
         {
             byFiles[file] = {
+                parent: info.parent,
                 count: 0,
                 lines: {}
             };

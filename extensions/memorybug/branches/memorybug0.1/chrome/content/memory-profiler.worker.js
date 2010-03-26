@@ -152,7 +152,10 @@ function analyzeResult(result)
 
   var tempObjects = [];
   for (name in data.objects)
-    tempObjects.push({name: name, count: data.objects[name].count, lines: data.objects[name].lines});
+    tempObjects.push({name: name,
+        parent: data.objects[name].parent,
+        count: data.objects[name].count,
+        lines: data.objects[name].lines});
 
   return JSON.stringify({functions: functions,
                          nativeClasses: tempNC,
