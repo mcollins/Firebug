@@ -14,6 +14,7 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
     {
         Components.utils.forceGC();
 
+        //var fileName = "chrome://memorybug/content/memoryProfiler.js";
         var fileName = "chrome://memorybug/content/memory-profiler.profiler.js";
         var code = getResource(fileName);
 
@@ -30,23 +31,33 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         for (var i=0; i<context.windows.length; i++)
             windows.push(context.windows[i].wrappedJSObject);
 
-        var result = binary.profileMemory(code, fileName, 1, windows);
+        var domPanel = context.getPanel("dom");
+
+        var props = [];
+        for (var i=0; i<windows.length; i++)
+            props.push.apply(props, domPanel.getMembers(windows[i], 0, context));
+
+        var namedObjects = [];
+        namedObjects.push.apply(namedObjects, windows);
+        //namedObjects.push.apply(namedObjects, props);
+
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.profile; Named Objects: ", namedObjects);
+
+        var resultJSON = binary.profileMemory(code, fileName, 1, namedObjects);
         var totalTime = (new Date()) - startTime;
 
         if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.profile; " + totalTime + " ms were spent in memory profiling.");
+            FBTrace.sysout("memorybug.profile; " + totalTime +
+                " ms were spent in memory profiling.");
 
-        result = JSON.parse(result);
+        var result = JSON.parse(resultJSON);
         if (result.success)
         {
             if (FBTrace.DBG_MEMORYBUG)
             {
                 FBTrace.sysout("memorybug.profile; SUCCESS result data:", result.data);
-
-                FBTrace.sysout("memorybug.profile; Functions:",
-                    [func for each (func in result.data.graph) if (func.nativeClass == "Function")]);
-                FBTrace.sysout("memorybug.profile; Objects:",
-                    [func for each (func in result.data.graph) if (func.nativeClass == "Object")]);
+                traceResult(resultJSON, namedObjects, context);
             }
 
             var self = this;
@@ -114,6 +125,72 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         worker.postMessage(result);
     }
 });
+
+// ************************************************************************************************
+
+function traceResult(result, namedObjects, context)
+{
+    var result = JSON.parse(result);
+    var graph = result.data.graph;
+
+    for (var id in graph)
+    {
+        var info = graph[id];
+
+        // Link to real parent
+        if (info.parent)
+            info.parent = graph[info.parent] ? graph[info.parent] : info.parent;
+
+        // Link to real prototype
+        if (info.parent)
+            info.prototype = graph[info.prototype] ? graph[info.prototype] : info.prototype;
+
+        // Link to real children
+        var children = [];
+        for (var i=0; i<info.children.length; i++)
+        {
+            var child = graph[info.children[i]];
+            if (child && info.parent != child && info.prototype != child)
+                children.push(child);
+        }
+
+        if (children.length)
+            info.children = children;
+        else
+            delete info.children;
+
+        // Get source code
+        try
+        {
+            if (info.filename && info.lineStart)
+                info.source = context.sourceCache.getLine(info.filename, info.lineStart);
+        }
+        catch (e)
+        {
+            info.source = "EXCEPTION: " + e;
+        }
+
+        // Get variable name
+        var index = result.data.namedObjects[id];
+        if (typeof(index) != "undefined")
+        {
+            if (info.name)
+                info.name2 = namedObjects[index].name;
+            else
+                info.name = namedObjects[index].name;
+
+            info.value = namedObjects[index].value;
+        }
+    }
+
+    FBTrace.sysout("memorybug.profile; All:", graph);
+
+    FBTrace.sysout("memorybug.profile; Functions:",
+        [func for each (func in graph) if (func.nativeClass == "Function")]);
+
+    FBTrace.sysout("memorybug.profile; Objects:",
+        [obj for each (obj in graph) if (obj.nativeClass == "Object")]);
+}
 
 // ************************************************************************************************
 
@@ -396,7 +473,7 @@ Firebug.MemoryBug.ObjectListRep = domplate(Firebug.Rep,
         var text = [];
         for (var desc in line.descriptions)
             text.push(line.descriptions[desc] + "x " + desc);
-        return text.join(",");
+        return text.join("\n");
     },
 
     getDescription: function(line)

@@ -1,3 +1,5 @@
+/* See license.txt for terms of usage */
+
 function doProfiling()
 {
     var namedObjects = getNamedObjects();
@@ -54,7 +56,7 @@ function doProfiling()
 
         // For now, ignore native objects which seems to be all created in C++ layers
         // There are considered as native because there wasn't JS stack frame during there creation.
-        if (info.isNative) 
+        if (info.isNative)
             continue;
 
         var file = info.filename ? info.filename : "?";
