@@ -67,6 +67,27 @@
         <key id="key_close"  key="w" command="cmd_close" modifiers="accel"/>
     </keyset>
 
+    <toolbox id="taskPlace">
+        <!-- Bar with testList.hmtl URL (e.g. chrome://firebug/content/testList.html -->
+        <toolbar id="testListUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestHistory" disablePicker="false"
+            coollapsed="false" label="fbtest.urlbar.label.Test List"
+            barTooltiptext="fbtest.urlbar.tooltip.Test_List_URL"
+            pickerTooltiptext="fbtest.cmd.tip.Browse For Test List"/>
+
+        <!-- Bar with test cases root URL (e.g. https://getfirebug.com/tests/content/) -->
+        <toolbar id="testCaseUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestCaseHistory" disablePicker="true"
+            collapsed="true" label="fbtest.urlbar.label.Test_Cases"
+            barTooltiptext="fbtest.urlbar.tooltip.Test_Cases_URL"/>
+
+        <!-- Bar with test drivers root URL (e.g. https://getfirebug.com/tests/content/) -->
+        <toolbar id="testDriverUrlBar" class="testURLBar" align="center"
+            autocompletesearch="FBTestDriverHistory" disablePicker="false"
+            collapsed="true" label="fbtest.urlbar.label.Test_Drivers"
+            barTooltiptext="fbtest.urlbar.tooltip.Test_Drivers_URL"/>
+    </toolbox>
+
     <toolbox id="consoleToolbox">
         <toolbar id="consoleToolbar" align="center" context="consoleToolbarContextMenu">
             <toolbarbutton id="runAll"
@@ -98,24 +119,6 @@
                 command="cmd_refreshTestList"/>
         </toolbar>
 
-        <!-- Bar with testList.hmtl URL (e.g. chrome://firebug/content/testList.html -->
-        <toolbar id="testListUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBTestHistory" disablePicker="false"
-            coollapsed="false" label="fbtest.urlbar.label.Test List"
-            barTooltiptext="fbtest.urlbar.tooltip.Test_List_URL"
-            pickerTooltiptext="fbtest.cmd.tip.Browse For Test List"/>
-
-        <!-- Bar with test cases root URL (e.g. https://getfirebug.com/tests/content/) -->
-        <toolbar id="testCaseUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBTestCaseHistory" disablePicker="true"
-            collapsed="true" label="fbtest.urlbar.label.Test_Cases"
-            barTooltiptext="fbtest.urlbar.tooltip.Test_Cases_URL"/>
-
-        <!-- Bar with test drivers root URL (e.g. https://getfirebug.com/tests/content/) -->
-        <toolbar id="testDriverUrlBar" class="testURLBar" align="center"
-            autocompletesearch="FBTestDriverHistory" disablePicker="false"
-            collapsed="true" label="fbtest.urlbar.label.Test_Drivers"
-            barTooltiptext="fbtest.urlbar.tooltip.Test_Drivers_URL"/>
     </toolbox>
 
     <popup id="consoleToolbarContextMenu"
