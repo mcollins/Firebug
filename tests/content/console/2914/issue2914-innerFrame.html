@@ -5,7 +5,12 @@
 </head>
 <body>
 <script type="text/javascript">
-parent.window.console.error("iframe error");
+function logError()
+{
+    parent.window.console.error("iframe error");
+}
+logError();
+
 </script>
 </body>
 </html>
