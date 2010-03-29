@@ -7,28 +7,30 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
-            var errorMessage = getErrorMessage(panel.panelNode);
+            var panelNode = FW.FirebugChrome.selectPanel("console").panelNode;
 
-            FBTest.compare(errorMessage, "iframe error",
+            var errorNode = panelNode.querySelector(".objectBox.objectBox-errorMessage");
+            var titleNode = errorNode.querySelector(".errorTitle");
+
+            // Verify the error message
+            FBTest.compare(titleNode.textContent, "iframe error",
                 "An error message must be displayed");
+
+            // The expandlabel button must be displayed.
+            FBTest.ok(FW.FBL.hasClass(errorNode, "hasTwisty"),
+                "The error must be expandable.");
+
+            // Open stack trace info.
+            FBTest.click(titleNode);
+
+            // Verify stack trace.
+            var traceNode = errorNode.querySelector(".errorTrace");
+            FBTest.compare(
+                /logError\(\)\s*issue2...me.html\s*\(line 10\)\s*error\(\)\s*issue2914.html \(line 30\)/,
+                traceNode.textContent,
+                "The stack trace must be properly displayed.");
 
             FBTest.testDone("issue2914.DONE");
         });
     });
-}
-
-function getErrorMessage(panelNode)
-{
-    var errorNode = panelNode.getElementsByClassName(
-        "objectBox objectBox-errorMessage");
-
-    if (errorNode.length != 1)
-        return null;
-
-    var errorTitleNode = errorNode[0].getElementsByClassName("errorTitle");
-    if (errorTitleNode.length != 1)
-        return null;
-
-    return errorTitleNode[0].textContent;
 }
