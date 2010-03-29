@@ -3,7 +3,7 @@
 <!-- overlay firebug to add menu item -->
 
 <overlay id="xfbtest-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    <script type="application/x-javascript" src="chrome://fbtest/content/testOverlay.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/overlayFirebug.js"/>
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
