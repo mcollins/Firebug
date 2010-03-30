@@ -15,7 +15,19 @@
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
 <li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li>Verify Console panel output.</li>
+<li>The console should display something like as following and both logs
+should be expandable:
+<br/>
+<pre>
+<span style="color:red">negative</span>
+<span style="color:green">    console.assert(false, "negative");\r\n</span>
+</pre>
+<pre>
+<span style="color:red">negative with an object</span>
+<span style="color:green">[Object { a="b"}, 15, "asdfa"]</span>
+<span style="color:green">    console.assert(false, "negative with an object", {a: "b"}, 15, "asdfa");\r\n</pre>
+</pre>
+</li>
 </ol>
 
 <button id="testButton" onclick="onExecuteTest()">Execute Test</button>

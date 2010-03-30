@@ -29,10 +29,10 @@ function verifyConsoleUI(config)
         return;
 
     // Verify the first assert message.
-    var reExpectedLog1 = /negative\s*console.assert\(false,\s*\"negative\"\);\\r\\nassert.html\s*\(line\s*28\)/
+    var reExpectedLog1 = /negative\s*console.assert\(false,\s*\"negative\"\);\\r\\nassert.html\s*\(line\s*40\)/
     if (!FBTest.compare(reExpectedLog1, rows[0].textContent,
         "The log must be something like as follows: " +
-        "negative    console.assert(false, \"negative\");\r\nassert.html (line 28)"))
+        "negative    console.assert(false, \"negative\");\r\nassert.html (line 40)"))
         return;
 
     // Verify the second assert message.
