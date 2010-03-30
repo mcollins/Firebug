@@ -25,8 +25,8 @@
     }
     function setup()
     {
-        addGetMethod(Dog, 'Size', function () {return '42 inches'});
-        addGetMethod(Cat, 'Size', function () {return '36 inches'});
+        addGetMethod(Dog, 'Size', function Dog_getSize() {return '42 inches'});
+        addGetMethod(Cat, 'Size', function Cat_getSize() {debugger; return '36 inches';});
     }
     function doTest()
     {
