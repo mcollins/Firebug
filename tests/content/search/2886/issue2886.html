@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for Issue #2886</title>
+</head>
+<body>
+
+<h1>Issue #2886</h1>
+
+<p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=2886">Issue #2886</a>
+- <span class="h3">Java Script search field dosnt find some code</span>.
+<br/>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+</p>
+
+<ol>
+<li>Open Firebug and enable the Script panel.</li>
+<li>Reload this page.</li>
+<li>Search for <code style="color:green">(!(this-is-acci</span>dental-regexpr))</code> using
+the search box.</li>
+<li>One occurence should be found at line 28.</li>
+<li>Check <i>Use Regular Expression</i> search option.</li>
+<li>Search for <code style="color:green">keyword\s+\d+</code>.</li>
+<li>One occurence should be found at line 30.</li>
+</ol>
+
+<script type="text/javascript">
+// if (!(this-is-accidental-regexpr))
+// keyword2
+// keyword 1
+</script>
+  
+</body>
+</html>
