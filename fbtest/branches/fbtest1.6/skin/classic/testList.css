@@ -187,3 +187,18 @@
 .groupTable.hidePassingTests .testGroupRow.error {
     display: block;
 }
+
+/* Hide also borders */
+.groupTable.hidePassingTests .testListRow .testListCol,
+.groupTable.hidePassingTests .testListTable {
+    border-bottom: 0;
+    border-top: 0;
+}
+
+.groupTable.hidePassingTests .testListRow.error .testListCol {
+    border-bottom: 1px solid #EFEFEF;
+}
+
+.groupTable.hidePassingTests .groupBodyRow.error testListTable {
+    border-top: 1px solid #EFEFEF;
+}

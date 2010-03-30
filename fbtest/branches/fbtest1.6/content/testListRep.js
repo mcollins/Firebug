@@ -166,6 +166,14 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
           command: bindFixed(this.onRunFromHere, this, group)
         });
 
+        items.push({
+          label: $STR("fbtest.contextmenu.label.Hide_Passing_Tests"),
+          nol10n: true,
+          type: "checkbox",
+          checked: hasClass(FBTestApp.TestConsole.table, "hidePassingTests"),
+          command: bindFixed(FBTestApp.TestConsole.hidePassingTests, FBTestApp.TestConsole)
+        });
+
         items.push("-");
 
         items.push({
@@ -410,6 +418,14 @@ FBTestApp.TestList = domplate(
           command: bindFixed(this.onRunFromHere, this, test)
         });
 
+        items.push({
+          label: $STR("fbtest.contextmenu.label.Hide_Passing_Tests"),
+          nol10n: true,
+          type: "checkbox",
+          checked: hasClass(FBTestApp.TestConsole.table, "hidePassingTests"),
+          command: bindFixed(FBTestApp.TestConsole.hidePassingTests, FBTestApp.TestConsole)
+        });
+
         items.push("-");
 
         items.push({
@@ -495,7 +511,7 @@ FBTestApp.TestGroup.prototype =
         for (var i=0; i<this.tests.length; i++)
         {
             var test = this.tests[i];
-            if (test.error)
+            if (test.error && test.category != "fails")
             {
                 error = true;
                 break;
