@@ -151,8 +151,8 @@
 
     <!-- Status bar info -->
     <statusbar id="statusBar">
-        <label id="passingTests" />
-        <label id="failingTests" />
+        <label id="passingTests" tooltiptext="fbtest.tooltip.Passing"/>
+        <label id="failingTests" tooltiptext="fbtest.tooltip.Failing"/>
         <label id="todoTests" tooltip="todoTestsTooltip"/>
         <tooltip id="todoTestsTooltip" onpopupshowing="return FBTestApp.TestSummary.onTodoShowTooltip(this)"/>
         <label id="progressMessage" crop="end" flex="1" />

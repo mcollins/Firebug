@@ -25,27 +25,29 @@ var nsIFilePicker = Ci.nsIFilePicker;
 var versionURL = "chrome://fbtest/content/fbtest.properties";
 
 // ************************************************************************************************
+
 FBTestApp.TestWindowLoader =
 {
     initialize: function()
     {
-            this.initializeTracing();
+        this.initializeTracing();
 
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestConsole.initializing");
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.TestConsole.initializing");
 
-            // Localize strings in XUL (using string bundle).
-            this.internationalizeUI();
+        // Localize strings in XUL (using string bundle).
+        this.internationalizeUI();
 
-            FBTestApp.TestWindowLoader.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
-            this.setHaltOnFailedTestButton();
+        FBTestApp.TestWindowLoader.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
+        this.setHaltOnFailedTestButton();
     },
 
     internationalizeUI: function()
     {
         var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
-            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox"];
+            "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox",
+            "passingTests", "failingTests"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -78,8 +80,8 @@ FBTestApp.TestWindowLoader =
     {
         $('haltOnFailedTest').setAttribute('checked', FBTestApp.TestWindowLoader.haltOnFailedTest?'true':'false');
     },
-
 };
+
 /**
  * This object represents main Test Console implementation.
  */

@@ -120,6 +120,9 @@ FBTestApp.TestRunner =
                 FBTrace.sysout("fbtest.TestRunner.Test END: " + this.currentTest.path,
                     this.currentTest);
 
+            // Update summary in the status bar.
+            FBTestApp.TestSummary.append(this.currentTest);
+
             this.currentTest.end = this.currentTest.isManual ? this.currentTest.end : (new Date()).getTime();
             this.currentTest.onTestDone();
             this.currentTest = null;
@@ -134,7 +137,10 @@ FBTestApp.TestRunner =
         // If there are tests in the queue, execute them.
         if (this.testQueue && this.testQueue.length)
         {
+            // Update progress bar in the status bar.
             FBTestApp.TestProgress.update(this.testQueue.length);
+
+            // Run next test
             this.runTest(this.getNextTest());
             return;
         }
@@ -249,8 +255,8 @@ FBTestApp.TestRunner =
         {
             if (FBTrace.DBG_FBTEST)
             {
-                    FBTrace.sysout("-> frameProgressListener.onStateChanged for: "+safeGetName(request)+
-                        ", win: "+progress.DOMWindow.location.href+ " "+getStateDescription(flag));
+                FBTrace.sysout("-> frameProgressListener.onStateChanged for: "+safeGetName(request)+
+                    ", win: "+progress.DOMWindow.location.href+ " "+getStateDescription(flag));
             }
 
             if (safeGetName(request) === "about:blank")
@@ -264,7 +270,8 @@ FBTestApp.TestRunner =
                 {
                     try
                     {
-                        FBTestApp.TestRunner.win.removeEventListener("load", FBTestApp.TestRunner.eventListener, true);
+                        FBTestApp.TestRunner.win.removeEventListener("load",
+                            FBTestApp.TestRunner.eventListener, true);
                     }
                     catch(e)
                     {
@@ -284,8 +291,9 @@ FBTestApp.TestRunner =
 
                 if (FBTrace.DBG_FBTEST)
                 {
-                    FBTrace.sysout("-> frameProgressListener.onStateChanged set load handler for: "+safeGetName(request)+
-                                ", win: "+progress.DOMWindow.location.href+ " "+getStateDescription(flag));
+                    FBTrace.sysout("-> frameProgressListener.onStateChanged set load handler for: "+
+                        safeGetName(request)+", win: "+progress.DOMWindow.location.href+ " "+
+                        getStateDescription(flag));
                 }
             }
         }
@@ -509,9 +517,6 @@ FBTestApp.TestRunner =
             result.row = FBTestApp.TestResultRep.resultTag.insertRows(
                 {results: [result]}, tbody.lastChild ? tbody.lastChild : tbody)[0];
         }
-
-        // Update summary in the status bar.
-        FBTestApp.TestSummary.append(this.currentTest, result);
     },
 
     sysout: function(msg, obj)
@@ -554,32 +559,28 @@ FBTestApp.TestProgress =
 
 FBTestApp.TestSummary =
 {
-    results: [],
-
     passingTests: {passing: 0, failing: 0},
     failingTests: {passing: 0, failing: 0},
 
-    append: function(test, result)
+    append: function(test)
     {
-        this.results.push(result);
-
         if (test.category == "fails")
         {
-            result.pass ? this.failingTests.passing++ : this.failingTests.failing++;
+            test.error ? this.failingTests.failing++ : this.failingTests.passing++;
 
             $("todoTests").value = $STR("fbtest.label.Todo") + ": " +
                 this.failingTests.failing + "/" + this.failingTests.passing;
         }
         else
         {
-            result.pass ? this.passingTests.passing++ : this.passingTests.failing++;
+            test.error ? this.passingTests.failing++ : this.passingTests.passing++;
 
             if (this.passingTests.passing)
-                $("passingTests").value = $STR("fbtest.label.Passing") + ": " +
+                $("passingTests").value = $STR("fbtest.label.Pass") + ": " +
                     this.passingTests.passing;
 
             if (this.passingTests.failing)
-                $("failingTests").value = $STR("fbtest.label.Failing") + ": " +
+                $("failingTests").value = $STR("fbtest.label.Fail") + ": " +
                     this.passingTests.failing;
         }
     },
@@ -598,7 +599,6 @@ FBTestApp.TestSummary =
 
     clear: function()
     {
-        this.results = [];
         this.passingTests = {passing: 0, failing: 0};
         this.failingTests = {passing: 0, failing: 0};
 
