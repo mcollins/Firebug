@@ -53,15 +53,31 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
 
     onFailure: function()
     {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest.onFailure ");
         FBTestApp.TestRunner.clearTestTimeout();
-        debugger;
+        Firebug.Debugger.halt(function breakOnFailure(frame)
+        {
+            var dropFrames = 7;
+
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest.onFailure.breakOnFailure dropping "+dropFrames, frame);
+
+            for (var i = 0; frame && frame.isValid && i < dropFrames; i++)
+                frame = frame.callingFrame;
+
+            Firebug.Debugger.breakAsIfDebugger(frame);
+        });
     },
 
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
         if (topic == "fbtest") {
-            FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
+            if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
+                FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
+            else
+                FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
         }
     },
 
