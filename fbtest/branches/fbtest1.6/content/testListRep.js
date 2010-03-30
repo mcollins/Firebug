@@ -487,6 +487,25 @@ FBTestApp.TestGroup.prototype =
                 text += errors + "\n";
         }
         return text;
+    },
+
+    update: function()
+    {
+        var error = false;
+        for (var i=0; i<this.tests.length; i++)
+        {
+            var test = this.tests[i];
+            if (test.error)
+            {
+                error = true;
+                break;
+            }
+        }
+
+        if (error)
+            setClass(this.row, "error");
+        else
+            removeClass(this.row, "error");
     }
 }
 
@@ -567,6 +586,9 @@ FBTestApp.Test.prototype =
         var elapsedTime = this.end - this.start;
         timeNode.innerHTML = "(" + formatTime(elapsedTime) + ")";
         timeNode.setAttribute("title", elapsedTime + "ms");
+
+        // Update group error flag.
+        this.group.update();
     },
 
     onManualVerify: function(verifyMsg, instructions)

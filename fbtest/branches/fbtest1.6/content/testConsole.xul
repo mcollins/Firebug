@@ -150,7 +150,7 @@
     </vbox>
 
     <!-- Status bar info -->
-    <statusbar id="statusBar">
+    <statusbar id="statusBar" context="statusBarContextMenu">
         <label id="passingTests" tooltiptext="fbtest.tooltip.Passing"/>
         <label id="failingTests" tooltiptext="fbtest.tooltip.Failing"/>
         <label id="todoTests" tooltip="todoTestsTooltip"/>
@@ -158,4 +158,12 @@
         <label id="progressMessage" crop="end" flex="1" />
         <progressmeter id="progressMeter" mode="determined" style="display:none"/>
     </statusbar>
+
+    <popup id="statusBarContextMenu"
+        onpopupshowing="return FBTestApp.TestConsole.onStatusBarPopupShowing(event);">
+        <menuitem id="menu_hidePassingTests" type="checkbox" checked="false"
+            label="fbtest.contextmenu.label.Hide Passing Tests"
+            oncommand="FBTestApp.TestConsole.hidePassingTests(event)"/>
+    </popup>
+
 </window>

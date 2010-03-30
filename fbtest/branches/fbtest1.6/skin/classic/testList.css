@@ -161,3 +161,29 @@
     padding-left: 15px;
     padding-right: 5px;
 }
+
+/************************************************************************************************/
+
+/* Colorize group if there is a failing tests inside */
+.testGroupRow.error {
+    color: red;
+}
+
+/************************************************************************************************/
+
+/* Hide:
+ * 1) passing tests 
+ * 2) results of passing tests (if opened)
+ * 3) passing groups
+ */
+.groupTable.hidePassingTests .testListRow,
+.groupTable.hidePassingTests .testListRow.opened + TR,
+.groupTable.hidePassingTests .testGroupRow {
+    display: none;
+}
+
+.groupTable.hidePassingTests .testListRow.error,
+.groupTable.hidePassingTests .testListRow.error.opened + TR,
+.groupTable.hidePassingTests .testGroupRow.error {
+    display: block;
+}

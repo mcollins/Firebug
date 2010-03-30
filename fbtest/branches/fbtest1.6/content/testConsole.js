@@ -47,7 +47,7 @@ FBTestApp.TestWindowLoader =
         var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
             "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox",
-            "passingTests", "failingTests"];
+            "passingTests", "failingTests", "menu_hidePassingTests"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -420,8 +420,8 @@ FBTestApp.TestConsole =
             body.appendChild(consoleNode);
         }
 
-        var table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, consoleNode);
-        var row = table.firstChild.firstChild;
+        this.table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, consoleNode);
+        var row = this.table.firstChild.firstChild;
 
         for (var i=0; i<this.groups.length; i++)
         {
@@ -727,6 +727,29 @@ FBTestApp.TestConsole =
             throw new Error("urlToPath fails for "+aPath+ " because of "+e);
         }
     },
+
+    onStatusBarPopupShowing: function(event)
+    {
+        if (!this.table)
+            return false;
+
+        var hidePassingTests = hasClass(this.table, "hidePassingTests");
+        var menuItem = $("menu_hidePassingTests");
+        menuItem.setAttribute("checked", hidePassingTests ? "true" : "false");
+
+        return true;
+    },
+
+    hidePassingTests: function(event)
+    {
+        if (!this.table)
+            return;
+
+        if (hasClass(this.table, "hidePassingTests"))
+            removeClass(this.table, "hidePassingTests");
+        else
+            setClass(this.table, "hidePassingTests");
+    }
 };
 
 // ************************************************************************************************
