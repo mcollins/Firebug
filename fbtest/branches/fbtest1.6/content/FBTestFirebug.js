@@ -161,12 +161,7 @@ this.loadScript = function(scriptURI, scope)
  */
 this.onFailure = function(msg)
 {
-    if (FBTestApp.TestConsole.haltOnFailedTest)
-    {
-        FBTestApp.TestRunner.clearTestTimeout();
-        FBTest.sysout("Test failed, dropping into debugger "+msg);
-        debugger;
-    }
+    FBTestApp.TestConsole.notifyObservers(this, "fbtest", "onFailure");
 };
 
 /**

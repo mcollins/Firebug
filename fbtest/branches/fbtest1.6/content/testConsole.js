@@ -594,13 +594,6 @@ FBTestApp.TestConsole =
         this.loadTestList(this.testListPath, this.testCasePath);
     },
 
-    onToggleHaltOnFailedTest: function()
-    {
-        FBTestApp.TestWindowLoader.haltOnFailedTest = !FBTestApp.TestWindowLoader.haltOnFailedTest;
-        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", FBTestApp.TestWindowLoader.haltOnFailedTest);
-        FBTestApp.TestWindowLoader.setHaltOnFailedTestButton();
-    },
-
     onToggleNoTestTimeout: function()
     {
         this.noTestTimeout = !this.noTestTimeout;

@@ -4,3 +4,4 @@ locale     fbtest   en-US           locale/en-US/
 
 overlay    chrome://firebug/content/firebugOverlay.xul     chrome://fbtest/content/overlayFirebug.xul
 
+overlay    chrome://fbtest/content/testConsole.xul     chrome://fbtest/content/haltOnFailedTest.xul
