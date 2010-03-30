@@ -522,22 +522,6 @@ this.closeFirebugOnAllTabs = function()
 }
 
 // ************************************************************************************************
-// DOM Helpers
-
-this.expandElements = function(panelNode, className) // className, className, ...
-{
-    var rows = FW.FBL.getElementsByClass.apply(null, arguments);
-    for (var i=0; i<rows.length; i++)
-    {
-        var row = rows[i];
-        if (!FW.FBL.hasClass(row, "opened") && !FW.FBL.hasClass(row, "collapsed"))
-            FBTest.click(row);
-    }
-
-    return rows;
-}
-
-// ************************************************************************************************
 // Firebug Panel Enablement.
 
 this.updateModelState = function(model, callbackTriggersReload, enable)
@@ -1058,7 +1042,20 @@ this.selectSourceLine = function(url, lineNo, category, chrome, callback)
 }
 
 // ************************************************************************************************
-// Network
+// DOM
+
+this.expandElements = function(panelNode, className) // className, className, ...
+{
+    var rows = FW.FBL.getElementsByClass.apply(null, arguments);
+    for (var i=0; i<rows.length; i++)
+    {
+        var row = rows[i];
+        if (!FW.FBL.hasClass(row, "opened") && !FW.FBL.hasClass(row, "collapsed"))
+            FBTest.click(row);
+    }
+
+    return rows;
+}
 
 /**
  * Executes passed callback as soon as an expected element is displayed within the
@@ -1113,6 +1110,30 @@ this.waitForDisplayedElement = function(panelName, config, callback)
     }
 
     recognizer.onRecognizeAsync(tempCallback);
+}
+
+// ************************************************************************************************
+// Search
+
+/**
+ * Executes search within the Script panel.
+ * @param {String} searchText Keyword set into the search box.
+ * @param {Function} callback Function called as soon as the result has been found.
+ */
+this.searchInScriptPanel = function(searchText, callback)
+{
+    FW.FirebugChrome.selectPanel("script");
+
+    var config = {tagName: "div", classes: "sourceRow jumpHighlight"};
+    FBTest.waitForDisplayedElement("script", config, callback);
+
+    // Set search string into the search box.
+    var searchBox = FW.document.getElementById("fbSearchBox");
+    searchBox.value = searchText;
+
+    // Setting the 'value' property doesn't fire an 'input' event so, press enter instead.
+    FBTest.focus(searchBox);
+    FBTest.pressKey(13, "fbSearchBox");
 }
 
 // ************************************************************************************************
