@@ -116,7 +116,7 @@ var FirebugSwarmTest =
 
     analyze: function()
     {
-        var browser = $("consoleFrame");
+        var browser = $("taskBrowser");
         var doc = browser.contentDocument;
         if(doc.getElementsByClassName('swarm').length == 0)
         {
@@ -140,10 +140,10 @@ var FirebugSwarmTest =
     downloadAndInstallKeyService: function()
     {
         var componentsDir = this.getComponentsDirectory();
-        var consoleFrame = $("consoleFrame");
-        consoleFrame.addEventListener("load", function onInstructionsLoaded(event)
+        var taskBrowser = $("taskBrowser");
+        taskBrowser.addEventListener("load", function onInstructionsLoaded(event)
         {
-            consoleFrame.removeEventListener("load",onInstructionsLoaded, true);
+            taskBrowser.removeEventListener("load",onInstructionsLoaded, true);
 
             var doc = event.target;
             var elt = doc.getElementById("openFBTestComponentDirectory");
@@ -161,7 +161,7 @@ var FirebugSwarmTest =
 
             }, true);
         }, true);
-        consoleFrame.setAttribute("src", installKeyServiceInstructionsURL);
+        taskBrowser.setAttribute("src", installKeyServiceInstructionsURL);
     },
 
     getComponentsDirectory: function()
