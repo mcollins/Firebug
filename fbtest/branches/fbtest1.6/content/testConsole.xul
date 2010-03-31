@@ -134,10 +134,10 @@
     </popupset>
 
     <vbox flex="3">
-        <browser id="consoleFrame" type="content-primary" src="" flex="1"
+        <browser id="taskBrowser" type="content-primary" src="" flex="1"
              disablehistory="true" contextmenu="fbContextMenu"
              tooltip="fbTooltip"/>
-        <findbar id="FindToolbar" browserid="consoleFrame"/>
+        <findbar id="FindToolbar" browserid="taskBrowser"/>
     </vbox>
 
     <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest"

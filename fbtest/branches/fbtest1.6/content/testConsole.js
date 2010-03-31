@@ -37,9 +37,6 @@ FBTestApp.TestWindowLoader =
 
         // Localize strings in XUL (using string bundle).
         this.internationalizeUI();
-
-        FBTestApp.TestWindowLoader.haltOnFailedTest = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
-        this.setHaltOnFailedTestButton();
     },
 
     internationalizeUI: function()
@@ -76,10 +73,6 @@ FBTestApp.TestWindowLoader =
         });
     },
 
-    setHaltOnFailedTestButton: function()
-    {
-        $('haltOnFailedTest').setAttribute('checked', FBTestApp.TestWindowLoader.haltOnFailedTest?'true':'false');
-    },
 };
 
 /**
@@ -276,10 +269,10 @@ FBTestApp.TestConsole =
             this.testCasePath = testCasePath;
 
         var self = this;
-        var consoleFrame = $("consoleFrame");
+        var taskBrowser = $("taskBrowser");
         var onTestFrameLoaded = function(event)
         {
-            consoleFrame.removeEventListener("load", onTestFrameLoaded, true);
+            taskBrowser.removeEventListener("load", onTestFrameLoaded, true);
 
             var doc = event.target;
 
@@ -358,8 +351,8 @@ FBTestApp.TestConsole =
         }
 
         // Load test-list file into the content frame.
-        consoleFrame.addEventListener("load", onTestFrameLoaded, true);
-        consoleFrame.setAttribute("src", testListPath);
+        taskBrowser.addEventListener("load", onTestFrameLoaded, true);
+        taskBrowser.setAttribute("src", testListPath);
 
         this.updateURLBars();
     },
@@ -404,23 +397,32 @@ FBTestApp.TestConsole =
             return;
         }
 
-        var frame = $("consoleFrame");
-        var doc = frame.contentDocument;
-        var consoleNode = $("testList", doc);
-        if (!consoleNode)
+        var browser = $("taskBrowser");
+        var doc = browser.contentDocument;
+        var testListNode = $("testList", doc);
+        if (!testListNode)
         {
-            consoleNode = doc.createElement("div");
-            consoleNode.setAttribute("id", "testList");
-            var body = getBody(doc);
-            if (!body)
+            var iframed = $("FBTest", doc);
+            if (iframed)
             {
-                FBTrace.sysout("fbtest.refreshTestList; ERROR There is no <body> element.");
-                return;
+                doc = iframed.contentDocument;
+                testListNode = $("testList", doc);
             }
-            body.appendChild(consoleNode);
+            else
+            {
+                testListNode = doc.createElement("div");
+                testListNode.setAttribute("id", "testList");
+                var body = getBody(doc);
+                if (!body)
+                {
+                    FBTrace.sysout("fbtest.refreshTestList; ERROR There is no <body> element.");
+                    return;
+                }
+                body.appendChild(testListNode);
+            }
         }
 
-        this.table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, consoleNode);
+        this.table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, testListNode);
         var row = this.table.firstChild.firstChild;
 
         for (var i=0; i<this.groups.length; i++)
@@ -591,7 +593,7 @@ FBTestApp.TestConsole =
 
     onRefreshTestList: function()
     {
-        $("consoleFrame").setAttribute("src", "about:blank");
+        $("taskBrowser").setAttribute("src", "about:blank");
         this.updatePaths();
         this.loadTestList(this.testListPath, this.testCasePath);
     },
@@ -759,8 +761,8 @@ FBTestApp.TestConsole.TraceListener =
     // Called when console window is loaded.
     onLoadConsole: function(win, rootNode)
     {
-        var consoleFrame = $("consoleFrame", win.document);
-        this.addStyleSheet(consoleFrame.contentDocument,
+        var taskBrowser = $("taskBrowser", win.document);
+        this.addStyleSheet(taskBrowser.contentDocument,
             "chrome://fbtest/skin/traceConsole.css",
             "fbTestStyles");
     },
