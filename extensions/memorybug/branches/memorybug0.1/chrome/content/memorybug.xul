@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <!-- FireStarter file implementation -->
+    <!-- Memorybug files -->
     <script src="chrome://memorybug/content/memorybug.js" type="application/x-javascript"/>
-    <script src="chrome://memorybug/content/memory-profiler.js" type="application/x-javascript"/>
+    <script src="chrome://memorybug/content/memoryPanel.js" type="application/x-javascript"/>
+    <script src="chrome://memorybug/content/memoryProfiler.js" type="application/x-javascript"/>
 
     <!-- Extend Firebug's command set -->
     <commandset id="mainCommandSet">

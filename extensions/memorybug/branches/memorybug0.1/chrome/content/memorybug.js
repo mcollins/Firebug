@@ -17,18 +17,24 @@ Firebug.registerStringBundle("chrome://memorybug/locale/memorybug.properties");
 // ************************************************************************************************
 // Module implementation
 
+/**
+ * @module Represents Memorybug model responsible for standard initialization such as
+ * internationalization of respective UI.
+ */
 Firebug.MemoryBug = extend(Firebug.Module,
+/** @lends Firebug.MemoryBug */
 {
     initialize: function(prefDomain, prefNames)
     {
+        // Registers tracing listener for trace logs customization.
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.addListener(this.TraceListener);
+
         Firebug.Module.initialize.apply(this, arguments);
 
         // Initialize MemoryBug preferences in Firebug global object.
         for (var i=0; i<mbPrefNames.length; i++)
             Firebug[mbPrefNames[i]] = Firebug.getPref(prefDomain, mbPrefNames[i]);
-
-        if (Firebug.TraceModule)
-            Firebug.TraceModule.addListener(this.TraceListener);
 
         if (FBTrace.DBG_MEMORYBUG)
             FBTrace.sysout("memorybug.initialized " + prefDomain, prefNames);
@@ -38,11 +44,11 @@ Firebug.MemoryBug = extend(Firebug.Module,
     {
         Firebug.Module.shutdown.apply(this, arguments);
 
-        if (Firebug.TraceModule)
-            Firebug.TraceModule.removeListener(this.TraceListener);
-
         if (FBTrace.DBG_MEMORYBUG)
             FBTrace.sysout("memorybug.shutdown");
+
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.removeListener(this.TraceListener);
     },
 
     internationalizeUI: function(doc)
@@ -67,69 +73,12 @@ Firebug.MemoryBug = extend(Firebug.Module,
 
 // ************************************************************************************************
 
-function MemoryBugPanel() {}
-MemoryBugPanel.prototype = extend(Firebug.Panel,
-{
-    name: "memory",
-    title: $STR("memorybug.Memory"),
-
-    initialize: function(context, doc)
-    {
-        Firebug.Panel.initialize.apply(this, arguments);
-
-        appendStylesheet(doc, "memoryBugStyles");
-
-        Firebug.MemoryBug.DefaultContent.tag.replace({}, this.panelNode);
-    },
-
-    show: function(state)
-    {
-        Firebug.Panel.show.apply(this, arguments);
-
-        this.showToolbarButtons("fbMemoryButtons", true);
-
-        this.refresh();
-    },
-
-    hide: function()
-    {
-        Firebug.Panel.hide.apply(this, arguments);
-
-        this.showToolbarButtons("fbMemoryButtons", false);
-    },
-
-    refresh: function()
-    {
-    }
-});
-
-// ************************************************************************************************
-
-Firebug.MemoryBug.DefaultContent = domplate(Firebug.Rep,
-{
-    tag:
-        TABLE({"class": "memoryProfilerDefaultTable", cellpadding: 0, cellspacing: 0},
-            TBODY(
-                TR({"class": "memoryProfilerDefaultRow"},
-                    TD({"class": "memoryProfilerDefaultCol"},
-                        BUTTON({"class": "memoryProfilerDefaultBtn", onclick: "$onRefresh"},
-                            $STR("memorybug.button.memorysnapshot")
-                        )
-                    )
-                )
-            )
-        ),
-
-    onRefresh: function(event)
-    {
-        var panel = Firebug.getElementPanel(event.target);
-        Firebug.MemoryBug.Profiler.profile(panel.context);
-    }
-});
-
-// ************************************************************************************************
-
+/**
+ * @class Implements a tracing listener responsible for colorization of all trace logs
+ * coming from this extension. All logs should use "memorybug." prefix.
+ */
 Firebug.MemoryBug.TraceListener = 
+/** @lends Firebug.MemoryBug.TraceListener */
 {
     onLoadConsole: function(win, rootNode)
     {
@@ -147,17 +96,6 @@ Firebug.MemoryBug.TraceListener =
             message.type = "DBG_MEMORYBUG";
     }
 };
-
-function appendStylesheet(doc)
-{
-    // Make sure the stylesheet isn't appended twice.
-    if (!$("memoryBugStyles", doc))
-    {
-        var styleSheet = createStyleSheet(doc, "chrome://memorybug/skin/memorybug.css");
-        styleSheet.setAttribute("id", "memoryBugStyles");
-        addStyleSheet(doc, styleSheet);
-    }
-}
 
 // ************************************************************************************************
 // Registration

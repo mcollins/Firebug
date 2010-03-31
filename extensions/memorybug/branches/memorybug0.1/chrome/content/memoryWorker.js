@@ -1,5 +1,14 @@
 /* See license.txt for terms of usage */
 
+// ************************************************************************************************
+
+/**
+ * Content of this file is executed within a worker thread so, time consuming analysis (on data
+ * returned from <code>nsIJetpack.profileMemory</code>) doesn't block the UI.
+ */
+
+// ************************************************************************************************
+
 /**
  * Analyses are made in a worker thread so, the UI isn't frozen. The results is
  * posted into the UI thread using JSON.
