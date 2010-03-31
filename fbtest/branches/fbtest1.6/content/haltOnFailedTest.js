@@ -53,6 +53,9 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
 
     onFailure: function()
     {
+        if (!FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled)
+            return;
+
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest.onFailure ");
         FBTestApp.TestRunner.clearTestTimeout();
