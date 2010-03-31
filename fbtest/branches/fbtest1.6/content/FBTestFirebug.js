@@ -1113,6 +1113,14 @@ this.waitForDisplayedElement = function(panelName, config, callback)
 }
 
 // ************************************************************************************************
+// Console panel
+
+this.clearConsole = function(chrome)
+{
+    this.clickToolbarButton(chrome, "fbConsoleClear");
+}
+
+// ************************************************************************************************
 // Search
 
 /**
