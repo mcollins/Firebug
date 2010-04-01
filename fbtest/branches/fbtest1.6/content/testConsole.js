@@ -381,7 +381,7 @@ FBTestApp.TestConsole =
 
         var iframe = doc.getElementById("FBTest");
         if (iframe)
-            return (subwin.contentWindow.wrappedJSObject ? subwin.contentWindow.wrappedJSObject : subwin.contentWindow);
+            return (iframe.contentWindow.wrappedJSObject ? iframe.contentWindow.wrappedJSObject : iframe.contentWindow);
     },
 
     notifyObservers: function(subject, topic, data)
