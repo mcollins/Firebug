@@ -130,14 +130,20 @@ ol {
 button.swarmInactive:after {
     content: "Show Swarm";
 }
+.swarmWorkFlow button.swarmWorkFlowStart:after {
+    content: "->";
+}
 .swarmWorkFlow button.swarmWorkFlowStep:after {
     content: "->";
 }
 .swarmWorkFlow button.swarmWorkFlowEnd {
     margin-right: 10px;
 }
-.swarmWorkFlowSelected {
-  color: red;
+td.swarmWorkFlowSelector {
+    color: #999999;
+}
+tr.swarmWorkFlowSelected td {
+     color: black;
 }
 </style>
 <script>
@@ -147,32 +153,56 @@ function performTask(event)
 }
 function selectWorkflow(event)
 {
+    // disable all of the buttons in all of the workflows
     var workflows = document.body.getElementsByClassName("swarmWorkFlow");
     for (var i = 0; i < workflows.length; i++)
+    {
         workflows[i].classList.remove("swarmWorkFlowSelected");
+        var buttons = workflows[i].getElementsByTagName('button');
+        for (var j = 0; j < buttons.length; j++)
+            buttons[j].setAttribute("disabled", "disabled");
+    }
 
+    // mark the selected workflow
     var parent = event.target;
     while (parent.parentNode)
     {
         parent = parent.parentNode;
         if (parent.classList.contains("swarmWorkFlow"))
-            parent.classList.add("swarmWorkFlowSelected");
+            break;
+    }
+    parent.classList.add("swarmWorkFlowSelected");
+
+    // enable some buttons in this workflow
+    var buttons = parent.getElementsByTagName('button');
+    for (var j = 0; j < buttons.length; j++)
+    {
+        button = buttons[j];
+        if (button.classList.contains("swarmWorkFlowStep")) continue; // leave disabled
+        if (button.classList.contains("swarmWorkFlowEnd")) continue;
+        button.removeAttribute("disabled");
     }
 }
 function showClasses(theClasses)
 {
     console.log(theClasses);
 }
+function setDefaults(event)
+{
+    var preTest = document.getElementById("preTest");
+    var preTestInput = preTest.getElementsByTagName("input")[0];
+    preTestInput.click();
+}
 </script>
 </head>
-<body>
+<body onload="setDefaults(event)">
 <form>
 <table id="workflow" style="padding-bottom: 10px">
 <tr class="swarmWorkFlow swarmCreator" id="preTest">
-   <td rowspan="3" style="border-right:3px solid black; padding-right: 5px">Select WorkFlow</td>
-   <td> <input type="radio" checked name="swarmWorkFlowSelector" value="preTest" id="preTest_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Pre-test</input> </td>
+   <td rowspan="4" style="border-right:3px solid black; padding-right: 5px">Select WorkFlow</td>
+   <td  class="swarmWorkFlowSelector"> <input type="radio" name="swarmWorkFlowSelector" value="preTest" id="preTest_0" onclick="selectWorkflow(event)">Pre-test </td>
    <td>
-     <button id="preTest_1" class="swarmWorkFlowStep" onclick="performTask(event)">Install</button>
+     <button id="preTest_1" class="swarmWorkFlowStart" onclick="performTask(event)">Install</button>
      <button id="preTest_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Test</button>
      <button id="preTest_2" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Stop</button>
      <button id="preTest_fail_halt" onclick="performTask(event)">Fail Halt</button>
@@ -180,21 +210,30 @@ function showClasses(theClasses)
    </td>
 </tr>
 <tr class="swarmWorkFlow swarmCreator" id="buildAll">
-    <td><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Build Extension</input></td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" onclick="selectWorkflow(event)">Build Extension</td>
     <td>
-    <button id="buildAll_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Install</button>
+    <button id="buildAll_1" class="swarmWorkFlowStart" disabled onclick="performTask(event)">Install</button>
     <button id="buildAll_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Test</button>
     <button id="buildAll_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Sign</button>
     <button id="buildAll_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Export</button>
     </td>
 </tr>
 <tr class="swarmWorkFlow swarmUser" id="userInstall">
-    <td><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Install This Swarm</input></td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" onclick="selectWorkflow(event)">Install This Swarm</td>
     <td>
-    <button id="userInstall_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Verify Signature</button>
+    <button id="userInstall_1" class="swarmWorkFlowStart" disabled onclick="performTask(event)">Verify Signature</button>
     <button id="userInstall_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Check Versions</button>
     <button id="userInstall_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Download</button>
     <button id="userInstall_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Restart Browser</button>
+    </td>
+</tr>
+<tr class="swarmWorkFlow swarmUser" id="userInstall">
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Investigate This Swarm</input></td>
+    <td>
+    <button id="userInvestigate_1" class="swarmWorkFlowStart" disabled onclick="performTask(event)">Verify Signature</button>
+    <button id="userInvestigate_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Check Versions</button>
+    <button id="userInvestigate_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Study Test Results</button>
+    <button id="userInvestigate_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Find Reviews</button>
     </td>
 </tr>
 </table>
