@@ -764,8 +764,8 @@ FBTestApp.TestConsole.TraceListener =
     // Called when console window is loaded.
     onLoadConsole: function(win, rootNode)
     {
-        var taskBrowser = $("taskBrowser", win.document);
-        this.addStyleSheet(taskBrowser.contentDocument,
+        var consoleFrame = $("consoleFrame", win.document);
+        this.addStyleSheet(consoleFrame.contentDocument,
             "chrome://fbtest/skin/traceConsole.css",
             "fbTestStyles");
     },
