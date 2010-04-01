@@ -130,38 +130,76 @@ ol {
 button.swarmInactive:after {
     content: "Show Swarm";
 }
-button.swarmActive:after {
-    content: "Hide Swarm";
+.swarmWorkFlow button.swarmWorkFlowStep:after {
+    content: "->";
 }
-div.swarmInactive {
-    display: none;
+.swarmWorkFlow button.swarmWorkFlowEnd {
+    margin-right: 10px;
 }
-div.swarmActive {
-    display: block;
+.swarmWorkFlowSelected {
+  color: red;
 }
-
 </style>
 <script>
-function toggleSwarmUI()
+function performTask(event)
 {
-    var ui = document.getElementById("basicSwarmUI");
-    toggleSwarmActivity(ui);
-    var button = document.getElementById("toggleSwarmUI");
-    toggleSwarmActivity(button);
+    console.log(event);
 }
-
-function toggleSwarmActivity(elt)
+function selectWorkflow(event)
 {
-    var classes = elt.getAttribute('class');
-    var toggled = classes.replace("swarmInactive", "swarmActive");
-    if (toggled == classes)  // then replace failed, try the other one
-        var toggled = classes.replace("swarmActive", "swarmInactive");
-    elt.setAttribute('class', toggled);
+    var workflows = document.body.getElementsByClassName("swarmWorkFlow");
+    for (var i = 0; i < workflows.length; i++)
+        workflows[i].classList.remove("swarmWorkFlowSelected");
+
+    var parent = event.target;
+    while (parent.parentNode)
+    {
+        parent = parent.parentNode;
+        if (parent.classList.contains("swarmWorkFlow"))
+            parent.classList.add("swarmWorkFlowSelected");
+    }
+}
+function showClasses(theClasses)
+{
+    console.log(theClasses);
 }
 </script>
 </head>
 <body>
-<button id="toggleSwarmUI" class="swarmActive" onclick="toggleSwarmUI()"> </button>
+<form>
+<table id="workflow" style="padding-bottom: 10px">
+<tr class="swarmWorkFlow swarmCreator" id="preTest">
+   <td rowspan="3" style="border-right:3px solid black; padding-right: 5px">Select WorkFlow</td>
+   <td> <input type="radio" checked name="swarmWorkFlowSelector" value="preTest" id="preTest_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Pre-test</input> </td>
+   <td>
+     <button id="preTest_1" class="swarmWorkFlowStep" onclick="performTask(event)">Install</button>
+     <button id="preTest_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Test</button>
+     <button id="preTest_2" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Stop</button>
+     <button id="preTest_fail_halt" onclick="performTask(event)">Fail Halt</button>
+     <button id="preTest_no_timeout" onclick="performTask(event)">No Timeout</button>
+   </td>
+</tr>
+<tr class="swarmWorkFlow swarmCreator" id="buildAll">
+    <td><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Build Extension</input></td>
+    <td>
+    <button id="buildAll_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Install</button>
+    <button id="buildAll_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Test</button>
+    <button id="buildAll_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Sign</button>
+    <button id="buildAll_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Export</button>
+    </td>
+</tr>
+<tr class="swarmWorkFlow swarmUser" id="userInstall">
+    <td><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Install This Swarm</input></td>
+    <td>
+    <button id="userInstall_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Verify Signature</button>
+    <button id="userInstall_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Check Versions</button>
+    <button id="userInstall_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Download</button>
+    <button id="userInstall_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Restart Browser</button>
+    </td>
+</tr>
+</table>
+</form>
+
 <div id="basicSwarmUI" class="swarmUI swarmActive">
 <img src="http://getfirebug.com/header.png" class="header"/>
 <div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
