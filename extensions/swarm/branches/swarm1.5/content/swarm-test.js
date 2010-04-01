@@ -68,20 +68,50 @@ var FirebugSwarmTest =
 
     // User interface -------------------------------------------------------------------
 
-    enableSigningButton: function(enable)
+    enableSwarmWorkflows: function(doc)
     {
-        var button = document.getElementById("fbSwarmSigningButton");
-        button.disabled = enable ? false : true;
+        var webWarning = doc.getElementById("swarmWebPage");
+        webWarning.style.visibility = "hidden";
+
+        this.hookButtons(doc);
+
+        var swarmWorkFlows = doc.getElementById("swarmWorkFlows");
+        swarmWorkFlows.style.display = "block";
     },
 
-    doSigning: function(event)
+    hookButtons: function(doc)
     {
-        FBTrace.sysout("FirebugSwarmTest doSigning ", event);
-        debugger;
+        this.hookButton(doc.getElementById("swarm_sign_page"), "signPage");
+    },
+
+    hookButton: function(elt, fncName)
+    {
+        if (!this.buttonHooks)
+            this.buttonHooks = [];
+
+        var hook = bind(this, this[fncName]);
+        this.buttonHooks.push({elt: elt, hook:hook});
+
+        elt.addEventListener('click', hook, true);
+    },
+
+    unHookButtons: function(doc)
+    {
+        for (var i = 0; i < this.buttonHooks.length; i++)
+        {
+            var buttonHook = this.buttonHooks[i];
+            buttonHook.elt.removeEventListener('click', buttonHook.hook,true);
+        }
+    },
+
+    signPage: function(event)
+    {
+        FBTrace.sysout("FirebugSwarmTest signPage ", event);
         var keyservice = this.getKeyService();
         FBTrace.sysout("FirebugSwarmTest doSigning keyservice: "+this.keyservice);
         if (!keyservice)
             return;
+        debugger;
     },
 
     // sync with FBTest -------------------------------------------------------------------
@@ -121,12 +151,12 @@ var FirebugSwarmTest =
         if(doc.getElementsByClassName('swarm').length == 0)
         {
             this.progress("Not a swarm test document");
-            this.enableSigningButton(false);
             return;
         }
         else
         {
-            this.enableSigningButton(true);  // TODO may want to delay until install/test
+            this.progress("Noticed a Swarm Test Document");
+            this.enableSwarmWorkflows(doc);
             FBTestApp.extensions.prepareDeclaredExtensions(doc, this.progress);
         }
     },
@@ -203,11 +233,6 @@ var FirebugSwarmTest =
     },
 
 };
-
-function boundDoSigning(event)
-{
-    FirebugSwarmTest.doSigning(event);
-}
 
 observerService.addObserver(FirebugSwarmTest, "fbtest", false);
 
