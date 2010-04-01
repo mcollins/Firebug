@@ -133,21 +133,27 @@
         <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
     </popupset>
 
-    <vbox flex="3">
-        <browser id="taskBrowser" type="content-primary" src="" flex="1"
-             disablehistory="true" contextmenu="fbContextMenu"
-             tooltip="fbTooltip"/>
-        <findbar id="FindToolbar" browserid="taskBrowser"/>
-    </vbox>
+    <hbox id="toAllowScrollBarsIGuess" flex="3">
+        <vbox flex="3">
+            <browser id="taskBrowser" src="" flex="1"
+                 disablehistory="true" contextmenu="fbContextMenu"
+                tooltip="fbTooltip"/>
+
+            <findbar id="FindToolbar" browserid="taskBrowser"/>
+        </vbox>
+
+    </hbox>
 
     <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest"
         resizeAfter="closest" persist="state substate"/>
 
     <!-- Test frame, all tests are launched as frames within this frame -->
-    <vbox flex="1">
-        <browser disablehistory="true" id="testFrame" flex="1"
-            src="chrome://fbtest/content/testFrame.html" />
-    </vbox>
+    <hbox>
+        <vbox flex="1">
+            <browser disablehistory="true" id="testFrame" flex="1"
+                src="chrome://fbtest/content/testFrame.html" />
+        </vbox>
+    </hbox>
 
     <!-- Status bar info -->
     <statusbar id="statusBar" context="statusBarContextMenu">
