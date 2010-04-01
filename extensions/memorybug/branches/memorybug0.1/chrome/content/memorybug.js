@@ -100,7 +100,6 @@ Firebug.MemoryBug.TraceListener =
 // ************************************************************************************************
 // Registration
 
-Firebug.registerPanel(MemoryBugPanel);
 Firebug.registerStringBundle("chrome://memorybug/locale/memorybug.properties");
 Firebug.registerModule(Firebug.MemoryBug);
 

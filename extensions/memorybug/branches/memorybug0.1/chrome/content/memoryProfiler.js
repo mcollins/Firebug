@@ -15,69 +15,6 @@ const Cu = Components.utils;
  */
 Firebug.MemoryBug.Profiler = extend(Firebug.Module,
 {
-    profile: function(context)
-    {
-        Components.utils.forceGC();
-
-        //var fileName = "chrome://memorybug/content/memoryProfilerInjected.js";
-        var fileName = "chrome://memorybug/content/memory-profiler.profiler.js";
-        var code = getResource(fileName);
-
-        var startTime = new Date();
-        var binary = this.getBinaryComponent();
-        if (!binary)
-        {
-            log("Required binary component not found! One may not be available " +
-                "for your OS and Firefox version.");
-            return;
-        }
-
-        var windows = [];
-        for (var i=0; i<context.windows.length; i++)
-            windows.push(context.windows[i].wrappedJSObject);
-
-        var domPanel = context.getPanel("dom");
-
-        var props = [];
-        for (var i=0; i<windows.length; i++)
-            props.push.apply(props, domPanel.getMembers(windows[i], 0, context));
-
-        var namedObjects = [];
-        namedObjects.push.apply(namedObjects, windows);
-        //namedObjects.push.apply(namedObjects, props);
-
-        if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.profile; Named Objects: ", namedObjects);
-
-        var resultJSON = binary.profileMemory(code, fileName, 1, namedObjects);
-        var totalTime = (new Date()) - startTime;
-
-        if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.profile; " + totalTime +
-                " ms were spent in memory profiling.");
-
-        var result = JSON.parse(resultJSON);
-        if (result.success)
-        {
-            if (FBTrace.DBG_MEMORYBUG)
-            {
-                FBTrace.sysout("memorybug.profile; SUCCESS result data:", result.data);
-                traceResult(resultJSON, namedObjects, context);
-            }
-
-            var self = this;
-            window.setTimeout(function() {
-                self.analyzeResult(context, JSON.stringify(result.data), startTime, context.getTitle());
-            }, 0);
-        }
-        else
-        {
-            log("An error occurred while profiling.");
-            log(result.traceback);
-            log(result.error);
-        }
-    },
-
     getBinaryComponent: function()
     {
         try
@@ -92,120 +29,183 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         }
     },
 
-    analyzeResult: function(context, result, startTime, name)
+    profile: function(context)
     {
-        var worker = new Worker("chrome://memorybug/content/memory-profiler.worker.js");
+        // xxxHonza: this is here for now. It could be also useful to profile
+        // objects ready fo garbage collecting.
+        Components.utils.forceGC();
 
-        worker.onmessage = function(event)
+        var fileName = "chrome://memorybug/content/memoryProfilerInjected.js";
+        //var fileName = "chrome://memorybug/content/memory-profiler.profiler.js";
+        var code = getResource(fileName);
+
+        var startTime = new Date();
+        var binary = this.getBinaryComponent();
+        if (!binary)
         {
-            var data = JSON.parse(event.data);
+            // xxxHonza: also update the default Memory panel content.
+            Firebug.Console.log("Memory Profiler: Required binary component not found! " +
+                "One may not be available for your OS and Firefox version.");
+            return;
+        }
 
+        // Run memory profiling.
+        var namedObjects = this.getNamedObjects(context);
+        var resultJSON = binary.profileMemory(code, fileName, 1, namedObjects.parents);
+        var totalTime = (new Date()) - startTime;
+
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.profile; " + totalTime +
+                " ms were spent in memory profiling.");
+
+        // Parse result JSON data.
+        var result = JSON.parse(resultJSON);
+        if (!result.success)
+        {
             if (FBTrace.DBG_MEMORYBUG)
-                FBTrace.sysout("memorybug.profile; Result data analyzed:", data);
+                FBTrace.sysout("memorybug.Profiler.profile; ERROR " + result.error);
+            return;
+        }
 
-            for (var i=0; i<data.windows.length; i++)
+        // Execute further analysis.
+        var self = this;
+        window.setTimeout(function()
+        {
+            self.analyzeResult(context, namedObjects, result.data, startTime,
+                context.getTitle());
+        }, 0);
+    },
+
+    analyzeResult: function(context, namedObjects, data, startTime, name)
+    {
+        var graph = data.graph;
+        var nativeClasses = {};
+        var objects = {};
+        var functions = {};
+
+        // Iterate entire graph and collect additional info.
+        for (var name in graph)
+        {
+            var id = parseInt(name);
+            var info = graph[id];
+
+            // Count number of native classes.
+            var nativeClass = info.nativeClass;
+            if (nativeClass.indexOf("XPC") == 0)
+                nativeClass = "XPConnect Object Wrapper";
+            if (!(nativeClass in nativeClasses))
+                nativeClasses[nativeClass] = {type: "nativeclass", name: nativeClass, count: 1};
+            else
+                nativeClasses[nativeClass].count++;
+
+            info.parent = graph[info.parent] ? graph[info.parent] : info.parent;
+            info.prototype = graph[info.prototype] ? graph[info.prototype] : info.prototype;
+            info.wrappedObject = graph[info.wrappedObject] ? graph[info.wrappedObject] : info.wrappedObject;
+
+            var children = [];
+            for (var i=0; i<info.children.length; i++)
             {
-                var win = data.windows[i];
-                win.url = safeGetWindowLocation(context.windows[i]).toString();
-                win.objects = [];
+                var child = graph[info.children[i]];
+                if (!child)
+                    continue;
 
-                for (var index in data.objects) {
-                    var info = data.objects[index];
-                    if (info.parent == win.id) {
-                        win.objectCount = info.count;
-                        win.objects.push(info);
-                    }
-                }
+                // Remember all referents
+                if (!child.referents)
+                    child.referents = [];
+                child.referents.push(info);
+
+                // Filter non existing children, parent and prototype.
+                if (child && info.parent != child && info.prototype != child)
+                    children.push(child);
             }
 
-            var panelNode = context.getPanel("memory").panelNode;
-            Firebug.MemoryBug.MemoryProfilerTable.tableTag.replace({results: data}, panelNode);
-        };
-
-        worker.onerror = function(error)
-        {
-            log("An error occurred: " + error.message);
-        };
-
-        worker.postMessage(result);
-    }
-});
-
-// ************************************************************************************************
-
-function traceResult(result, namedObjects, context)
-{
-    var result = JSON.parse(result);
-    var graph = result.data.graph;
-
-    for (var id in graph)
-    {
-        var info = graph[id];
-
-        // Link to real parent
-        if (info.parent)
-            info.parent = graph[info.parent] ? graph[info.parent] : info.parent;
-
-        // Link to real prototype
-        if (info.parent)
-            info.prototype = graph[info.prototype] ? graph[info.prototype] : info.prototype;
-
-        // Link to real children
-        var children = [];
-        for (var i=0; i<info.children.length; i++)
-        {
-            var child = graph[info.children[i]];
-            if (child && info.parent != child && info.prototype != child)
-                children.push(child);
-        }
-
-        if (children.length)
-            info.children = children;
-        else
-            delete info.children;
-
-        // Get source code
-        try
-        {
-            if (info.filename && info.lineStart)
-                info.source = context.sourceCache.getLine(info.filename, info.lineStart);
-        }
-        catch (e)
-        {
-            info.source = "EXCEPTION: " + e;
-        }
-
-        // Get variable name
-        var index = result.data.namedObjects[id];
-        if (typeof(index) != "undefined")
-        {
-            if (info.name)
-                info.name2 = namedObjects[index].name;
+            if (children.length)
+                info.children = children;
             else
-                info.name = namedObjects[index].name;
+                delete info.children;
 
-            info.value = namedObjects[index].value;
+            // Associate meta-data with real objects on the page.
+            var index = data.namedObjects[id];
+            if (typeof(index) != "undefined" && info.nativeClass != "Function")
+            {
+                var object = namedObjects.objects[index];
+                if (!(object.obj instanceof Window))
+                    objects[id] = {type: "object", name: object.name, value: object.obj, info: info};
+            }
+
+            // Collect all functions.
+            if (info.nativeClass == "Function")
+            {
+                functions[id] = {type: "function", name: info.name, info: info};
+            }
         }
-    }
 
-    FBTrace.sysout("memorybug.profile; All:", graph);
+        data.objects = objects;
+        data.startTime = startTime;
+        data.title = safeGetWindowLocation(context.window);
+        data.nativeClasses = nativeClasses;
+        data.functions = functions;
 
-    FBTrace.sysout("memorybug.profile; Functions:",
-        [func for each (func in graph) if (func.nativeClass == "Function")]);
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.profile; Result data analyzed:", data);
 
-    FBTrace.sysout("memorybug.profile; Objects:",
-        [obj for each (obj in graph) if (obj.nativeClass == "Object")]);
-}
+        // Generate UI.
+        var ReportView = Firebug.MemoryBug.TreeView;
+        var panelNode = context.getPanel("memory").panelNode;
+        var provider = new Firebug.MemoryBug.ReportProvider(data);
+        ReportView.render(provider, panelNode);
+    },
 
-// ************************************************************************************************
+    getNamedObjects: function(context)
+    {
+        var windows = [];
+        for (var i=0; i<context.windows.length; i++)
+            windows.push(unwrapObject(context.windows[i]));
 
-function log(message, isInstant)
-{
-    if (FBTrace.DBG_MEMORYBUG)
-        FBTrace.sysout("memorybug.log; (" + isInstant + ") " + message);
+        var parents = cloneArray(windows);
+        var objects = [];
 
-    Firebug.Console.log("Memory Profiler: " + message);
-}
+        // Collect also windows as objects.
+        for (var i=0; i<windows.length; i++)
+        {
+            var win = windows[i];
+            objects.push({name: safeGetWindowLocation(win), obj: win});
+        }
+
+        // Iterate over all windows (the current window and all iframes).
+        var domMembers = getDOMMembers(unwrapObject(context.window));
+        for (var i=0; i<windows.length; i++)
+        {
+            // Iterate over all global objects of a window and ignore built in members.
+            var win = windows[i];
+            for (var name in win)
+            {
+                if (name in domMembers)
+                    continue;
+
+                var obj = win[name];
+                var type = typeof(obj);
+                if (obj == null || type == "number" || type == "string" ||
+                    type == "Boolean" || type == "undefined")
+                {
+                    continue;
+                }
+
+                objects.push({name: name, obj: obj});
+                parents.push(obj);
+            }
+        }
+
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.profile; Named Objects (" +
+                objects.length + "):", objects);
+
+        return {
+            parents: parents,
+            objects: objects,
+        };
+    },
+});
 
 // ************************************************************************************************
 // Registration

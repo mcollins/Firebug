@@ -20,7 +20,10 @@ var INTERESTING_TYPES = [
     'XML', 'Script', 'CanvasRenderingContext2D',
     'PageTransitionEvent', 'MouseEvent',
     'Location', 'Navigator', 'Generator', 'XPCNativeWrapper',
-    'XPCSafeJSObjectWrapper', 'XPCCrossOriginWrapper'
+    'XPCSafeJSObjectWrapper', 'XPCCrossOriginWrapper',
+
+    // Additions
+    'Pointer', 'NodeList', 'JSDGlobal'
 ];
 
 // Convert INTERESTING_TYPES array into a map (it's just easier to define these types as
@@ -40,7 +43,6 @@ function inspectMemory()
 
     var graph = {};
     var rejected = {};
-    var constrs = {};
 
     // Returns an object whose keys are object IDs and whose values are the name of the JSClass
     // used by the object for each ID. This is effectively an index into all objects in the
@@ -71,35 +73,13 @@ function inspectMemory()
 
         var info = getObjectInfo(intId);
         graph[id] = info;
-
-        if (info.constr)
-            constrs[id] = info;
-
-        var currInfo = info;
-        while (currInfo.prototype)
-        {
-            var protoId = parseInt(currInfo.prototype);
-            var protoInfo = getObjectInfo(protoId);
-            graph[currInfo.prototype] = protoInfo;
-            currInfo = protoInfo;
-        }
-
-        var currInfo = info;
-        while (currInfo.parent)
-        {
-            var parentId = parseInt(currInfo.parent);
-            var parentInfo = getObjectInfo(parentId);
-            graph[currInfo.parent] = parentInfo;
-            currInfo = parentInfo;
-        }
     }
 
     // Return collected results.
     return {
         namedObjects: parents,
         graph: graph,
-        rejectedTypes: rejected,
-        constrs: constrs
+        rejectedTypes: rejected
     }
 };
 
@@ -117,7 +97,7 @@ function unwrapObjects(objects)
         // Bypass wrappers.
         while (info.wrappedObject)
         {
-            id = info.wrappedObject;
+            id = parseInt(info.wrappedObject);
             info = getObjectInfo(info.wrappedObject);
         }
 
@@ -125,6 +105,8 @@ function unwrapObjects(objects)
         if (info.innerObject)
             id = info.innerObject;
 
+        // Store all named objects into a map where the key is object ID
+        // and the value is position in the input array.
         result[id] = parseInt(name);
     }
 

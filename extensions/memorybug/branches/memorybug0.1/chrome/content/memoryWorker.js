@@ -16,7 +16,7 @@
 function onmessage(event)
 {
     var result = analyzeResult(event.data);
-    postMessage(analyzeResult(event.data));
+    postMessage(result);
 }
 
 // ************************************************************************************************
@@ -26,26 +26,47 @@ function analyzeResult(result)
 {
     var data = JSON.parse(result);
     var graph = convertKeys(data.graph);
+    var namedObjects = data.namedObjects;
 
-    // Update children array so, we are working only with those who actually exist
-    // in our graph (some of them could be filter out by the memory profiler).
-    updateChildren(graph);
+    for (id in graph)
+    {
+        // Filter out children that doesn't exist in out (filtered) graph.
+        graph[id].children = [childId
+            for each (childId in graph[id].children)
+            if (childId in graph)];
 
-    // Iterate entire graph.
+        // Add referent field.
+        graph[id].referents = [];
+    }
+
+    var nativeClasses = {};
+
+    // Iterate entire graph and collect additional info.
     for (id in graph)
     {
         var info = graph[id];
+
+        // Count number of native classes.
+        var nativeClass = info.nativeClass;
+        if (nativeClass.indexOf("XPC") == 0)
+            nativeClass = "XPConnect Object Wrapper";
+        if (!(nativeClass in nativeClasses))
+            nativeClasses[nativeClass] = 1;
+        else
+            nativeClasses[nativeClass]++;
+
+        // Add referent info.
+        info.children.forEach(function(childId)
+        {
+            graph[childId].referents.push(parseInt(id));
+        });
     }
 
-
-
     return JSON.stringify({
-        functions: functions,
-        nativeClasses: tempNC,
-        windows: windows,
-        rejectedTypes: data.rejectedTypes,
-        shapes: tempShapes,
-        objects: tempObjects});
+        nativeClasses: nativeClasses,
+        graph: graph,
+        namedObjects: data.namedObjects
+    });
 }
 
 // ************************************************************************************************
@@ -61,14 +82,3 @@ function convertKeys(graph)
 
     return newGraph;
 }
-
-function updateChildren(graph)
-{
-    for (id in graph)
-    {
-        graph[id].children = [graph[childId]
-            for each (childId in graph[id].children)
-            if (childId in graph)];
-    }
-}
-
