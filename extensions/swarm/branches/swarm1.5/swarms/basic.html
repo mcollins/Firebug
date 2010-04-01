@@ -59,8 +59,9 @@ ol {
    border-width: 3px;
    margin: -3px; /* causes the borders to overlay one another */
 }
-.extensionAuthor {
-   font-weight: bold;
+
+.extensionAuthor:before {
+   content: "by ";
 }
 .extensionURL {
    font-weight: bold;
@@ -126,10 +127,23 @@ ol {
     font-weight: bold;
     color: #FF9933;
 }
+
 /* Overall toggle */
 button.swarmInactive:after {
     content: "Show Swarm";
 }
+
+#swarmWorkFlows {
+    padding: 10px;
+    margin: 10px;
+    border: 1px gray solid;
+    display: none;
+}
+#swarmWebPage {
+    color: red;
+    font-weight:bold;
+}
+
 .swarmWorkFlow button.swarmWorkFlowStart:after {
     content: "->";
 }
@@ -147,10 +161,7 @@ tr.swarmWorkFlowSelected td {
 }
 </style>
 <script>
-function performTask(event)
-{
-    console.log(event);
-}
+
 function selectWorkflow(event)
 {
     // disable all of the buttons in all of the workflows
@@ -196,106 +207,124 @@ function setDefaults(event)
 </script>
 </head>
 <body onload="setDefaults(event)">
+<p id="swarmWebPage">To Enable Special Install Operations for This Page: <a href="javascript:alert('oops not implemented');" alt="oops not implemented">Install the Swarm Extension</a></p>
 <form>
-<table id="workflow" style="padding-bottom: 10px">
+<table id="swarmWorkFlows">
+<tbody>
 <tr class="swarmWorkFlow swarmCreator" id="preTest">
    <td rowspan="4" style="border-right:3px solid black; padding-right: 5px">Select WorkFlow</td>
    <td  class="swarmWorkFlowSelector"> <input type="radio" name="swarmWorkFlowSelector" value="preTest" id="preTest_0" onclick="selectWorkflow(event)">Pre-test </td>
    <td>
-     <button id="preTest_1" class="swarmWorkFlowStart" onclick="performTask(event)">Install</button>
-     <button id="preTest_1" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Test</button>
-     <button id="preTest_2" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Stop</button>
-     <button id="preTest_fail_halt" onclick="performTask(event)">Fail Halt</button>
-     <button id="preTest_no_timeout" onclick="performTask(event)">No Timeout</button>
+     <button id="swarm_install" class="swarmWorkFlowStart">Install</button>
+     <button id="swarm_test_run_all" class="swarmWorkFlowStep" disabled>Test</button>
+     <button id="swarm_test_stop" class="swarmWorkFlowEnd" disabled>Stop</button>
+     <button id="swarm_test_fail_halt">Fail Halt</button>
+     <button id="swarm_test_no_timeout">No Timeout</button>
    </td>
 </tr>
 <tr class="swarmWorkFlow swarmCreator" id="buildAll">
     <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" onclick="selectWorkflow(event)">Build Extension</td>
     <td>
-    <button id="buildAll_1" class="swarmWorkFlowStart" disabled onclick="performTask(event)">Install</button>
-    <button id="buildAll_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Test</button>
-    <button id="buildAll_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Sign</button>
-    <button id="buildAll_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Export</button>
+    <button id="swarm_install" class="swarmWorkFlowStart" disabled>Install</button>
+    <button id="swarm_test_run_all" class="swarmWorkFlowStep" disabled>Test</button>
+    <button id="swarm_sign_page" class="swarmWorkFlowStep" disabled>Sign</button>
+    <button id="swarm_export_page" class="swarmWorkFlowEnd" disabled>Export</button>
     </td>
 </tr>
 <tr class="swarmWorkFlow swarmUser" id="userInstall">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" onclick="selectWorkflow(event)">Install This Swarm</td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" onclick="selectWorkflow(event)">Install</td>
     <td>
-    <button id="userInstall_1" class="swarmWorkFlowStart" disabled onclick="performTask(event)">Verify Signature</button>
-    <button id="userInstall_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Check Versions</button>
-    <button id="userInstall_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Download</button>
-    <button id="userInstall_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Restart Browser</button>
+    <button id="swarm_verify_signature" class="swarmWorkFlowStart" disabled>Verify Signature</button>
+    <button id="swarm_check_versions" class="swarmWorkFlowStep" disabled>Check Versions</button>
+    <button id="swarm_download" class="swarmWorkFlowStep" disabled>Download</button>
+    <button id="swarm_restart-brower" class="swarmWorkFlowEnd" disabled>Restart Browser</button>
     </td>
 </tr>
 <tr class="swarmWorkFlow swarmUser" id="userInstall">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Investigate This Swarm</input></td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Investigate</input></td>
     <td>
-    <button id="userInvestigate_1" class="swarmWorkFlowStart" disabled onclick="performTask(event)">Verify Signature</button>
-    <button id="userInvestigate_2" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Check Versions</button>
-    <button id="userInvestigate_3" class="swarmWorkFlowStep" disabled onclick="performTask(event)">Study Test Results</button>
-    <button id="userInvestigate_4" class="swarmWorkFlowEnd" disabled onclick="performTask(event)">Find Reviews</button>
+    <button id="swarm_verify_signature" class="swarmWorkFlowStart" disabled>Verify Signature</button>
+    <button id="swarm_check_versions" class="swarmWorkFlowStep" disabled>Check Versions</button>
+    <button id="swarm_show_tests" class="swarmWorkFlowStep" disabled>Study Test Results</button>
+    <button id="swarm_show_reviews" class="swarmWorkFlowEnd" disabled>Find Reviews</button>
     </td>
 </tr>
+</tbody>
+<caption>Work with The Swarm</caption>
 </table>
 </form>
 
 <div id="basicSwarmUI" class="swarmUI swarmActive">
-<img src="http://getfirebug.com/header.png" class="header"/>
 <div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
- <h2 class="swarmTitle">Basic Swarm For
- <a class="swarmWith" href="http://getfirebug.com/releases/firebug/1.5X/firebug-1.5X.0b3.xpi">Firebug 1.5</a>
+ <h2 class="swarmTitle">Basic Firebug Swarm with BSD Licenses
  </h2>
- <button class="swarmInstall">Install This Swarm</button> <!-- must be child of "firebug signed swarm" -->
  <ol>
- <li> <!-- One item for every extension in the Swarm -->
+  <li> <!-- One item for every extension in the Swarm -->
+   <div class="extension">
+   <span class="extensionURL"
+        href="http://getfirebug.com/releases/firebug/1.5X/firebug-1.5X.0b3.xpi"
+        hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
+        id="firebug@software.joehewitt.com"
+        >Firebug</span>
+  <span class="extensionAuthor">The Firebug Working Group</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+
+  <p> <img src="http://getfirebug.com/img/firebug-logo.png"/> The Firebug Web Page Debugger, Firefox version
+  <a class="extensionMoreInfo" target="_blank" href="http://getfirebug.com">more info</a>
+  </p>
+  </div>
+  </div>
+</li>
+ <li>
   <div class="extension">
-  <span class="extensionAuthor">Team Firebug's</span>
   <span class="extensionURL"
         href="http://getfirebug.com/releases/eventbug/1.5/eventbug-0.1a2.xpi"
         hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
         id="eventbug@getfirebug.com"
         >eventbug</span>
+  <span class="extensionAuthor">Jan 'Honza' Odvarko and John J. Barton</span>
   <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>This extension brings a new <b>Events</b> panel that lists all of the event handlers
    on the page grouped by event type. The panel also nicely integrates with other Firebug
    panels and allows to quickly find out,
   which HTML element is associated with specific event listener or see the Javascript source code.
-  <a class="extensionMoreInfo" href="http://www.softwareishard.com/blog/firebug/eventbug-alpha-released/">more info</a>
+  <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/firebug/eventbug-alpha-released/">more info</a>
   </p>
   </div>
   </div>
 </li>
 <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
-  <span class="extensionAuthor">Kevin Decker's </span>
   <span class="extensionURL"
         href="http://www.incaseofstairs.com/download/firediff/firediff1.0a1.xpi"
         hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
         id="firediff@johnjbarton.com"
         >Firediff</span>
+  <span class="extensionAuthor">Kevin Decker</span>
   <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>Firediff is a Firebug extension that tracks changes to a pages DOM and CSS.
 
-  <a class="extensionMoreInfo" href="http://www.incaseofstairs.com/firediff/">more info</a>
+  <a class="extensionMoreInfo" target="_blank" href="http://www.incaseofstairs.com/firediff/">more info</a>
   </p>
   </div>
   </div>
 </li>
 <li> <!-- One item for every extension in the Swarm -->
   <div class="extension">
-  <span class="extensionAuthor">Jan 'Honza' Odvarko's</span>
   <span class="extensionURL"
         href="http://getfirebug.com/releases/export/1.5/netExport-0.7b7.xpi"
         hash="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6"
         id="netexport@getfirebug.com"
         >NetExport</span>
+  <span class="extensionAuthor">Jan 'Honza' Odvarko</span>
   <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>NetExport is a Firebug extension that allows exporting data from the Net panel.
 
-  <a class="extensionMoreInfo" href="http://www.softwareishard.com/blog/netexport/">more info</a>
+  <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/netexport/">more info</a>
   </p>
   </div>
   </div>
