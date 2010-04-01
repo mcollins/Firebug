@@ -373,12 +373,15 @@ FBTestApp.TestConsole =
     findTestListWindow: function(doc)
     {
         var win = doc.defaultView.wrappedJSObject;
+        if (!win)
+            win = doc.defaultView;
+
         if (win.testList)
             return win;
 
         var iframe = doc.getElementById("FBTest");
         if (iframe)
-            return subwin.contentWindow.wrappedJSObject;
+            return (subwin.contentWindow.wrappedJSObject ? subwin.contentWindow.wrappedJSObject : subwin.contentWindow);
     },
 
     notifyObservers: function(subject, topic, data)
