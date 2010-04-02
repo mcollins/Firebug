@@ -14,9 +14,10 @@ function runTest()
         FBTestFirebug.enableConsolePanel(function()
         {
             var panelNode = FBTestFirebug.selectPanel("console").panelNode;
+            FBTest.clickToolbarButton(null, "fbConsoleClear");
 
             FBTest.focus(FW.document.getElementById("fbCommandLine"));
-            win.wrappedJSObject.runTest();
+            FBTest.click(win.document.getElementById("testButton"));
 
             FBTest.progress("Toggle Firebug Icon to hide UI");
             FBTest.Firebug.pressToggleFirebug();  // toggle to minimize
