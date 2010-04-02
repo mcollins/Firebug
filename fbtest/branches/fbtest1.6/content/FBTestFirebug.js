@@ -1139,9 +1139,12 @@ this.searchInScriptPanel = function(searchText, callback)
     var searchBox = FW.document.getElementById("fbSearchBox");
     searchBox.value = searchText;
 
-    // Setting the 'value' property doesn't fire an 'input' event so, press enter instead.
+    // Setting the 'value' property doesn't fire an 'input' event so,
+    // press enter instead (asynchronously).
     FBTest.focus(searchBox);
-    FBTest.pressKey(13, "fbSearchBox");
+    setTimeout(function() {
+        FBTest.pressKey(13, "fbSearchBox");
+    }, 0);
 }
 
 // ************************************************************************************************
