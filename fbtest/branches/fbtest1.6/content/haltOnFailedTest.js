@@ -76,11 +76,21 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
-        if (topic == "fbtest") {
-            if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
-                FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
-            else
-                FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
+        try
+        {
+            if (topic == "fbtest")
+            {
+                if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
+                    FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
+                else
+                    FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
+            }
+        }
+        catch (e)
+        {
+            // xxxHonza: there is an exception: "FBTestApp is not defined", the
+            // window seems to be unloaded.
+            dump("FBTestApp.TestWindowLoader.observe; EXCEPTION " + e, e);
         }
     },
 
