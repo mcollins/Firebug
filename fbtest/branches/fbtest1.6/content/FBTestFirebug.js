@@ -1147,6 +1147,40 @@ this.searchInScriptPanel = function(searchText, callback)
     }, 0);
 }
 
+/**
+ * Executes search within the HTML panel.
+ * @param {String} searchText Keyword set into the search box.
+ * @param {Function} callback Function called as soon as the result has been found.
+ */
+this.searchInHtmlPanel = function(searchText, callback)
+{
+    var panel = FW.FirebugChrome.selectPanel("html");
+
+    // Set search string into the search box.
+    var searchBox = FW.document.getElementById("fbSearchBox");
+    searchBox.value = searchText;
+
+    // The listener is automatically removed when the test window
+    // is unloaded in case the seletion actually doesn't occur,
+    // see FBTestSelection.js
+    SelectionController.addListener(function selectionListener()
+    {
+        var sel = panel.document.defaultView.getSelection();
+        if (sel && !sel.isCollapsed && sel.toString() == searchText)
+        {
+            SelectionController.removeListener(arguments.callee);
+            callback(sel);
+        }
+    });
+
+    // Setting the 'value' property doesn't fire an 'input' event so,
+    // press enter instead (asynchronously).
+    FBTest.focus(searchBox);
+    setTimeout(function() {
+        FBTest.pressKey(13, "fbSearchBox");
+    }, 0);
+}
+
 // ************************************************************************************************
 // Support for asynchronous test suites (within a FBTest).
 

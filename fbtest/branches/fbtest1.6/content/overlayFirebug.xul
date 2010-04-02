@@ -9,7 +9,11 @@
         <stringbundle id="strings_fbtest" src="chrome://fbtest/locale/fbtest.properties"/>
     </stringbundleset>
 
-    <commandset id="mainCommandSet">
+    <!-- Register also a command updater that is dispathing text selection changed
+        events (e.g. when search is performed in the HTML panel). These events are
+        useful for some tests -->
+    <commandset id="mainCommandSet" commandupdater="true" events="select"
+            oncommandupdate="FBTestFirebugOverlay.onSelectionChanged()">
         <command id="cmd_openTestConsole" oncommand="FBTestFirebugOverlay.open()"/>
     </commandset>
 

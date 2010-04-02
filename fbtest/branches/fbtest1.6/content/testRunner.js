@@ -649,6 +649,45 @@ FBTestApp.Preferences =
         this.values = [];
     }
 }
+
+// ************************************************************************************************
+
+/**
+ * Text selection event is dispatched to all registered listeners. The original update
+ * comes from command updated registered in overlayFirebug.xul
+ */
+FBTestApp.SelectionController =
+{
+    listeners: [],
+
+    addListener: function(listener)
+    {
+        this.listeners.push(listener);
+    },
+
+    removeListener: function(listener)
+    {
+        remove(this.listeners, listener);
+    },
+
+    selectionChanged: function()
+    {
+        this.listeners.forEach(function(listener)
+        {
+            try
+            {
+                listener();
+            }
+            catch (e)
+            {
+                FBTrace.sysout("SelectionController.selectionChanged; EXCEPTION " + e, e);
+            }
+        });
+    }
+}
+
+// ************************************************************************************************
+
 function safeGetName(request)
 {
     try
@@ -660,5 +699,6 @@ function safeGetName(request)
         return null;
     }
 }
+
 // ************************************************************************************************
 }});

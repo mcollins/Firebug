@@ -66,6 +66,15 @@ this.open = function(testListURI)
             window.location);
 };
 
+this.onSelectionChanged = function()
+{
+    FBL.iterateBrowserWindows("FBTestConsole", function(win)
+    {
+        win.FBTestApp.SelectionController.selectionChanged();
+        return true;
+    });
+};
+
 // Register load listener for command line arguments handling.
 window.addEventListener("load", FBTestFirebugOverlay.initialize, false);
 

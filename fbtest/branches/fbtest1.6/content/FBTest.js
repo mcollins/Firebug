@@ -34,6 +34,7 @@ function initialize()
     // xxxHonza: should be extendable from Firebug extensions.
     loader.loadSubScript(chromeToUrl("chrome://fbtest/content/FBTestFirebug.js"), this);
     loader.loadSubScript(chromeToUrl("chrome://fbtest/content/FBTestMutation.js"), this);
+    loader.loadSubScript(chromeToUrl("chrome://fbtest/content/FBTestSelection.js"), this);
 
     FBTest.sysout("FBTest; Test API initialized");
 }
