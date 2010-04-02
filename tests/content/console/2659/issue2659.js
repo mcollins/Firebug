@@ -33,7 +33,15 @@ function verifyNumberOfLogs(expectedCount)
 {
     var panel = FBTestFirebug.getPanel("console");
     var logs = panel.panelNode.getElementsByClassName("logRow logRow-log");
-    FBTest.compare(expectedCount, logs.length, "There must be " + expectedCount +
+
+    var count = 0;
+    for (var i=0; i<logs.length; i++)
+    {
+        if (logs[i].textContent == "Test log for issue2659")
+            count++
+    }
+
+    FBTest.compare(expectedCount, count, "There must be " + expectedCount +
         "log(s) in the Console panel");
 }
 
