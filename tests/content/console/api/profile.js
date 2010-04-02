@@ -6,15 +6,22 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var config = {tagName: "div", classes: "logRow logRow-profile"};
-            FBTest.waitForDisplayedElement("console", config, function(row)
+            var panel = FBTest.selectPanel("console");
+            FBTest.clearConsole();
+
+            var config = {tagName: "tr", classes: "profileRow", counter: 2};
+            FBTest.waitForDisplayedElement("console", config, function()
             {
-                var caption = row.getElementsByClassName("profileCaption")[0];
+                var panelNode = FBTest.getPanel("console").panelNode;
+                var row = panel.panelNode.querySelector(".logRow.logRow-profile");
+
+                var caption = row.querySelector(".profileCaption");
                 FBTest.compare("Fibonacci", caption.textContent, "Verify table caption.");
 
                 var profileRows = row.getElementsByClassName("profileRow");
                 FBTest.compare(2, profileRows.length,
                     "There must be two profile rows (including header)");
+
                 FBTest.compare(9, profileRows[0].childNodes.length,
                     "There must be 9 columns");
 
