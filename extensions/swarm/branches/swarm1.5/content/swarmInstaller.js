@@ -18,8 +18,6 @@
  const Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
  const versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
                                             .getService(Components.interfaces.nsIVersionComparator);
- const xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
-      .getService(Components.interfaces.nsIXPInstallManager);
 
 top.SwarmInstaller = {};
 
@@ -72,8 +70,10 @@ SwarmInstaller.workFlowMonitor =
             var step = this.getStepFromButton(button);
 
             button.classList.add("swarmWorkFlowing");
-            this.registeredWorkFlowSteps[step](event.target.ownerDocument);
+            this.registeredWorkFlowSteps[step](event.target.ownerDocument, this.progress);
             button.classList.remove("swarmWorkFlowing");
+            event.stopPropagation();
+            event.preventDefault();
         }
         catch(exc)
         {
@@ -104,8 +104,6 @@ SwarmInstaller.workFlowMonitor =
         this.registeredWorkFlowSteps[key] = fnc;
     },
 
-
-
 };
 
 SwarmInstaller.extensions =
@@ -134,14 +132,19 @@ SwarmInstaller.extensions =
     installDeclaredExtensions: function(doc, progress)
     {
         // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
-         var urls = [];
-         var hashes = [];
-         var count = this.declaredExtensions.length;
-         for (var i = 0; i < count; i++)
-         {
-             urls[i] = this.declaredExtensions[i].href;
-             hashes[i] = this.declaredExtensions[i].hash;
-         }
+        var urls = [];
+        var hashes = [];
+        var count = this.declaredExtensions.length;
+        for (var i = 0; i < count; i++)
+        {
+            if (this.declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
+                continue;
+
+            urls.push( this.declaredExtensions[i].href );
+            hashes.push( this.declaredExtensions[i].hash );
+        }
+        count = urls.length;
+
         var swarm = this.declaredExtensions;
         var listener =
         {
@@ -165,7 +168,10 @@ SwarmInstaller.extensions =
                     if (value != 0)
                     {
                         FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
-                        swarm[index].statusElement.innerHTML += ": "+errorNameByCode[value+""];
+                        var errorCodePage = "http://getfirebug.com/wiki/index.php/Extension_Installation_Error_Codes";
+                        var errorCodeTitle ="Information on Installation Error Codes";
+                        swarm[index].statusElement.innerHTML += ": <a title=\""+errorCodeTitle+"\" href=\""+
+                            errorCodePage+"#"+errorNameByCode[value+""]+"_"+value+"\">"+errorNameByCode[value+""]+"</a>";
                         setClass(swarm[index].statusElement, "install-failed");
                     }
                     else
@@ -186,6 +192,11 @@ SwarmInstaller.extensions =
                 return this;
             },
         };
+        var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
+            .getService(Components.interfaces.nsIXPInstallManager);
+        
+        progress("Installing "+count+" extensions");
+
         xpInstallManager.initManagerWithHashes(urls, hashes, count, listener);
     },
 
