@@ -89,7 +89,8 @@ ol {
     content: " not installed";
 }
 .installedVersion-Same:after {
-    content: " same version installed";
+    content: ", already installed";
+    color: green;
 }
 .installedVersion-Older:after {
     content: " older version installed";
@@ -200,6 +201,7 @@ function selectWorkflow(event)
         if (button.classList.contains("swarmWorkFlowEnd")) continue;
         button.removeAttribute("disabled");
     }
+    return true;
 }
 
 function showClasses(theClasses)
@@ -215,13 +217,14 @@ function setDefaults(event)
 </script>
 </head>
 <body onload="setDefaults(event)">
+<h1 class="swarmTitle">Certified Extension Installation</h1>
 <p id="swarmWebPage">To Enable Special Install Operations for This Page: <a href="javascript:alert('oops not implemented');" alt="oops not implemented">Install the Swarm Extension</a></p>
-<form>
+<form><!--  onsubmit="return false;/* prevent false submit event */">  -->
 <table id="swarmWorkFlows">
 <tbody>
 <tr class="swarmCreator" id="preTest">
    <td rowspan="4" style="border-right:3px solid black; padding-right: 5px">Select WorkFlow</td>
-   <td class="swarmWorkFlowSelector"> <input type="radio" name="swarmWorkFlowSelector" value="preTest" id="preTest_0" onclick="selectWorkflow(event)">Pre-test </td>
+   <td class="swarmWorkFlowSelector"> <input type="radio" name="swarmWorkFlowSelector" value="preTest" id="preTest_0" onclick="return selectWorkflow(event)">Pre-test </td>
    <td class="swarmWorkFlow">
      <button class="swarmWorkFlowStart swarmInstallStep">Install</button>
      <button class="swarmWorkFlowStep swarmRunAllTestsStep" disabled>Test</button>
@@ -231,7 +234,7 @@ function setDefaults(event)
    </td>
 </tr>
 <tr class="swarmCreator" id="buildAll">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" onclick="selectWorkflow(event)">Build Extension</td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" onclick="return selectWorkflow(event)">Build Extension</td>
     <td class="swarmWorkFlow">
     <button class="swarmWorkFlowStart swarmInstallStep" disabled>Install</button>
     <button class="swarmWorkFlowStep swarmRunAllTestsStep" disabled>Test</button>
@@ -240,7 +243,7 @@ function setDefaults(event)
     </td>
 </tr>
 <tr class="swarmUser" id="userInstall">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" onclick="selectWorkflow(event)">Install</td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" onclick="return selectWorkflow(event)">Install</td>
     <td class="swarmWorkFlow">
     <button class="swarmWorkFlowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
     <button class="swarmWorkFlowStep swarmCheckVersionsStep" disabled>Check Versions</button>
@@ -249,7 +252,7 @@ function setDefaults(event)
     </td>
 </tr>
 <tr class="swarmUser" id="userInstall">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkFlowSelector" onclick="selectWorkflow(event)">Investigate</input></td>
+    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkFlowSelector" onclick="return selectWorkflow(event)">Investigate</input></td>
     <td class="swarmWorkFlow">
     <button class="swarmWorkFlowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
     <button class="swarmWorkFlowStep swarmCheckVersionsStep" disabled>Check Versions</button>
