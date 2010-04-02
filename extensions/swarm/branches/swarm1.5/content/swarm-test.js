@@ -21,25 +21,6 @@ var FirebugSwarmTest =
     // initialization -------------------------------------------------------------------
 
     /*
-     * Add UI button to sign then export the final certified document.
-     * @param doc the HTML document to be signed and exported.
-     */
-    addSigningButton: function(doc)
-    {
-        FBTrace.sysout("addSigningButton to doc ", doc );
-        this.doc = doc;
-        var toolbar = doc.getElementById("consoleToolbar");
-        var signingButton = doc.createElement('toolbarbutton');
-        signingButton.setAttribute("id", "fbSwarmSigningButton");
-        signingButton.setAttribute("label", "fbSwarm.cmd.signSwarm");
-        signingButton.setAttribute("class", "toolbar-image-button");
-        signingButton.setAttribute("tooltiptext","fbSwarm.signSwarm");
-        var endOfButtons = doc.getElementById('FBTestButtons_end');
-        toolbar.insertBefore(signingButton, endOfButtons);
-        signingButton.addEventListener('click', boundDoSigning, true);
-    },
-
-    /*
      * Obtain the Public Key Infrastructure service.
      * It may not be installed!
      */
@@ -67,42 +48,24 @@ var FirebugSwarmTest =
     },
 
     // User interface -------------------------------------------------------------------
-
-    enableSwarmWorkflows: function(doc)
+    attachToPage: function()
     {
-        var webWarning = doc.getElementById("swarmWebPage");
-        webWarning.style.visibility = "hidden";
-
-        this.hookButtons(doc);
-
-        var swarmWorkFlows = doc.getElementById("swarmWorkFlows");
-        swarmWorkFlows.style.display = "block";
-    },
-
-    hookButtons: function(doc)
-    {
-        this.hookButton(doc.getElementById("swarm_sign_page"), "signPage");
-    },
-
-    hookButton: function(elt, fncName)
-    {
-        if (!this.buttonHooks)
-            this.buttonHooks = [];
-
-        var hook = bind(this, this[fncName]);
-        this.buttonHooks.push({elt: elt, hook:hook});
-
-        elt.addEventListener('click', hook, true);
-    },
-
-    unHookButtons: function(doc)
-    {
-        for (var i = 0; i < this.buttonHooks.length; i++)
+        var browser = $("taskBrowser");
+        var doc = browser.contentDocument;
+        if(doc.getElementsByClassName('swarm').length == 0)
         {
-            var buttonHook = this.buttonHooks[i];
-            buttonHook.elt.removeEventListener('click', buttonHook.hook,true);
+            this.progress("Not a swarm test document");
+            return;
+        }
+        else
+        {
+            this.progress("Noticed a Swarm Test Document");
+            SwarmInstaller.workFlowMonitor.initialize(doc, this.progress);
         }
     },
+
+    // ----------------------------------------------------------------------------------
+    // Handlers contributed to swarmInstaller
 
     signPage: function(event)
     {
@@ -123,16 +86,16 @@ var FirebugSwarmTest =
             if (data == "initialize")
             {
                 FBTrace.sysout("swarm test initialize");
-                FirebugSwarmTest.addSigningButton(document);
             }
             else if (data == "shutdown")
             {
+                FirebugSwarmTest.detachFromPage();
                 observerService.removeObserver(FirebugSwarmTest, "fbtest");
             }
             else if (data == "restart")
             {
                 var fbtest = subject;
-                FirebugSwarmTest.analyze();
+                FirebugSwarmTest.attachToPage();
             }
 
         }
@@ -143,23 +106,6 @@ var FirebugSwarmTest =
     },
 
     // real work -------------------------------------------------------------------
-
-    analyze: function()
-    {
-        var browser = $("taskBrowser");
-        var doc = browser.contentDocument;
-        if(doc.getElementsByClassName('swarm').length == 0)
-        {
-            this.progress("Not a swarm test document");
-            return;
-        }
-        else
-        {
-            this.progress("Noticed a Swarm Test Document");
-            this.enableSwarmWorkflows(doc);
-            FBTestApp.extensions.prepareDeclaredExtensions(doc, this.progress);
-        }
-    },
 
     progress: function(msg)
     {
@@ -204,6 +150,7 @@ var FirebugSwarmTest =
         var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
         return file.path;
     },
+
     // nsIWindowMediatorListener ------------------------------------------------------------------
     onOpenWindow: function(xulWindow)
     {

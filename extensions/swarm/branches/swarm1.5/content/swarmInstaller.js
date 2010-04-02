@@ -2,8 +2,8 @@
 
 
 
-// This code runs in the FBTest Window BUT it should also run in Firebug XXX
-FBTestApp.ns(function() { with (FBL) {
+// This code runs in the FBTest Window and Firefox Window
+(function() { with (FBL) {
 
 
  // ************************************************************************************************
@@ -21,13 +21,100 @@ FBTestApp.ns(function() { with (FBL) {
  const xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
       .getService(Components.interfaces.nsIXPInstallManager);
 
-FBTestApp.extensions =
+top.SwarmInstaller = {};
+
+SwarmInstaller.workFlowMonitor =
+{
+    initialize: function(doc, progress)
+    {
+        this.enableSwarmWorkflows(doc);
+        this.progress = progress;
+        SwarmInstaller.extensions.prepareDeclaredExtensions(doc, this.progress);
+    },
+
+    enableSwarmWorkflows: function(doc)
+    {
+        var webWarning = doc.getElementById("swarmWebPage");
+        webWarning.style.visibility = "hidden";
+
+        var swarmWorkFlows = doc.getElementById("swarmWorkFlows");
+        this.hookButtons(swarmWorkFlows);
+        swarmWorkFlows.style.display = "block";
+    },
+
+    hookButtons: function(elt)
+    {
+        this.buttonHook = bind(this.doWorkFlowStep, this);
+        elt.addEventListener('click', this.buttonHook, true);
+    },
+
+    detachFromPage: function()
+    {
+        var doc = browser.contentDocument;
+        var swarmWorkFlows = doc.getElementById("swarmWorkFlows");
+        this.unHookButtons(swarmWorkFlows);
+    },
+
+    unHookButtons: function(elt)
+    {
+        elt.removeEventListener('click',this.buttonHook ,true);
+    },
+
+    doWorkFlowStep: function(event)
+    {
+        if (event.target.tagName.toLowerCase() !== 'button')
+            return;
+
+        try
+        {
+            var button = event.target;
+
+            var step = this.getStepFromButton(button);
+
+            button.classList.add("swarmWorkFlowing");
+            this.registeredWorkFlowSteps[step](event.target.ownerDocument);
+            button.classList.remove("swarmWorkFlowing");
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("SwarmInstaller FAILS "+exc, exc);
+            this.progress(exc);
+        }
+
+    },
+
+    getStepFromButton: function(button)
+    {
+        for(var i = 0; i < button.classList.length; i++)
+        {
+            if (button.classList[i] in this.registeredWorkFlowSteps)
+                return button.classList[i];
+        }
+
+        throw new Error("SwarmInstaller.doWorkFlowStep no handler registered for "+button.getAttribute("class"));
+    },
+
+
+    //----------------------------------------------------------------------------------
+
+    registeredWorkFlowSteps: {}, // key CSS class name, value function(document, progress);
+
+    registerWorkFlowStep: function(key, fnc)
+    {
+        this.registeredWorkFlowSteps[key] = fnc;
+    },
+
+
+
+};
+
+SwarmInstaller.extensions =
 {
     getInstalledExtensions: function()
     {
-        FBTrace.sysout("FBTestApp.extensions Application: "+Application.name, Application);  // XXX crashes Firefox if you open the object tab
+        FBTrace.sysout("SwarmInstaller.extensions Application: "+Application.name, Application);  // XXX crashes Firefox if you open the object tab
         var extensions = Application.extensions;
-        FBTrace.sysout("FBTestApp.extensions Application.extensions: "+Application.name, extensions.all);
+        FBTrace.sysout("SwarmInstaller.extensions Application.extensions: "+Application.name, extensions.all);
         return extensions.all;
     },
 
@@ -42,17 +129,6 @@ FBTestApp.extensions =
 
         this.notDeclared = this.getInstalledButNotDeclared(this.declaredExtensions, this.installedExtensions);
         progress("Profile has "+this.notDeclared.length+" extensions not listed in the swarm");
-
-        var installButton = doc.getElementsByClassName("swarmInstall")[0];
-        installButton.setAttribute("style", "display: block;");
-        progress("Ready to Install "+this.declaredExtensions.length+" extensions");
-
-        var self = this;
-        installButton.addEventListener('click', function doInstall(event)
-        {
-            self.installDeclaredExtensions(doc, progress);
-        }, true);
-
     },
 
     installDeclaredExtensions: function(doc, progress)
@@ -199,6 +275,8 @@ FBTestApp.extensions =
     },
 }
 
+SwarmInstaller.workFlowMonitor.registerWorkFlowStep("swarmInstallStep", bind(SwarmInstaller.extensions.installDeclaredExtensions, SwarmInstaller.extensions));
+
 var errorNameByCode =
 {
         "-200":"BAD_PACKAGE_NAME",
@@ -256,4 +334,4 @@ var errorNameByCode =
         "999":"REBOOT_NEEDED",
 };
 
-}});
+}}());
