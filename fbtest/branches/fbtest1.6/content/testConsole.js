@@ -411,7 +411,7 @@ FBTestApp.TestConsole =
                 doc = iframed.contentDocument;
                 testListNode = $("testList", doc);
             }
-            else
+            if (!testListNode)
             {
                 testListNode = doc.createElement("div");
                 testListNode.setAttribute("id", "testList");
