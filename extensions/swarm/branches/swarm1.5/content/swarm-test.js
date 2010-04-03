@@ -30,9 +30,9 @@ var FirebugSwarmTest =
         {
             try
             {
-                var keyServiceClass = Components.classes["@toolkit.mozilla.org/keyservice;1"];
+                var keyServiceClass = Cc["@toolkit.mozilla.org/keyservice;1"];
                 if (keyServiceClass)
-                    this.keyService = keyServiceClass.getService(Components.interfaces.nsIKeyService);
+                    this.keyService = keyServiceClass.getService(Ci.nsIKeyService);
                 else
                     this.downloadAndInstallKeyService();  // maybe we have to restart
             }
@@ -61,9 +61,29 @@ var FirebugSwarmTest =
         {
             this.progress("Noticed a Swarm Test Document");
             SwarmInstaller.workFlowMonitor.initialize(doc, this.progress);
+            this.addHashes(SwarmInstaller.extensions.declaredExtensions);
         }
     },
 
+    addHashes: function(extensions)
+    {
+        for(var i = 0; i < extensions.length; i++)
+        {
+            if (extensions[i].hash)
+                continue;
+
+            var url = extensions[i].href;
+            if (/https/.test(url))
+            {
+                let updateExtensionInfo = extensions[i];
+                secureHashOverHTTPS(url, function updateHash(hashString)
+                {
+                    updateExtensionInfo.element.setAttribute('hash', hashString);
+                    updateExtensionInfo.hash = hashString;
+                });
+            }
+        }
+    },
     // ----------------------------------------------------------------------------------
     // Handlers contributed to swarmInstaller
 
@@ -125,9 +145,9 @@ var FirebugSwarmTest =
             var elt = doc.getElementById("openFBTestComponentDirectory");
             elt.addEventListener("click", function onClickDirectory(event)
             {
-                const nsIFilePicker = Components.interfaces.nsIFilePicker;
+                const nsIFilePicker = Ci.nsIFilePicker;
 
-                var fp = Components.classes["@mozilla.org/filepicker;1"]
+                var fp = Cc["@mozilla.org/filepicker;1"]
                                .createInstance(nsIFilePicker);
                 fp.init(window, "Dialog Title", nsIFilePicker.modeGetFolder);
                 fp.defaultString = componentsDir;
@@ -143,8 +163,8 @@ var FirebugSwarmTest =
     getComponentsDirectory: function()
     {
         var fbtest = "fbtest@mozilla.com"; // the extension's id from install.rdf
-        var em = Components.classes["@mozilla.org/extensions/manager;1"].
-                 getService(Components.interfaces.nsIExtensionManager);
+        var em = Cc["@mozilla.org/extensions/manager;1"].
+                 getService(Ci.nsIExtensionManager);
         // the path may use forward slash ("/") as the delimiter
         // returns nsIFile for the extension's install.rdf
         var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
@@ -179,7 +199,125 @@ var FirebugSwarmTest =
         }
     },
 
+
 };
+
+// Secure download and hash calculation --------------------------------------------------------
+// http://groups.google.com/group/mozilla.dev.platform/browse_thread/thread/9f1bdf8603b72384/74fcb44e8b701966?#74fcb44e8b701966
+
+function secureHashOverHTTPS(urlString, fncTakesHashString)
+{
+    const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci["nsIIOService"]);
+    try
+    {
+        if (urlString)
+            var uri = ioService.newURI(urlString, null, null);
+        else
+            throw new Error("secureHashOverHTTPS FAILS: no URL given");
+    }
+    catch(exc)
+    {
+        throw new Error("secureHashOverHTTPS FAILS: could not create URI from the given URL: "+urlString+" because: "+exc);
+    }
+
+    if (!uri.schemeIs("https"))
+        throw new Error("secureHashOverHTTPS FAILS: only https URL can be securely downloaded");
+
+    try
+    {
+        let channel = ioService.newChannel(urlString, null, null);
+
+        let hasher = Cc["@mozilla.org/security/hash;1"]
+            .createInstance(Ci.nsICryptoHash);
+
+        let listener =
+        {
+            onStartRequest: function(request, arg)
+            {
+                hasher.init(hasher.SHA1);
+                FBTrace.sysout("onStartRequest "+channel.URI.spec);
+            },
+            onDataAvailable: function(request, arg, stream, offset, count)
+            {
+                FBTrace.sysout("onDataAvailable "+channel.URI.spec+" "+count);
+                var problem = getSecurityProblem(request);
+                if (!problem)
+                    hasher.updateFromStream(stream, count);
+                else
+                    throw new Error("secureHashOverHTTPS FAILS: "+problem+" reading "+urlString);
+            },
+            onStopRequest: function(request, arg, statusCode)
+            {
+                FBTrace.sysout("onStopRequest "+channel.URI.spec+" "+statusCode);
+                try
+                {
+                    var hash = hasher.finish(false);
+                    // convert the binary hash data to a hex string.
+                    var s = [toHexString(hash.charCodeAt(i)) for (i in hash)].join("");
+                    fncTakesHashString("sha1:"+s);
+                }
+                catch(exc)
+                {
+                    throw new Error("secureHashOverHTTPS FAILS: "+exc);
+                }
+
+            }
+        };
+
+       channel.asyncOpen(listener, hasher);
+    }
+    catch (e)
+    {
+        var cascade =  new Error("secureHashOverHTTPS FAILS "+e);
+        cascade.cause = e;
+        throw cascade;
+    }
+}
+
+function getSecurityProblem(channel)
+{
+    if (channel instanceof Ci.nsIHttpChannel)
+    {
+        var secInfo = channel.securityInfo;
+        if (secInfo instanceof Ci.nsITransportSecurityInfo)
+        {
+            var iListener = Ci.nsIWebProgressListener;
+
+            var secureBits = (iListener.STATE_IS_SECURE | iListener.STATE_SECURE_HIGH);
+            if (secInfo.securityState & secureBits)
+            {
+                // https://developer.mozilla.org/En/How_to_check_the_security_state_of_an_XMLHTTPRequest_over_SSL
+                if (secInfo instanceof Ci.nsISSLStatusProvider) // then the secInfo hasA cert
+                {
+                    if (secInfo.SSLStatus instanceof Ci.nsISSLStatus)
+                    {
+                        var cert = secInfo.SSLStatus.serverCert;
+                        var certOverrideService = Cc["@mozilla.org/security/certoverride;1"]
+                                   .getService(Ci.nsICertOverrideService);
+
+                        var bits = {}, temp = {};
+
+                        if (certOverrideService.hasMatchingOverride(channel.URI.host, channel.URI.port, cert, bits, temp))
+                            return "user has overridden certificate checks";
+
+                        return false;
+                    }
+                    return "channel securityInfo SSLStatus is not an nsISSLStatus";
+                }
+                return "channel securityInfo is not an nsISSLStatusProvider";
+            }
+            return "channel securityInfo is not in secure state";
+        }
+        return "channel securityInfo is not valid";
+    }
+    return "request has no channel for security checks";
+}
+
+// return the two-digit hexadecimal code for a byte
+function toHexString(charCode)
+{
+    return ("0" + charCode.toString(16)).slice(-2);
+}
 
 observerService.addObserver(FirebugSwarmTest, "fbtest", false);
 

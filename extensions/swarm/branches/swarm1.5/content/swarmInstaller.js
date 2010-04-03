@@ -28,6 +28,7 @@ SwarmInstaller.workFlowMonitor =
         this.enableSwarmWorkflows(doc);
         this.progress = progress;
         SwarmInstaller.extensions.prepareDeclaredExtensions(doc, this.progress);
+
     },
 
     enableSwarmWorkflows: function(doc)
@@ -134,6 +135,7 @@ SwarmInstaller.extensions =
         // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
         var urls = [];
         var hashes = [];
+        var installingExtensions = [];
         var count = this.declaredExtensions.length;
         for (var i = 0; i < count; i++)
         {
@@ -142,50 +144,51 @@ SwarmInstaller.extensions =
 
             urls.push( this.declaredExtensions[i].href );
             hashes.push( this.declaredExtensions[i].hash );
+            installingExtensions.push( this.declaredExtensions[i] );
         }
         count = urls.length;
 
-        var swarm = this.declaredExtensions;
+
         var listener =
         {
             states: ["download_start", "download_done", "install_start", "install_done", "dialog_close"],
 
             onStateChange: function(index, state, value )
             {
-                FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+value);
+                FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+value);
 
-                var classes = swarm[index].statusElement.getAttribute('class');
+                var classes = installingExtensions[index].statusElement.getAttribute('class');
                 var m = /installedVersion-[^\s]*/.exec(classes);
                 if (m)
-                    removeClass(swarm[index].statusElement, m[0]);
+                    removeClass(installingExtensions[index].statusElement, m[0]);
 
                 m = /installing-[^\s]*/.exec(classes);
                 if (m)
-                    removeClass(swarm[index].statusElement, m[0]);
+                    removeClass(installingExtensions[index].statusElement, m[0]);
 
                 if (this.states[state] === "install_done")
                 {
                     if (value != 0)
                     {
-                        FBTrace.sysout("onStateChange "+swarm[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
+                        FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
                         var errorCodePage = "http://getfirebug.com/wiki/index.php/Extension_Installation_Error_Codes";
                         var errorCodeTitle ="Information on Installation Error Codes";
-                        swarm[index].statusElement.innerHTML += ": <a title=\""+errorCodeTitle+"\" href=\""+
+                        installingExtensions[index].statusElement.innerHTML += ": <a target=\"_blank\" title=\""+errorCodeTitle+"\" href=\""+
                             errorCodePage+"#"+errorNameByCode[value+""]+"_"+value+"\">"+errorNameByCode[value+""]+"</a>";
-                        setClass(swarm[index].statusElement, "install-failed");
+                        setClass(installingExtensions[index].statusElement, "install-failed");
                     }
                     else
-                        setClass(swarm[index].statusElement, "installing-"+this.states[state]);
+                        setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
                 }
                 else
                 {
-                    setClass(swarm[index].statusElement, "installing-"+this.states[state]);
+                    setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
                 }
             },
             onProgress: function(index, value, maxValue )
             {
-                FBTrace.sysout("onStateChange "+swarm[index].name+": "+value+"/"+maxValue);
-                swarm[index].statusElement.innerHTML = swarm[index].version +" "+Math.ceil(100*value/maxValue)+"%";
+                FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+value+"/"+maxValue);
+                installingExtensions[index].statusElement.innerHTML = installingExtensions[index].version +" "+Math.ceil(100*value/maxValue)+"%";
             },
             QueryInterface: function(iid)
             {
@@ -194,7 +197,7 @@ SwarmInstaller.extensions =
         };
         var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
             .getService(Components.interfaces.nsIXPInstallManager);
-        
+
         progress("Installing "+count+" extensions");
 
         xpInstallManager.initManagerWithHashes(urls, hashes, count, listener);
