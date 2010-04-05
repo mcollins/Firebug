@@ -151,11 +151,11 @@ var ChromebugOverrides = {
         if (context)
         {
             if (FBTrace.DBG_TOPLEVEL)
-                FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
+                FBTrace.sysout("getContextByFrame "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
         }
         else
         {
-             FBTrace.sysout("supportsGlobal "+normalizeURL(frame.script.fileName)+": no context!");
+             FBTrace.sysout("getContextByFrame "+normalizeURL(frame.script.fileName)+": no context!");
         }
         return context;
     },
@@ -242,21 +242,8 @@ var ChromebugOverrides = {
 
     getTabIdForWindow: function(win)
     {
-        if (!win)  // eg net.js getWindowForRequest gives null
-        {
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("ChromebugOverrides.getTabIdForWindow null window");
-            return null;
-        }
-        if (!win instanceof Window)
-            return;
-
         if (! (win instanceof Ci.nsIDOMWindow) )  // eg net.js getWindowForRequest gives null
-        {
-            if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("ChromebugOverrides.getTabIdForWindow not a window", win);
             return null;
-        }
 
         var tab = Firebug.getTabForWindow(win);
         if (tab)
@@ -471,7 +458,7 @@ Chromebug.Activation =
 
     shouldCreateContext: function(browser, url, userCommands)
     {
-        FBTrace.sysout("Chromebug.Activation "+url+" browser "+browser.getAttribute('id'), browser);
+        FBTrace.sysout("Chromebug.Activation "+url+" browser "+(browser ? browser.getAttribute('id') :"(no browser)"), browser);
         return !Firebug.Chromebug.isChromebugURL(url);
     },
 

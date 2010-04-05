@@ -602,7 +602,19 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("getContextByGlobal; no find and not instanceof Content Window "+safeToString(global));
+        {
+            for (var i = 0; i < this.contexts.length; ++i)
+            {
+                var context = this.contexts[i];
+                if (context.global)
+                {
+                    if (context.global == global)
+                        FBTrace.sysout("getContextByGlobal; global "+safeToString(global)+" no match for "+context.getName());
+                }
+                else
+                    FBTrace.sysout("getContextByGlobal; no global in "+context.getName());
+            }
+        }
 
         return null;
     },
