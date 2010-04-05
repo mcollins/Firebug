@@ -65,6 +65,11 @@ var FirebugSwarmTest =
         }
     },
 
+    detachFromPage: function()
+    {
+
+    },
+
     addHashes: function(extensions)
     {
         for(var i = 0; i < extensions.length; i++)
@@ -109,8 +114,8 @@ var FirebugSwarmTest =
             }
             else if (data == "shutdown")
             {
-                FirebugSwarmTest.detachFromPage();
                 observerService.removeObserver(FirebugSwarmTest, "fbtest");
+                FirebugSwarmTest.detachFromPage();
             }
             else if (data == "restart")
             {
@@ -319,7 +324,7 @@ function toHexString(charCode)
     return ("0" + charCode.toString(16)).slice(-2);
 }
 
-observerService.addObserver(FirebugSwarmTest, "fbtest", false);
+observerService.addObserver(FirebugSwarmTest, "fbtest", false);  // removed in observe: 'shutdown'
 
 //************************************************************************************************
 }});

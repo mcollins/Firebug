@@ -18,7 +18,7 @@
     </em:targetApplication>
 
     <em:name>Swarm</em:name>
-    <em:description>Extension Bundle Loader for Firebug.</em:description>
+    <em:description>Certified Extension Bundle Loader</em:description>
     <em:creator>John J. Barton</em:creator>
     <em:contributor>Jan Odvarko</em:contributor>
   </Description>

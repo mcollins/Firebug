@@ -2,6 +2,7 @@
 
 
 
+
 // This code runs in the FBTest Window and Firefox Window
 (function() { with (FBL) {
 
@@ -28,7 +29,9 @@ SwarmInstaller.workFlowMonitor =
         this.enableSwarmWorkflows(doc);
         this.progress = progress;
         SwarmInstaller.extensions.prepareDeclaredExtensions(doc, this.progress);
-
+        var ext = SwarmInstaller.extensions.getInstallableExtensions();
+        if (ext.length == 0)
+            this.stepWorkflows(doc, "swarmInstallStep");
     },
 
     enableSwarmWorkflows: function(doc)
@@ -95,6 +98,35 @@ SwarmInstaller.workFlowMonitor =
         throw new Error("SwarmInstaller.doWorkFlowStep no handler registered for "+button.getAttribute("class"));
     },
 
+    stepWorkFlow: function(doc, stepClassName)
+    {
+        var elts = doc.getElementsByClassName(stepClassName);
+        for (var i = 0; i < elts.length; i++)
+        {
+            if (elts[i].classList.contains("swarmWorkFlowEnd"))
+                elts[i].classList.add("swarmWorkFlowComplete");
+            else
+            {
+                var nextStep = this.getNextStep(elts[i]);
+                if (nextStep)
+                {
+                    elts[i].setAttribute('disabled', 'disabled');
+                    nextStep.removeAttribute('disabled');
+                }
+            }
+        }
+    },
+
+    getNextStep: function(elt)
+    {
+        while(elt = elt.nextSibling)
+        {
+            if (elt.classList.contains('swarmWorkFlowStep'))
+                return elt;
+            else if (elt.classList.contains('swarmWorkFlowEnd'))
+                return elt;
+        }
+    },
 
     //----------------------------------------------------------------------------------
 
@@ -128,6 +160,20 @@ SwarmInstaller.extensions =
 
         this.notDeclared = this.getInstalledButNotDeclared(this.declaredExtensions, this.installedExtensions);
         progress("Profile has "+this.notDeclared.length+" extensions not listed in the swarm");
+    },
+
+    getInstallableExtensions: function(doc, progress)
+    {
+        var installingExtensions = [];
+        var count = this.declaredExtensions.length;
+        for (var i = 0; i < count; i++)
+        {
+            if (this.declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
+                continue;
+
+            installingExtensions.push( this.declaredExtensions[i] );
+        }
+        return installingExtensions;
     },
 
     installDeclaredExtensions: function(doc, progress)
