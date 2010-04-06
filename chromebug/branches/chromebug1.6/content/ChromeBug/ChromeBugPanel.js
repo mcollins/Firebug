@@ -506,9 +506,18 @@ Firebug.Chromebug = extend(Firebug.Module,
         var persistedState = null; // TODO
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
-        var browser = Firebug.Chromebug.createBrowser(global, name);
         if (global instanceof Ci.nsIDOMWindow)
         {
+            if (global.closed)
+                return null;
+
+            // When a XUL window is destroyed the destructor functions from XBL run after the unload event.
+            // We delete the context in the unload event, then the destructor can then trigger an new context creation.
+            // To avoid this we maintain a list of the windows we just destroyed then clean them up on a setTimeout
+            if (safeGetWindowLocation(global) in this.blockedWindowLocations)
+                return null;
+
+            var browser = Firebug.Chromebug.createBrowser(global, name);  // I guess this has side effects we need
             var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
 
             var url = safeToString(global ? global.location : null);
@@ -523,6 +532,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         else
         {
+            var browser = Firebug.Chromebug.createBrowser(global, name);
             var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
         }
 
@@ -651,8 +661,18 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     },
 
+    blockedWindowLocations: {},
+
     destroyContext: function(context)
     {
+        let context_window_location = safeGetWindowLocation(context.window);
+        this.blockedWindowLocations[context_window_location] = 1;
+        setTimeout(function cleanUpNoCreateList()
+        {
+            FBTrace.sysout("setTimeout fires after destroy on "+context_window_location);
+            delete Firebug.Chromebug.blockedWindowLocations[context_window_location];
+        });
+
         if (context.browser)
             delete context.browser.detached;
 

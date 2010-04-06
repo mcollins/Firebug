@@ -47,7 +47,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
            }
            catch (exc)
            {
-               FBTrace.sysout("Chromebug getDocShellByDOMWindow, domWindow.getInterface FAILS", domWindow);
+               FBTrace.sysout("Chromebug getDocShellByDOMWindow, domWindow.getInterface FAILS "+exc, exc);
            }
            if (navi instanceof Ci.nsIDocShellTreeItem)
            {
@@ -340,11 +340,24 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         {
             FBTrace.sysout("xulapp unwatchXULWindow.observe xul-window-destroyed == "+topic, {subject: subject, data: data});
             // The subject is null, the window is gone, see http://mxr.mozilla.org/mozilla-central/source/xpfe/appshell/src/nsXULWindow.cpp#556
+/*
+Apparently this event comes to late to do anything useful with the objects.
+            for (var i = 0; i < Chromebug.XULAppModule.closed_xul_windows.length; i++)
+            {
+                var xul_win = Chromebug.XULAppModule.closed_xul_windows[i];
+                var outerDOMWindow =  Chromebug.XULAppModule.closerDOMWindows[i];
+                FBTrace.sysout("unwatchXULWindow "+i+") "+outerDOMWindow);
+                if (outerDOMWindow && outerDOMWindow.closed)
+                {
+                    var closers = Chromebug.XULAppModule.closers[xul_win];
 
-            var closers = Chromebug.XULAppModule.closers;
+                    while(closers.length)
+                        (closers.pop())();
 
-            while(closers.length)
-                (closers.pop())();
+                    delete Chromebug.XULAppModule.closers[xul_win];
+                }
+            }
+*/
         },
     },
 
@@ -424,18 +437,26 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         }
     },
 
-    closers: [],
+  //  closers: {},
+ //   closerDOMWindows: {},
+ //   closed_xul_windows: [],
 
     onCloseWindow: function(xul_win)
     {
-        this.closers.push(bind(this.cleanUpXULWindow, this, xul_win));
+        this.cleanUpXULWindow(xul_win);
     },
 
-    addCloser: function(closer)
+   /* addCloser: function(xul_win, closer)
     {
-        this.closers.push(closer);
-    },
+        if (!this.closers[xul_win])
+            this.closers[xul_win] = [];
 
+        var win = Chromebug.XULAppModule.getDOMWindowByXULWindow(xul_win);
+        FBTrace.sysout("addCloser win "+win+" xul_win "+xul_win);
+        this.closerDOMWindows[xul_win] = win;
+        this.closers[xul_win].push(closer);
+    },
+*/
     cleanUpXULWindow: function(xul_win)
     {
         try
@@ -469,6 +490,9 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                     var tag = this.xulWindowTags[mark];
                     this.xulWindows.splice(mark,1);
                     this.xulWindowTags.splice(mark,1);
+                    var outerDOMWindow = this.getDOMWindowByXULWindow(xul_win);
+                    FBTrace.sysout("XULAppModule.onclose: removing getXULWindowIndex="+mark+" with outerDOMWindow "+outerDOMWindow);
+                    TabWatcher.unwatchTopWindow(outerDOMWindow);
                 }
                 else
                 {

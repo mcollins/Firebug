@@ -143,10 +143,13 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 if (domWindow == outerDOMWindow)
                 {
                     FBTrace.sysout("Firebug.Chromebug.unloadHandler found outerDOMWindow with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
-                    Chromebug.XULAppModule.addCloser(function delayUntilOnCloseWindow()
+                    /*var xul_win = Chromebug.XULAppModule.getXULWindowByRootDOMWindow(outerDOMWindow);
+
+                    Chromebug.XULAppModule.addCloser(xul_win, function delayUntilOnCloseWindow()
                     {
                         TabWatcher.unwatchTopWindow(domWindow);
                     });
+                    */
                 }
                 else
                 {
@@ -157,6 +160,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             }
             else
             {
+                // Seems like the outer XUL window DOMWindow is cleaned up by onCloseWindow in xulapp
                 FBTrace.sysout("ChromeBug unloadHandler found no context for domWindow:"+domWindow.location);
             }
         }
