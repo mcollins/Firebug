@@ -60,7 +60,7 @@ FBTestApp.TestWindowLoader =
     {
         // TraceModule isn't part of Firebug end-user version.
         if (Firebug.TraceModule)
-            Firebug.TraceModule.addListener(this.TraceListener);
+            Firebug.TraceModule.addListener(FBTestApp.TestConsole.TraceListener);
 
         // The tracing console can be already opened so, simulate onLoadConsole event.
         iterateBrowserWindows("FBTraceConsole", function(win)
@@ -73,7 +73,14 @@ FBTestApp.TestWindowLoader =
         });
     },
 
+    shutdown: function()
+    {
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.removeListener(FBTestApp.TestConsole.TraceListener);
+    }
 };
+
+// ************************************************************************************************
 
 /**
  * This object represents main Test Console implementation.
@@ -188,8 +195,7 @@ FBTestApp.TestConsole =
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestCaseServer", this.testCasePath);
         Firebug.setPref(FBTestApp.prefDomain, "defaultTestDriverServer", this.driverBaseURI);
 
-        if (Firebug.TraceModule)
-            Firebug.TraceModule.removeListener(this.TraceListener);
+        FBTestApp.TestWindowLoader.shutdown();
 
         // Unregister registered repositories.
         Firebug.unregisterRep(FBTestApp.GroupList);

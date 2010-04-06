@@ -1,6 +1,5 @@
 /* See license.txt for terms of usage */
 
-
 FBTestApp.ns(function() { with (FBL) {
 
 // ************************************************************************************************
@@ -14,15 +13,19 @@ var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSub
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // ************************************************************************************************
+
+// Helper shortcut.
+var HaltOnFailedTest = FBTestApp.TestWindowLoader.HaltOnFailedTest
+
 FBTestApp.TestWindowLoader.HaltOnFailedTest =
 {
     initialize: function()
     {
-            // Localize strings in XUL (using string bundle).
-            this.internationalizeUI();
+        // Localize strings in XUL (using string bundle).
+        this.internationalizeUI();
 
-            FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
-            this.setHaltOnFailedTestButton();
+        HaltOnFailedTest.enabled = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
+        this.setHaltOnFailedTestButton();
     },
 
     internationalizeUI: function()
@@ -41,19 +44,19 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
 
     setHaltOnFailedTestButton: function()
     {
-        $('haltOnFailedTest').setAttribute('checked', FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled?'true':'false');
+        $('haltOnFailedTest').setAttribute('checked', HaltOnFailedTest.enabled?'true':'false');
     },
 
     onToggleHaltOnFailedTest: function()
     {
-        FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled = !FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled;
-        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled);
-        FBTestApp.TestWindowLoader.HaltOnFailedTest.setHaltOnFailedTestButton();
+        HaltOnFailedTest.enabled = !HaltOnFailedTest.enabled;
+        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", HaltOnFailedTest.enabled);
+        HaltOnFailedTest.setHaltOnFailedTestButton();
     },
 
     onFailure: function()
     {
-        if (!FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled)
+        if (!HaltOnFailedTest.enabled)
             return;
 
         if (FBTrace.DBG_FBTEST)
@@ -81,25 +84,28 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
             if (topic == "fbtest")
             {
                 if (data === "shutdown")
-                    observerService.removeObserver(FBTestApp.TestWindowLoader.HaltOnFailedTest, "fbtest");
-                if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
-                    FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
+                    observerService.removeObserver(HaltOnFailedTest, "fbtest");
+
+                if (data in HaltOnFailedTest)
+                    HaltOnFailedTest[data]();
                 else
                     FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
             }
         }
         catch (e)
         {
-            // xxxHonza: there is an exception: "FBTestApp is not defined", the
-            // window seems to be unloaded.
             dump("FBTestApp.TestWindowLoader.observe; EXCEPTION " + e, e);
         }
     },
-
 };
 
 // ************************************************************************************************
+// Registration
 
+/**
+ * Listen to events fired by {@link FBTestApp.TestConsole}.
+ */
 observerService.addObserver(FBTestApp.TestWindowLoader.HaltOnFailedTest, "fbtest", false);
 
+// ************************************************************************************************
 }});
