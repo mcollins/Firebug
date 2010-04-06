@@ -166,17 +166,14 @@ Firebug.MemoryBug.ReportProvider.prototype =
 
     getValue: function(object)
     {
-        if (object.type == "object")
-            return object.value;
-
-        return null;
+        return object.value;
     },
 
     getValueTag: function(object, colId)
     {
         var type = typeof(object);
         if (object instanceof SourceLink || object instanceof Array ||
-            type == "function")
+            type == "function" || colId == "value")
         {
             var rep = Firebug.getRep(object);
             return rep.shortTag ? rep.shortTag : rep.tag;

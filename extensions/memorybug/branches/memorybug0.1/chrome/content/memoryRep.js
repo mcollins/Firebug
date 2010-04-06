@@ -105,7 +105,7 @@ Firebug.MemoryBug.TreeView = domplate(Firebug.Rep,
             var hasChildren = this.provider.hasChildren(child);
             var label = this.provider.getLabel(child);
             var value = this.provider.getValue(child);
-            var tag = value ? this.provider.getValueTag(value) : null;
+            var tag = value ? this.provider.getValueTag(value, "value") : null;
             var bodyTemplate = this.provider.getBodyTemplate(child);
 
             members.push({

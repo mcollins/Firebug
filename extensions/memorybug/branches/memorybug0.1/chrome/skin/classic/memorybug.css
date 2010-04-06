@@ -95,13 +95,18 @@
 }
 
 /* Table View Rows */
-.tableViewBody .viewRow {
+.tableViewBody > .viewRow {
     height: 17px;
     color: gray;
 }
 
 .tableViewBody .viewRow:nth-child(odd) {
     background-color: #EFEFEF;
+}
+
+/* Must be after table odd row declaration */
+.treeViewBody > .viewRow:nth-child(odd) {
+    background-color: transparent;
 }
 
 .tableViewBody .viewRow > TD:first-child {
