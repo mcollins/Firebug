@@ -80,6 +80,8 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
         {
             if (topic == "fbtest")
             {
+                if (data === "shutdown")
+                    observerService.removeObserver(FBTestApp.TestWindowLoader.HaltOnFailedTest, "fbtest");
                 if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
                     FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
                 else
