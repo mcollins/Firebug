@@ -8,8 +8,9 @@ const Ci = Components.interfaces;
 // ************************************************************************************************
 // Data Provider
 
-Firebug.MemoryBug.ReportProvider = function(input)
+Firebug.MemoryBug.ReportProvider = function(input, objects)
 {
+    this.objects = objects;
     this.data = input;
 
     this.input = {};
@@ -99,9 +100,31 @@ Firebug.MemoryBug.ReportProvider.prototype =
                 if (object.info && object.info.prototype &&
                     object.info.prototype.children.length == 1)
                 {
-                    var info = object.info.prototype.children[0]
-                    return new SourceLink(info.filename, info.lineStart, "js");
+                    var info = object.info.prototype.children[0];
+                    var index = this.data.namedObjects[info.id];
+                    var func = this.objects[index];
+                    if (func)
+                        return func.obj;
+
+                    if (info.filename && info.lineStart)
+                        return new SourceLink(info.filename, info.lineStart, "js");
+
+                    return object.info.prototype.nativeClass;
                 }
+            }
+            else if (colId == "referents")
+            {
+                var result = [];
+                var referents = object.info.referents;
+                for (var id in referents)
+                {
+                    var referent = referents[id];
+                    var index = this.data.namedObjects[referent.id];
+                    var obj = this.objects[index];
+                    if (obj)
+                        result.push(obj.obj);
+                }
+                return result;
             }
         }
 
@@ -136,7 +159,9 @@ Firebug.MemoryBug.ReportProvider.prototype =
 
     getValueTag: function(object, colId)
     {
-        if (object instanceof SourceLink)
+        var type = typeof(object);
+        if (object instanceof SourceLink || object instanceof Array ||
+            type == "function")
         {
             var rep = Firebug.getRep(object);
             return rep.shortTag ? rep.shortTag : rep.tag;
@@ -165,7 +190,8 @@ Firebug.MemoryBug.ReportProvider.prototype =
             return [
                 {id: "name", title: "Name"},
                 {id: "size", title: "Size"},
-                {id: "constructor", title: "Constructor"}
+                {id: "constructor", title: "Constructor"},
+                {id: "referents", title: "Referents"}
             ];
         }
 

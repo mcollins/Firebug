@@ -152,7 +152,7 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         // Generate UI.
         var ReportView = Firebug.MemoryBug.TreeView;
         var panelNode = context.getPanel("memory").panelNode;
-        var provider = new Firebug.MemoryBug.ReportProvider(data);
+        var provider = new Firebug.MemoryBug.ReportProvider(data, namedObjects.objects);
         ReportView.render(provider, panelNode);
     },
 
