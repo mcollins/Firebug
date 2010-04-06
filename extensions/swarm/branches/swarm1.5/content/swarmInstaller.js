@@ -31,7 +31,7 @@ SwarmInstaller.workFlowMonitor =
         SwarmInstaller.extensions.prepareDeclaredExtensions(doc, this.progress);
         var ext = SwarmInstaller.extensions.getInstallableExtensions();
         if (ext.length == 0)
-            this.stepWorkflows(doc, "swarmInstallStep");
+            SwarmInstaller.workFlowMonitor.stepWorkflows(doc, "swarmInstallStep");
     },
 
     enableSwarmWorkflows: function(doc)
@@ -39,22 +39,22 @@ SwarmInstaller.workFlowMonitor =
         var webWarning = doc.getElementById("swarmWebPage");
         webWarning.style.visibility = "hidden";
 
-        var swarmWorkFlows = doc.getElementById("swarmWorkFlows");
-        this.hookButtons(swarmWorkFlows);
-        swarmWorkFlows.style.display = "block";
+        var swarmWorkflows = doc.getElementById("swarmWorkflows");
+        this.hookButtons(swarmWorkflows);
+        swarmWorkflows.style.display = "block";
     },
 
     hookButtons: function(elt)
     {
-        this.buttonHook = bind(this.doWorkFlowStep, this);
+        this.buttonHook = bind(this.doWorkflowStep, this);
         elt.addEventListener('click', this.buttonHook, true);
     },
 
     detachFromPage: function()
     {
         var doc = browser.contentDocument;
-        var swarmWorkFlows = doc.getElementById("swarmWorkFlows");
-        this.unHookButtons(swarmWorkFlows);
+        var swarmWorkflows = doc.getElementById("swarmWorkflows");
+        this.unHookButtons(swarmWorkflows);
     },
 
     unHookButtons: function(elt)
@@ -62,7 +62,7 @@ SwarmInstaller.workFlowMonitor =
         elt.removeEventListener('click',this.buttonHook ,true);
     },
 
-    doWorkFlowStep: function(event)
+    doWorkflowStep: function(event)
     {
         if (event.target.tagName.toLowerCase() !== 'button')
             return;
@@ -73,9 +73,9 @@ SwarmInstaller.workFlowMonitor =
 
             var step = this.getStepFromButton(button);
 
-            button.classList.add("swarmWorkFlowing");
-            this.registeredWorkFlowSteps[step](event.target.ownerDocument, this.progress);
-            button.classList.remove("swarmWorkFlowing");
+            button.classList.add("swarmWorkflowing");
+            this.registeredWorkflowSteps[step](event.target.ownerDocument, this.progress);
+            button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
             event.preventDefault();
         }
@@ -91,20 +91,20 @@ SwarmInstaller.workFlowMonitor =
     {
         for(var i = 0; i < button.classList.length; i++)
         {
-            if (button.classList[i] in this.registeredWorkFlowSteps)
+            if (button.classList[i] in this.registeredWorkflowSteps)
                 return button.classList[i];
         }
 
-        throw new Error("SwarmInstaller.doWorkFlowStep no handler registered for "+button.getAttribute("class"));
+        throw new Error("SwarmInstaller.doWorkflowStep no handler registered for "+button.getAttribute("class"));
     },
 
-    stepWorkFlow: function(doc, stepClassName)
+    stepWorkflows: function(doc, stepClassName)
     {
         var elts = doc.getElementsByClassName(stepClassName);
         for (var i = 0; i < elts.length; i++)
         {
-            if (elts[i].classList.contains("swarmWorkFlowEnd"))
-                elts[i].classList.add("swarmWorkFlowComplete");
+            if (elts[i].classList.contains("swarmWorkflowEnd"))
+                elts[i].classList.add("swarmWorkflowComplete");
             else
             {
                 var nextStep = this.getNextStep(elts[i]);
@@ -121,20 +121,23 @@ SwarmInstaller.workFlowMonitor =
     {
         while(elt = elt.nextSibling)
         {
-            if (elt.classList.contains('swarmWorkFlowStep'))
+            if (!elt.classList)  // eg TextNode
+                continue;
+
+            if (elt.classList.contains('swarmWorkflowStep'))
                 return elt;
-            else if (elt.classList.contains('swarmWorkFlowEnd'))
+            else if (elt.classList.contains('swarmWorkflowEnd'))
                 return elt;
         }
     },
 
     //----------------------------------------------------------------------------------
 
-    registeredWorkFlowSteps: {}, // key CSS class name, value function(document, progress);
+    registeredWorkflowSteps: {}, // key CSS class name, value function(document, progress);
 
-    registerWorkFlowStep: function(key, fnc)
+    registerWorkflowStep: function(key, fnc)
     {
-        this.registeredWorkFlowSteps[key] = fnc;
+        this.registeredWorkflowSteps[key] = fnc;
     },
 
 };
@@ -224,12 +227,30 @@ SwarmInstaller.extensions =
                         setClass(installingExtensions[index].statusElement, "install-failed");
                     }
                     else
+                    {
                         setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
+                        this.checkForRestart();
+                    }
                 }
                 else
                 {
+                    if (this.states[state] === "dialog_close")
+                        return;
+
                     setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
                 }
+            },
+            checkForRestart: function()
+            {
+                for (var i = 0; i < installingExtensions.length; i++)
+                {
+                    if (installingExtensions[i].statusElement.contains("installing-install_done"))
+                        continue;
+                    else
+                        return false;
+                }
+                // all installs are done
+                window.alert("Installation is complete but you may have to restart the browser");
             },
             onProgress: function(index, value, maxValue )
             {
@@ -335,7 +356,7 @@ SwarmInstaller.extensions =
     },
 }
 
-SwarmInstaller.workFlowMonitor.registerWorkFlowStep("swarmInstallStep", bind(SwarmInstaller.extensions.installDeclaredExtensions, SwarmInstaller.extensions));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmInstallStep", bind(SwarmInstaller.extensions.installDeclaredExtensions, SwarmInstaller.extensions));
 
 var errorNameByCode =
 {

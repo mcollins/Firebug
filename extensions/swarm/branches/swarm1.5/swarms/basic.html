@@ -134,7 +134,7 @@ button.swarmInactive:after {
     content: "Show Swarm";
 }
 
-#swarmWorkFlows {
+#swarmWorkflows {
     padding: 10px;
     margin: 10px;
     border: 1px gray solid;
@@ -145,22 +145,22 @@ button.swarmInactive:after {
     font-weight:bold;
 }
 
-.swarmWorkFlow button.swarmWorkFlowStart:after {
+.swarmWorkflow button.swarmWorkflowStart:after {
     content: "->";
 }
-.swarmWorkFlow button.swarmWorkFlowStep:after {
+.swarmWorkflow button.swarmWorkflowStep:after {
     content: "->";
 }
-.swarmWorkFlow button.swarmWorkFlowEnd {
+.swarmWorkflow button.swarmWorkflowEnd {
     margin-right: 10px;
 }
-td.swarmWorkFlowSelector {
+td.swarmWorkflowSelector {
     color: #999999;
 }
-tr.swarmWorkFlowSelected td {
+tr.swarmWorkflowSelected td {
      color: black;
 }
-button.swarmWorkFlowing {
+button.swarmWorkflowing {
     background: #008800;
 }
 button.swarmWorkFailed {
@@ -172,33 +172,34 @@ button.swarmWorkFailed {
 function selectWorkflow(event)
 {
     // unselect the previously selected workflow
-    var workFlowSelectors = document.body.getElementsByClassName("swarmWorkFlowSelector");
+    window.alert("selectWorkflow");
+    var workFlowSelectors = document.body.getElementsByClassName("swarmWorkflowSelector");
     for (var i = 0; i < workFlowSelectors.length; i++)
-        workFlowSelectors[i].classList.remove("swarmWorkFlowSelected");
+        workFlowSelectors[i].classList.remove("swarmWorkflowSelected");
 
     // disable all of the buttons in all of the workflows
-    var workFlows = document.getElementById("swarmWorkFlows");
+    var workFlows = document.getElementById("swarmWorkflows");
     var buttons = workFlows.getElementsByTagName('button');
     for (var j = 0; j < buttons.length; j++)
             buttons[j].setAttribute("disabled", "disabled");
 
     // select the new workflow
-    var selectedWorkFlowSelector = event.target;
-    selectedWorkFlowSelector.classList.add("swarmWorkFlowSelected");
+    var selectedWorkflowSelector = event.target;
+    selectedWorkflowSelector.classList.add("swarmWorkflowSelected");
 
     // enable some buttons in this workflow
-    var parent = selectedWorkFlowSelector;
+    var parent = selectedWorkflowSelector;
     while(parent.tagName.toLowerCase() !== "tr")
         parent = parent.parentNode;
 
-    var selectedWorkFlow = parent.getElementsByClassName("swarmWorkFlow")[0];
+    var selectedWorkflow = parent.getElementsByClassName("swarmWorkflow")[0];
 
-    var buttons = selectedWorkFlow.getElementsByTagName('button');
+    var buttons = selectedWorkflow.getElementsByTagName('button');
     for (var j = 0; j < buttons.length; j++)
     {
         button = buttons[j];
-        if (button.classList.contains("swarmWorkFlowStep")) continue; // leave disabled
-        if (button.classList.contains("swarmWorkFlowEnd")) continue;
+        if (button.classList.contains("swarmWorkflowStep")) continue; // leave disabled
+        if (button.classList.contains("swarmWorkflowEnd")) continue;
         button.removeAttribute("disabled");
     }
     return true;
@@ -220,44 +221,44 @@ function setDefaults(event)
 <h1 class="swarmTitle">Certified Extension Installation</h1>
 <p id="swarmWebPage">To Enable Special Install Operations for This Page: <a href="javascript:alert('oops not implemented');" alt="oops not implemented">Install the Swarm Extension</a></p>
 <form><!--  onsubmit="return false;/* prevent false submit event */">  -->
-<table id="swarmWorkFlows">
+<table id="swarmWorkflows">
 <tbody>
 <tr class="swarmCreator" id="preTest">
-   <td rowspan="4" style="border-right:3px solid black; padding-right: 5px">Select WorkFlow</td>
-   <td class="swarmWorkFlowSelector"> <input type="radio" name="swarmWorkFlowSelector" value="preTest" id="preTest_0" onclick="return selectWorkflow(event)">Pre-test </td>
-   <td class="swarmWorkFlow">
-     <button class="swarmWorkFlowStart swarmInstallStep">Install</button>
-     <button class="swarmWorkFlowStep swarmRunAllTestsStep" disabled>Test</button>
-     <button class="swarmWorkFlowEnd swarmStopTestsStep" disabled>Stop</button>
-     <button class="swarmWorkFlowOption swarmHaltFailTest">Fail Halt</button>
-     <button class="swarmWorkFlowOption swarmNoTimeoutTest">No Timeout</button>
+   <td rowspan="4" style="border-right:3px solid black; padding-right: 5px">Select Workflow</td>
+   <td class="swarmWorkflowSelector"> <input type="radio" name="swarmWorkflowSelector" value="preTest" id="preTest_0" onclick="return selectWorkflow(event)">Pre-test </td>
+   <td class="swarmWorkflow">
+     <button class="swarmWorkflowStart swarmInstallStep">Install</button>
+     <button class="swarmWorkflowStep swarmRunAllTestsStep" disabled>Test</button>
+     <button class="swarmWorkflowEnd swarmStopTestsStep" disabled>Stop</button>
+     <button class="swarmWorkflowOption swarmHaltFailTest">Fail Halt</button>
+     <button class="swarmWorkflowOption swarmNoTimeoutTest">No Timeout</button>
    </td>
 </tr>
 <tr class="swarmCreator" id="buildAll">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="buildAll" id="buildAll_0" onclick="return selectWorkflow(event)">Build Extension</td>
-    <td class="swarmWorkFlow">
-    <button class="swarmWorkFlowStart swarmInstallStep" disabled>Install</button>
-    <button class="swarmWorkFlowStep swarmRunAllTestsStep" disabled>Test</button>
-    <button class="swarmWorkFlowStep swarmSignPageStep" disabled>Sign</button>
-    <button class="swarmWorkFlowEnd swarmExportPageStep" disabled>Export</button>
+    <td class="swarmWorkflowSelector"><input type="radio" name="swarmWorkflowSelector" value="buildAll" id="buildAll_0" onclick="return selectWorkflow(event)">Build Extension</td>
+    <td class="swarmWorkflow">
+    <button class="swarmWorkflowStart swarmInstallStep" disabled>Install</button>
+    <button class="swarmWorkflowStep swarmRunAllTestsStep" disabled>Test</button>
+    <button class="swarmWorkflowStep swarmSignPageStep" disabled>Sign</button>
+    <button class="swarmWorkflowEnd swarmExportPageStep" disabled>Export</button>
     </td>
 </tr>
 <tr class="swarmUser" id="userInstall">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInstall" id="userInstall_0" onclick="return selectWorkflow(event)">Install</td>
-    <td class="swarmWorkFlow">
-    <button class="swarmWorkFlowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
-    <button class="swarmWorkFlowStep swarmCheckVersionsStep" disabled>Check Versions</button>
-    <button class="swarmWorkFlowStep swarmDownloadStep" disabled>Download</button>
-    <button class="swarmWorkFlowEnd swarmRestartBrowserStep" disabled>Restart Browser</button>
+    <td class="swarmWorkflowSelector"><input type="radio" name="swarmWorkflowSelector" value="userInstall" id="userInstall_0" onclick="return selectWorkflow(event)">Install</td>
+    <td class="swarmWorkflow">
+    <button class="swarmWorkflowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
+    <button class="swarmWorkflowStep swarmCheckVersionsStep" disabled>Check Versions</button>
+    <button class="swarmWorkflowStep swarmDownloadStep" disabled>Download</button>
+    <button class="swarmWorkflowEnd swarmRestartBrowserStep" disabled>Restart Browser</button>
     </td>
 </tr>
 <tr class="swarmUser" id="userInstall">
-    <td class="swarmWorkFlowSelector"><input type="radio" name="swarmWorkFlowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkFlowSelector" onclick="return selectWorkflow(event)">Investigate</input></td>
-    <td class="swarmWorkFlow">
-    <button class="swarmWorkFlowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
-    <button class="swarmWorkFlowStep swarmCheckVersionsStep" disabled>Check Versions</button>
-    <button class="swarmWorkFlowStep swarmShowTestsStep" disabled>Study Test Results</button>
-    <button class="swarmWorkFlowEnd swarmShowReviewsStep" disabled>Find Reviews</button>
+    <td class="swarmWorkflowSelector"><input type="radio" name="swarmWorkflowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkflowSelector" onclick="return selectWorkflow(event)">Investigate</input></td>
+    <td class="swarmWorkflow">
+    <button class="swarmWorkflowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
+    <button class="swarmWorkflowStep swarmCheckVersionsStep" disabled>Check Versions</button>
+    <button class="swarmWorkflowStep swarmShowTestsStep" disabled>Study Test Results</button>
+    <button class="swarmWorkflowEnd swarmShowReviewsStep" disabled>Find Reviews</button>
     </td>
 </tr>
 </tbody>
