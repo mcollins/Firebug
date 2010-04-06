@@ -150,7 +150,7 @@ Firebug.MemoryBug.TableView = domplate(Firebug.MemoryBug.TreeView,
     headerTag:
         TR({"class": "viewHeaderRow"},
             FOR("col", "$member|getColumnDesc",
-                TH(DIV("$col.title"))
+                TH({width: "$col|getColWidth"}, DIV("$col.title"))
             )
         ),
 
@@ -166,6 +166,11 @@ Firebug.MemoryBug.TableView = domplate(Firebug.MemoryBug.TreeView,
 
     valueTag: 
         DIV({"class": "viewLabel", title: "$object"}, "$object"),
+
+    getColWidth: function(col)
+    {
+        return (col.width) ? col.width: "";
+    },
 
     getFirstMember: function(input)
     {

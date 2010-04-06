@@ -109,9 +109,10 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
                 if (!child)
                     continue;
 
-                // Remember all referents
+                // Remember all referents (except of the prototype) 
                 if (!child.referents)
                     child.referents = [];
+
                 child.referents.push(info);
 
                 // Filter non existing children, parent and prototype.
@@ -169,7 +170,7 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         for (var i=0; i<windows.length; i++)
         {
             var win = windows[i];
-            objects.push({name: safeGetWindowLocation(win), obj: win});
+            objects.push({name: getFileName(safeGetWindowLocation(win)), obj: win});
         }
 
         // Iterate over all windows (the current window and all iframes).

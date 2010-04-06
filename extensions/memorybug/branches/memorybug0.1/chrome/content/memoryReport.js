@@ -85,9 +85,9 @@ Firebug.MemoryBug.ReportProvider.prototype =
         else if (object.type == "nativeclasses")
             return "Native Classes";
         else if (object.type == "objects")
-            return "Objects";
+            return "Global Objects";
         else if (object.type == "functions")
-            return "Functions";
+            return "Global Functions";
 
         if (object.type == "object")
         {
@@ -112,20 +112,6 @@ Firebug.MemoryBug.ReportProvider.prototype =
                     return object.info.prototype.nativeClass;
                 }
             }
-            else if (colId == "referents")
-            {
-                var result = [];
-                var referents = object.info.referents;
-                for (var id in referents)
-                {
-                    var referent = referents[id];
-                    var index = this.data.namedObjects[referent.id];
-                    var obj = this.objects[index];
-                    if (obj)
-                        result.push(obj.obj);
-                }
-                return result;
-            }
         }
 
         if (object.type == "nativeclass")
@@ -141,9 +127,38 @@ Firebug.MemoryBug.ReportProvider.prototype =
             if (colId == "name")
                 return object.name;
             else if (colId == "referents")
-                return object.info.referents ? object.info.referents.length : "?";
+            {
+                //return object.info.referents ? object.info.referents.length : "?";
+            }
             else if (colId == "size")
                 return object.info.size;
+            else if (colId == "constructor")
+            {
+                var index = this.data.namedObjects[object.info.id];
+                var func = this.objects[index];
+                if (func)
+                    return func.obj;
+
+                if (object.info.filename && object.info.lineStart)
+                    return new SourceLink(object.info.filename, object.info.lineStart, "js");
+
+                return object.info.prototype.nativeClass;
+            }
+        }
+
+        if (colId == "referents" && (object.type == "function" || object.type == "object"))
+        {
+            var result = new Array();
+            var referents = object.info.referents;
+            for (var id in referents)
+            {
+                var referent = referents[id];
+                var index = this.data.namedObjects[referent.id];
+                var obj = this.objects[index];
+                if (obj)
+                    result[obj.name] = obj.obj;
+            }
+            return result;
         }
 
         return object.name;
@@ -191,7 +206,7 @@ Firebug.MemoryBug.ReportProvider.prototype =
                 {id: "name", title: "Name"},
                 {id: "size", title: "Size"},
                 {id: "constructor", title: "Constructor"},
-                {id: "referents", title: "Referents"}
+                {id: "referents", title: "Referents", width: "100%"}
             ];
         }
 
@@ -208,7 +223,8 @@ Firebug.MemoryBug.ReportProvider.prototype =
             return [
                 {id: "name", title: "Name"},
                 {id: "size", title: "Size"},
-                {id: "referents", title: "Referents"}
+                {id: "constructor", title: "Constructor"},
+                {id: "referents", title: "Referents", width: "100%"}
             ];
         }
 
