@@ -84,10 +84,10 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
             if (topic == "fbtest")
             {
                 if (data === "shutdown")
-                    observerService.removeObserver(HaltOnFailedTest, "fbtest");
+                    observerService.removeObserver(FBTestApp.TestWindowLoader.HaltOnFailedTest, "fbtest");
 
-                if (data in HaltOnFailedTest)
-                    HaltOnFailedTest[data]();
+                if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
+                    FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
                 else
                     FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
             }
