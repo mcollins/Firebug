@@ -390,7 +390,10 @@ Firebug.Chromebug.FBCacheModule.CacheTable = domplate(Firebug.Rep,
     {
         try
         {
-            return formatSize(entry.size);
+            // xxxHonza: localization
+            var numLines = entry.lines.length;
+            return formatSize(entry.size) + " (" + numLines + " " +
+                (numLines > 1 ? "lines" : "line") + ")"; 
         }
         catch (err)
         {
