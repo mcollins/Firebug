@@ -26,15 +26,12 @@ SwarmInstaller.workFlowMonitor =
 {
     initialize: function(doc, progress)
     {
-        this.enableSwarmWorkflows(doc);
+        this.injectSwarmWorkflows(doc);
         this.progress = progress;
         SwarmInstaller.extensions.prepareDeclaredExtensions(doc, this.progress);
-        var ext = SwarmInstaller.extensions.getInstallableExtensions();
-        if (ext.length == 0)
-            SwarmInstaller.workFlowMonitor.stepWorkflows(doc, "swarmInstallStep");
     },
 
-    enableSwarmWorkflows: function(doc)
+    injectSwarmWorkflows: function(doc)
     {
         var webWarning = doc.getElementById("swarmWebPage");
         webWarning.style.visibility = "hidden";
@@ -42,6 +39,13 @@ SwarmInstaller.workFlowMonitor =
         var swarmWorkflowInsertionPoint = doc.getElementById("swarmWorkflowInsertion");
         var swarmWorkflowInsertion = getResource("chrome://swarm/content/swarmWorkflow.htm");
         swarmWorkflowInsertionPoint.innerHTML = swarmWorkflowInsertion;
+    },
+
+    initializeUI: function(doc, progress)
+    {
+        var ext = SwarmInstaller.extensions.getInstallableExtensions();
+        if (ext.length == 0)
+            SwarmInstaller.workFlowMonitor.stepWorkflows(doc, "swarmInstallStep");
 
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         this.hookButtons(swarmWorkflows);

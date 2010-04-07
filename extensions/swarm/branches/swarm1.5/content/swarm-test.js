@@ -61,13 +61,17 @@ var FirebugSwarmTest =
         {
             this.progress("Noticed a Swarm Test Document");
             SwarmInstaller.workFlowMonitor.initialize(doc, this.progress);
-            this.addHashes(SwarmInstaller.extensions.declaredExtensions);
+            this.addHashes(SwarmInstaller.extensions.getInstallableExtensions());
+            this.monitorStates(doc, this.progress);
+            SwarmInstaller.workFlowMonitor.initializeUI(doc, this.progress);
         }
     },
 
     detachFromPage: function()
     {
-
+        var browser = $("taskBrowser");
+        var doc = browser.contentDocument;
+        this.unmonitorStates(doc, this.progress);
     },
 
     addHashes: function(extensions)
@@ -88,6 +92,27 @@ var FirebugSwarmTest =
                 });
             }
         }
+    },
+
+    monitorStates: function(doc)
+    {
+        var swarmWorkflows = doc.getElementById("swarmWorkflows");
+        var testButtons = swarmWorkflows.getElementsByClassName("swarmRunAllTestsStep");
+        for (var i = 0; i < testButtons.length; i++)
+            testButtons[i].addEventListener('DOMAttrModified', this.toggleTestFrame, true);
+    },
+
+    unmonitorStates: function(doc)
+    {
+        var swarmWorkflows = doc.getElementById("swarmWorkflows");
+        var testButtons = swarmWorkflows.getElementsByClassName("swarmRunAllTestsStep");
+        for (var i = 0; i < testButtons.length; i++)
+            testButtons[i].removeEventListener('DOMAttrModified', this.toggleTestFrame, true);
+    },
+
+    toggleTestFrame: function(event)
+    {
+    FBTrace.sysout("toggleTestFrame ", event);
     },
     // ----------------------------------------------------------------------------------
     // Handlers contributed to swarmInstaller
