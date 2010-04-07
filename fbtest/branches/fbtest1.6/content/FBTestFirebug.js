@@ -1154,7 +1154,7 @@ this.searchInScriptPanel = function(searchText, callback)
  */
 this.searchInHtmlPanel = function(searchText, callback)
 {
-    var panel = FW.FirebugChrome.selectPanel("html");
+    var panel = FBTest.selectPanel("html");
 
     // Set search string into the search box.
     var searchBox = FW.document.getElementById("fbSearchBox");
