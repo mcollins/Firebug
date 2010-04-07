@@ -39,15 +39,28 @@ SwarmInstaller.workFlowMonitor =
         var webWarning = doc.getElementById("swarmWebPage");
         webWarning.style.visibility = "hidden";
 
+        var swarmWorkflowInsertionPoint = doc.getElementById("swarmWorkflowInsertion");
+        var swarmWorkflowInsertion = getResource("chrome://swarm/content/swarmWorkflow.htm");
+        swarmWorkflowInsertionPoint.innerHTML = swarmWorkflowInsertion;
+
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         this.hookButtons(swarmWorkflows);
         swarmWorkflows.style.display = "block";
     },
 
-    hookButtons: function(elt)
+    hookButtons: function(workflowsElement)
     {
-        this.buttonHook = bind(this.doWorkflowStep, this);
-        elt.addEventListener('click', this.buttonHook, true);
+        this.buttonHook = bind(this.doWorkflowEvent, this);
+        workflowsElement.addEventListener('click', this.buttonHook, true);
+    },
+
+    doWorkflowEvent: function(event)
+    {
+        if (event.target.tagName.toLowerCase() === 'button')
+            this.doWorkflowStep(event);
+        if (event.target.tagName.toLowerCase() === 'input')
+            this.selectWorkflow(event);
+        // TODO become a joehewitt some day.
     },
 
     detachFromPage: function()
@@ -57,9 +70,46 @@ SwarmInstaller.workFlowMonitor =
         this.unHookButtons(swarmWorkflows);
     },
 
-    unHookButtons: function(elt)
+    unHookButtons: function(workflowsElement)
     {
-        elt.removeEventListener('click',this.buttonHook ,true);
+        workflowsElement.removeEventListener('click',this.buttonHook ,true);
+    },
+
+    // ------------------------------------------------------------------------------------------
+    selectWorkflow: function(event)
+    {
+        var doc = event.target.ownerDocument;
+        // unselect the previously selected workflow
+        var workFlowSelectors = doc.body.getElementsByClassName("swarmWorkflowSelector");
+        for (var i = 0; i < workFlowSelectors.length; i++)
+            workFlowSelectors[i].classList.remove("swarmWorkflowSelected");
+
+        // disable all of the buttons in all of the workflows
+        var workFlows = doc.getElementById("swarmWorkflows");
+        var buttons = workFlows.getElementsByTagName('button');
+        for (var j = 0; j < buttons.length; j++)
+                buttons[j].setAttribute("disabled", "disabled");
+
+        // select the new workflow
+        var selectedWorkflowSelector = event.target;
+        selectedWorkflowSelector.classList.add("swarmWorkflowSelected");
+
+        // enable some buttons in this workflow
+        var parent = selectedWorkflowSelector;
+        while(parent.tagName.toLowerCase() !== "tr")
+            parent = parent.parentNode;
+
+        var selectedWorkflow = parent.getElementsByClassName("swarmWorkflow")[0];
+
+        var buttons = selectedWorkflow.getElementsByTagName('button');
+        for (var j = 0; j < buttons.length; j++)
+        {
+            button = buttons[j];
+            if (button.classList.contains("swarmWorkflowStep")) continue; // leave disabled
+            if (button.classList.contains("swarmWorkflowEnd")) continue;
+            button.removeAttribute("disabled");
+        }
+        return true;
     },
 
     doWorkflowStep: function(event)
