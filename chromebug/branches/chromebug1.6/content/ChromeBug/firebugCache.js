@@ -390,8 +390,7 @@ Firebug.Chromebug.FBCacheModule.CacheTable = domplate(Firebug.Rep,
     {
         try
         {
-            var data = entry.lines ? entry.lines.join("") : "";
-            return formatSize(data.length);
+            return formatSize(entry.size);
         }
         catch (err)
         {
@@ -535,10 +534,27 @@ Firebug.Chromebug.FBCacheModule.CacheEntryTabView = domplate(Firebug.Rep,
         if (tabName == "Data" && !tabDataBody.updated)
         {
             tabDataBody.updated = true;
+
             var text = entry.lines.join("");
-            if (text && text.length > 10*1024)
-                text = text.substr(0, 10*1024) + "...";
-            tabDataBody.innerHTML = wrapText(text);
+            if (text && text.length > 10*1024*1024)
+                text = text.substr(0, 10*1024*1024) + "...";
+
+            var prevWidth = Firebug.textWrapWidth;
+            try
+            {
+                Firebug.textWrapWidth = 100000;
+                insertWrappedText(text, tabDataBody);
+            }
+            catch (e)
+            {
+                if (FBTrace.DBG_FBCACHE)
+                    FBTrace.sysout("fbcache.CacheEntryTabView.updateTabBody; ", e);
+            }
+            finally
+            {
+                // textWrapWidth should be always set to the previous value.
+                Firebug.textWrapWidth = prevWidth;
+            }
         }
     },
 });
