@@ -15,7 +15,6 @@ function runTest()
                 var responseNode = row.getElementsByClassName(
                     "netInfoResponseText netInfoText")[0];
 
-                FBTrace.sysout("asdfasdfasdfa ", responseNode);
                 if (FBTest.ok(responseNode, "Response tab must exist in"))
                 {
                     FBTest.compare("Response for test 2868.", responseNode.textContent,
