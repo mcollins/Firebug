@@ -99,7 +99,7 @@ var FirebugSwarmTest =
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         var testButtons = swarmWorkflows.getElementsByClassName("swarmRunAllTestsStep");
         for (var i = 0; i < testButtons.length; i++)
-            testButtons[i].addEventListener('DOMAttrModified', this.toggleTestFrame, true);
+            testButtons[i].addEventListener('DOMAttrModified', this.monitorTestStep, true);
     },
 
     unmonitorStates: function(doc)
@@ -107,12 +107,35 @@ var FirebugSwarmTest =
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         var testButtons = swarmWorkflows.getElementsByClassName("swarmRunAllTestsStep");
         for (var i = 0; i < testButtons.length; i++)
-            testButtons[i].removeEventListener('DOMAttrModified', this.toggleTestFrame, true);
+            testButtons[i].removeEventListener('DOMAttrModified', this.monitorTestStep, true);
     },
 
-    toggleTestFrame: function(event)
+    monitorTestStep: function(event)
     {
-    FBTrace.sysout("toggleTestFrame ", event);
+        if (event.attrName === "disabled")
+        {
+            var doc = event.target.ownerDocument;
+            var swarmUIs = doc.getElementsByClassName("swarmSpecification");
+            for (var i = 0; i < swarmUIs.length; i++)
+                swarmUIs[i].style.display = (event.newValue === "disabled") ? "block" : "none" ;
+
+            if (event.newValue === "disabled")
+            {
+                delete doc.getElementById('FBTest').style.height;
+            }
+            else
+            {
+                var height = doc.documentElement.clientHeight;  // height we have to work with
+                doc.getElementById('FBTest').style.height = height +"px";
+            }
+
+        }
+        FBTrace.sysout("monitorTestStep disabled "+event.attrChange+" for "+event.attrName+" to "+event.newValue, event);
+    },
+
+    showSwarmUI: function(doc, show)
+    {
+
     },
     // ----------------------------------------------------------------------------------
     // Handlers contributed to swarmInstaller

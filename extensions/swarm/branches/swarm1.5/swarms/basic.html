@@ -133,6 +133,7 @@ ol {
 button.swarmInactive:after {
     content: "Show Swarm";
 }
+/* Need move these to style file */
 
 #swarmWorkflows {
     padding: 10px;
@@ -166,6 +167,28 @@ button.swarmWorkflowing {
 button.swarmWorkFailed {
     background: #330000;
 }
+table.swarmWorkflowIsSelected table tr td {
+    display: none;
+}
+table.swarmWorkflowIsSelected table tr.swarmWorkflowSelected td {
+    display: table-cell;
+}
+table.swarmWorkflowIsSelected caption {
+    display: none;
+}
+td#selectWorkflow {
+    font-weight: bold;
+}
+table.swarmWorkflowIsSelected td#selectWorkflow {
+    display: table-cell;
+    background-image:url("chrome://firebug/skin/win/twistyClosed.png");
+    background-position: left center;
+    background-repeat:no-repeat;
+    cursor: pointer;
+    font-weight: bold;
+    padding-right: 5px;
+    padding-left: 18px;
+}
 </style>
 </head>
 <body>
@@ -176,6 +199,7 @@ button.swarmWorkFailed {
 
 <div id="basicSwarmUI" class="swarmUI swarmActive">
 <div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
+ <div class="swarmSpecification">
  <h2 class="swarmTitle">Basic Firebug Swarm with BSD Licenses
  </h2>
  <ol>
@@ -249,8 +273,10 @@ button.swarmWorkFailed {
 </li>
 
 </ol>
-<div class="certification">
 <h2><img src="http://getfirebug.com/images/firebug3.jpg"><span class="date"><i>to be dated by FBTest</i></span></h2>
+</div> <!-- swarmSpecification -->
+<div class="certification">
+
 <!--  FBTest looks for this iframe by name FBTest -->
 <iframe id="FBTest" width="100%" name="FBTest" src="https://getfirebug.com/tests/content/testlists/firebug1.6.html"></iframe>
 </div>

@@ -1,10 +1,14 @@
 <!-- document fragment to be inserted -->
-<form onsubmit="return false;/* prevent false submit event */">
 <table id="swarmWorkflows">
 <tbody>
-<tr class="swarmCreator" id="preTest">
-   <td rowspan="4" style="border-right:3px solid black; padding-right: 5px">Select Workflow</td>
-   <td class="swarmWorkflowSelector"> <input type="radio" name="swarmWorkflowSelector" value="preTest" id="preTest_0">Pre-test </td>
+<tr>
+<td  id="selectWorkflow">Select Workflow</td>
+<td>
+<form onsubmit="return false;/* prevent false submit event */">
+<table >
+<tbody>
+<tr class="swarmCreator swarmWorkflowSelection" id="preTest">
+   <td class="swarmWorkflowSelector"> <input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="preTest" id="preTest_0">Pre-test </td>
    <td class="swarmWorkflow">
      <button class="swarmWorkflowStart swarmInstallStep">Install</button>
      <button class="swarmWorkflowStep swarmRunAllTestsStep" disabled>Test</button>
@@ -13,8 +17,8 @@
      <button class="swarmWorkflowOption swarmNoTimeoutTest">No Timeout</button>
    </td>
 </tr>
-<tr class="swarmCreator" id="buildAll">
-    <td class="swarmWorkflowSelector"><input type="radio" name="swarmWorkflowSelector" value="buildAll" id="buildAll_0">Build Extension</td>
+<tr class="swarmCreator swarmWorkflowSelection" id="buildAll">
+    <td class="swarmWorkflowSelector"><input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="buildAll" id="buildAll_0">Build Extension</td>
     <td class="swarmWorkflow">
     <button class="swarmWorkflowStart swarmInstallStep" disabled>Install</button>
     <button class="swarmWorkflowStep swarmRunAllTestsStep" disabled>Test</button>
@@ -22,8 +26,8 @@
     <button class="swarmWorkflowEnd swarmExportPageStep" disabled>Export</button>
     </td>
 </tr>
-<tr class="swarmUser" id="userInstall">
-    <td class="swarmWorkflowSelector"><input type="radio" name="swarmWorkflowSelector" value="userInstall" id="userInstall_0">Install</td>
+<tr class="swarmUser swarmWorkflowSelection" id="userInstall">
+    <td class="swarmWorkflowSelector"><input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="userInstall" id="userInstall_0">Install</td>
     <td class="swarmWorkflow">
     <button class="swarmWorkflowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
     <button class="swarmWorkflowStep swarmCheckVersionsStep" disabled>Check Versions</button>
@@ -31,8 +35,8 @@
     <button class="swarmWorkflowEnd swarmRestartBrowserStep" disabled>Restart Browser</button>
     </td>
 </tr>
-<tr class="swarmUser" id="userInstall">
-    <td class="swarmWorkflowSelector"><input type="radio" name="swarmWorkflowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkflowSelector">Investigate</input></td>
+<tr class="swarmUser swarmWorkflowSelection" id="userInstall">
+    <td class="swarmWorkflowSelector"><input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkflowSelector">Investigate</input></td>
     <td class="swarmWorkflow">
     <button class="swarmWorkflowStart swarmVerifySignatureStep" disabled>Verify Signature</button>
     <button class="swarmWorkflowStep swarmCheckVersionsStep" disabled>Check Versions</button>
@@ -41,6 +45,12 @@
     </td>
 </tr>
 </tbody>
-<caption>Work with The Swarm</caption>
+
 </table>
+
 </form>
+</td>
+</tr>
+</tbody>
+
+</table>
