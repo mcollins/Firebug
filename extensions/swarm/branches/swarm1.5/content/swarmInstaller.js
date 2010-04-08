@@ -85,16 +85,7 @@ SwarmInstaller.workFlowMonitor =
     selectWorkflow: function(event)
     {
         var doc = event.target.ownerDocument;
-        // unselect the previously selected workflow
-        var workFlowSelectors = doc.body.getElementsByClassName("swarmWorkflowSelection");
-        for (var i = 0; i < workFlowSelectors.length; i++)
-            workFlowSelectors[i].classList.remove("swarmWorkflowSelected");
-
-        // disable all of the buttons in all of the workflows
-        var workFlows = doc.getElementById("swarmWorkflows");
-        var buttons = workFlows.getElementsByTagName('button');
-        for (var j = 0; j < buttons.length; j++)
-                buttons[j].setAttribute("disabled", "disabled");
+        this.unSelectSelectedWorkflow(doc);
 
         // select the new workflow
         var selectedWorkflowSelector = event.target;
@@ -104,6 +95,8 @@ SwarmInstaller.workFlowMonitor =
             if (parent.classList && parent.classList.contains("swarmWorkflowSelection"))
             {
                 parent.classList.add("swarmWorkflowSelected");
+                var input = parent.getElementsByTagName('input')[0];
+                input.checked = true;
                 break;
             }
         }
@@ -129,6 +122,24 @@ SwarmInstaller.workFlowMonitor =
         return true;
     },
 
+    unSelectSelectedWorkflow: function(doc)
+    {
+        // unselect the previously selected workflow
+        var workFlowSelectors = doc.body.getElementsByClassName("swarmWorkflowSelection");
+        for (var i = 0; i < workFlowSelectors.length; i++)
+            workFlowSelectors[i].classList.remove("swarmWorkflowSelected");
+
+        // disable all of the buttons in all of the workflows
+        var workFlows = doc.getElementById("swarmWorkflows");
+        var buttons = workFlows.getElementsByTagName('button');
+        for (var j = 0; j < buttons.length; j++)
+            buttons[j].setAttribute("disabled", "disabled");
+
+        var inputs = workFlows.getElementsByTagName("input");
+        for (var j = 0; j < inputs.length; j++)
+             inputs[j].checked = false;
+    },
+
     initializeWorkflow: function(elt)
     {
         var ext = SwarmInstaller.extensions.getInstallableExtensions();
@@ -142,6 +153,8 @@ SwarmInstaller.workFlowMonitor =
         var swarmWorkflowIsSelected = doc.getElementsByClassName("swarmWorkflowIsSelected");
         for (var i = 0; i < swarmWorkflowIsSelected.length; i++)
             swarmWorkflowIsSelected[i].classList.remove("swarmWorkflowIsSelected");
+
+        SwarmInstaller.workFlowMonitor.unSelectSelectedWorkflow(doc);
     },
 
     doWorkflowStep: function(event)
