@@ -433,7 +433,7 @@ this.openURL = function(url, callback)
             if (!win.wrappedJSObject)
                 win.wrappedJSObject = win;
             callback(win);
-        }, 10);
+        }, 100);
     }
 
     if (callback)
