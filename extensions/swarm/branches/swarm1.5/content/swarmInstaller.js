@@ -322,11 +322,12 @@ SwarmInstaller.extensions =
                     setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
                 }
             },
+
             checkForRestart: function()
             {
                 for (var i = 0; i < installingExtensions.length; i++)
                 {
-                    if (installingExtensions[i].statusElement.contains("installing-install_done"))
+                    if (installingExtensions[i].statusElement.classList.contains("installing-install_done"))
                         continue;
                     else
                         return false;
@@ -334,6 +335,7 @@ SwarmInstaller.extensions =
                 // all installs are done
                 window.alert("Installation is complete but you may have to restart the browser");
             },
+
             onProgress: function(index, value, maxValue )
             {
                 FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+value+"/"+maxValue);
