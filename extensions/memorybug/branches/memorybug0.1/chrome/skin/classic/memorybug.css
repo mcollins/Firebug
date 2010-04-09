@@ -47,9 +47,13 @@
     cursor: default;
     -moz-user-select:  none;
     overflow: hidden;
-    padding-left: 18px;
+    padding-left: 10px;
     white-space: nowrap;
     background-color: transparent;
+}
+
+.viewRow > .viewCol:first-child > .viewLabel {
+    padding-left: 18px;
 }
 
 .infoBody {
@@ -61,7 +65,7 @@
 
 .tableView {
     width: 100%;
-    border: 1px solid #CCCCCC;
+    border-bottom: 1px solid #CCCCCC;
 }
 
 .tableView TR {
@@ -121,7 +125,7 @@
 .viewRow.hasChildren > .viewCol:first-child > .viewLabel {
     background-image: url(chrome://firebug/skin/win/twistyClosed.png);
     background-repeat: no-repeat;
-    background-position: 2px 2px;
+    background-position: 3px 2px;
     min-height: 12px;
 }
 
@@ -157,6 +161,23 @@
 }
 
 /************************************************************************************************/
+/* Specific table fields */
+
+.viewRow .referents {
+    white-space: normal;
+}
+
+/************************************************************************************************/
+/* Selection */
+
+.viewRow.selected .viewLabel > .labelName {
+    cursor: default !important;
+    border-color: Highlight;
+    background-color: Highlight;
+    color: HighlightText !important;
+}
+
+/************************************************************************************************/
 /* Temporary Customizing */
 
 .panelNode-memory .memberLabel {
@@ -179,4 +200,15 @@
 
 .objectBox-array.hasTwisty.opened {
     background-image: url(chrome://firebug/skin/win/twistyOpen.png);
+}
+
+/************************************************************************************************/
+/* Memory Link (used for referents) */
+
+.objectLink-memoryLink {
+    color: gray;
+}
+
+.objectLink-memoryLink:hover {
+    color: blue;
 }

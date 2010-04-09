@@ -6,228 +6,296 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 // ************************************************************************************************
-// Data Provider
+// Memory Report Template
 
-Firebug.MemoryBug.ReportProvider = function(input, objects)
+/**
+ * @domplate: Template for memory report. This template is used to generate Memory panel UI.
+ */
+Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
 {
-    this.objects = objects;
-    this.data = input;
+    tag:
+        TABLE({"class": "tableView reportView", cellpadding: 0, cellspacing: 0,
+            onclick: "$onClick", _repObject: "$input"},
+            TBODY({"class": "tableViewBody"},
+                TR({"class": "viewHeaderRow"},
+                    TH(DIV($STR("memorybug.report.col.Name"))),
+                    TH(DIV($STR("memorybug.report.col.Size"))),
+                    TH(DIV($STR("memorybug.report.col.Value"))),
+                    TH(DIV($STR("memorybug.report.col.Constructor"))),
+                    TH({width: "100%"},
+                        DIV($STR("memorybug.report.col.References"))
+                    )
+                ),
+                FOR("member", "$input|rootIterator",
+                    TAG("$rowTag", {member: "$member"}
+                )
+            )
+        )
+    ),
 
-    this.input = {};
+    rowTag:
+        TR({"class": "viewRow", _repObject: "$member",
+            $hasChildren: "$member.hasChildren",
+            level: "$member.level"},
+            TD({"class": "viewCol", style: "padding-left: $member.indent\\px"},
+                DIV({"class": "viewLabel"},
+                    SPAN({"class": "labelName"}, "$member.name")
+                )
+            ),
+            TD({"class": "viewCol"},
+                DIV({"class": "viewLabel"}, "$member|getSize")
+            ),
+            TD({"class": "viewCol"},
+                DIV({"class": "viewLabel"},
+                    TAG("$member|getValueTag", {object: "$member|getValue"})
+                )
+            ),
+            TD({"class": "viewCol"},
+                DIV({"class": "viewLabel"},
+                    TAG("$member|getCtorTag", {object: "$member|getCtorObject"})
+                )
+            ),
+            TD({"class": "viewCol"},
+                DIV({"class": "viewLabel"},
+                    TAG("$member|getRefsTag", {member: "$member"})
+                )
+            )
+        ),
 
-    // List of native classes
-    this.input.nativeClasses = {
-        type: "nativeclasses",
-        children: input.nativeClasses,
-    };
-
-    // List of objects.
-    this.input.objects = {
-        type: "objects",
-        children: input.objects,
-    };
-
-    // List of functions.
-    this.input.functions = {
-        type: "functions",
-        children: input.functions,
-    };
-
-/*    this.input.summary = {
-        type: "summary",
-        children: [this.input.nativeClasses, this.input.objects, this.input.functions],
-    }
-*/
-    this.input.type = "summary";
-    this.input.children = [this.input.nativeClasses, this.input.objects, this.input.functions];
-}
-
-Firebug.MemoryBug.ReportProvider.prototype =
-{
-    getInput: function()
+    getRefsTag: function()
     {
-        return this.input;
+        Firebug.MemoryBug.Referents.input = this.input;
+        return Firebug.MemoryBug.Referents.tag;
     },
 
-    hasChildren: function(object)
-    {
-        var children = this.getChildren(object);
-        for (var name in children)
-            return true;
+    typeNameTag:
+        DIV("$object"),
 
-        return false;
+    loop:
+        FOR("member", "$members",
+            TAG("$rowTag", {member: "$member"})),
+
+    refsTag:
+        DIV({"class": "referents", _repObject: "$member"},
+            FOR("item", "$member|refsIterator",
+                TAG("$item.tag", {object: "$item.object"}),
+                SPAN({"class": "arrayComma"}, "$item.delim")
+            )
+        ),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    render: function(input, parent)
+    {
+        this.input = input;
+        return this.tag.replace({input: input}, parent, this);
     },
 
-    getChildren: function(object)
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    getSize: function(member)
     {
-        if (object.children)
-            return object.children;
-
-        var children = [];
-        if (object.type == "object")
-        {
-            for (p in object.value)
-            {
-                var child = {name: p, value: object.value[p]};
-                if (typeof(child.value) == "object")
-                    child.type = "object";
-                children.push(child);
-            }
-        }
-
-        return children;
+        return member.info ? formatSize(member.info.size) : "";
     },
 
-    getLabel: function(object, colId)
+    getCtorTag: function(member)
     {
-        if (object.type == "summary")
-            return this.data.startTime.toLocaleString();// + " - " + this.data.title;
-        else if (object.type == "nativeclasses")
-            return "Native Classes";
-        else if (object.type == "objects")
-            return "Global Objects";
-        else if (object.type == "functions")
-            return "Global Functions";
+        var ctor = member.info ? member.info.ctor : null;
+        if (ctor && ctor.filename && ctor.lineStart)
+            return FirebugReps.Func.tag;
 
-        if (object.type == "object")
-        {
-            if (colId == "name")
-                return object.name;
-            else if (colId == "size")
-                return object.info ? object.info.size : "?";
-            else if (colId == "constructor")
-            {
-                if (object.info && object.info.prototype &&
-                    object.info.prototype.children.length == 1)
-                {
-                    var info = object.info.prototype.children[0];
-                    var index = this.data.namedObjects[info.id];
-                    var func = this.objects[index];
-                    if (func)
-                        return func.obj;
-
-                    if (info.filename && info.lineStart)
-                        return new SourceLink(info.filename, info.lineStart, "js");
-
-                    return object.info.prototype.nativeClass;
-                }
-            }
-        }
-
-        if (object.type == "nativeclass")
-        {
-            if (colId == "name")
-                return object.name;
-            else if (colId == "count")
-                return object.count;
-        }
-
-        if (object.type == "function")
-        {
-            if (colId == "name")
-                return object.name;
-            else if (colId == "referents")
-            {
-                //return object.info.referents ? object.info.referents.length : "?";
-            }
-            else if (colId == "size")
-                return object.info.size;
-            else if (colId == "constructor")
-            {
-                var index = this.data.namedObjects[object.info.id];
-                var func = this.objects[index];
-                if (func)
-                    return func.obj;
-
-                if (object.info.filename && object.info.lineStart)
-                    return new SourceLink(object.info.filename, object.info.lineStart, "js");
-
-                return object.info.prototype.nativeClass;
-            }
-        }
-
-        if (colId == "referents" && (object.type == "function" || object.type == "object"))
-        {
-            var result = new Array();
-            var referents = object.info.referents;
-            for (var id in referents)
-            {
-                var referent = referents[id];
-                var index = this.data.namedObjects[referent.id];
-                var obj = this.objects[index];
-                if (obj)
-                    result[obj.name] = obj.obj;
-            }
-            return result;
-        }
-
-        return object.name;
+        // There is no user conctructor so, display the native type.
+        return this.typeNameTag;
     },
 
-    getValue: function(object)
+    getCtorObject: function(member)
     {
-        return object.value;
+        var ctor = member.info ? member.info.ctor : null;
+        if (ctor && ctor.filename && ctor.lineStart)
+            return this.input.getMember(ctor.id).value;
+
+        if (member.value instanceof Array)
+            return "array";
+        else if (member.value instanceof String)
+            return "string";
+
+        return typeof(member.value);
     },
 
-    getValueTag: function(object, colId)
+    getValueTag: function(member)
     {
-        var type = typeof(object);
-        if (object instanceof SourceLink || object instanceof Array ||
-            type == "function" || colId == "value")
+        if (typeof(member.value) != "object")
         {
-            var rep = Firebug.getRep(object);
+            var rep = Firebug.getRep(member.value);
             return rep.shortTag ? rep.shortTag : rep.tag;
         }
 
+        return FirebugReps.Nada.tag;
+    },
+
+    getValue: function(member)
+    {
+        var objectInfo = this.input.findMember(member.value);
+        if (!objectInfo)
+            return member.value;
         return null;
     },
 
-    getBodyTemplate: function(object)
+    onClick: function(event)
     {
-        if (object.type == "objects" ||
-            object.type == "nativeclasses" ||
-            object.type == "functions")
-        {
-            Firebug.MemoryBug.TableView.provider = this;
-            return Firebug.MemoryBug.TableView;
-        }
+        if (!isLeftClick(event))
+            return;
 
-        return Firebug.MemoryBug.TreeView;
+        if (!hasClass(event.target, "viewLabel") &&
+            !hasClass(event.target, "labelName"))
+            return;
+
+        var row = getAncestorByClass(event.target, "viewRow");
+        if (hasClass(row, "hasChildren"))
+        {
+            this.toggleRow(row);
+            cancelEvent(event);
+        }
     },
 
-    getColumnDesc: function(object)
+    toggleRow: function(row)
     {
-        if (object.type == "object")
+        var member = row.repObject;
+        if (!member)
+            return;
+
+        var level = parseInt(row.getAttribute("level"));
+        var table = getAncestorByClass(row, "tableView");
+
+        toggleClass(row, "opened");
+        if (hasClass(row, "opened"))
         {
-            return [
-                {id: "name", title: "Name"},
-                {id: "size", title: "Size"},
-                {id: "constructor", title: "Constructor"},
-                {id: "referents", title: "Referents", width: "100%"}
-            ];
+            var members = this.getMembers(member, level+1);
+            this.loop.insertRows({members: members}, row)[0];
+        }
+        else
+        {
+            var tbody = row.parentNode;
+            for (var firstRow = row.nextSibling; firstRow; firstRow = row.nextSibling)
+            {
+                if (parseInt(firstRow.getAttribute("level")) <= level)
+                    break;
+                tbody.removeChild(firstRow);
+            }
+        }
+    },
+
+    rootIterator: function(input)
+    {
+        var members = [];
+        for (var p in input.globals)
+        {
+            var object = input.globals[p];
+            var hasChildren = this.hasProperties(object.value);
+            members.push({
+                name: object.name,
+                value: object.value,
+                info: object.info,
+                hasChildren: hasChildren,
+                level: 0,
+                indent: 0,
+            });
+        }
+        return members;
+    },
+
+    getMembers: function(member, level)
+    {
+        var members = [];
+        for (var p in member.value)
+        {
+            var object = member.value[p];
+            var objectInfo = this.input.findMember(object);
+
+            if (objectInfo && object !== objectInfo.value)
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("memorybug.ReportView.getMembers; ERROR wrong object found!");
+            }
+
+            var hasChildren = this.hasProperties(object);
+            members.push({
+                name: p,
+                value: object,
+                info: objectInfo ? objectInfo.info : null,
+                hasChildren: hasChildren,
+                level: level,
+                indent: level*16,
+            });
+        }
+        return members;
+    },
+
+    hasProperties: function(object)
+    {
+        if (typeof(object) != "object")
+            return false;
+
+        // Use the lib function.
+        return hasProperties(object);
+    },
+});
+
+// ************************************************************************************************
+
+Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
+{
+    tag:
+        DIV({"class": "referents", _repObject: "$member"},
+            FOR("item", "$member|refsIterator",
+                TAG("$item.tag", {object: "$item.object"}),
+                SPAN(" ")
+            )
+        ),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    refsIterator: function(member)
+    {
+        var refs = [];
+        if (!member.info)
+            return refs;
+
+        for (var p in member.info.referents)
+        {
+            var ref = member.info.referents[p];
+            if (ref.nativeClass == "XPCSafeJSObjectWrapper")
+                continue;
+
+            var refInfo = this.input.getMember(ref.id);
+
+            // Iterate the referent object to find out what is the property pointing
+            // to the object in inspection.
+            //xxxHonza: What if there is more fields in the referent pointing to us? 
+            var propName;
+            if (refInfo) {
+                for (var p in refInfo.value) {
+                    if (refInfo.value[p] == member.value) {
+                        propName = p;
+                        break;
+                    }
+                }
+            }
+
+            refs.push({
+                tag: refInfo ? FirebugReps.MemoryLink.tag : DIV("$object.name"),
+                name: refInfo ? refInfo.name : "unknown",
+                object: refInfo ? new Firebug.MemoryBug.MemoryLink(refInfo, propName) : member,
+            });
         }
 
-        if (object.type == "nativeclass")
-        {
-            return [
-                {id: "name", title: "Name"},
-                {id: "count", title: "Count"}
-            ];
-        }
+        // There is no delimiter after the last item in the array.
+        if (refs.length)
+            refs[refs.length-1].delim = "";
 
-        if (object.type == "function")
-        {
-            return [
-                {id: "name", title: "Name"},
-                {id: "size", title: "Size"},
-                {id: "constructor", title: "Constructor"},
-                {id: "referents", title: "Referents", width: "100%"}
-            ];
-        }
-
-        return [];
-    }
-};
+        return refs;
+    },
+});
 
 // ************************************************************************************************
 }});

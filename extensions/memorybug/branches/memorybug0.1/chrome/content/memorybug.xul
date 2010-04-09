@@ -7,6 +7,7 @@
     <script src="chrome://memorybug/content/memoryProfiler.js" type="application/x-javascript"/>
     <script src="chrome://memorybug/content/memoryReport.js" type="application/x-javascript"/>
     <script src="chrome://memorybug/content/memoryRep.js" type="application/x-javascript"/>
+    <script src="chrome://memorybug/content/memoryReps.js" type="application/x-javascript"/>
 
     <!-- Extend Firebug's command set -->
     <commandset id="mainCommandSet">

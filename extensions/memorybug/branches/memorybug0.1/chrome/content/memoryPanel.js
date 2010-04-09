@@ -45,7 +45,95 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     refresh: function()
     {
-    }
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Selection
+
+    hasObject: function(object)  // beyond type testing, is this object selectable?
+    {
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.hasObject;", object);
+
+        return false;
+    },
+
+    navigate: function(object)
+    {
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.navigate;", object);
+    },
+
+    updateLocation: function(object)  // if the module can return null from getDefaultLocation, then it must handle it here.
+    {
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.updateLocation;", object);
+    },
+
+    select: function(object, forceUpdate)
+    {
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.select;", object);
+
+        Firebug.Panel.select.apply(this, arguments);
+    },
+
+    updateSelection: function(object)
+    {
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.updateSelection;", object);
+
+        if (!object)
+            return;
+
+        /*if (file)
+        {
+            scrollIntoCenterView(file.row);
+            if (!hasClass(file.row, "opened"))
+                NetRequestEntry.toggleHeadersRow(file.row);
+        }*/
+    },
+
+    getDefaultSelection: function(context)
+    {
+        return null;
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Options & Popups
+
+    getOptionsMenuItems: function()
+    {
+        return null;
+    },
+
+    getPopupObject: function(target)
+    {
+        return Firebug.getRepObject(target);
+    },
+
+    getTooltipObject: function(target)
+    {
+        return Firebug.getRepObject(target);
+    },
+
+    showInfoTip: function(infoTip, x, y)
+    {
+
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Context menu
+
+    getContextMenuItems: function(object, target)
+    {
+        return [];
+    },
+
+    supportsObject: function(object, type)
+    {
+        return object instanceof Firebug.MemoryBug.MemoryLink;
+    },
 });
 
 // ************************************************************************************************

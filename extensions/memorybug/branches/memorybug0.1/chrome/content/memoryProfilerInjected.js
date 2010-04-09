@@ -77,9 +77,9 @@ function inspectMemory()
 
     // Return collected results.
     return {
-        namedObjects: parents,
-        graph: graph,
-        rejectedTypes: rejected
+        map: parents,
+        graph: graph
+        //rejectedTypes: rejected
     }
 };
 
