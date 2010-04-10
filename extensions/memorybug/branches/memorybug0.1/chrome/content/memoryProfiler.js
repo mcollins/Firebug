@@ -118,33 +118,10 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         var domMembers = getDOMMembers(unwrapObject(context.window));
         for (var i=0; i<windows.length; i++)
         {
-            // Iterate over all global objects of a window and ignore built in fields.
-            var win = windows[i];
-            for (var name in win)
-            {
-                if (name in domMembers)
-                    continue;
-
-                var obj = win[name];
-                var type = typeof(obj);
-                if (obj == null || type == "number" || type == "string" ||
-                    type == "Boolean" || type == "undefined")
-                {
-                    continue;
-                }
-
-                // Every objects must be in this array in order to get its ID later.
-                objects.push(obj);
-
-                // Every object description (name, value) must be here in order to
-                // associate the ID with it.
-                var member = {name: name, value: obj};
-                members.push(member);
-
-                // Only global objects must be here.
-                if (type != "function")
-                    globals.push(member);
-            }
+            var iterator = new WindowObjectIterator(windows[i]);
+            objects.push.apply(objects, iterator.objects);
+            members.push.apply(members, iterator.members);
+            globals.push.apply(globals, iterator.globals);
         }
 
         if (FBTrace.DBG_MEMORYBUG)
@@ -205,12 +182,9 @@ ProfileResult.prototype =
         // Iterate over all members (named objects on the page) to return the proper
         // member for specific object. This is the way how to get meta data (info)
         // for an object.
-        for (var m in this.members)
-        {
-            var member = this.members[m];
-            if (member.value === object)
-                return member;
-        }
+        var index = this.objects.indexOf(object);
+        if (index >= 0)
+            return this.members[index];
         return null;
     },
 
@@ -302,6 +276,86 @@ ProfileResult.prototype =
             return null;
 
         return info.prototype.children[0];
+    }
+}
+
+// ************************************************************************************************
+
+function WindowObjectIterator(win)
+{
+    this.window = win;
+    this.objects = new Array();
+    this.members = new Array();
+    this.globals = new Array();
+
+    this.getObjects();
+}
+
+WindowObjectIterator.prototype =
+{
+    getObjects: function()
+    {
+        try
+        {
+            var domMembers = getDOMMembers(unwrapObject(this.window));
+
+            // Collect globals first.
+            for (var p in this.window) {
+                if (!(p in domMembers))
+                    this.getChildren(p, this.window, true);
+            }
+
+            // And once again, colllect all
+            // xxxHonza: this should be optimized.
+            this.objects = [];
+            this.members = [];
+
+            for (var p in this.window) {
+                if (!(p in domMembers))
+                    this.getChildren(p, this.window, false);
+            }
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_MEMORYBUG || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("memorybug.WindowObjectIterator.getAllObjects; EXCEPTION", err);
+        }
+    },
+
+    getChildren: function(prop, object, global)
+    {
+        var value = unwrapObject(object[prop]);
+        if (!value)
+            return;
+
+        if (typeof(value) !== "object" && typeof(value) !== "function")
+            return;
+
+        // Check if we have the object already.
+        var index = this.objects.indexOf(value);
+        if (index != -1)
+            return;
+
+        // Remember the object for fast lookup.
+        this.objects.push(value);
+
+        // Remember name and value.
+        var member = {
+            name: prop,
+            value: value,
+        };
+
+        this.members.push(member);
+
+        // Collect global objects first.
+        if (global && typeof(value) !== "function")
+            this.globals.push(member);
+
+        if (global)
+            return;
+
+        for (var p in value)
+            this.getChildren(p, value, false);
     }
 }
 
