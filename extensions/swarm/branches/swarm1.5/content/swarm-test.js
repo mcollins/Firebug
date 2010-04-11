@@ -140,7 +140,42 @@ var FirebugSwarmTest =
     // ----------------------------------------------------------------------------------
     // Handlers contributed to swarmInstaller
 
-    signPage: function(event)
+    swarmRunAllTestsStep: function(event, progress)
+    {
+        // enable the stop button
+        var browser = $("taskBrowser");
+        var doc = browser.contentDocument;
+        var stopButton = event.target.parentNode.getElementsByClassName("swarmStopTestsStep")[0];
+        stopButton.removeAttribute("disabled");
+
+        FBTestApp.TestConsole.onRunAll(function restoreButtonsAndGoToNextStep()
+        {
+            stopButton.setAttribute("disabled", "disabled");
+            FBTestApp.TestSummary.dumpSummary();
+        });
+    },
+
+    swarmStopTestsStep: function(event, progress)
+    {
+        FBTestApp.TestConsole.onStop();
+    },
+
+    swarmHaltFailTest: function(event, progress)
+    {
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
+    },
+
+    swarmHaltFailTest: function(event, progress)
+    {
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
+    },
+
+    swarmNoTimeoutTest: function(event, progress)
+    {
+        FBTestApp.TestConsole.onToggleNoTestTimeout();
+    },
+
+    signPage: function(event, progress)
     {
         FBTrace.sysout("FirebugSwarmTest signPage ", event);
         var keyservice = this.getKeyService();
@@ -373,6 +408,10 @@ function toHexString(charCode)
 }
 
 observerService.addObserver(FirebugSwarmTest, "fbtest", false);  // removed in observe: 'shutdown'
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", bind(FirebugSwarmTest.swarmRunAllTestsStep, FirebugSwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", bind(FirebugSwarmTest.swarmStopTestsStep, FirebugSwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", bind(FirebugSwarmTest.swarmHaltFailTest, FirebugSwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", bind(FirebugSwarmTest.swarmNoTimeoutTest, FirebugSwarmTest));
 
 //************************************************************************************************
 }});

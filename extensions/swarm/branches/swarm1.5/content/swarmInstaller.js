@@ -169,7 +169,7 @@ SwarmInstaller.workFlowMonitor =
             var step = this.getStepFromButton(button);
 
             button.classList.add("swarmWorkflowing");
-            this.registeredWorkflowSteps[step](event.target.ownerDocument, this.progress);
+            this.registeredWorkflowSteps[step](event, this.progress);
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
             event.preventDefault();
@@ -228,7 +228,7 @@ SwarmInstaller.workFlowMonitor =
 
     //----------------------------------------------------------------------------------
 
-    registeredWorkflowSteps: {}, // key CSS class name, value function(document, progress);
+    registeredWorkflowSteps: {}, // key CSS class name, value function(event, progress);
 
     registerWorkflowStep: function(key, fnc)
     {
@@ -274,7 +274,7 @@ SwarmInstaller.extensions =
         return installingExtensions;
     },
 
-    installDeclaredExtensions: function(doc, progress)
+    installDeclaredExtensions: function(event, progress)
     {
         // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
         var urls = [];
