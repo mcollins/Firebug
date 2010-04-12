@@ -299,20 +299,9 @@ WindowObjectIterator.prototype =
         {
             var domMembers = getDOMMembers(unwrapObject(this.window));
 
-            // Collect globals first.
             for (var p in this.window) {
                 if (!(p in domMembers))
                     this.getChildren(p, this.window, true);
-            }
-
-            // And once again, colllect all
-            // xxxHonza: this should be optimized.
-            this.objects = [];
-            this.members = [];
-
-            for (var p in this.window) {
-                if (!(p in domMembers))
-                    this.getChildren(p, this.window, false);
             }
         }
         catch (err)
@@ -333,25 +322,34 @@ WindowObjectIterator.prototype =
 
         // Check if we have the object already.
         var index = this.objects.indexOf(value);
+
+        var member;
         if (index != -1)
-            return;
+        {
+            member = this.members[index];
+        }
+        else
+        {
+            // Remember the object for fast lookup.
+            this.objects.push(value);
 
-        // Remember the object for fast lookup.
-        this.objects.push(value);
+            // Remember name and value.
+            member = {
+                name: prop,
+                value: value,
+            };
 
-        // Remember name and value.
-        var member = {
-            name: prop,
-            value: value,
-        };
-
-        this.members.push(member);
+            this.members.push(member);
+        }
 
         // Collect global objects first.
         if (global && typeof(value) !== "function")
+        {
             this.globals.push(member);
+            member.name = prop;
+        }
 
-        if (global)
+        if (index != -1)
             return;
 
         for (var p in value)

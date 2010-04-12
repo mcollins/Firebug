@@ -10,8 +10,13 @@ const Ci = Components.interfaces;
 
 /**
  * @domplate: Template for memory report. This template is used to generate Memory panel UI.
+ * The main memory panel UI is composed from a table displaying all global objects on the page
+ * (including all innner frames). Every object is expandeble (similarly to the DOM panel showing
+ * its childreng. There is a size info and list of referents for each object,
+ * see {@link Firebug.MemoryBug.Referents}.
  */
 Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
+/** @lends Firebug.MemoryBug.ReportView */
 {
     tag:
         TABLE({"class": "tableView reportView", cellpadding: 0, cellspacing: 0,
@@ -25,13 +30,9 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
                     TH({width: "100%"},
                         DIV($STR("memorybug.report.col.References"))
                     )
-                ),
-                FOR("member", "$input|rootIterator",
-                    TAG("$rowTag", {member: "$member"}
                 )
             )
-        )
-    ),
+        ),
 
     rowTag:
         TR({"class": "viewRow", _repObject: "$member",
@@ -88,14 +89,33 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
     render: function(input, parent)
     {
         this.input = input;
-        return this.tag.replace({input: input}, parent, this);
+        var table = this.tag.replace({input: input}, parent, this);
+
+        var members = [];
+        for (var p in input.globals)
+        {
+            var object = input.globals[p];
+            var hasChildren = this.hasProperties(object.value);
+            members.push(this.createMember(object, object.name, object.value, object.info, 0));
+        }
+
+        // Insert root rows.
+        this.insertRows(members, table.firstChild.firstChild);
+
+        return table;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     getSize: function(member)
     {
-        return member.info ? formatSize(member.info.size) : "";
+        if (member.info)
+            return formatSize(member.info.size);
+
+        if (typeof(member.value) == "string")
+            return member.value.length + " ch";
+
+        return "";
     },
 
     getCtorTag: function(member)
@@ -171,7 +191,7 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
         if (hasClass(row, "opened"))
         {
             var members = this.getMembers(member, level+1);
-            this.loop.insertRows({members: members}, row)[0];
+            this.insertRows(members, row);
         }
         else
         {
@@ -185,23 +205,14 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
         }
     },
 
-    rootIterator: function(input)
+    insertRows: function(members, lastRow)
     {
-        var members = [];
-        for (var p in input.globals)
+        var row = this.loop.insertRows({members: members}, lastRow)[0];
+        for (var i=0; i<members.length; i++)
         {
-            var object = input.globals[p];
-            var hasChildren = this.hasProperties(object.value);
-            members.push({
-                name: object.name,
-                value: object.value,
-                info: object.info,
-                hasChildren: hasChildren,
-                level: 0,
-                indent: 0,
-            });
+            members[i].row = row;
+            row = row.nextSibling;
         }
-        return members;
     },
 
     getMembers: function(member, level)
@@ -218,17 +229,24 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
                     FBTrace.sysout("memorybug.ReportView.getMembers; ERROR wrong object found!");
             }
 
-            var hasChildren = this.hasProperties(object);
-            members.push({
-                name: p,
-                value: object,
-                info: objectInfo ? objectInfo.info : null,
-                hasChildren: hasChildren,
-                level: level,
-                indent: level*16,
-            });
+            members.push(this.createMember(member.value, p, object,
+                objectInfo ? objectInfo.info : null, level));
         }
         return members;
+    },
+
+    createMember: function(parent, name, value, info, level)
+    {
+        var hasChildren = this.hasProperties(value);
+        return {
+            parent: parent,
+            name: name,
+            value: value,
+            info: info,
+            hasChildren: hasChildren,
+            level: level,
+            indent: level*16,
+        };
     },
 
     hasProperties: function(object)
@@ -243,7 +261,11 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
 
 // ************************************************************************************************
 
+/**
+ * @domplate This template shows a list of referents (links) to specific object.
+ */
 Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
+/** @lends Firebug.MemoryBug.Referents */
 {
     tag:
         DIV({"class": "referents", _repObject: "$member"},
@@ -269,11 +291,19 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
 
             var refInfo = this.input.getMember(ref.id);
 
+            if (member.parent == refInfo.value)
+                continue;
+
             // Iterate the referent object to find out what is the property pointing
             // to the object in inspection.
             //xxxHonza: What if there is more fields in the referent pointing to us? 
             var propName;
-            if (refInfo) {
+            if (refInfo)
+            {
+                // Skip the parent object
+                if (member.value === refInfo.value)
+                    continue;
+
                 for (var p in refInfo.value) {
                     if (refInfo.value[p] == member.value) {
                         propName = p;
