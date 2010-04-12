@@ -226,4 +226,5 @@
 
 .viewRow > .viewCol.sizeCol {
     text-align: right;
+    float: left;
 }

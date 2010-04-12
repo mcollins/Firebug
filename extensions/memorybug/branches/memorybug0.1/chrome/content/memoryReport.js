@@ -354,7 +354,7 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
 
             var refInfo = this.input.getMember(ref.id);
 
-            if (member.parent == refInfo.value)
+            if (refInfo && member.parent == refInfo.value)
                 continue;
 
             // Iterate the referent object to find out what is the property pointing
