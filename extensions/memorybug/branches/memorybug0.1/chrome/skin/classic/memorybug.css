@@ -177,6 +177,10 @@
     color: HighlightText !important;
 }
 
+.viewRow.selected {
+    background: LightYellow !important;
+}
+
 /************************************************************************************************/
 /* Temporary Customizing */
 

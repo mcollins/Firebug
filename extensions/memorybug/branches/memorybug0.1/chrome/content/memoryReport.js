@@ -334,7 +334,7 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
         DIV({"class": "referents", _repObject: "$member"},
             FOR("item", "$member|refsIterator",
                 TAG("$item.tag", {object: "$item.object"}),
-                SPAN(" ")
+                SPAN("&nbsp; &nbsp;")
             )
         ),
 
@@ -354,8 +354,8 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
 
             var refInfo = this.input.getMember(ref.id);
 
-            //if (member.parent == refInfo.value)
-            //    continue;
+            if (member.parent == refInfo.value)
+                continue;
 
             // Iterate the referent object to find out what is the property pointing
             // to the object in inspection.

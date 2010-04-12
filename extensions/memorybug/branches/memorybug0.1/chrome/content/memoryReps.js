@@ -12,10 +12,12 @@ FirebugReps.MemoryLink = domplate(FirebugReps.SourceLink,
 {
     tag:
         SPAN(
-            FirebugReps.OBJECTLINK({onclick: "$onClick"},
+            FirebugReps.OBJECTLINK({onclick: "$onClickName"},
                 SPAN({"class": "name"}, "$object|getName")
             ),
-            SPAN({"class": "propName"}, "$object|getPropName")
+            FirebugReps.OBJECTLINK({onclick: "$onClickPropName"},
+                SPAN({"class": "propName noTooltip"}, "$object|getPropName")
+            )
         ),
 
     getName: function(sourceLink)
@@ -39,13 +41,27 @@ FirebugReps.MemoryLink = domplate(FirebugReps.SourceLink,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    onClick: function(event)
+    onClickName: function(event)
     {
         var link = getAncestorByClass(event.target, "objectLink-memoryLink");
         if (!link)
             return;
 
-        Firebug.chrome.select(link.repObject);
+        link = link.repObject;
+        var selection = new Firebug.MemoryBug.Selection(link.refInfo.value);
+        Firebug.chrome.select(selection, "memory", null, true);
+        cancelEvent(event);
+    },
+
+    onClickPropName: function(event)
+    {
+        var link = getAncestorByClass(event.target, "objectLink-memoryLink");
+        if (!link)
+            return;
+
+        link = link.repObject;
+        var selection = new Firebug.MemoryBug.Selection(link.refInfo.value[link.propName]);
+        Firebug.chrome.select(selection, "memory", null, true);
         cancelEvent(event);
     },
 
@@ -67,12 +83,14 @@ FirebugReps.MemoryLink = domplate(FirebugReps.SourceLink,
     {
         return [];
     },
-
-    getRealObject: function(object, context)
-    {
-        return object.refInfo.value;
-    },
 });
+
+// ************************************************************************************************
+
+Firebug.MemoryBug.Selection = function(object)
+{
+    this.object = object;
+}
 
 // ************************************************************************************************
 

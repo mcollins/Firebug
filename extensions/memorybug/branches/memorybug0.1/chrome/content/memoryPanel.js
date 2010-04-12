@@ -93,12 +93,12 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
         }
     },
 
-    doUpdateSelection: function(object)
+    doUpdateSelection: function(selection)
     {
         if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.MemoryPanel.updateSelection; Selection:", object);
+            FBTrace.sysout("memorybug.MemoryPanel.updateSelection; Selection:", selection);
 
-        if (!object || !(object instanceof Firebug.MemoryBug.MemoryLink))
+        if (!selection || !(selection instanceof Firebug.MemoryBug.Selection))
             return;
 
         if (!this.table)
@@ -107,7 +107,8 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
         if (this.selectedRow)
             removeClass(this.selectedRow, "selected");
 
-        object = object.refInfo.value;
+        // The passed objects is an instance of MemorySelection, let's get the target JS object.
+        var object = selection.object;
 
         var profileData = this.table.repObject;
         var searcher = new ObjectSearcher(object);
@@ -174,6 +175,11 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     getTooltipObject: function(target)
     {
+        // The tooltip is not displayed for the last part of the reference (memory) link.
+        // The last part of the reference is the object itself (represented by the row).
+        if (hasClass(target, "noTooltip"))
+            return null;
+
         return Firebug.getRepObject(target);
     },
 
@@ -192,7 +198,7 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     supportsObject: function(object, type)
     {
-        return object instanceof Firebug.MemoryBug.MemoryLink ||
+        return object instanceof Firebug.MemoryBug.Selection ||
             object instanceof Firebug.MemoryBug.Member;
     },
 });
