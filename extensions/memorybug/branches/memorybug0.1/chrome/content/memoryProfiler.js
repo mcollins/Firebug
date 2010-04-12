@@ -31,6 +31,19 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
 
     profile: function(context)
     {
+        try
+        {
+            this.doProfile(context);
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_MEMORYBUG || FBTrace.DBG_ERRORS)
+                FBTrace.sysout("memorybug.Profiler.profile; EXCEPTION", err);
+        }
+    },
+
+    doProfile: function(context)
+    {
         // xxxHonza: this is here for now. It could be also useful to profile
         // objects ready fo garbage collecting.
         Components.utils.forceGC();
@@ -295,19 +308,22 @@ WindowObjectIterator.prototype =
 {
     getObjects: function()
     {
-        try
-        {
-            var domMembers = getDOMMembers(unwrapObject(this.window));
+        var domMembers = getDOMMembers(unwrapObject(this.window));
 
-            for (var p in this.window) {
-                if (!(p in domMembers))
-                    this.getChildren(p, this.window, true);
-            }
-        }
-        catch (err)
+        for (var p in this.window)
         {
-            if (FBTrace.DBG_MEMORYBUG || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("memorybug.WindowObjectIterator.getAllObjects; EXCEPTION", err);
+            if (p in domMembers)
+                continue;
+
+            try
+            {
+                this.getChildren(p, this.window, true);
+            }
+            catch (err)
+            {
+                if (FBTrace.DBG_MEMORYBUG || FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("memorybug.WindowObjectIterator.getAllObjects; EXCEPTION", err);
+            }
         }
     },
 
@@ -321,21 +337,16 @@ WindowObjectIterator.prototype =
             return;
 
         // Check if we have the object already.
-        var index = this.objects.indexOf(value);
-
-        var member;
-        if (index != -1)
-        {
-            member = this.members[index];
-        }
-        else
+        var member = this.getMember(value);
+        var seen = member ? true : false; 
+        if (!member)
         {
             // Remember the object for fast lookup.
             this.objects.push(value);
 
-            // Remember name and value.
+            // Remember name and value (named object).
             member = {
-                name: prop,
+                name: Firebug.MemoryBug.Props.getPropName(object, prop),
                 value: value,
             };
 
@@ -349,11 +360,32 @@ WindowObjectIterator.prototype =
             member.name = prop;
         }
 
-        if (index != -1)
+        if (seen)
             return;
 
         for (var p in value)
             this.getChildren(p, value, false);
+    },
+
+    getMember: function(object)
+    {
+        var index = this.objects.indexOf(object);
+        return (index != -1) ? this.members[index] : null;
+    }
+}
+
+// ************************************************************************************************
+
+Firebug.MemoryBug.Props =
+{
+    getPropName: function(object, propName)
+    {
+        return this.isIndexedProp(object, propName) ? "[" + propName + "]" : "." + propName;
+    },
+
+    isIndexedProp: function(object, propName)
+    {
+        return (FirebugReps.Arr.isArray(object) && parseInt(propName) != "undefined");
     }
 }
 

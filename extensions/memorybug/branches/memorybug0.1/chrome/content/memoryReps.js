@@ -54,7 +54,12 @@ FirebugReps.MemoryLink = domplate(FirebugReps.SourceLink,
     getContextMenuItems: function(sourceLink, target, context)
     {
         return [];
-    }
+    },
+
+    getRealObject: function(object, context)
+    {
+        return object.refInfo.value;
+    },
 });
 
 // ************************************************************************************************
@@ -74,11 +79,7 @@ Firebug.MemoryBug.MemoryLink.prototype =
 
     getPropName: function()
     {
-        // In case arrays the property might be an index.
-        if (FirebugReps.Arr.isArray(this.refInfo.value) && parseInt(this.propName) != "undefined")
-            return "[" + this.propName + "]";
-
-        return "." + this.propName;
+        return Firebug.MemoryBug.Props.getPropName(this.refInfo.value, this.propName);
     }
 }
 
@@ -89,3 +90,4 @@ Firebug.registerRep(FirebugReps.MemoryLink);
 
 // ************************************************************************************************
 }});
+

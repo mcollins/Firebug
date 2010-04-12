@@ -212,3 +212,14 @@
 .objectLink-memoryLink:hover {
     color: blue;
 }
+
+/************************************************************************************************/
+/* Memory Link (used for referents) */
+
+.viewRow > .viewCol > .viewLabel.byteSize {
+    color: black;
+}
+
+.viewRow > .viewCol.sizeCol {
+    text-align: right;
+}

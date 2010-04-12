@@ -25,9 +25,11 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
                 TR({"class": "viewHeaderRow"},
                     TH(DIV($STR("memorybug.report.col.Name"))),
                     TH(DIV($STR("memorybug.report.col.Size"))),
-                    TH(DIV($STR("memorybug.report.col.Value"))),
+                    TH({width: "20%"},
+                        DIV($STR("memorybug.report.col.Value"))
+                    ),
                     TH(DIV($STR("memorybug.report.col.Constructor"))),
-                    TH({width: "100%"},
+                    TH({width: "80%"},
                         DIV($STR("memorybug.report.col.References"))
                     )
                 )
@@ -43,8 +45,9 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
                     SPAN({"class": "labelName"}, "$member.name")
                 )
             ),
-            TD({"class": "viewCol"},
-                DIV({"class": "viewLabel"}, "$member|getSize")
+            TD({"class": "viewCol sizeCol"},
+                SPAN({"class": "viewLabel byteSize"}, "$member|getByteSize"),
+                SPAN({"class": "viewLabel"}, "$member|getSizeEx")
             ),
             TD({"class": "viewCol"},
                 DIV({"class": "viewLabel"},
@@ -107,13 +110,29 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    getSize: function(member)
+    getByteSize: function(member)
     {
-        if (member.info)
-            return formatSize(member.info.size);
+        return member.info ? formatSize(member.info.size) : "";
+    },
 
+    getSizeEx: function(member)
+    {
         if (typeof(member.value) == "string")
-            return member.value.length + " ch";
+            return "(chars=" + member.value.length + ")";
+
+        if (!member.info)
+            return "";
+
+        if (FirebugReps.Arr.isArray(member.value))
+        {
+            var length = member.value.length;
+            return (length > 0) ? "(length=" + length + ")" : "";
+        }
+        else if (typeof(member.value) === "object")
+        {
+            var count = this.countProperties(member.value);
+            return (count > 0) ? "(props=" + count + ")" : "";
+        }
 
         return "";
     },
@@ -149,6 +168,9 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
             var rep = Firebug.getRep(member.value);
             return rep.shortTag ? rep.shortTag : rep.tag;
         }
+
+        if (member.value == null)
+            return FirebugReps.Null.tag;
 
         return FirebugReps.Nada.tag;
     },
@@ -238,15 +260,15 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
     createMember: function(parent, name, value, info, level)
     {
         var hasChildren = this.hasProperties(value);
-        return {
-            parent: parent,
-            name: name,
-            value: value,
-            info: info,
-            hasChildren: hasChildren,
-            level: level,
-            indent: level*16,
-        };
+        var member = new Member();
+        member.parent = parent;
+        member.name = name;
+        member.value = value;
+        member.info = info;
+        member.hasChildren = hasChildren;
+        member.level = level;
+        member.indent = level*16;
+        return member;
     },
 
     hasProperties: function(object)
@@ -257,7 +279,42 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
         // Use the lib function.
         return hasProperties(object);
     },
+
+    countProperties: function(o)
+    {
+        try
+        {
+            var n = 0;
+            for (var p in o)
+                n += Object.prototype.hasOwnProperty.call(o, p);
+            return n;
+        }
+        catch (exc)
+        {
+            
+        }
+        return -1;
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    supportsObject: function(object, type)
+    {
+        return object instanceof Member;
+    },
+
+    getRealObject: function(object, context)
+    {
+        return object.value;
+    },
 });
+
+// ************************************************************************************************
+
+function Member()
+{
+    
+}
 
 // ************************************************************************************************
 
@@ -291,8 +348,8 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
 
             var refInfo = this.input.getMember(ref.id);
 
-            if (member.parent == refInfo.value)
-                continue;
+            //if (member.parent == refInfo.value)
+            //    continue;
 
             // Iterate the referent object to find out what is the property pointing
             // to the object in inspection.
@@ -304,16 +361,25 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
                 if (member.value === refInfo.value)
                     continue;
 
-                for (var p in refInfo.value) {
-                    if (refInfo.value[p] == member.value) {
-                        propName = p;
-                        break;
+                try
+                {
+                    for (var p in refInfo.value)
+                    {
+                        if (refInfo.value[p] == member.value)
+                        {
+                            propName = p;
+                            break;
+                        }
                     }
+                }
+                catch (e)
+                {
+                    return refs;
                 }
             }
 
             refs.push({
-                tag: refInfo ? FirebugReps.MemoryLink.tag : DIV("$object.name"),
+                tag: refInfo ? FirebugReps.MemoryLink.tag : SPAN("$object.name"),
                 name: refInfo ? refInfo.name : "unknown",
                 object: refInfo ? new Firebug.MemoryBug.MemoryLink(refInfo, propName) : member,
             });
@@ -326,6 +392,11 @@ Firebug.MemoryBug.Referents = domplate(Firebug.Rep,
         return refs;
     },
 });
+
+// ************************************************************************************************
+// Registration
+
+Firebug.registerRep(Firebug.MemoryBug.ReportView);
 
 // ************************************************************************************************
 }});
