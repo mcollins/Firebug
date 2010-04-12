@@ -14,9 +14,6 @@ var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObs
 
 // ************************************************************************************************
 
-// Helper shortcut.
-var HaltOnFailedTest = FBTestApp.TestWindowLoader.HaltOnFailedTest
-
 FBTestApp.TestWindowLoader.HaltOnFailedTest =
 {
     initialize: function()
@@ -24,7 +21,7 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
         // Localize strings in XUL (using string bundle).
         this.internationalizeUI();
 
-        HaltOnFailedTest.enabled = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
         this.setHaltOnFailedTestButton();
     },
 
@@ -44,19 +41,19 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
 
     setHaltOnFailedTestButton: function()
     {
-        $('haltOnFailedTest').setAttribute('checked', HaltOnFailedTest.enabled?'true':'false');
+        $('haltOnFailedTest').setAttribute('checked', FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled?'true':'false');
     },
 
     onToggleHaltOnFailedTest: function()
     {
-        HaltOnFailedTest.enabled = !HaltOnFailedTest.enabled;
-        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", HaltOnFailedTest.enabled);
-        HaltOnFailedTest.setHaltOnFailedTestButton();
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled = !FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled;
+        Firebug.setPref(FBTestApp.prefDomain, "haltOnFailedTest", FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled);
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.setHaltOnFailedTestButton();
     },
 
     onFailure: function()
     {
-        if (!HaltOnFailedTest.enabled)
+        if (!FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled)
             return;
 
         if (FBTrace.DBG_FBTEST)
