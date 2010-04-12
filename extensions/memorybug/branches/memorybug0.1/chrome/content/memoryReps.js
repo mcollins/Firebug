@@ -12,7 +12,7 @@ FirebugReps.MemoryLink = domplate(FirebugReps.SourceLink,
 {
     tag:
         SPAN(
-            FirebugReps.OBJECTLINK(
+            FirebugReps.OBJECTLINK({onclick: "$onClick"},
                 SPAN({"class": "name"}, "$object|getName")
             ),
             SPAN({"class": "propName"}, "$object|getPropName")
@@ -35,6 +35,18 @@ FirebugReps.MemoryLink = domplate(FirebugReps.SourceLink,
         for (var p in value)
             text += p + ": " + value[p] + "\n";
         return text;
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    onClick: function(event)
+    {
+        var link = getAncestorByClass(event.target, "objectLink-memoryLink");
+        if (!link)
+            return;
+
+        Firebug.chrome.select(link.repObject);
+        cancelEvent(event);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -6,6 +6,11 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 // ************************************************************************************************
+// Shortcuts
+
+const ReportView = Firebug.MemoryBug.ReportView;
+
+// ************************************************************************************************
 // Memory Panel implementation
 
 /**
@@ -32,8 +37,6 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
         Firebug.Panel.show.apply(this, arguments);
 
         this.showToolbarButtons("fbMemoryButtons", true);
-
-        this.refresh();
     },
 
     hide: function()
@@ -45,6 +48,8 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     refresh: function()
     {
+        var profileData = Firebug.MemoryBug.Profiler.profile(this.context);
+        this.table = ReportView.render(profileData, this.panelNode);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -72,26 +77,81 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     select: function(object, forceUpdate)
     {
-        if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.MemoryPanel.select;", object);
-
         Firebug.Panel.select.apply(this, arguments);
     },
 
     updateSelection: function(object)
     {
-        if (FBTrace.DBG_MEMORYBUG)
-            FBTrace.sysout("memorybug.MemoryPanel.updateSelection;", object);
+        try
+        {
+            this.doUpdateSelection(object);
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_MEMORYBUG || FBTtrace.DBG_ERRORS)
+                FBTrace.sysout("memorybug.MemoryPanel.updateSelection; EXCEPTION:", e);
+        }
+    },
 
-        if (!object)
+    doUpdateSelection: function(object)
+    {
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.updateSelection; Selection:", object);
+
+        if (!object || !(object instanceof Firebug.MemoryBug.MemoryLink))
             return;
 
-        /*if (file)
+        if (!this.table)
+            return;
+
+        if (this.selectedRow)
+            removeClass(this.selectedRow, "selected");
+
+        object = object.refInfo.value;
+
+        var profileData = this.table.repObject;
+        var searcher = new ObjectSearcher(object);
+        for (var m in profileData.globals)
         {
-            scrollIntoCenterView(file.row);
-            if (!hasClass(file.row, "opened"))
-                NetRequestEntry.toggleHeadersRow(file.row);
-        }*/
+            var member = profileData.globals[m];
+            var found = searcher.search(member.value);
+            if (found)
+                break;
+        }
+
+        if (FBTrace.DBG_MEMORYBUG)
+            FBTrace.sysout("memorybug.MemoryPanel.updateSelection; Path: ", searcher.path);
+
+        if (!found)
+            return;
+
+        // Expand the view if necessary, select the object and scroll so, it's visible.
+        var firstRow = this.table.querySelector(".viewRow");
+        for (var p in searcher.path)
+        {
+            var particle = searcher.path[p];
+            while (firstRow)
+            {
+                if (firstRow.repObject.value === particle.object)
+                {
+                    if (particle.object === object)
+                    {
+                        // Alright we have it, select, scroll and bail out.
+                        this.selectedRow = firstRow;
+                        setClass(firstRow, "selected");
+                        scrollIntoCenterView(firstRow);
+                        return;
+                    }
+
+                    // Open if not opened
+                    if (!hasClass(firstRow, "opened"))
+                        firstRow = ReportView.toggleRow(firstRow);
+
+                    break;
+                }
+                firstRow = firstRow.nextSibling;
+            }
+        }
     },
 
     getDefaultSelection: function(context)
@@ -132,9 +192,51 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     supportsObject: function(object, type)
     {
-        return object instanceof Firebug.MemoryBug.MemoryLink;
+        return object instanceof Firebug.MemoryBug.MemoryLink ||
+            object instanceof Firebug.MemoryBug.Member;
     },
 });
+
+// ************************************************************************************************
+
+function ObjectSearcher(object, callback)
+{
+    this.object = object;
+    this.objects = new Array();
+    this.path = [];
+}
+
+ObjectSearcher.prototype =
+{
+    search: function(parent)
+    {
+        var length = this.path.push({object: parent});
+
+        if (this.object === parent)
+            return true;
+
+        for (var p in parent)
+        {
+            var value = unwrapObject(parent[p]);
+            if (typeof(value) !== "object")
+                continue;
+
+            // We have seen this object.
+            if (this.objects.indexOf(value) != -1)
+                continue;
+
+            // Remember the object.
+            this.objects.push(value);
+
+            this.path[length-1].propName = p;
+
+            if (this.search(value))
+                return true;
+        }
+
+        this.path.pop();
+    },
+}
 
 // ************************************************************************************************
 
@@ -172,7 +274,7 @@ Firebug.MemoryBug.DefaultContent = domplate(Firebug.Rep,
     onRefresh: function(event)
     {
         var panel = Firebug.getElementPanel(event.target);
-        Firebug.MemoryBug.Profiler.profile(panel.context);
+        panel.refresh();
     }
 });
 

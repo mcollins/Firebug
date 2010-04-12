@@ -67,7 +67,8 @@ Firebug.MemoryBug = extend(Firebug.Module,
 
     refresh: function(context)
     {
-        Firebug.MemoryBug.Profiler.profile(context);
+        var panel = context.getPanel("memory");
+        panel.refresh();
     },
 });
 

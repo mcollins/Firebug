@@ -94,15 +94,8 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
         this.input = input;
         var table = this.tag.replace({input: input}, parent, this);
 
-        var members = [];
-        for (var p in input.globals)
-        {
-            var object = input.globals[p];
-            var hasChildren = this.hasProperties(object.value);
-            members.push(this.createMember(object, object.name, object.value, object.info, 0));
-        }
-
         // Insert root rows.
+        var members = this.getRootMembers(input);
         this.insertRows(members, table.firstChild.firstChild);
 
         return table;
@@ -213,7 +206,7 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
         if (hasClass(row, "opened"))
         {
             var members = this.getMembers(member, level+1);
-            this.insertRows(members, row);
+            return this.insertRows(members, row);
         }
         else
         {
@@ -229,12 +222,25 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
 
     insertRows: function(members, lastRow)
     {
-        var row = this.loop.insertRows({members: members}, lastRow)[0];
+        var firstRow = this.loop.insertRows({members: members}, lastRow)[0];
+        var row = firstRow;
         for (var i=0; i<members.length; i++)
         {
             members[i].row = row;
             row = row.nextSibling;
         }
+        return firstRow;
+    },
+
+    getRootMembers: function(input)
+    {
+        var members = [];
+        for (var p in input.globals)
+        {
+            var object = input.globals[p];
+            members.push(this.createMember(object, object.name, object.value, object.info, 0));
+        }
+        return members;
     },
 
     getMembers: function(member, level)
@@ -260,7 +266,7 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
     createMember: function(parent, name, value, info, level)
     {
         var hasChildren = this.hasProperties(value);
-        var member = new Member();
+        var member = new Firebug.MemoryBug.Member();
         member.parent = parent;
         member.name = name;
         member.value = value;
@@ -300,7 +306,7 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
 
     supportsObject: function(object, type)
     {
-        return object instanceof Member;
+        return object instanceof Firebug.MemoryBug.Member;
     },
 
     getRealObject: function(object, context)
@@ -311,7 +317,7 @@ Firebug.MemoryBug.ReportView = domplate(Firebug.Rep,
 
 // ************************************************************************************************
 
-function Member()
+Firebug.MemoryBug.Member = function()
 {
     
 }

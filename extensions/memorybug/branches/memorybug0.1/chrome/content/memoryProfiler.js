@@ -33,7 +33,7 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
     {
         try
         {
-            this.doProfile(context);
+            return this.doProfile(context);
         }
         catch (err)
         {
@@ -91,10 +91,7 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         if (FBTrace.DBG_MEMORYBUG)
             FBTrace.sysout("memorybug.profile; Input for ReportView:", profileData);
 
-        // Generate UI.
-        var ReportView = Firebug.MemoryBug.ReportView;
-        var panelNode = context.getPanel("memory").panelNode;
-        ReportView.render(profileData, panelNode);
+        return profileData;
     },
 
     /**
