@@ -399,7 +399,10 @@ FBTestApp.TestRunner =
             win.FBTest.setToKnownState();
 
             // Execute test's entry point.
-            win.runTest();
+            if (win.runTest)
+                win.runTest();
+            else
+                throw new Error("FBTest: no runTest() function in "+win.locatioTn);
         }
         catch (exc)
         {
