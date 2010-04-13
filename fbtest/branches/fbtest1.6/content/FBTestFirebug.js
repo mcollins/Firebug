@@ -377,36 +377,15 @@ this.clearCache = function()
 this.openNewTab = function(url, callback)
 {
     var tabbrowser = FW.getBrowser();
-    var testHandler = this;
+
+    // Open new tab and mark as 'test' so it can be closed automatically.
     var newTab = tabbrowser.addTab(url);
     newTab.setAttribute("firebug", "test");
     tabbrowser.selectedTab = newTab;
+
+    // Wait till the new window is loaded.
     var browser = tabbrowser.getBrowserForTab(newTab);
-    var onLoadURLInNewTab = function(event)
-    {
-        browser.removeEventListener("load", onLoadURLInNewTab, true);
-        setTimeout(function()
-        {
-            try
-            {
-                var win = browser.contentWindow;
-
-                // This is a workaround for missing wrappedJSObject property,
-                // if the test case comes from http (and not from chrome)
-                if (!win.wrappedJSObject)
-                    win.wrappedJSObject = win;
-                callback(win);
-            }
-            catch (exc)
-            {
-                FBTest.sysout("runTest FAILS "+exc, exc);
-                FBTest.ok(false, "runTest FAILS "+exc);
-            }
-        }, 100);
-    }
-
-    if (callback)
-        browser.addEventListener("load", onLoadURLInNewTab, true);
+    waitForWindowLoad(browser, callback);
 
     return newTab;
 }
@@ -419,28 +398,16 @@ this.openNewTab = function(url, callback)
 this.openURL = function(url, callback)
 {
     var tabbrowser = FW.getBrowser();
-    var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
-    var onLoadURL = function(event)
-    {
-        browser.removeEventListener("load", onLoadURL, true);
+    var currTab = tabbrowser.selectedTab;
 
-        setTimeout(function()
-        {
-            var win = browser.contentWindow;
-
-            // This is a workaround for missing wrappedJSObject property,
-            // if the test case comes from http (and not from chrome)
-            if (!win.wrappedJSObject)
-                win.wrappedJSObject = win;
-            callback(win);
-        }, 100);
-    }
-
-    if (callback)
-        browser.addEventListener("load", onLoadURL, true);
+    // Get the current tab and wait till the new URL is loaded.
+    var browser = tabbrowser.getBrowserForTab(currTab);
+    waitForWindowLoad(browser, callback);
 
     // Reload content of the selected tab.
     tabbrowser.selectedBrowser.contentDocument.defaultView.location.href = url;
+
+    return currTab;
 }
 
 /**
@@ -450,30 +417,77 @@ this.openURL = function(url, callback)
 this.reload = function(callback)
 {
     var tabbrowser = FW.getBrowser();
-    var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
-    var onLoadURL = function(event)
-    {
-        browser.removeEventListener("load", onLoadURL, true);
+    var currTab = tabbrowser.selectedTab;
 
-        setTimeout(function()
+    // Get the current tab and wait till it's reloaded.
+    var browser = tabbrowser.getBrowserForTab(currTab);
+    waitForWindowLoad(browser, callback);
+
+    // Reload content of the selected tab.
+    tabbrowser.selectedBrowser.contentDocument.defaultView.location.reload();
+
+    return currTab;
+}
+
+/**
+ * Helper method for wait till a window is *really* loaded.
+ * @param {Object} browser Window's parent browser.
+ * @param {Window} callback Executed when the window is loaded. The window is passed in
+ *      as the parameter.
+ */
+function waitForWindowLoad(browser, callback)
+{
+    var loaded = false;
+    var painted = false;
+
+    // Wait for all event that must be fired before the window is loaded.
+    // Any event is missing?
+    // xxxHonza: In case of Firefox 3.7 the new 'content-document-global-created'
+    // (bug549539) could be utilized.
+    var waitForEvents = function(event)
+    {
+        if (event.type == "load")
+        {
+            browser.removeEventListener("load", waitForEvents, true);
+            loaded = true;
+        }
+        else if (event.type == "MozAfterPaint")
+        {
+            browser.removeEventListener("MozAfterPaint", waitForEvents, true);
+            painted = true;
+        }
+
+        // Execute callback after 100ms timout (the inspector tests need it for now),
+        // but this shoud be set to 0.
+        if (loaded && painted)
+            setTimeout(executeCallback, 100);
+    }
+
+    // All expected events have been fired, execute the callback.
+    var executeCallback = function()
+    {
+        try
         {
             var win = browser.contentWindow;
 
             // This is a workaround for missing wrappedJSObject property,
             // if the test case comes from http (and not from chrome)
+            // xxxHonza: this is rather a hack, it should be removed if possible.
             if (!win.wrappedJSObject)
                 win.wrappedJSObject = win;
 
+            // The window is loaded, execute the callback now.
             callback(win);
-        }, 10);
+        }
+        catch (exc)
+        {
+            FBTest.sysout("runTest FAILS " + exc, exc);
+            FBTest.ok(false, "runTest FAILS " + exc);
+        }
     }
 
-    if (callback)
-        browser.addEventListener("load", onLoadURL, true);
-
-    // Reload content of the selected tab.
-    FBTest.progress("FBTestFirebug Reload content of the selected tab "+tabbrowser.selectedBrowser.contentDocument.defaultView.location);
-    tabbrowser.selectedBrowser.contentDocument.defaultView.location.reload();
+    browser.addEventListener("load", waitForEvents, true);
+    browser.addEventListener("MozAfterPaint", waitForEvents, true);
 }
 
 /**
@@ -1204,8 +1218,8 @@ this.searchInHtmlPanel = function(searchText, callback)
 
 /**
  * Opens context menu for target element and executes specified command.
- * @param {Object} target Element which context menu should be opened.
- * @param {Object} menuId ID of the menu item that should be executed.
+ * @param {Element} target Element which context menu should be opened.
+ * @param {String} menuId ID of the menu item that should be executed.
  */
 this.executeContextMenuCommand = function(target, menuId, callback)
 {
