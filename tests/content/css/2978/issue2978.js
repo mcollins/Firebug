@@ -19,16 +19,13 @@ function runTest()
 
                 // Reset clipboard content and execute "Copy CSS Path" command.
                 FBTest.clearClipboard();
-                FBTest.executeContextMenuCommand(nodeTag, "fbCopyCSSPath");
-
-                // Asynchronously verify content in the clipboard.
-                setTimeout(function()
+                FBTest.executeContextMenuCommand(nodeTag, "fbCopyCSSPath", function()
                 {
                     var cssPath = FBTest.getClipboardText();
                     FBTest.compare("html body div.myClass span#myElement", cssPath,
                         "CSS path must be properly copied into the clipboard");
                     FBTest.testDone("issue2978.DONE");
-                }, 100);
+                });
             })
         });
     });
