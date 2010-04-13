@@ -16,11 +16,15 @@ function runTest() // special function name used by FBTest
             checkConsoleSourceLinks(elt);
         });
 
+        // During the reload the MutationRecognizer executes and logs
+        // into the Console panel. After the load finishes we can
+        // finish the test.
         FBTestFirebug.selectPanel("console");
         FBTestFirebug.enableConsolePanel(function(win) // causes reload
         {
             FBTestFirebug.selectPanel("console");
             FBTest.progress("Loaded "+win.location);
+            FBTestFirebug.testDone("882 DONE");
         });
     });
 }
@@ -44,10 +48,10 @@ function checkConsoleSourceLinks(elt)
     var sourceLineHighlight = new MutationRecognizer(panelWindow, 'div', {"class": "jumpHighlight"});
 
     sourceLineHighlight.onRecognize(function sawHighlight(elt)
-        {
-            FBTest.compare("sourceRow jumpHighlight", elt.getAttribute("class"), "Line is highlighted");  // shown in the Test Console
-            FBTestFirebug.testDone("882 DONE");
-        });
+    {
+        FBTest.compare("sourceRow jumpHighlight", elt.getAttribute("class"),
+            "Line is highlighted");  // shown in the Test Console
+    });
 
     FBTest.progress("Click the 'external' source link");
     FBTest.click(externalLink);  // click the source link to test the highlighting
