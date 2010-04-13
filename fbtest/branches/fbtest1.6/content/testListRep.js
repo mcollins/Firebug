@@ -241,8 +241,17 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
                 "\n==========================================\n\n";
 
             var groups = FBTestApp.TestConsole.groups;
+
+            text += "Summary:\n";
+
             for (group in groups)
-                text += groups[group].getErrors();
+                text += groups[group].getErrors(false);
+
+            text += "\n";
+            text += "Detailed Report:\n";
+
+            for (group in groups)
+                text += groups[group].getErrors(true);
 
             copyToClipboard(text);
         }
@@ -492,13 +501,13 @@ FBTestApp.TestGroup = function(name)
 
 FBTestApp.TestGroup.prototype =
 {
-    getErrors: function()
+    getErrors: function(includeMessages)
     {
         var text = "";
         for (var i=0; i<this.tests.length; i++)
         {
             var test = this.tests[i];
-            var errors = test.getErrors();
+            var errors = test.getErrors(includeMessages);
             if (errors)
                 text += errors + "\n";
         }
@@ -612,12 +621,17 @@ FBTestApp.Test.prototype =
         removeClass(this.row, "running");
     },
 
-    getErrors: function()
+    getErrors: function(includeMessages)
     {
         if (!this.error || this.category == "fails")
             return "";
 
-        var text = "[FAILED] " + this.uri + ": " + this.desc + "\n";
+        var text = "[FAILED] " + this.uri + ": " + this.desc;
+        if (!includeMessages)
+            return text;
+
+        text += "\n";
+
         for (var i=0; i<this.results.length; i++)
         {
             var testResult = this.results[i];
