@@ -1207,16 +1207,37 @@ this.searchInHtmlPanel = function(searchText, callback)
  * @param {Object} target Element which context menu should be opened.
  * @param {Object} menuId ID of the menu item that should be executed.
  */
-this.executeContextMenuCommand = function(target, menuId)
+this.executeContextMenuCommand = function(target, menuId, callback)
 {
+    var contextMenu = FW.FBL.$("fbContextMenu");
+
+    var self = this;
+    function onPopupShown(event)
+    {
+        contextMenu.removeEventListener("popupshown", onPopupShown, false);
+
+        var menuItem = contextMenu.querySelector("#" + menuId);
+        FBTest.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
+
+        // Click on the specified menu item.
+        self.synthesizeMouse(menuItem);
+
+        // Since the command is dispatched asynchronously,
+        // execute the callback using timeout. 
+        setTimeout(function()
+        {
+            // Should be hidden automatically, but for sure (avoid breaking further tests).
+            contextMenu.hidePopup();
+            callback();
+        });
+    }
+
+    // Wait till the menu is displayed.
+    contextMenu.addEventListener("popupshown", onPopupShown, false);
+
+    // Right click on the target element.
     var eventDetails = {type : "contextmenu", button : 2};
     this.synthesizeMouse(target, 2, 2, eventDetails);
-
-    var contextMenu = FW.FBL.$("fbContextMenu");
-    var menuItem = contextMenu.querySelector("#" + menuId);
-    FBTest.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
-
-    this.synthesizeMouse(menuItem);
 }
 
 // ************************************************************************************************
@@ -1236,15 +1257,22 @@ this.clearClipboard = function()
  */
 this.setClipboardText = function(text)
 {
-    var clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
-    var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
-    trans.addDataFlavor("text/unicode");
+    try
+    {
+        var clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+        var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+        trans.addDataFlavor("text/unicode");
 
-    var string = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
-    string.data = text;
-    trans.setTransferData("text/unicode", string, text.length + 2);
+        var string = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+        string.data = text;
+        trans.setTransferData("text/unicode", string, text.length + 2);
 
-    clipboard.setData(trans, null, Ci.nsIClipboard.kGlobalClipboard);
+        clipboard.setData(trans, null, Ci.nsIClipboard.kGlobalClipboard);
+    }
+    catch (e)
+    {
+        FBTest.sysout("setClipboardText FAILS " + e, e);
+    }
 }
 
 /**
@@ -1252,16 +1280,25 @@ this.setClipboardText = function(text)
  */
 this.getClipboardText = function()
 {
-    var clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
-    var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
-    trans.addDataFlavor("text/unicode");
-    clipboard.getData(trans, Ci.nsIClipboard.kGlobalClipboard);
+    try
+    {
+        var clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+        var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+        trans.addDataFlavor("text/unicode");
+        clipboard.getData(trans, Ci.nsIClipboard.kGlobalClipboard);
 
-    var str = new Object();
-    var strLength = new Object();
-    trans.getTransferData("text/unicode", str, strLength);
-    str = str.value.QueryInterface(Ci.nsISupportsString);
-    return str.data.substring(0, strLength.value / 2);
+        var str = new Object();
+        var strLength = new Object();
+        trans.getTransferData("text/unicode", str, strLength);
+        str = str.value.QueryInterface(Ci.nsISupportsString);
+        return str.data.substring(0, strLength.value / 2);
+    }
+    catch (e)
+    {
+        FBTest.sysout("getClipboardText FAILS " + e, e);
+    }
+
+    return null;
 }
 
 // ************************************************************************************************
