@@ -437,6 +437,10 @@ this.reload = function(callback)
  */
 function waitForWindowLoad(browser, callback)
 {
+    // If the callback isn't specified don't watch the window load at all.
+    if (!callback)
+        return;
+
     var loaded = false;
     var painted = false;
 
