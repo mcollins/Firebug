@@ -12,22 +12,23 @@ function runTest()
             // automatically expands the tree.
             FBTest.searchInHtmlPanel("myElement", function(sel)
             {
-                FBTest.sysout("issue2978; Selection", sel);
+                FBTest.sysout("issue2978; Selection:", sel);
 
                 var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
                 var nodeTag = nodeLabelBox.querySelector(".nodeTag");
-                FBTest.mouseDown(nodeTag);
 
-                // xxxHonza: why the context menu is not opened?
-                //FBTest.rightClick(nodeTag);
+                // Reset clipboard content and execute "Copy CSS Path" command.
+                FBTest.clearClipboard();
+                FBTest.executeContextMenuCommand(nodeTag, "fbCopyCSSPath");
 
-                var myElement = win.document.getElementById("myElement");
-                var cssPath = FW.FBL.getElementCSSPath(myElement);
-
-                FBTest.compare("html body div.myClass span#myElement",
-                    cssPath, "The CSS path must match.");
-
-                FBTest.testDone("issue2978.DONE");
+                // Asynchronously verify content in the clipboard.
+                setTimeout(function()
+                {
+                    var cssPath = FBTest.getClipboardText();
+                    FBTest.compare("html body div.myClass span#myElement", cssPath,
+                        "CSS path must be properly copied into the clipboard");
+                    FBTest.testDone("issue2978.DONE");
+                }, 100);
             })
         });
     });
