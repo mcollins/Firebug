@@ -55,7 +55,7 @@ MutationRecognizer.prototype.onRecognize = function(handler)
 
 /**
  * Passes a callback handler that is called when specific HTML change
- * occurs on the page. After the change is catched, the handler is executed yet
+ * occurs on the page. After the change is caught, the handler is executed yet
  * asynchronously.
  * @param {Function} handler Callback handler gets one parameter specifing the founded element.
  * @delay {Number} delay Number of milliseconds delay (10ms by default).
@@ -66,7 +66,7 @@ MutationRecognizer.prototype.onRecognizeAsync = function(handler, delay)
         delay = 10;
 
     return new MutationEventFilter(this, function(element) {
-        setTimeout(function() {
+        setTimeout(function delayMutationEventFilter() {
             FBTest.sysout("testFirebug.MutationEventFilter.onRecognizeAsync:", element);
             handler(element);
         }, delay);
