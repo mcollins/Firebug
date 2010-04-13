@@ -839,17 +839,35 @@ this.clickToolbarButton = function(chrome, buttonID)
     button.doCommand();
 }
 
-this.synthesizeMouse = function(node)
+this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
 {
-    var doc = node.ownerDocument;
-    var utils = doc.defaultView.QueryInterface(Ci.nsIInterfaceRequestor).
+    window = window || node.ownerDocument.defaultView;
+
+    var utils = window.QueryInterface(Ci.nsIInterfaceRequestor).
         getInterface(Ci.nsIDOMWindowUtils);
 
-    if (utils)
+    if (!utils)
+        return;
+
+    offsetX = offsetX || 0;
+    offsetY = offsetY || 0;
+    event = event || {};
+
+    var button = event.button || 0;
+    var clickCount = event.clickCount || 1;
+
+    var rect = node.getBoundingClientRect();
+    var left = rect.left + offsetX;
+    var top = rect.top + offsetY;
+
+    if (event.type)
     {
-        var rect = node.getBoundingClientRect();
-        utils.sendMouseEvent("mousedown", rect.left, rect.top, 0, 1, 0);
-        utils.sendMouseEvent("mouseup", rect.left, rect.top, 0, 1, 0);
+        utils.sendMouseEvent(event.type, left, top, button, clickCount, 0);
+    }
+    else
+    {
+        utils.sendMouseEvent("mousedown", left, top, button, clickCount, 0);
+        utils.sendMouseEvent("mouseup", left, top, button, clickCount, 0);
     }
 }
 
@@ -1179,6 +1197,71 @@ this.searchInHtmlPanel = function(searchText, callback)
     setTimeout(function() {
         FBTest.pressKey(13, "fbSearchBox");
     }, 0);
+}
+
+// ************************************************************************************************
+// Context menu
+
+/**
+ * Opens context menu for target element and executes specified command.
+ * @param {Object} target Element which context menu should be opened.
+ * @param {Object} menuId ID of the menu item that should be executed.
+ */
+this.executeContextMenuCommand = function(target, menuId)
+{
+    var eventDetails = {type : "contextmenu", button : 2};
+    this.synthesizeMouse(target, 2, 2, eventDetails);
+
+    var contextMenu = FW.FBL.$("fbContextMenu");
+    var menuItem = contextMenu.querySelector("#" + menuId);
+    FBTest.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
+
+    this.synthesizeMouse(menuItem);
+}
+
+// ************************************************************************************************
+// Clipboard
+
+/**
+ * Clears the current textual content in the clipboard.
+ */
+this.clearClipboard = function()
+{
+    this.setClipboardText("");
+}
+
+/**
+ * Sets provided text into the clipboard
+ * @param {Object} text String to the put into the clipboard.
+ */
+this.setClipboardText = function(text)
+{
+    var clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+    var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+    trans.addDataFlavor("text/unicode");
+
+    var string = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+    string.data = text;
+    trans.setTransferData("text/unicode", string, text.length + 2);
+
+    clipboard.setData(trans, null, Ci.nsIClipboard.kGlobalClipboard);
+}
+
+/**
+ * Returns the current textual content in the clipboard
+ */
+this.getClipboardText = function()
+{
+    var clipboard = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+    var trans = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+    trans.addDataFlavor("text/unicode");
+    clipboard.getData(trans, Ci.nsIClipboard.kGlobalClipboard);
+
+    var str = new Object();
+    var strLength = new Object();
+    trans.getTransferData("text/unicode", str, strLength);
+    str = str.value.QueryInterface(Ci.nsISupportsString);
+    return str.data.substring(0, strLength.value / 2);
 }
 
 // ************************************************************************************************
