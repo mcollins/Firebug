@@ -10,7 +10,7 @@ function runTest()
             FBTest.waitForDisplayedElement("console", config, function(row)
             {
                 // Verify displayed text.
-                var reTextContent = /This is a test error\s*console.error\(\"This is a test error\"\);\\r\\nerror\.html\s*\(line 29\)/;
+                var reTextContent = /This is a test error\s*console.error\(\"This is a test error\"\);\\r\\nerror\.html\s*\(line 31\)/;
                 FBTest.compare(reTextContent, row.textContent, "Text content must match.");
 
                 // Show stack trace.
@@ -19,7 +19,7 @@ function runTest()
 
                 // Verify the first stack frame.
                 var stackFrame = row.getElementsByClassName("objectBox-stackFrame")[0];
-                FBTest.compare(/onExecuteTest\(\)\s*error.html\s*\(line 29\)/,
+                FBTest.compare(/onExecuteTest\(\)\s*error.html\s*\(line 31\)/,
                     stackFrame.textContent, "Stack frame content must match.");
 
                 // Finish test
