@@ -36,6 +36,10 @@ var serverURI = driverBaseURI;
  *                              "fails": - it's not blocking bug if the test fails.
  * @param: {String} testPage    Relative location of the test page [optional]. This is useful for manual
  *                              opening of the test page from FBTest console (context menu "Open Test Page").
+ * @param: {String} os          Target OS [optional]. Used to specify target OS where the test
+ *                              should be applied. Can be combination of following: win|mac|linux
+ *                              (separated by '|'). If not specified, the test is intended for all.
+ *                              Test, which is not targeted for the current OS is marked as "fails".
  */
 var testList = [
     {group: "firebug", uri: "firebug/allOpenAllClose1.5.js",           desc: "First test: all open and all close", testPage: "firebug/OpenFirebugOnThisPage.html" },
@@ -148,9 +152,9 @@ var testList = [
     {group: "examples", uri: "examples/exampleConsoleAPI1.js",         desc: "Example test for console API.", testPage: "examples/exampleConsoleAPI1.html" },
     {group: "examples", uri: "examples/exampleTaskList1.js",           desc: "Example test showing how to use FBTest.TaskList API." },
     {group: "examples", uri: "examples/exampleCommandLine1.js",        desc: "Example test showing how to test the command line.", testPage: "examples/exampleCommandLine1.html" },
-    {group: "inspector", uri: "inspector/issue68Frame.js",             desc: "Effect of padding and border on HTML tag (frame)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68FrameExpected.htm" },
-    {group: "inspector", uri: "inspector/issue68Box.js",               desc: "Effect of padding and border on HTML tag (box)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68BoxExpected.htm" },
-    {group: "inspector", uri: "inspector/issue68BoxRuler.js",          desc: "Effect of padding and border on HTML tag (ruler)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68BoxRulerExpected.htm" },
+    {group: "inspector", uri: "inspector/issue68Frame.js",    os: "win", desc: "Effect of padding and border on HTML tag (frame)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68FrameExpected.htm" },
+    {group: "inspector", uri: "inspector/issue68Box.js",      os: "win", desc: "Effect of padding and border on HTML tag (box)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68BoxExpected.htm" },
+    {group: "inspector", uri: "inspector/issue68BoxRuler.js", os: "win", desc: "Effect of padding and border on HTML tag (ruler)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68BoxRulerExpected.htm" },
     {group: "commandLine", uri: "commandLine/dom.js",            desc: "Verify command line DOM access.", testPage: "commandLine/dom.html" },
     {group: "commandLine", uri: "commandLine/api.js",            desc: "Verify command line APIs.", testPage: "commandLine/api.html" },
     {group: "commandLine", uri: "commandLine/debug.js",          desc: "Verify command line debug API.", testPage: "commandLine/debug.html" },
