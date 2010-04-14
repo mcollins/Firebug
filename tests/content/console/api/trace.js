@@ -12,10 +12,11 @@ function runTest()
                 var stackFrames = row.getElementsByClassName("objectBox-stackFrame");
                 FBTest.compare(2, stackFrames.length, "There must be 2 stack frames.");
 
-                var reStack1 = /function onclick\(event\) {\s*onExecuteTest\(\);\s*}\s*\(Object { name=\"event\"}\)\s*1\s*\(line 2\)/;
+                var reStack1 = /onExecuteTest\(\)\s*trace.html\s*\(line 34\)/;
                 FBTest.compare(reStack1, stackFrames[0].textContent, "The first stack frame text must match.");
 
-                var reStack2 = /onExecuteTest\(\)\s*trace.html\s*\(line 34\)/;
+                FBTrace.sysout(stackFrames[1].textContent);
+                var reStack2 = /onclick\(Object\s*{\s*name=\"event\"}\)1\s*\(line\s*2\)/;
                 FBTest.compare(reStack2, stackFrames[1].textContent, "The second stack frame text must match.");
 
                 FBTest.testDone("console.trace.DONE");
