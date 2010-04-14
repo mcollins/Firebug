@@ -1237,6 +1237,13 @@ this.executeContextMenuCommand = function(target, menuId, callback)
         var menuItem = contextMenu.querySelector("#" + menuId);
         FBTest.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
 
+        // If the menu item isn't available close the context menu and bail out.
+        if (!menuItem)
+        {
+            contextMenu.hidePopup();
+            return;
+        }
+
         // Click on the specified menu item.
         self.synthesizeMouse(menuItem);
 
@@ -1244,8 +1251,6 @@ this.executeContextMenuCommand = function(target, menuId, callback)
         // execute the callback using timeout. 
         setTimeout(function()
         {
-            // Should be hidden automatically, but for sure (avoid breaking further tests).
-            contextMenu.hidePopup();
             callback();
         });
     }
