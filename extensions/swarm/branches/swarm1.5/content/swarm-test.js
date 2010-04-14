@@ -16,7 +16,7 @@ const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIO
 // Monitors reloads in the FBTest window.
 // When a swarm is detected, prepare for swarm testing and certification
 
-var FirebugSwarmTest =
+top.SwarmInstaller.SwarmTest =
 {
     // initialization -------------------------------------------------------------------
 
@@ -137,55 +137,7 @@ var FirebugSwarmTest =
     {
 
     },
-    // ----------------------------------------------------------------------------------
-    // Handlers contributed to swarmInstaller
-
-    swarmRunAllTestsStep: function(event, progress)
-    {
-        // enable the stop button
-        var browser = $("taskBrowser");
-        var doc = browser.contentDocument;
-        var stopButton = event.target.parentNode.getElementsByClassName("swarmStopTestsStep")[0];
-        stopButton.removeAttribute("disabled");
-
-        FBTestApp.TestConsole.onRunAll(function restoreButtonsAndGoToNextStep()
-        {
-            stopButton.setAttribute("disabled", "disabled");
-            FBTestApp.TestSummary.dumpSummary();
-        });
-    },
-
-    swarmStopTestsStep: function(event, progress)
-    {
-        FBTestApp.TestConsole.onStop();
-    },
-
-    swarmHaltFailTest: function(event, progress)
-    {
-        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
-    },
-
-    swarmHaltFailTest: function(event, progress)
-    {
-        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
-    },
-
-    swarmNoTimeoutTest: function(event, progress)
-    {
-        FBTestApp.TestConsole.onToggleNoTestTimeout();
-    },
-
-    signPage: function(event, progress)
-    {
-        FBTrace.sysout("FirebugSwarmTest signPage ", event);
-        var keyservice = this.getKeyService();
-        FBTrace.sysout("FirebugSwarmTest doSigning keyservice: "+this.keyservice);
-        if (!keyservice)
-            return;
-        debugger;
-    },
-
-    // sync with FBTest -------------------------------------------------------------------
+   // sync with FBTest -------------------------------------------------------------------
     observe: function(subject, topic, data)
     {
         try
@@ -197,13 +149,13 @@ var FirebugSwarmTest =
             }
             else if (data == "shutdown")
             {
-                observerService.removeObserver(FirebugSwarmTest, "fbtest");
-                FirebugSwarmTest.detachFromPage();
+                observerService.removeObserver(SwarmInstaller.SwarmTest, "fbtest");
+                SwarmInstaller.SwarmTest.detachFromPage();
             }
             else if (data == "restart")
             {
                 var fbtest = subject;
-                FirebugSwarmTest.attachToPage();
+                SwarmInstaller.SwarmTest.attachToPage();
             }
 
         }
@@ -262,33 +214,99 @@ var FirebugSwarmTest =
     // nsIWindowMediatorListener ------------------------------------------------------------------
     onOpenWindow: function(xulWindow)
     {
-        FBTrace.sysout("FirebugSwarmTest onOpenWindow");
+        FBTrace.sysout("SwarmInstaller.SwarmTest onOpenWindow");
     },
 
     onCloseWindow: function(xulWindow)
     {
-        FBTrace.sysout("FirebugSwarmTest onCloseWindow");
+        FBTrace.sysout("SwarmInstaller.SwarmTest onCloseWindow");
     },
 
     onWindowTitleChange: function(xulWindow, newTitle)
     {
-        FBTrace.sysout("FirebugSwarmTest onWindowTitleChange");
+        FBTrace.sysout("SwarmInstaller.SwarmTest onWindowTitleChange");
         var docShell = xulWindow.docShell;
         if (docShell instanceof Ci.nsIInterfaceRequestor)
         {
             var win = docShell.getInterface(Ci.nsIDOMWindow);
             var location = safeGetWindowLocation(win);
-            FBTrace.sysout("FirebugSwarmTest onWindowTitleChange location: "+location);
+            FBTrace.sysout("SwarmInstaller.SwarmTest onWindowTitleChange location: "+location);
             if (location === "chrome://fbtest/content/testConsole.xul")
             {
-                FBTrace.sysout("FirebugSwarmTest onWindowTitleChange FOUND at location "+location);
-                FirebugSwarmTest.addSigningButton(win.document);
+                FBTrace.sysout("SwarmInstaller.SwarmTest onWindowTitleChange FOUND at location "+location);
+                SwarmInstaller.SwarmTest.addSigningButton(win.document);
             }
         }
     },
 
 
 };
+
+// ----------------------------------------------------------------------------------
+// Handlers contributed to swarmInstaller
+SwarmInstaller.SwarmTest.swarmRunAllTestsStep = extend(SwarmInstaller.WorkflowStep,
+{
+    onStep: function(event, progress)
+    {
+        // enable the stop button
+        var browser = $("taskBrowser");
+        var doc = browser.contentDocument;
+        var stopButton = event.target.parentNode.getElementsByClassName("swarmStopTestsStep")[0];
+        stopButton.removeAttribute("disabled");
+
+        FBTestApp.TestConsole.onRunAll(function restoreButtonsAndGoToNextStep()
+        {
+            stopButton.setAttribute("disabled", "disabled");
+            FBTestApp.TestSummary.dumpSummary();
+        });
+    },
+});
+
+SwarmInstaller.SwarmTest.swarmStopTestsStep = extend(SwarmInstaller.WorkflowStep,
+{
+    onStep: function(event, progress)
+    {
+        FBTestApp.TestConsole.onStop();
+    },
+});
+
+SwarmInstaller.SwarmTest.swarmHaltFailTest = extend(SwarmInstaller.WorkflowStep,
+{
+    onStep: function(event, progress)
+    {
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
+    },
+});
+
+SwarmInstaller.SwarmTest.swarmHaltFailTest = extend(SwarmInstaller.WorkflowStep,
+{
+    onStep: function(event, progress)
+    {
+        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
+    },
+});
+
+SwarmInstaller.SwarmTest.swarmNoTimeoutTest = extend(SwarmInstaller.WorkflowStep,
+{
+    onStep: function(event, progress)
+    {
+        FBTestApp.TestConsole.onToggleNoTestTimeout();
+    },
+});
+
+SwarmInstaller.SwarmTest.signPage = extend(SwarmInstaller.WorkflowStep,
+{
+    onStep: function(event, progress)
+    {
+        FBTrace.sysout("SwarmInstaller.SwarmTest signPage ", event);
+        var keyservice = this.getKeyService();
+        FBTrace.sysout("SwarmInstaller.SwarmTest doSigning keyservice: "+this.keyservice);
+        if (!keyservice)
+            return;
+        debugger;
+    },
+});
+
 
 // Secure download and hash calculation --------------------------------------------------------
 // http://groups.google.com/group/mozilla.dev.platform/browse_thread/thread/9f1bdf8603b72384/74fcb44e8b701966?#74fcb44e8b701966
@@ -407,11 +425,11 @@ function toHexString(charCode)
     return ("0" + charCode.toString(16)).slice(-2);
 }
 
-observerService.addObserver(FirebugSwarmTest, "fbtest", false);  // removed in observe: 'shutdown'
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", bind(FirebugSwarmTest.swarmRunAllTestsStep, FirebugSwarmTest));
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", bind(FirebugSwarmTest.swarmStopTestsStep, FirebugSwarmTest));
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", bind(FirebugSwarmTest.swarmHaltFailTest, FirebugSwarmTest));
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", bind(FirebugSwarmTest.swarmNoTimeoutTest, FirebugSwarmTest));
+observerService.addObserver(SwarmInstaller.SwarmTest, "fbtest", false);  // removed in observe: 'shutdown'
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", bind(SwarmInstaller.SwarmTest.swarmRunAllTestsStep, SwarmInstaller.SwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", bind(SwarmInstaller.SwarmTest.swarmStopTestsStep, SwarmInstaller.SwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", bind(SwarmInstaller.SwarmTest.swarmHaltFailTest, SwarmInstaller.SwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", bind(SwarmInstaller.SwarmTest.swarmNoTimeoutTest, SwarmInstaller.SwarmTest));
 
 //************************************************************************************************
 }});

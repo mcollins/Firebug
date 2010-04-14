@@ -22,6 +22,50 @@
 
 top.SwarmInstaller = {};
 
+/*
+ * Common base object for workflow steps, all called with 'this' being the registered object in registerWorkflowStep
+ */
+SwarmInstaller.WorkflowStep =
+{
+    /*
+     * Called when the workflow system is loaded into the UI, on all steps
+     * @param doc, the document containing the workflow UI
+     * @param progress, a place to post progress messages for users
+     */
+    initialize: function(doc, progress) {},
+    /*
+     * Called just after the UI selects any workflow, on all steps
+     * @param doc, the document containing the workflow UI
+     * @param selectedWorkflow, the element selected
+     */
+    onWorkflowSelect: function(doc, selectedWorkflow) {},
+    /*
+     * Called just before the UI unselects any workflow, on all steps
+     * @param doc, the document containing the workflow UI
+     */
+    onWorkflowUnselect: function(doc) {},
+    /*
+     * Called just before any workflow step, on all steps in the selected workflow
+     * @param doc, the document containing the workflow UI
+     * @param stepElement the element stepping
+     */
+    onStepStarts: function(doc, stepElement) {},
+    /*
+     * Called to execute this workflow step
+     */
+    onStep: function(event, progress) {},
+    /*
+     * Called just after any workflow step, on all steps in the selected workflow
+     */
+    onStepEnds: function(doc, stepElement) {},
+    /*
+     * called when the workflow system is unloaded, on all steps
+     * * @param doc, the document containing the workflow UI
+     * @param stepElement the element stepping
+     */
+    destroy: function() {},
+};
+
 SwarmInstaller.workFlowMonitor =
 {
     initialize: function(doc, progress)
@@ -46,6 +90,7 @@ SwarmInstaller.workFlowMonitor =
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         this.hookButtons(swarmWorkflows);
         swarmWorkflows.style.display = "block";
+        this.dispatch("initialize", [doc, this.progress]);
     },
 
     detachFromPage: function()  // XXXjjb NOT BEING CALLED!
@@ -118,12 +163,13 @@ SwarmInstaller.workFlowMonitor =
         swarmWorkflows.classList.add("swarmWorkflowIsSelected");
 
         // initialize the newly selected workflow
-        SwarmInstaller.workFlowMonitor.initializeWorkflow(selectedWorkflow);
+        this.dispatch("onWorkflowSelect", [doc, selectedWorkflow]);
         return true;
     },
 
     unSelectSelectedWorkflow: function(doc)
     {
+        this.dispatch("onWorkflowUnselect", [doc])
         // unselect the previously selected workflow
         var workFlowSelectors = doc.body.getElementsByClassName("swarmWorkflowSelection");
         for (var i = 0; i < workFlowSelectors.length; i++)
@@ -138,13 +184,6 @@ SwarmInstaller.workFlowMonitor =
         var inputs = workFlows.getElementsByTagName("input");
         for (var j = 0; j < inputs.length; j++)
              inputs[j].checked = false;
-    },
-
-    initializeWorkflow: function(elt)
-    {
-        var ext = SwarmInstaller.extensions.getInstallableExtensions();
-        if (ext.length == 0)
-            SwarmInstaller.workFlowMonitor.stepWorkflows(elt.ownerDocument, "swarmInstallStep");
     },
 
     unSelectWorkflow: function(event)
@@ -167,9 +206,12 @@ SwarmInstaller.workFlowMonitor =
             var button = event.target;
 
             var step = this.getStepFromButton(button);
+            var doc = event.target.ownerDocument;
 
             button.classList.add("swarmWorkflowing");
-            this.registeredWorkflowSteps[step](event, this.progress);
+            this.dispatch("onStepStarts", [doc, button])
+            this.registeredWorkflowSteps[step].onStep(event, this.progress);
+            this.dispatch("onStepEnds", [doc, button])
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
             event.preventDefault();
@@ -228,11 +270,29 @@ SwarmInstaller.workFlowMonitor =
 
     //----------------------------------------------------------------------------------
 
-    registeredWorkflowSteps: {}, // key CSS class name, value function(event, progress);
+    registeredWorkflowSteps: {}, // key CSS class name, value obj shaped as SwarmInstaller.WorkflowStep
 
-    registerWorkflowStep: function(key, fnc)
+    registerWorkflowStep: function(key, obj)
     {
-        this.registeredWorkflowSteps[key] = fnc;
+        this.registeredWorkflowSteps[key] = obj;
+    },
+
+    dispatch: function(eventName, args)
+    {
+        FBTrace.sysout("swarmInstaller.dispatch "+eventName, args);
+
+        for(var i = 0; i < this.registeredWorkflowSteps.length; i++)
+        {
+            var listener = this.registeredWorkflowSteps[i];
+            try
+            {
+                listener[eventName].apply(listener, args);
+            }
+            catch(exc)
+            {
+                FBTrace.sysout("swarmInstaller.dispatch FAILS for "+eventName+" to "+listener.toSource()+" because "+exc, exc);
+            }
+        }
     },
 
 };
@@ -269,102 +329,12 @@ SwarmInstaller.extensions =
             if (this.declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
                 continue;
 
+            if (this.declaredExtensions[i].statusElement.classList.contains("installedVersion-Newer"))
+                continue;
+
             installingExtensions.push( this.declaredExtensions[i] );
         }
         return installingExtensions;
-    },
-
-    installDeclaredExtensions: function(event, progress)
-    {
-        // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
-        var urls = [];
-        var hashes = [];
-        var installingExtensions = [];
-        var count = this.declaredExtensions.length;
-        for (var i = 0; i < count; i++)
-        {
-            if (this.declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
-                continue;
-
-            urls.push( this.declaredExtensions[i].href );
-            hashes.push( this.declaredExtensions[i].hash );
-            installingExtensions.push( this.declaredExtensions[i] );
-        }
-        count = urls.length;
-
-
-        var listener =
-        {
-            states: ["download_start", "download_done", "install_start", "install_done", "dialog_close"],
-
-            onStateChange: function(index, state, value )
-            {
-                FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+value);
-
-                var classes = installingExtensions[index].statusElement.getAttribute('class');
-                var m = /installedVersion-[^\s]*/.exec(classes);
-                if (m)
-                    removeClass(installingExtensions[index].statusElement, m[0]);
-
-                m = /installing-[^\s]*/.exec(classes);
-                if (m)
-                    removeClass(installingExtensions[index].statusElement, m[0]);
-
-                if (this.states[state] === "install_done")
-                {
-                    if (value != 0)
-                    {
-                        FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
-                        var errorCodePage = "http://getfirebug.com/wiki/index.php/Extension_Installation_Error_Codes";
-                        var errorCodeTitle ="Information on Installation Error Codes";
-                        installingExtensions[index].statusElement.innerHTML += ": <a target=\"_blank\" title=\""+errorCodeTitle+"\" href=\""+
-                            errorCodePage+"#"+errorNameByCode[value+""]+"_"+value+"\">"+errorNameByCode[value+""]+"</a>";
-                        setClass(installingExtensions[index].statusElement, "install-failed");
-                    }
-                    else
-                    {
-                        setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
-                        this.checkForRestart();
-                    }
-                }
-                else
-                {
-                    if (this.states[state] === "dialog_close")
-                        return;
-
-                    setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
-                }
-            },
-
-            checkForRestart: function()
-            {
-                for (var i = 0; i < installingExtensions.length; i++)
-                {
-                    if (installingExtensions[i].statusElement.classList.contains("installing-install_done"))
-                        continue;
-                    else
-                        return false;
-                }
-                // all installs are done
-                window.alert("Installation is complete but you may have to restart the browser");
-            },
-
-            onProgress: function(index, value, maxValue )
-            {
-                FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+value+"/"+maxValue);
-                installingExtensions[index].statusElement.innerHTML = installingExtensions[index].version +" "+Math.ceil(100*value/maxValue)+"%";
-            },
-            QueryInterface: function(iid)
-            {
-                return this;
-            },
-        };
-        var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
-            .getService(Components.interfaces.nsIXPInstallManager);
-
-        progress("Installing "+count+" extensions");
-
-        xpInstallManager.initManagerWithHashes(urls, hashes, count, listener);
     },
 
     getDeclaredExtensions: function(doc)
@@ -451,9 +421,115 @@ SwarmInstaller.extensions =
         }
         return -1;
     },
+    // -------------------------------------------------------------
+    // implement SwarmInstaller.WorkflowStep
+
+    swarmInstallStep:
+    {
+        onWorkflowSelect: function(doc, selectedWorkflow)
+        {
+            var ext = SwarmInstaller.extensions.getInstallableExtensions();
+            if (ext.length == 0)
+                SwarmInstaller.workFlowMonitor.stepWorkflows(elt.ownerDocument, "swarmInstallStep");
+        },
+
+        onStep: function(event, progress)
+        {
+            // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
+            var urls = [];
+            var hashes = [];
+            var installingExtensions = [];
+            var declaredExtensions = SwarmInstaller.extensions.declaredExtensions;
+            var count = declaredExtensions.length;
+            for (var i = 0; i < count; i++)
+            {
+                if (declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
+                    continue;
+
+                urls.push( declaredExtensions[i].href );
+                hashes.push( declaredExtensions[i].hash );
+                installingExtensions.push( declaredExtensions[i] );
+            }
+            count = urls.length;
+
+
+            var listener =
+            {
+                states: ["download_start", "download_done", "install_start", "install_done", "dialog_close"],
+
+                onStateChange: function(index, state, value )
+                {
+                    FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+value);
+
+                    var classes = installingExtensions[index].statusElement.getAttribute('class');
+                    var m = /installedVersion-[^\s]*/.exec(classes);
+                    if (m)
+                        removeClass(installingExtensions[index].statusElement, m[0]);
+
+                    m = /installing-[^\s]*/.exec(classes);
+                    if (m)
+                        removeClass(installingExtensions[index].statusElement, m[0]);
+
+                    if (this.states[state] === "install_done")
+                    {
+                        if (value != 0)
+                        {
+                            FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
+                            var errorCodePage = "http://getfirebug.com/wiki/index.php/Extension_Installation_Error_Codes";
+                            var errorCodeTitle ="Information on Installation Error Codes";
+                            installingExtensions[index].statusElement.innerHTML += ": <a target=\"_blank\" title=\""+errorCodeTitle+"\" href=\""+
+                                errorCodePage+"#"+errorNameByCode[value+""]+"_"+value+"\">"+errorNameByCode[value+""]+"</a>";
+                            setClass(installingExtensions[index].statusElement, "install-failed");
+                        }
+                        else
+                        {
+                            setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
+                            this.checkForRestart();
+                        }
+                    }
+                    else
+                    {
+                        if (this.states[state] === "dialog_close")
+                            return;
+
+                        setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
+                    }
+                },
+
+                checkForRestart: function()
+                {
+                    for (var i = 0; i < installingExtensions.length; i++)
+                    {
+                        if (installingExtensions[i].statusElement.classList.contains("installing-install_done"))
+                            continue;
+                        else
+                            return false;
+                    }
+                    // all installs are done
+                    window.alert("Installation is complete but you may have to restart the browser");
+                },
+
+                onProgress: function(index, value, maxValue )
+                {
+                    FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+value+"/"+maxValue);
+                    installingExtensions[index].statusElement.innerHTML = installingExtensions[index].version +" "+Math.ceil(100*value/maxValue)+"%";
+                },
+                QueryInterface: function(iid)
+                {
+                    return this;
+                },
+            };
+            var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
+                .getService(Components.interfaces.nsIXPInstallManager);
+
+            progress("Installing "+count+" extensions");
+
+            xpInstallManager.initManagerWithHashes(urls, hashes, count, listener);
+        },
+    },
 }
 
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmInstallStep", bind(SwarmInstaller.extensions.installDeclaredExtensions, SwarmInstaller.extensions));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmInstallStep", SwarmInstaller.extensions.swarmInstallStep);
 
 var errorNameByCode =
 {
