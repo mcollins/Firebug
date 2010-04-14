@@ -54,12 +54,7 @@ Firebug.MemoryBug.Profiler = extend(Firebug.Module,
         var startTime = new Date();
         var binary = this.getBinaryComponent();
         if (!binary)
-        {
-            // xxxHonza: also update the default Memory panel content.
-            Firebug.Console.log("Memory Profiler: Required binary component not found! " +
-                "One may not be available for your OS and Firefox version.");
             return;
-        }
 
         // Run memory profiling.
         var profileData = this.getProfileData(context);

@@ -29,7 +29,9 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
         appendStylesheet(doc, "memoryBugStyles");
 
-        Firebug.MemoryBug.DefaultContent.tag.replace({}, this.panelNode);
+        var binary = Firebug.MemoryBug.Profiler.getBinaryComponent();
+        var template = binary ? Firebug.MemoryBug.DefaultContent : Firebug.MemoryBug.NoJetpack;
+        template.render(this.panelNode);
     },
 
     show: function(state)
@@ -48,6 +50,16 @@ Firebug.MemoryBug.Panel.prototype = extend(Firebug.Panel,
 
     refresh: function()
     {
+        var binary = Firebug.MemoryBug.Profiler.getBinaryComponent();
+        if (!binary)
+        {
+            Firebug.Console.log("Memory Profiler: Required binary component not found! " +
+                "One may not be available for your OS and Firefox version.");
+
+            Firebug.MemoryBug.NoJetpack.render(this.panelNode);
+            return;
+        }
+
         var profileData = Firebug.MemoryBug.Profiler.profile(this.context);
         this.table = ReportView.render(profileData, this.panelNode);
     },
@@ -281,6 +293,44 @@ Firebug.MemoryBug.DefaultContent = domplate(Firebug.Rep,
     {
         var panel = Firebug.getElementPanel(event.target);
         panel.refresh();
+    },
+
+    render: function(parentNode)
+    {
+        this.tag.replace({}, parentNode, this);
+    }
+});
+
+// ************************************************************************************************
+
+/**
+ * @domplate Default template displayed within empty Memory panel.
+ */
+Firebug.MemoryBug.NoJetpack = domplate(Firebug.Rep,
+{
+    tag:
+        TABLE({"class": "memoryProfilerDefaultTable", cellpadding: 0, cellspacing: 0},
+            TBODY(
+                TR({"class": "memoryProfilerDefaultRow"},
+                    TD({"class": "memoryProfilerDefaultCol", onclick: "$onLinkClick"},
+                        SPAN({"class": "message"})
+                    )
+                )
+            )
+        ),
+
+    onLinkClick: function(event)
+    {
+        var target = event.target;
+        if (target && target.tagName && target.tagName.toLowerCase() == "a")
+            openNewTab("https://addons.mozilla.org/cs/firefox/addon/12025");
+    },
+
+    render: function(parentNode)
+    {
+        var table = this.tag.replace({}, parentNode, this);
+        var message = table.querySelector(".message");
+        message.innerHTML = $STR("memorybug.msg.nojetpack");
     }
 });
 
