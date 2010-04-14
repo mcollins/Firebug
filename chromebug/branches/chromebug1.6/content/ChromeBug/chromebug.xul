@@ -92,6 +92,7 @@
     <!-- END -->
     <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/xulapp.js"/>
+    <script type="application/x-javascript"  src="chrome://chromebug/content/extensions.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/xpcomExplorer.js"/>
 

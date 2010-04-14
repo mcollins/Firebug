@@ -663,7 +663,7 @@ Apparently this event comes to late to do anything useful with the objects.
 var Module = Chromebug.XULAppModule;
 
 // ************************************************************************************************
-// Firebug Cache Panel
+// Firebug XUL Windows Panel
 
 Chromebug.XULAppPanel = function() {}
 
