@@ -321,6 +321,11 @@ FBTestApp.TestConsole =
                 for (var i=0; i<win.testList.length; i++)
                 {
                     var test = win.testList[i];
+
+                    // If the test isn't targeted for the current OS, mark it as "fails".
+                    if (!self.isTargetOS(test))
+                        test.category = "fails";
+
                     var group = map[test.group];
                     if (!group)
                     {
@@ -361,6 +366,31 @@ FBTestApp.TestConsole =
         taskBrowser.setAttribute("src", testListPath);
 
         this.updateURLBars();
+    },
+
+    /**
+     * Returns true if the test is targeted for the current OS; otherwise false.
+     */
+    isTargetOS: function(test)
+    {
+        // If there is no target OS, the test is intended for all.
+        if (!test.os)
+            return true;
+
+        var platform = window.navigator.platform.toLowerCase();
+
+        // Iterate all specified OS and look for match.
+        var list = test.os.toLowerCase().split("|");
+        for (var p in list)
+        {
+            if (platform.indexOf(list[p]) != -1)
+                return true;
+        }
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.isTargetOS; Test is not targeted for this OS: " + test.uri);
+
+        return false;
     },
 
     addStyleSheets: function(doc)
