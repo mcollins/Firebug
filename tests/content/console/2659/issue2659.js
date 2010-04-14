@@ -18,7 +18,7 @@ function runTest()
             FBTestFirebug.reload(function()
             {
                 verifyNumberOfLogs(1);
-                clickPersistButton();
+                FBTestFirebug.clickToolbarButton(FW.FirebugChrome, "fbConsolePersist");
                 FBTestFirebug.reload(function()
                 {
                     verifyNumberOfLogs(2);
@@ -43,16 +43,4 @@ function verifyNumberOfLogs(expectedCount)
 
     FBTest.compare(expectedCount, count, "There must be " + expectedCount +
         "log(s) in the Console panel");
-}
-
-function clickPersistButton(chrome)
-{
-    if (!chrome)
-        chrome = FW.FirebugChrome;
-
-    var doc = chrome.window.document;
-    var button = doc.getElementById("fbConsolePersist");
-
-    // Do not use FBTest.click, toolbar buttons need to use sendMouseEvent.
-    FBTestFirebug.synthesizeMouse(button);
 }
