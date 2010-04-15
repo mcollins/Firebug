@@ -466,7 +466,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         var previousContextJSON = "{"+
             " \"contextName\": \"" + context.getName() +"\"," +
-            (pkgDescription? (" \"pkgName\": \"" + pkgDescription.pkg.name +"\",") : "") +
+            (pkgDescription? (" \"pkgName\": \"" + pkgDescription.name +"\",") : "") +
             (panel? (" \"panelName\": \"" + panel.name +"\",") : "") +
             (sourceLinkJSON? (" \"sourceLink\": " + sourceLinkJSON+", ") : "") +
             "}";
