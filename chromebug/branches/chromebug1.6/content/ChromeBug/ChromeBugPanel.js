@@ -1650,6 +1650,11 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
             var context = filteredContext.context;
             Firebug.Chromebug.selectContext(context);
             Firebug.Chromebug.PackageList.setCurrentLocation(filteredContext);
+
+            setTimeout( function delaySave()  // we only want to do this when the user selects
+            {
+                Firebug.Chromebug.saveState(context);
+            }, 500);
        }
        else
        {
