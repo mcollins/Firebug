@@ -20,6 +20,8 @@
 
 FBL.ns(function chromebug() { with (FBL) {
 
+// ************************************************************************************************
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const windowWatcher = CCSV("@mozilla.org/embedcomp/window-watcher;1", "nsIWindowWatcher");
@@ -39,8 +41,6 @@ const jsdIExecutionHook = Components.interfaces.jsdIExecutionHook;
 const NOTIFY_ALL = nsIWebProgress.NOTIFY_ALL;
 const nsIObserverService = Ci.nsIObserverService
 const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
-
-
 
 const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
 const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
@@ -63,8 +63,10 @@ const fbVersionURL = "chrome://firebug/content/branch.properties";
 
 const statusText = $("cbStatusText");
 
-// We register a Module so we can get initialization and shutdown signals and so we can monitor context activities
-//
+// ************************************************************************************************
+// We register a Module so we can get initialization and shutdown signals and so we can monitor
+// context activities
+
 Firebug.Chromebug = extend(Firebug.Module,
 {
     // This is our interface to TabWatcher
@@ -270,7 +272,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         // from this point forward scripts should come via debugger interface
 
         // Wait to let the initial windows open, then return to users past settings
-        this.retryRestoreID = setInterval( bind(Firebug.Chromebug.restoreState, this), 500);
+        // The restoreation has limited number of attempts.
+        this.retryRestoreCounter = 6;
+        this.retryRestoreID = setInterval(bind(Firebug.Chromebug.restoreState, this), 500);
+
+        // xxxHonza: what is the purpose of this timeout?
         setTimeout( function stopTrying()
         {
             if(Firebug.Chromebug.stopRestoration())  // if the window is not up by now give up.
@@ -307,52 +313,98 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.setChrome(FirebugChrome, "detached"); // 1.4
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Restore State & Save State (UI)
+
+    /**
+     * This method is executed using setInterval at the end of Chromebug.initialize.
+     * It's purpose is to restore UI state, which must be done asynchronously and
+     * there can be more attempts to succeed (depends when the CB UI is ready).
+     */
     restoreState: function()  // TODO context+file
     {
-        var previousStateJSON = prefs.getCharPref("extensions.chromebug.previousContext");
-        if (previousStateJSON && previousStateJSON.length > 2)
+        // The restoration logic has limited number of attempts.
+        if (--this.retryRestoreCounter <= 0)
         {
-            var previousState = parseJSONString(previousStateJSON, window.location.toString());
-            if (!previousState)
-            {
-                FBTrace.sysout("restoreState could not parse previousStateJSON "+previousStateJSON);
-                this.stopRestoration();
-                return;
-            }
-            else
-            {
-                FBTrace.sysout("restoreState parse previousStateJSON "+previousStateJSON, previousState);
-            }
+            if (FBTrace.DBG_INITIALIZE)
+                FBTrace.sysout("restoreState Stop restoration, we did our best.");
 
-            var context = this.restoreContext(previousState);
-            if (context)
-            {
-                var pkg = this.restoreFilter(previousState, context);
-
-                this.stopRestoration();
-
-                var panelName = previousState.panelName;
-                var sourceLink = previousState.sourceLink;
-                // show the restored context, after we let the init finish
-                setTimeout( function delayShowContext()
-                {
-                    if (sourceLink)
-                        FirebugChrome.select(sourceLink, panelName);
-                    else if (panelName)
-                        FirebugChrome.selectPanel(panelName);
-                    else
-                        FirebugChrome.selectPanel('trace');
-                });
-            }
-            // else keep trying
-
+            this.stopRestoration();
+            return;
         }
-        else
+
+        var lastTry = this.retryRestoreCounter == 1;
+        var previousStateJSON = prefs.getCharPref("extensions.chromebug.previousContext");
+
+        // Bail out if there is no previous state or it's an empty JSON object.
+        if (!previousStateJSON || previousStateJSON.length < 3)
         {
             if (FBTrace.DBG_INITIALIZE)
                 FBTrace.sysout("restoreState NO previousStateJSON ");
+
             this.stopRestoration(); // no reason to beat our head against the wall...
+            return;
         }
+
+        // Also bail out if the parsing fails.
+        var previousState = parseJSONString(previousStateJSON, window.location.toString());
+        if (!previousState)
+        {
+            if (FBTrace.DBG_INITIALIZE)
+                FBTrace.sysout("restoreState could not parse previousStateJSON "+previousStateJSON);
+
+            this.stopRestoration();
+            return;
+        }
+
+        if (FBTrace.DBG_INITIALIZE)
+            FBTrace.sysout("restoreState parse previousStateJSON "+previousStateJSON, previousState);
+
+        // If the return value is non null, the context has been properly restored.
+        var context = this.restoreContext(previousState);
+        if (!context)
+            return;
+
+        // Restore filter (toolbar popup menu).
+        var pkg = this.restoreFilter(previousState, context);
+
+        // The file must exist in order to restore the file and it's scroll position.
+        if (previousState.sourceLink)
+        {
+            var sourceFile = getSourceFileByHref(previousState.sourceLink.href, context);
+            if (!sourceFile && !lastTry)
+                return;
+        }
+
+        // Chromebug UI seems to be ready for restoration so, remove the asynchronous interval.
+        this.stopRestoration();
+
+        // Create real instance of the source link so, it has the correct type.
+        var sourceLink = previousState.sourceLink ? new SourceLink(previousState.sourceLink.href,
+            previousState.sourceLink.line, previousState.sourceLink.type) : null;
+
+        var panelName = previousState.panelName;
+
+        if (sourceLink)
+            FirebugChrome.select(sourceLink, panelName);
+        else if (panelName)
+            FirebugChrome.selectPanel(panelName);
+        else
+            FirebugChrome.selectPanel('trace');
+
+        // Keep trying, this method will be asynchronously called again.
+    },
+
+    stopRestoration: function()
+    {
+        if (this.retryRestoreID)
+        {
+            clearTimeout(this.retryRestoreID);
+            delete this.retryRestoreID;
+            return true;
+        }
+
+        return false;
     },
 
     restoreContext: function(previousState)
@@ -417,23 +469,15 @@ Firebug.Chromebug = extend(Firebug.Module,
             (panel? (" \"panelName\": \"" + panel.name +"\",") : "") +
             (sourceLinkJSON? (" \"sourceLink\": " + sourceLinkJSON+", ") : "") +
             "}";
+
         prefs.setCharPref("extensions.chromebug.previousContext", previousContextJSON);
         prefService.savePrefFile(null);
-        FBTrace.sysout("saveState "+previousContextJSON);
+
+        FBTrace.sysout("saveState " + previousContextJSON,
+            parseJSONString(previousContextJSON, window.location.toString()));
     },
 
-    stopRestoration: function()
-    {
-        FBTrace.sysout("stopRestoration retryRestoreID: "+this.retryRestoreID);
-        if (this.retryRestoreID)
-        {
-            clearTimeout(this.retryRestoreID);
-            delete this.retryRestoreID;
-            return true;
-        }
-        else
-            return false;
-    },
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     setDefaultContext: function()
     {
@@ -1331,10 +1375,43 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.Console.log(FirebugContext, FirebugContext);
         Firebug.Console.closeGroup(FirebugContext, true);
     },
-
-
 });
 
+// ************************************************************************************************
+
+/**
+ * Dumping into the system console window (useful in cases where dumping into the Chromebug
+ * tracing console can't be done since it's too soon). Stack trace included in the output.
+ */
+Firebug.Chromebug.systemDump = function(msg)
+{
+    var text = "-----> " + msg + "\n";
+
+    for (var frame = Components.stack, i=0; frame; frame = frame.caller, i++)
+    {
+        // Skip this frame.
+        if (i == 0)
+            continue;
+
+        var fileName = unescape(frame.filename ? frame.filename : "");
+        var sourceLine = frame.sourceLine ? frame.sourceLine : "";
+        var lineNumber = frame.lineNumber ? frame.lineNumber : "";
+        text += "    - " + fileName + "(" + lineNumber + ")\n";
+    }
+
+    window.dump("\n" + text + "\n");
+}
+
+Firebug.Chromebug.dumpFileTrack = function()
+{
+    var jsdState = Application.storage.get('jsdState', null);
+    if (jsdState)
+        fbs.dumpFileTrack(jsdState.getAllTrackedFiles());
+    else
+        FBTrace.sysout("dumpFileTrack, no jsdState!");
+}
+
+// ************************************************************************************************
 
 window.timeOut = function(title)
 {
@@ -1343,6 +1420,8 @@ window.timeOut = function(title)
         window.dump(title+": "+(t - window.startTime)+"\n");
     window.startTime = t;
 }
+
+// ************************************************************************************************
 
 Firebug.Chromebug.Package = function(name, kind)
 {
@@ -1416,10 +1495,11 @@ Firebug.Chromebug.Package.prototype =
     },
 
 }
-//**************************************************************************
+
+// ************************************************************************************************
 // chrome://<packagename>/<part>/<file>
 // A list of packages each with a context list
-//
+
 Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
 {
     //  key name of package, value Package object containing contexts
@@ -1562,7 +1642,6 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
         return d;
     },
 
-
     onSelectLocation: function(event)
     {
         var filteredContext = event.currentTarget.repObject;
@@ -1577,7 +1656,6 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
            FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
        }
     },
-
 });
 
 Firebug.Chromebug.packageListLocator = function(xul_element)
@@ -1586,12 +1664,11 @@ Firebug.Chromebug.packageListLocator = function(xul_element)
     return Chromebug.connectedList(xul_element, list);
 }
 
-//**************************************************************************
+// ************************************************************************************************
 // The implements the list on the right side of the top bar with the prefix "context:"
 
 Firebug.Chromebug.contextList =
 {
-
     getCurrentLocation: function() // a context in a package
     {
         return cbContextList.repObject;
@@ -1669,7 +1746,6 @@ Firebug.Chromebug.contextList =
             {
                 Firebug.Chromebug.saveState(context);
             }, 500);
-
         }
         else
         {
@@ -1716,7 +1792,7 @@ Firebug.Chromebug.contextListLocator = function(xul_element)
     return Chromebug.connectedList(xul_element, list);
 }
 
-
+// ************************************************************************************************
 
 Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
 
@@ -1724,13 +1800,12 @@ Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
 
     parseURI: top.Chromebug.parseURI,
 
-
     // **************************************************************************
     // PackageList listener
 
     onSetLocation: function(packageList, current)
     {
-        FBTrace.sysout("onSetLocation current: "+current.pkg.name);
+        FBTrace.sysout("onSetLocation current: "+current.pkg.name, current);
         var noFilter = packageList.getDefaultPackageName();
         if (current.pkg.name == noFilter)
             Firebug.Chromebug.allFilesList.setFilter(null)
@@ -1757,9 +1832,8 @@ Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
             FBTrace.sysout("onPanelNavigate "+sourceFile, panel);
 
         if (sourceFile)
-               $('cbAllFilesList').location = this.getDescription(sourceFile);
+            $('cbAllFilesList').location = this.getDescription(sourceFile);
     },
-
 });
 
 Firebug.Chromebug.allFilesListLocator = function(xul_element)
@@ -1769,15 +1843,7 @@ Firebug.Chromebug.allFilesListLocator = function(xul_element)
     return Chromebug.connectedList(xul_element, Firebug.Chromebug.allFilesList);
 }
 
-
-Firebug.Chromebug.dumpFileTrack = function()
-{
-    var jsdState = Application.storage.get('jsdState', null);
-    if (jsdState)
-        fbs.dumpFileTrack(jsdState.getAllTrackedFiles());
-    else
-        FBTrace.sysout("dumpFileTrack, no jsdState!");
-}
+// ************************************************************************************************
 
 function getFrameWindow(frame)
 {
@@ -1840,8 +1906,11 @@ function ChromeBugOnDOMContentLoaded(event)
     FBTrace.sysout("ChromeBugOnDOMContentLoaded "+event.originalTarget.documentURI+"\n");
 }
 
-
+// ************************************************************************************************
+// Registration
 
 Firebug.registerModule(Firebug.Chromebug);
+
+// ************************************************************************************************
 }});
 
