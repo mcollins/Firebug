@@ -295,10 +295,7 @@ Chromebug.SourceFileListBase.prototype = extend(new Firebug.Listener(),
         else
             FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
 
-        setTimeout( function delaySave()  // we only want to do this when the user selects
-        {
-            Firebug.Chromebug.saveState(description.context);
-        }, 500);
+        Firebug.Chromebug.saveState(description.context);
     },
 
     doSelect: function(description)

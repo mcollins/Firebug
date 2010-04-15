@@ -470,11 +470,20 @@ Firebug.Chromebug = extend(Firebug.Module,
             (sourceLinkJSON? (" \"sourceLink\": " + sourceLinkJSON+", ") : "") +
             "}";
 
-        prefs.setCharPref("extensions.chromebug.previousContext", previousContextJSON);
-        prefService.savePrefFile(null);
+        if (Firebug.Chromebug.delaySourceLinkTimeout)
+            clearTimeout(Firebug.Chromebug.delaySourceLinkTimeout);
 
-        FBTrace.sysout("saveState " + previousContextJSON,
-            parseJSONString(previousContextJSON, window.location.toString()));
+        Firebug.Chromebug.delaySourceLinkTimeout = setTimeout( function delaySave()
+        {
+            delete Firebug.Chromebug.delaySourceLinkTimeout;
+            prefs.setCharPref("extensions.chromebug.previousContext", previousContextJSON);
+            prefService.savePrefFile(null);
+
+            if (FBTrace.DBG_SOURCEFILES)
+                FBTrace.sysout("saveState " + previousContextJSON, parseJSONString(previousContextJSON, window.location.toString()));
+
+        }, 250);
+
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1651,10 +1660,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
             Firebug.Chromebug.selectContext(context);
             Firebug.Chromebug.PackageList.setCurrentLocation(filteredContext);
 
-            setTimeout( function delaySave()  // we only want to do this when the user selects
-            {
-                Firebug.Chromebug.saveState(context);
-            }, 500);
+            Firebug.Chromebug.saveState(context);
        }
        else
        {
@@ -1747,10 +1753,7 @@ Firebug.Chromebug.contextList =
 
             event.currentTarget.location = context;
 
-            setTimeout( function delaySave()  // we only want to do this when the user selects
-            {
-                Firebug.Chromebug.saveState(context);
-            }, 500);
+            Firebug.Chromebug.saveState(context);
         }
         else
         {
@@ -1838,6 +1841,12 @@ Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
 
         if (sourceFile)
             $('cbAllFilesList').location = this.getDescription(sourceFile);
+    },
+
+    onViewportChange: function(sourceLink)
+    {
+        var context = FirebugContext;
+        Firebug.Chromebug.saveState(context);
     },
 });
 
