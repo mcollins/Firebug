@@ -402,6 +402,9 @@ SwarmInstaller.extensions =
                 else if (relative > 0)
                     setClass(declaredExtensionStatus, "installedVersion-Older");
 
+                if (this.isNotOverInstallable(installedExtensions[j].id))
+                    setClass(declaredExtensionStatus, "installNotAllowed");
+
                 installedButNotDeclared.splice(j, 1);
             }
             else
@@ -410,6 +413,15 @@ SwarmInstaller.extensions =
             declaredExtensionStatus.innerHTML = declaredExtension.version;
         }
         return installedButNotDeclared;
+    },
+
+    isNotOverInstallable: function(id)
+    {
+        if (!this.extmgr)
+            this.extmgr = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
+        var installLocation = this.extmgr.getInstallLocation(id);
+        var independent = installLocation.itemIsManagedIndependently(id);
+        return independent;
     },
 
     getExtensionIndexById: function(installedExtensions, id)
@@ -443,6 +455,9 @@ SwarmInstaller.extensions =
             var count = declaredExtensions.length;
             for (var i = 0; i < count; i++)
             {
+                if (declaredExtensions[i].statusElement.classList.contains("installNotAllowed"))
+                    continue;
+
                 if (declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
                     continue;
 
