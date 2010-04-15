@@ -434,8 +434,9 @@ Firebug.Chromebug = extend(Firebug.Module,
             var pkg = Firebug.Chromebug.PackageList.getPackageByName(previousState.pkgName);
             if (pkg)
             {
-                Firebug.Chromebug.PackageList.setCurrentLocation(pkg.getContextDescription(context));
-                FBTrace.sysout("restoreFilter found "+previousState.pkgName+" and set PackageList to ", Firebug.Chromebug.PackageList.getCurrentLocation());
+                Firebug.Chromebug.PackageList.setCurrentLocation(pkg);
+                if(FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("restoreFilter found "+previousState.pkgName+" and set PackageList to ", Firebug.Chromebug.PackageList.getCurrentLocation());
                 return pkg;
             }
             else  // we had a package named, but its not available (yet?)
@@ -1550,7 +1551,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
 
     getOrCreatePackage: function(description)
     {
-        var pkgName = description.pkgName;
+        var pkgName = description.path;
         var kind = description.kind;
 
         if (!this.pkgs.hasOwnProperty(pkgName))
@@ -1589,83 +1590,71 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
         return cbPackageList.repObject;
     },
 
-    setCurrentLocation: function(filteredContext)
+    setCurrentLocation: function(pkg)
     {
-          cbPackageList.location = filteredContext;
+          cbPackageList.location = pkg;
           if (FBTrace.DBG_LOCATIONS)
               FBTrace.sysout("PackageList.setCurrentLocation sent onSetLocation to "+this.fbListeners.length);
-          dispatch(this.fbListeners, "onSetLocation", [this, filteredContext]);
+          dispatch(this.fbListeners, "onSetLocation", [this, pkg]);
     },
 
-    getLocationList: function()  // list of contextDescriptions
+    getLocationList: function()  // list of packages
     {
         var list = [];
-        for (var p in this.pkgs)
+        Firebug.Chromebug.PackageList.eachPackage( function appendPackage(pkg)
         {
-            if (this.pkgs.hasOwnProperty(p))
-                list = list.concat(this.pkgs[p].getContextDescriptions());
-        }
+            list.push(pkg);
+        });
+        list.push(Firebug.Chromebug.PackageList.getNoFilterPackage());
 
-        list.push(this.getDefaultLocation());
-
-        if (FBTrace.DBG_LOCATIONS)
-        {
-            FBTrace.sysout(this.getSummary("getLocationList"));
+       if (FBTrace.DBG_LOCATIONS)
             FBTrace.sysout("PackageList getLocationList list "+list.length, list);
-        }
 
         return list;
     },
 
-    getFilter: function()
-    {
-        var current = this.getCurrentLocation();
-        if (current && current.pkg.name != this.getDefaultPackageName())
-            return current.pkg.name;
-        else
-            return "";
-    },
-
     getDefaultPackageName: function()
     {
-        return "        No Filtering, Current Context:   "; // in lexographical order the spaces will be early
+        return "        No Filter  "; // in lexographical order the spaces will be early
+    },
+
+    getNoFilterPackage: function()
+    {
+        if (!this.noFilterPackage)
+            this.noFilterPackage = new Firebug.Chromebug.Package(this.getDefaultPackageName(), "dummy");
+        return this.noFilterPackage;
     },
 
     getDefaultLocation: function()
     {
-        return {context: FirebugContext, pkg: {name: this.getDefaultPackageName() }, label: "(no filter)"};
+        return this.getNoFilterPackage();
     },
 
-    getObjectLocation: function(filteredContext)
+    getObjectLocation: function(pkg)
     {
-        return filteredContext.pkg.name;
+        return pkg.name;
     },
 
-    getObjectDescription: function(filteredContext)
+    getObjectDescription: function(pkg)
     {
-        var context = filteredContext.context;
-        var title = (context.window ? context.getTitle() : null);
-        var d =  {path: filteredContext.pkg.name, name: context.getName() +(title?"   "+title:""), label:  filteredContext.label};
+        var d = {path: "Show only files in:", name: pkg.name};
         if (FBTrace.DBG_LOCATIONS)
-            FBTrace.sysout("getObjectDescription for context "+context.uid+" path:"+d.path+" name:"+d.name, d);
+            FBTrace.sysout("getObjectDescription name:"+d.name, pkg);
         return d;
     },
 
     onSelectLocation: function(event)
     {
-        var filteredContext = event.currentTarget.repObject;
-        if (filteredContext)
+        var pkg = event.currentTarget.repObject;
+        if (pkg)
         {
-            var context = filteredContext.context;
-            Firebug.Chromebug.selectContext(context);
-            Firebug.Chromebug.PackageList.setCurrentLocation(filteredContext);
-
-            Firebug.Chromebug.saveState(context);
-       }
-       else
-       {
-           FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
-       }
+            Firebug.Chromebug.PackageList.setCurrentLocation(pkg);
+            Firebug.Chromebug.saveState(FirebugContext);
+        }
+        else
+        {
+            FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
+        }
     },
 });
 
@@ -1813,16 +1802,20 @@ Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
 
     onSetLocation: function(packageList, current)
     {
-        FBTrace.sysout("onSetLocation current: "+current.pkg.name, current);
-        var noFilter = packageList.getDefaultPackageName();
-        if (current.pkg.name == noFilter)
+        if (Firebug.Chromebug.PackageList !== packageList)
+            return;
+        if (FBTrace.DBG_LOCATIONS)
+            FBTrace.sysout("onSetLocation current: "+current, current);
+
+        var noFilter = Firebug.Chromebug.PackageList.getDefaultPackageName();
+        if (current.name == noFilter)
             Firebug.Chromebug.allFilesList.setFilter(null)
         else
         {
-            var targetName = current.pkg.name;
+            var targetName = current.name;
             Firebug.Chromebug.allFilesList.setFilter( function byPackageName(description)
             {
-                return (description && (targetName == description.pkgName) );
+                return (description && (targetName == description.path) );
             });
         }
     },
