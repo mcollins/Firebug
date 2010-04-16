@@ -426,10 +426,10 @@ function toHexString(charCode)
 }
 
 observerService.addObserver(SwarmInstaller.SwarmTest, "fbtest", false);  // removed in observe: 'shutdown'
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", bind(SwarmInstaller.SwarmTest.swarmRunAllTestsStep, SwarmInstaller.SwarmTest));
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", bind(SwarmInstaller.SwarmTest.swarmStopTestsStep, SwarmInstaller.SwarmTest));
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", bind(SwarmInstaller.SwarmTest.swarmHaltFailTest, SwarmInstaller.SwarmTest));
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", bind(SwarmInstaller.SwarmTest.swarmNoTimeoutTest, SwarmInstaller.SwarmTest));
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", SwarmInstaller.SwarmTest.swarmRunAllTestsStep);
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", SwarmInstaller.SwarmTest.swarmStopTestsStep);
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", SwarmInstaller.SwarmTest.swarmHaltFailTest);
+SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", SwarmInstaller.SwarmTest.swarmNoTimeoutTest);
 
 //************************************************************************************************
 }});

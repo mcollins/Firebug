@@ -210,7 +210,13 @@ SwarmInstaller.workFlowMonitor =
 
             button.classList.add("swarmWorkflowing");
             this.dispatch("onStepStarts", [doc, button])
-            this.registeredWorkflowSteps[step].onStep(event, this.progress);
+
+            var handler = this.registeredWorkflowSteps[step];
+            if (handler)
+                handler.onStep(event, this.progress);
+            else
+                this.progress("no workflow step registered at "+step);
+
             this.dispatch("onStepEnds", [doc, button])
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
@@ -281,16 +287,19 @@ SwarmInstaller.workFlowMonitor =
     {
         FBTrace.sysout("swarmInstaller.dispatch "+eventName, args);
 
-        for(var i = 0; i < this.registeredWorkflowSteps.length; i++)
+        for(var p in this.registeredWorkflowSteps)
         {
-            var listener = this.registeredWorkflowSteps[i];
-            try
+            if (this.registeredWorkflowSteps.hasOwnProperty(p))
             {
-                listener[eventName].apply(listener, args);
-            }
-            catch(exc)
-            {
-                FBTrace.sysout("swarmInstaller.dispatch FAILS for "+eventName+" to "+listener.toSource()+" because "+exc, exc);
+                var listener = this.registeredWorkflowSteps[p];
+                try
+                {
+                    listener[eventName].apply(listener, args);
+                }
+                catch(exc)
+                {
+                    FBTrace.sysout("swarmInstaller.dispatch FAILS for "+eventName+" to "+listener.toSource()+" because "+exc, exc);
+                }
             }
         }
     },
@@ -415,11 +424,16 @@ SwarmInstaller.extensions =
         return installedButNotDeclared;
     },
 
-    isNotOverInstallable: function(id)
+    getExtensionManager: function()
     {
         if (!this.extmgr)
             this.extmgr = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
-        var installLocation = this.extmgr.getInstallLocation(id);
+        return this.extmgr;
+    },
+
+    isNotOverInstallable: function(id)
+    {
+        var installLocation = this.getExtensionManager().getInstallLocation(id);
         var independent = installLocation.itemIsManagedIndependently(id);
         return independent;
     },
