@@ -849,6 +849,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
     {
         var previousContext = {global: null};
+        var sourceFilesNeedingResets = [];
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
             {
                 var url = normalizeURL(script.fileName);
@@ -914,6 +915,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (!sourceFile)
                 {
                     sourceFile = new Firebug.EnumeratedSourceFile(url);
+                    sourceFilesNeedingResets.push(sourceFile);
                     context.addSourceFile(sourceFile);
                 }
                 if (FBTrace.DBG_SOURCEFILES)
@@ -922,6 +924,10 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 delete globalTagByScriptTag[script.tag];
             }});
+
+        for(var i = 0; i < sourceFilesNeedingResets.length; i++)
+            fbs.resetBreakpoints(sourceFilesNeedingResets[i]);
+
         if (FBTrace.DBG_SOURCEFILES)
         {
             var lostScriptTags = {};
