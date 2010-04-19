@@ -70,7 +70,7 @@ function loadXHRDebugger(callback)
     var req = new XMLHttpRequest();
     req.onreadystatechange = function()
     {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && (req.status == 200 || req.status === 0) )
         {
             if (callback)
                 callback(req);
@@ -78,6 +78,10 @@ function loadXHRDebugger(callback)
             eval(req.responseText);
             var f = 8;
             var g = 9;
+        }
+        else if (req.readyState == 4)
+         {
+            console.error("loadXHRDebugger failed to load XHR from "+req.href);
         }
     }
 
