@@ -76,7 +76,7 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/layout.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/debuggerHalter.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/debugger.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/scriptHistory.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/navigationHistory.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/dom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/net.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/profiler.js"/>
