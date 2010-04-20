@@ -1,0 +1,8 @@
+mccoy.jar:
+% content mccoy %content/
+* content/mccoy.xul                    (mccoy.xul)
+  content/mccoy.js                     (mccoy.js)
+* content/mccoy.xml                    (mccoy.xml)
+  content/rdfserializer.js             (rdfserializer.js)
+* content/about.xul                    (about.xul)
+  content/about.js                     (about.js)

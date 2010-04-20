@@ -1,0 +1,8 @@
+#filter substitution
+
+@AB_CD@.jar:
+% locale mccoy @AB_CD@ %
+  mccoy.dtd                            (@AB_CD@/mccoy.dtd)
+  mccoy.properties                     (@AB_CD@/mccoy.properties)
+  about.dtd                            (@AB_CD@/about.dtd)
+  about.properties                     (@AB_CD@/about.properties)

@@ -1,0 +1,9 @@
+#filter substitution
+
+mccoy.jar:
+% content branding %branding/
+% locale branding @AB_CD@ %branding/
+* branding/brand.dtd                   (brand.dtd)
+* branding/brand.properties            (brand.properties)
+  branding/icon48.png                  (icon48.png)
+  branding/icon64.png                  (icon64.png)
