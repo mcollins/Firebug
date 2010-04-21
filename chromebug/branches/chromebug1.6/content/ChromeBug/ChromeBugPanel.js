@@ -926,7 +926,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             }});
 
         for(var i = 0; i < sourceFilesNeedingResets.length; i++)
-            fbs.resetBreakpoints(sourceFilesNeedingResets[i]);
+            fbs.resetBreakpoints(sourceFilesNeedingResets[i], Firebug.Debugger);  // don't get confused, Firebug.Debugger is chromebug's Debugger
 
         if (FBTrace.DBG_SOURCEFILES)
         {
