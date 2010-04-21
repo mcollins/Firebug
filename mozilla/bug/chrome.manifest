@@ -1,0 +1,4 @@
+resource bug modules/
+content bug content/
+
+overlay chrome://browser/content/browser.xul         chrome://bug/content/overlay.xul
