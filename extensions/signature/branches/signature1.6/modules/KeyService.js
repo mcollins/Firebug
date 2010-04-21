@@ -8,10 +8,25 @@ var EXPORTED_SYMBOLS = ["KeyPair", "KeyService"];
 
 // A light wrapper around Dave Townsend's nsIKeyService.idl
 
-function KeyPair(nsIKeyPair)
+function KeyPair(nsIKeyPair, name)
 {
     if (nsIKeyPair instanceof Ci.nsIKeyPair)
+    {
         this.nsIKeyPair = nsIKeyPair;
+        if (name)
+        {
+            if(nsIKeyPair.name.length < 1)
+                nsIKeyPair.name = name;
+            else // name given but one existed should not happen
+                throw new Error("KeyPair Rename not allowed");
+        }
+        else if (nsIKeyPair.name.length < 1)
+        {
+            nsIKeyPair.delete();
+        }
+
+        // else was named
+    }
     else
         throw new Error("KeyPair must be created with an instance of Ci.nsIKeyPair;")
 }
@@ -20,7 +35,15 @@ KeyPair.prototype =
 {
     getName: function()
     {
-        return this.nsIKeyPair.name;
+        try
+        {
+            return this.nsIKeyPair.name;
+        }
+        catch(exc)
+        {
+            // We get here if nsIKeyPair was not initialized?
+        }
+        return "";
     },
 
     exportPublicKey: function()
@@ -58,21 +81,21 @@ var KeyService =
     },
 
     // Only RSA pairs are supported by mccoy
-    createKeyPair: function()
+    createKeyPair: function(name)
     {
         if (typeof(this._keyService) == "undefined")
             this._keyService = getKeyService();
 
-        return new KeyPair(this._keyService.createKeyPair(Ci.nsIKeyPair.KEYTYPE_RSA));
+        return new KeyPair(this._keyService.createKeyPair(Ci.nsIKeyPair.KEYTYPE_RSA), name);
     },
 
     deleteKeyPair: function(name)
     {
         return KeyService.eachKeyPair(function deleteOne(keyPair)
         {
-            if (keyPair.name === name)
+            if (keyPair.getName() === name)
             {
-                keyPair.nsIKeyPair.delete();
+                keyPair.nsIKeyPair.delete();  // we are all friends here
                 return true;
             }
         });
