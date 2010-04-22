@@ -43,7 +43,8 @@ function runTest()
             taskList.push(executeAndVerify, "set_d_val(998);", "998",
                 "span", "objectBox objectBox-number");
 
-            // Errors 
+            // Errors
+            FBTest.setPref("ObjectShortIteratorMax", 1);   // Related to R6588
             taskList.push(executeAndVerify, "blah",
                 /\s*ReferenceError: blah is not defined { message=\"blah is not defined\",  more...}/,
                 "a", "objectLink objectLink-object");
