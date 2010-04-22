@@ -16,7 +16,7 @@ function runTest()
             FBTest.compare(titleNode.textContent, "iframe error",
                 "An error message must be displayed");
 
-            // The expandlabel button must be displayed.
+            // The expandable button must be displayed.
             FBTest.ok(FW.FBL.hasClass(errorNode, "hasTwisty"),
                 "The error must be expandable.");
 
@@ -26,7 +26,7 @@ function runTest()
             // Verify stack trace.
             var traceNode = errorNode.querySelector(".errorTrace");
             FBTest.compare(
-                /logError\(\)\s*issue2...me.html\s*\(line 10\)\s*error\(\)\s*issue2914.html \(line 30\)/,
+                "logError()issue2...me.html (line 10)issue2914-innerFrame.html()issue2...me.html (line 12)",
                 traceNode.textContent,
                 "The stack trace must be properly displayed.");
 
