@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="content-type"
+        content="text/html;charset=utf-8" />
+
+<style>
+.swarmTitle {
+  text-align: center;
+  font-weight: bold;
+}
+body {
+  font-family: Sans-serif;
+  margin: 45px;
+  background-color: #FFFFFF;
+}
+.swarmUI { /* indicate the area toggled by the button */
+   border-style: solid;
+   border-width: 1px;
+   border-color: #CCCCCC;
+   padding: 5px;
+}
+
+.signed { /* indicate the area signed */
+   border-style: solid;
+   border-width: 1px;
+   border-color: #FF9933;
+   padding: 5px;
+}
+.signature {
+   float: right;
+   color: red;
+}
+.signature .verified {
+   color: #CCCCCC;
+}
+.signature .verified:before {
+   content: "signature verified";
+}
+.signature .verified span .signatureHash {
+   display:none;
+}
+</style>
+</head>
+<body>
+<h1 class="swarmTitle">Certified Extension Installation</h1>
+
+<div id="basicSwarmUI" class="swarmUI swarmActive">
+<div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
+<div class="certification">
+
+<!-- The content between the ending right angle bracket of this div and the beginning of its end tag will be replaced. -->
+
+</div>
+</div>
+<!-- The prevSibling.innerHTML is signed -->
+<div class="signature">Signature <span class="signatureHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Not </span>Verified</div>
+</div>
+
+
+</body>
+</html>
