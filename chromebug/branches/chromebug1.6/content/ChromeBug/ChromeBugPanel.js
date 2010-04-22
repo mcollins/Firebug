@@ -977,15 +977,24 @@ Firebug.Chromebug = extend(Firebug.Module,
         var cbContextList = document.getElementById('cbContextList');
         cbContextList.setAttribute("highlight", "true");
 
-        // The argument 'context' is stopped, but other contexts on the stack are not stopped.
+        // The argument 'context' is stopped, but other contexts are not stopped.
+
+        Firebug.Chromebug.eachContext(function visitContext(anotherContext)
+        {
+            if (anotherContext != context)
+                Firebug.Debugger.suppressEventHandling(anotherContext);
+            anotherContext.stopped;
+        });
+
         var calledFrame = frame;
         while (frame = frame.callingFrame)
         {
             var callingContext = Firebug.Debugger.getContextByFrame(frame);
-            if (FBTrace.DBG_UI_LOOP)
-                FBTrace.sysout("ChromeBugPanel.onStop stopping context: "+(callingContext?callingContext.getName():null));
-            if (callingContext)
+
+            if (callingContext && !callingContext.stopped)
             {
+                if (FBTrace.DBG_UI_LOOP)
+                    FBTrace.sysout("ChromeBugPanel.onStop stopping context: "+(callingContext?callingContext.getName():null));
                 callingContext.stopped = true;
                 callingContext.debugFrame = calledFrame;
             }
@@ -1017,10 +1026,12 @@ Firebug.Chromebug = extend(Firebug.Module,
                 FBTrace.sysout("ChromeBugPanel.onResume previousContext:"+ location);
         }
 
-        Firebug.Chromebug.eachContext(function clearStopped(context)
+        Firebug.Chromebug.eachContext(function clearStopped(anotherContext)
         {
-            delete context.stopped;
-            delete context.debugFrame;
+            delete anotherContext.stopped;
+            delete anotherContext.debugFrame;
+            if (anotherContext != context)
+                Firebug.Debugger.unsuppressEventHandling(anotherContext);
         });
 
         FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
