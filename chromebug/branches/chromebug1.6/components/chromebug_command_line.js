@@ -18,8 +18,6 @@ const iosvc = Components.classes["@mozilla.org/network/io-service;1"].getService
 const chromeReg = Components.classes["@mozilla.org/chrome/chrome-registry;1"].getService(Components.interfaces.nsIToolkitChromeRegistry);
 const appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].getService(Components.interfaces.nsIAppShellService);
 
-const appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-
 const  clh_CID = Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}");
 const  clh_contractID = "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug";
 
