@@ -1276,6 +1276,19 @@ this.waitForDisplayedElement = function(panelName, config, callback)
     recognizer.onRecognizeAsync(tempCallback);
 }
 
+/**
+ * Wait till a text is displayed in the specified panel.
+ * @param {Object} panelName Name of the panel where the text should appear.
+ * @param {Object} text Text to wait for.
+ * @param {Object} callback Executed as soon as the text is displayed.
+ */
+this.waitForDisplayedText = function(panelName, text, callback)
+{
+    var panel = FW.FirebugChrome.selectPanel(panelName);
+    var rec = new MutationRecognizer(panel.document.defaultView, "Text", {}, text);
+    rec.onRecognizeAsync(callback);
+}
+
 // ************************************************************************************************
 // Console panel
 
