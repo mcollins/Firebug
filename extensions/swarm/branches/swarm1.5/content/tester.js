@@ -16,7 +16,7 @@ const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIO
 // Monitors reloads in the FBTest window.
 // When a swarm is detected, prepare for swarm testing and certification
 
-top.SwarmInstaller.SwarmTest =
+top.Swarm.SwarmTest =
 {
     // initialization -------------------------------------------------------------------
 
@@ -48,29 +48,114 @@ top.SwarmInstaller.SwarmTest =
     },
 
     // User interface -------------------------------------------------------------------
-    attachToPage: function()
+
+
+
+    showSwarmUI: function(doc, show)
     {
-        var browser = $("taskBrowser");
-        var doc = browser.contentDocument;
-        if(!doc.getElementById('swarmDefinition'))
+
+    },
+
+
+    // real work -------------------------------------------------------------------
+
+    installKeyServiceInstructionsURL: "chrome://swarm/content/installKeyService.html",
+    downloadAndInstallKeyService: function()
+    {
+        var componentsDir = this.getComponentsDirectory();
+        var taskBrowser = $("taskBrowser");
+        taskBrowser.addEventListener("load", function onInstructionsLoaded(event)
         {
-            this.progress("Not a swarm test document");
-            return;
-        }
-        else
+            taskBrowser.removeEventListener("load",onInstructionsLoaded, true);
+
+            var doc = event.target;
+            var elt = doc.getElementById("openFBTestComponentDirectory");
+            elt.addEventListener("click", function onClickDirectory(event)
+            {
+                const nsIFilePicker = Ci.nsIFilePicker;
+
+                var fp = Cc["@mozilla.org/filepicker;1"]
+                               .createInstance(nsIFilePicker);
+                fp.init(window, "Dialog Title", nsIFilePicker.modeGetFolder);
+                fp.defaultString = componentsDir;
+                fp.appendFilters(nsIFilePicker.filterAll);
+
+                var rv = fp.show();
+
+            }, true);
+        }, true);
+        taskBrowser.setAttribute("src", installKeyServiceInstructionsURL);
+    },
+
+    getComponentsDirectory: function()
+    {
+        var fbtest = "fbtest@mozilla.com"; // the extension's id from install.rdf
+        var em = Cc["@mozilla.org/extensions/manager;1"].
+                 getService(Ci.nsIExtensionManager);
+        // the path may use forward slash ("/") as the delimiter
+        // returns nsIFile for the extension's install.rdf
+        var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
+        return file.path;
+    },
+
+    // nsIWindowMediatorListener ------------------------------------------------------------------
+    onOpenWindow: function(xulWindow)
+    {
+        FBTrace.sysout("Swarm.SwarmTest onOpenWindow");
+    },
+
+    onCloseWindow: function(xulWindow)
+    {
+        FBTrace.sysout("Swarm.SwarmTest onCloseWindow");
+    },
+
+    onWindowTitleChange: function(xulWindow, newTitle)
+    {
+        FBTrace.sysout("Swarm.SwarmTest onWindowTitleChange");
+        var docShell = xulWindow.docShell;
+        if (docShell instanceof Ci.nsIInterfaceRequestor)
         {
-            this.progress("Noticed a Swarm Test Document");
-            SwarmInstaller.workFlowMonitor.initialize(doc, this.progress);
-            this.addHashes(SwarmInstaller.extensions.getInstallableExtensions());
-            this.monitorStates(doc, this.progress);
-            SwarmInstaller.workFlowMonitor.initializeUI(doc, this.progress);
+            var win = docShell.getInterface(Ci.nsIDOMWindow);
+            var location = safeGetWindowLocation(win);
+            FBTrace.sysout("Swarm.SwarmTest onWindowTitleChange location: "+location);
+            if (location === "chrome://fbtest/content/testConsole.xul")
+            {
+                FBTrace.sysout("Swarm.SwarmTest onWindowTitleChange FOUND at location "+location);
+                Swarm.SwarmTest.addSigningButton(win.document);
+            }
         }
     },
 
-    detachFromPage: function()
+
+};
+
+// ----------------------------------------------------------------------------------
+// Handlers contributed to Swarm
+Swarm.SwarmTest.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
+{
+    initializeUI: function(doc)
     {
+        this.addHashes(Swarm.extensions.getInstallableExtensions());
+        this.monitorStates(doc, this.progress);
+    },
+
+    onStep: function(event, progress)
+    {
+        // enable the stop button
         var browser = $("taskBrowser");
         var doc = browser.contentDocument;
+        var stopButton = event.target.parentNode.getElementsByClassName("swarmStopTestsStep")[0];
+        stopButton.removeAttribute("disabled");
+
+        FBTestApp.TestConsole.onRunAll(function restoreButtonsAndGoToNextStep()
+        {
+            stopButton.setAttribute("disabled", "disabled");
+            FBTestApp.TestSummary.dumpSummary();
+        });
+    },
+
+    destroy: function()
+    {
         this.unmonitorStates(doc, this.progress);
     },
 
@@ -133,136 +218,9 @@ top.SwarmInstaller.SwarmTest =
         FBTrace.sysout("monitorTestStep disabled "+event.attrChange+" for "+event.attrName+" to "+event.newValue, event);
     },
 
-    showSwarmUI: function(doc, show)
-    {
-
-    },
-   // sync with FBTest -------------------------------------------------------------------
-    observe: function(subject, topic, data)
-    {
-        try
-        {
-            FBTrace.sysout("swarm-test observe topic "+topic+ "data "+data);
-            if (data == "initialize")
-            {
-                FBTrace.sysout("swarm test initialize");
-            }
-            else if (data == "shutdown")
-            {
-                observerService.removeObserver(SwarmInstaller.SwarmTest, "fbtest");
-                SwarmInstaller.SwarmTest.detachFromPage();
-            }
-            else if (data == "restart")
-            {
-                var fbtest = subject;
-                SwarmInstaller.SwarmTest.attachToPage();
-            }
-
-        }
-        catch(exc)
-        {
-            FBTrace.sysout("observe FAILS "+exc, exc);
-        }
-    },
-
-    // real work -------------------------------------------------------------------
-
-    progress: function(msg)
-    {
-        document.getElementById("progressMessage").value = msg;
-    },
-
-    installKeyServiceInstructionsURL: "chrome://swarm/content/installKeyService.html",
-    downloadAndInstallKeyService: function()
-    {
-        var componentsDir = this.getComponentsDirectory();
-        var taskBrowser = $("taskBrowser");
-        taskBrowser.addEventListener("load", function onInstructionsLoaded(event)
-        {
-            taskBrowser.removeEventListener("load",onInstructionsLoaded, true);
-
-            var doc = event.target;
-            var elt = doc.getElementById("openFBTestComponentDirectory");
-            elt.addEventListener("click", function onClickDirectory(event)
-            {
-                const nsIFilePicker = Ci.nsIFilePicker;
-
-                var fp = Cc["@mozilla.org/filepicker;1"]
-                               .createInstance(nsIFilePicker);
-                fp.init(window, "Dialog Title", nsIFilePicker.modeGetFolder);
-                fp.defaultString = componentsDir;
-                fp.appendFilters(nsIFilePicker.filterAll);
-
-                var rv = fp.show();
-
-            }, true);
-        }, true);
-        taskBrowser.setAttribute("src", installKeyServiceInstructionsURL);
-    },
-
-    getComponentsDirectory: function()
-    {
-        var fbtest = "fbtest@mozilla.com"; // the extension's id from install.rdf
-        var em = Cc["@mozilla.org/extensions/manager;1"].
-                 getService(Ci.nsIExtensionManager);
-        // the path may use forward slash ("/") as the delimiter
-        // returns nsIFile for the extension's install.rdf
-        var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
-        return file.path;
-    },
-
-    // nsIWindowMediatorListener ------------------------------------------------------------------
-    onOpenWindow: function(xulWindow)
-    {
-        FBTrace.sysout("SwarmInstaller.SwarmTest onOpenWindow");
-    },
-
-    onCloseWindow: function(xulWindow)
-    {
-        FBTrace.sysout("SwarmInstaller.SwarmTest onCloseWindow");
-    },
-
-    onWindowTitleChange: function(xulWindow, newTitle)
-    {
-        FBTrace.sysout("SwarmInstaller.SwarmTest onWindowTitleChange");
-        var docShell = xulWindow.docShell;
-        if (docShell instanceof Ci.nsIInterfaceRequestor)
-        {
-            var win = docShell.getInterface(Ci.nsIDOMWindow);
-            var location = safeGetWindowLocation(win);
-            FBTrace.sysout("SwarmInstaller.SwarmTest onWindowTitleChange location: "+location);
-            if (location === "chrome://fbtest/content/testConsole.xul")
-            {
-                FBTrace.sysout("SwarmInstaller.SwarmTest onWindowTitleChange FOUND at location "+location);
-                SwarmInstaller.SwarmTest.addSigningButton(win.document);
-            }
-        }
-    },
-
-
-};
-
-// ----------------------------------------------------------------------------------
-// Handlers contributed to swarmInstaller
-SwarmInstaller.SwarmTest.swarmRunAllTestsStep = extend(SwarmInstaller.WorkflowStep,
-{
-    onStep: function(event, progress)
-    {
-        // enable the stop button
-        var browser = $("taskBrowser");
-        var doc = browser.contentDocument;
-        var stopButton = event.target.parentNode.getElementsByClassName("swarmStopTestsStep")[0];
-        stopButton.removeAttribute("disabled");
-
-        FBTestApp.TestConsole.onRunAll(function restoreButtonsAndGoToNextStep()
-        {
-            stopButton.setAttribute("disabled", "disabled");
-            FBTestApp.TestSummary.dumpSummary();
-        });
-    },
 });
 
-SwarmInstaller.SwarmTest.swarmStopTestsStep = extend(SwarmInstaller.WorkflowStep,
+Swarm.SwarmTest.swarmStopTestsStep = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -270,7 +228,7 @@ SwarmInstaller.SwarmTest.swarmStopTestsStep = extend(SwarmInstaller.WorkflowStep
     },
 });
 
-SwarmInstaller.SwarmTest.swarmHaltFailTest = extend(SwarmInstaller.WorkflowStep,
+Swarm.SwarmTest.swarmHaltFailTest = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -278,7 +236,7 @@ SwarmInstaller.SwarmTest.swarmHaltFailTest = extend(SwarmInstaller.WorkflowStep,
     },
 });
 
-SwarmInstaller.SwarmTest.swarmHaltFailTest = extend(SwarmInstaller.WorkflowStep,
+Swarm.SwarmTest.swarmHaltFailTest = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -286,7 +244,7 @@ SwarmInstaller.SwarmTest.swarmHaltFailTest = extend(SwarmInstaller.WorkflowStep,
     },
 });
 
-SwarmInstaller.SwarmTest.swarmNoTimeoutTest = extend(SwarmInstaller.WorkflowStep,
+Swarm.SwarmTest.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -294,13 +252,13 @@ SwarmInstaller.SwarmTest.swarmNoTimeoutTest = extend(SwarmInstaller.WorkflowStep
     },
 });
 
-SwarmInstaller.SwarmTest.signPage = extend(SwarmInstaller.WorkflowStep,
+Swarm.SwarmTest.signPage = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
-        FBTrace.sysout("SwarmInstaller.SwarmTest signPage ", event);
+        FBTrace.sysout("Swarm.SwarmTest signPage ", event);
         var keyservice = this.getKeyService();
-        FBTrace.sysout("SwarmInstaller.SwarmTest doSigning keyservice: "+this.keyservice);
+        FBTrace.sysout("Swarm.SwarmTest doSigning keyservice: "+this.keyservice);
         if (!keyservice)
             return;
         debugger;
@@ -425,11 +383,11 @@ function toHexString(charCode)
     return ("0" + charCode.toString(16)).slice(-2);
 }
 
-observerService.addObserver(SwarmInstaller.SwarmTest, "fbtest", false);  // removed in observe: 'shutdown'
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", SwarmInstaller.SwarmTest.swarmRunAllTestsStep);
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", SwarmInstaller.SwarmTest.swarmStopTestsStep);
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", SwarmInstaller.SwarmTest.swarmHaltFailTest);
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", SwarmInstaller.SwarmTest.swarmNoTimeoutTest);
+
+Swarm.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", Swarm.SwarmTest.swarmRunAllTestsStep);
+Swarm.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", Swarm.SwarmTest.swarmStopTestsStep);
+Swarm.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", Swarm.SwarmTest.swarmHaltFailTest);
+Swarm.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", Swarm.SwarmTest.swarmNoTimeoutTest);
 
 //************************************************************************************************
 }});

@@ -15,11 +15,11 @@ const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIO
 // ************************************************************************************************
 // Building xpi
 
-SwarmInstaller.SwarmBuild =
+Swarm.SwarmBuild =
 {
 };
 
-SwarmInstaller.SwarmBuild.swarmPackageStep = extend(SwarmInstaller.WorkflowStep,
+Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
 {
     stepName: "swarmPackageStep",
 
@@ -49,7 +49,7 @@ SwarmInstaller.SwarmBuild.swarmPackageStep = extend(SwarmInstaller.WorkflowStep,
 
     getLinkToExtension: function(extensionId)
     {
-        var installLocation = SwarmInstaller.extensions.getExtensionManager().getInstallLocation(extensionId);
+        var installLocation = Swarm.extensions.getExtensionManager().getInstallLocation(extensionId);
         if (installLocation instanceof Ci.nsIInstallLocation)
         {
             var link = installLocation.location;
@@ -100,7 +100,7 @@ SwarmInstaller.SwarmBuild.swarmPackageStep = extend(SwarmInstaller.WorkflowStep,
     }
 });
 
-SwarmInstaller.workFlowMonitor.registerWorkflowStep("swarmPackageStep", SwarmInstaller.SwarmBuild.swarmPackageStep);
+Swarm.workFlowMonitor.registerWorkflowStep("swarmPackageStep", Swarm.SwarmBuild.swarmPackageStep);
 
 //************************************************************************************************
 }});
