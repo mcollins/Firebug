@@ -258,29 +258,157 @@ this.mouseDown = function(node)
     return node.dispatchEvent(event);
 };
 
-this.pressKey = function(keyCode, eltID)
+this.pressKey = function(keyCode, target)
 {
-    var doc = FBTest.FirebugWindow.document;
-    var keyEvent = doc.createEvent("KeyboardEvent");
-    keyEvent.initKeyEvent(
-        "keypress",       //  in DOMString typeArg,
-        true,             //  in boolean canBubbleArg,
-        true,             //  in boolean cancelableArg,
-        null,             //  in nsIDOMAbstractView viewArg,  Specifies UIEvent.view. This value may be null.
-        false,            //  in boolean ctrlKeyArg,
-        false,            //  in boolean altKeyArg,
-        false,            //  in boolean shiftKeyArg,
-        false,            //  in boolean metaKeyArg,
-        keyCode,          //  in unsigned long keyCodeArg,
-        0);               //  in unsigned long charCodeArg);
-
-    if (eltID && eltID instanceof Node)
-        doc.eltID.dispatchEvent(keyEvent)
-    else if (eltID)
-        doc.getElementById(eltID).dispatchEvent(keyEvent);
-    else
-        doc.documentElement.dispatchEvent(keyEvent);
+    return __doEventDispatch(target, 0, keyCode, false);
 };
+
+/**
+ * Send the char aChar to the node with id aTarget. This method handles casing
+ * of chars (sends the right charcode, and sends a shift key for uppercase chars).
+ * No other modifiers are handled at this point.
+ *
+ * For now this method only works for English letters (lower and upper case)
+ * and the digits 0-9.
+ *
+ * Returns true if the keypress event was accepted (no calls to preventDefault
+ * or anything like that), false otherwise.
+ */
+this.sendChar = function(aChar, aTarget)
+{
+    // DOM event charcodes match ASCII (JS charcodes) for a-zA-Z0-9.
+    var hasShift = (aChar == aChar.toUpperCase());
+    var charCode = aChar.charCodeAt(0);
+    var keyCode = charCode;
+    if (!hasShift)
+    {
+        // For lowercase letters, the keyCode is actually 32 less than the charCode
+        keyCode -= 0x20;
+    }
+
+    return __doEventDispatch(aTarget, charCode, keyCode, hasShift);
+}
+
+/**
+ * Send the string aStr to the node with id aTarget.
+ *
+ * For now this method only works for English letters (lower and upper case)
+ * and the digits 0-9.
+ */
+this.sendString = function(aStr, aTarget)
+{
+    for (var i = 0; i < aStr.length; ++i)
+        this.sendChar(aStr.charAt(i), aTarget);
+}
+
+/**
+ * Send the non-character key aKey to the node with id aTarget.
+ * The name of the key should be a lowercase
+ * version of the part that comes after "DOM_VK_" in the KeyEvent constant
+ * name for this key.  No modifiers are handled at this point.
+ *
+ * Returns true if the keypress event was accepted (no calls to preventDefault
+ * or anything like that), false otherwise.
+ */
+this.sendKey = function(aKey, aTarget)
+{
+    keyName = "DOM_VK_" + aKey.toUpperCase();
+
+    if (!KeyEvent[keyName]) {
+        throw "Unknown key: " + keyName;
+    }
+
+    return __doEventDispatch(aTarget, 0, KeyEvent[keyName], false);
+}
+
+/**
+ * Actually perform event dispatch given a charCode, keyCode, and boolean for
+ * whether "shift" was pressed.  Send the event to the node with id aTarget.  If
+ * aTarget is not provided, use "target".
+ *
+ * Returns true if the keypress event was accepted (no calls to preventDefault
+ * or anything like that), false otherwise.
+ */
+function __doEventDispatch(aTarget, aCharCode, aKeyCode, aHasShift)
+{
+    if (aTarget && aTarget instanceof Node)
+        aTarget = aTarget;
+    else if (aTarget)
+        aTarget = FBTest.FirebugWindow.document.getElementById(aTarget);
+    else
+        aTarget= FBTest.FirebugWindow.document.documentElement;
+
+    var doc = aTarget.ownerDocument
+
+    var event = doc.createEvent("KeyEvents");
+    event.initKeyEvent("keydown", true, true, doc.defaultView,
+        false, false, aHasShift, false, aKeyCode, 0);
+
+    var accepted = aTarget.dispatchEvent(event);
+
+    // Preventing the default keydown action also prevents the default
+    // keypress action.
+    event = doc.createEvent("KeyEvents");
+    if (aCharCode)
+    {
+        event.initKeyEvent("keypress", true, true, doc.defaultView,
+            false, false, aHasShift, false, 0, aCharCode);
+    }
+    else
+    {
+        event.initKeyEvent("keypress", true, true, doc.defaultView,
+            false, false, aHasShift, false, aKeyCode, 0);
+    }
+
+    if (!accepted)
+        event.preventDefault();
+
+    accepted = aTarget.dispatchEvent(event);
+
+    // Always send keyup
+    var event = doc.createEvent("KeyEvents");
+    event.initKeyEvent("keyup", true, true, doc.defaultView,
+        false, false, aHasShift, false, aKeyCode, 0);
+    aTarget.dispatchEvent(event);
+
+    return accepted;
+}
+
+/**
+ * Synthesize a key event. It is targeted at whatever would be targeted by an
+ * actual keypress by the user, typically the focused element.
+ *
+ * aKey should be either a character or a keycode starting with VK_ such as
+ * VK_ENTER.
+ *
+ * aEvent is an object which may contain the properties:
+ *   shiftKey, ctrlKey, altKey, metaKey, accessKey, type
+ *
+ * If the type is specified, a key event of that type is fired. Otherwise,
+ * a keydown, a keypress and then a keyup event are fired in sequence.
+ *
+ * aWindow is optional, and defaults to the current window object.
+ */
+this.synthesizeKey = function(aKey, aWindow)
+{
+    if (!aWindow)
+        aWindow = window;
+
+    var utils = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
+        getInterface(Components.interfaces.nsIDOMWindowUtils);
+    if (!utils)
+        return;
+
+    var keyCode = 0, charCode = 0;
+    if (aKey.indexOf("VK_") == 0)
+        keyCode = KeyEvent["DOM_" + aKey];
+    else
+        charCode = aKey.charCodeAt(0);
+
+    var keyDownDefaultHappened = utils.sendKeyEvent("keydown", keyCode, charCode, 0);
+    utils.sendKeyEvent("keypress", keyCode, charCode, 0, !keyDownDefaultHappened);
+    utils.sendKeyEvent("keyup", keyCode, charCode, 0);
+}
 
 this.focus = function(node)
 {
@@ -1209,12 +1337,19 @@ this.searchInHtmlPanel = function(searchText, callback)
         }
     });
 
+    FBTest.focus(searchBox);
+
     // Setting the 'value' property doesn't fire an 'input' event so,
     // press enter instead (asynchronously).
-    FBTest.focus(searchBox);
     setTimeout(function() {
         FBTest.pressKey(13, "fbSearchBox");
     }, 0);
+
+    // FIX ME: characters should be sent into the search box individualy
+    // (using key events) to simulate incremental search.
+    setTimeout(function() {
+        FBTest.pressKey(13, "fbSearchBox");
+    }, 100);
 }
 
 // ************************************************************************************************
