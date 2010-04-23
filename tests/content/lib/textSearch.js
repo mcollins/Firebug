@@ -2,24 +2,22 @@ function runTest()
 {
     FBTestFirebug.openNewTab(basePath + "lib/textSearch.htm", function(win)
     {
-        var root = win.document.createElement("div");
-        root.appendChild(win.document.createTextNode("aaaa"));
-    
-        var child = win.document.createElement("div");
-        child.appendChild(win.document.createTextNode("atexta"));
-        root.appendChild(child);
-    
-        root.appendChild(win.document.createTextNode("textaatext"));
+        var root = win.document.getElementById("content");
+        var child = win.document.getElementById("child");
 
-        win.document.getElementById("insertEl").appendChild(root);
+        function compareFind(node, offset, result)
+        {
+            result = FW.FBL.unwrapObject(result);
+            node = FW.FBL.unwrapObject(node);
 
-        function compareFind(node, offset, result) {
-            FBTest.compare(node, result, "Node matches");
+            FBTest.ok(node === result, "Node matches");
             if (node)
             {
-                FBTest.compare(offset, search.range && search.range.startOffset, "Range Start " + offset);
+                FBTest.compare(offset, search.range && search.range.startOffset,
+                    "Range Start " + offset);
             }
         }
+
         var search = new FW.FBL.TextSearch(root);
 
         compareFind(root.firstChild, 0, search.find("a", false, false));
