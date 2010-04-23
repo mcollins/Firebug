@@ -72,7 +72,17 @@ SwarmInstaller.workFlowMonitor =
     {
         this.injectSwarmWorkflows(doc);
         this.progress = progress;
-        SwarmInstaller.extensions.prepareDeclaredExtensions(doc, this.progress);
+        var swarmFrame = doc.getElementById('swarmDefinition');
+        if (swarmFrame)
+        {
+            progress("Found swarmDefinition");
+            var swarmDocument = swarmFrame.contentDocument;
+            SwarmInstaller.extensions.prepareDeclaredExtensions(swarmDocument, this.progress);
+        }
+        else
+        {
+            progress("No swarmDefinition element found");
+        }
     },
 
     injectSwarmWorkflows: function(doc)
@@ -298,7 +308,7 @@ SwarmInstaller.workFlowMonitor =
                 }
                 catch(exc)
                 {
-                    FBTrace.sysout("swarmInstaller.dispatch FAILS for "+eventName+" to "+listener.toSource()+" because "+exc, exc);
+                    FBTrace.sysout("swarmInstaller.dispatch FAILS for "+eventName+" to "+p+" because "+exc, { exc: exc, listener: listener});
                 }
             }
         }
@@ -456,7 +466,7 @@ SwarmInstaller.extensions =
         {
             var ext = SwarmInstaller.extensions.getInstallableExtensions();
             if (ext.length == 0)
-                SwarmInstaller.workFlowMonitor.stepWorkflows(elt.ownerDocument, "swarmInstallStep");
+                SwarmInstaller.workFlowMonitor.stepWorkflows(doc, "swarmInstallStep");
         },
 
         onStep: function(event, progress)

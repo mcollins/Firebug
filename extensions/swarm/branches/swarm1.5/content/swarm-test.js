@@ -52,7 +52,7 @@ top.SwarmInstaller.SwarmTest =
     {
         var browser = $("taskBrowser");
         var doc = browser.contentDocument;
-        if(doc.getElementsByClassName('swarm').length == 0)
+        if(!doc.getElementById('swarmDefinition'))
         {
             this.progress("Not a swarm test document");
             return;

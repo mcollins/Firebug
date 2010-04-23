@@ -5,7 +5,13 @@
 <head>
 <meta http-equiv="content-type"
         content="text/html;charset=utf-8" />
-
+<style>
+body {
+  font-family: Sans-serif;
+  margin: 45px;
+  background-color: #FFFFFF;
+}
+</style>
 </head>
 <body>
 
@@ -16,13 +22,16 @@
 
 
 <!--  Extensions that make up this swarm. The exported file will be named based on src url -->
+<h2>Extensions to be tested together</h2>
 <iframe id="swarmDefinition" width="100%" name="swarmDefinition" src="basic.html"></iframe>
 
 <!--  Tests that will be applied -->
+<h2>Test cases</h2>
 <iframe id="FBTest" width="100%" name="FBTest" src="https://getfirebug.com/tests/content/testlists/firebug1.6.html"></iframe>
 
 <!-- The wrapper for the resulting certified test result. The export will have date post pended, eg basic-2009-09-28T19:03:12Z.html -->
-<iframe id="swarmCertification" width="100%" name="swarmCertification" src="certificateTemplate.html"></iframe>
+<h2>Template wrapper for results</h2>
+<iframe id="swarmCertification" width="100%" name="swarmCertification" src="../content/certificateTemplate.html"></iframe>
 
 </body>
 </html>
