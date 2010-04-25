@@ -123,8 +123,8 @@ StartupObserver.prototype =
        {
            onScriptCreated: function(script)
            {
-               //if (jsdState.avoidSelf(script.fileName))
-               //    return;
+               if (jsdState.avoidSelf(script.fileName))
+                   return;
 
                 var cb = jsdState._chromebug;
                 if (!cb)
@@ -159,8 +159,9 @@ StartupObserver.prototype =
            },
            onScriptDestroyed: function(script)
            {
-               //if (jsdState.avoidSelf(script.fileName))
-               //    return;
+               if (jsdState.avoidSelf(script.fileName))
+                   return;
+
                var cb = jsdState._chromebug;
 
                if (!script.functionName) // top or eval-level
