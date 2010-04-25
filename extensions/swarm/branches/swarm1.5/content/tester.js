@@ -16,7 +16,7 @@ const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIO
 // Monitors reloads in the FBTest window.
 // When a swarm is detected, prepare for swarm testing and certification
 
-top.Swarm.SwarmTest =
+top.Swarm.Tester =
 {
     // initialization -------------------------------------------------------------------
 
@@ -101,27 +101,27 @@ top.Swarm.SwarmTest =
     // nsIWindowMediatorListener ------------------------------------------------------------------
     onOpenWindow: function(xulWindow)
     {
-        FBTrace.sysout("Swarm.SwarmTest onOpenWindow");
+        FBTrace.sysout("Swarm.Tester onOpenWindow");
     },
 
     onCloseWindow: function(xulWindow)
     {
-        FBTrace.sysout("Swarm.SwarmTest onCloseWindow");
+        FBTrace.sysout("Swarm.Tester onCloseWindow");
     },
 
     onWindowTitleChange: function(xulWindow, newTitle)
     {
-        FBTrace.sysout("Swarm.SwarmTest onWindowTitleChange");
+        FBTrace.sysout("Swarm.Tester onWindowTitleChange");
         var docShell = xulWindow.docShell;
         if (docShell instanceof Ci.nsIInterfaceRequestor)
         {
             var win = docShell.getInterface(Ci.nsIDOMWindow);
             var location = safeGetWindowLocation(win);
-            FBTrace.sysout("Swarm.SwarmTest onWindowTitleChange location: "+location);
+            FBTrace.sysout("Swarm.Tester onWindowTitleChange location: "+location);
             if (location === "chrome://fbtest/content/testConsole.xul")
             {
-                FBTrace.sysout("Swarm.SwarmTest onWindowTitleChange FOUND at location "+location);
-                Swarm.SwarmTest.addSigningButton(win.document);
+                FBTrace.sysout("Swarm.Tester onWindowTitleChange FOUND at location "+location);
+                Swarm.Tester.addSigningButton(win.document);
             }
         }
     },
@@ -131,12 +131,17 @@ top.Swarm.SwarmTest =
 
 // ----------------------------------------------------------------------------------
 // Handlers contributed to Swarm
-Swarm.SwarmTest.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
+Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 {
     initializeUI: function(doc)
     {
         this.addHashes(Swarm.extensions.getInstallableExtensions());
         this.monitorStates(doc, this.progress);
+    },
+
+    onStepEnabled: function(doc, elt)
+    {
+        this.showSwarmTaskData(doc, "FBTest");
     },
 
     onStep: function(event, progress)
@@ -220,7 +225,7 @@ Swarm.SwarmTest.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 
 });
 
-Swarm.SwarmTest.swarmStopTestsStep = extend(Swarm.WorkflowStep,
+Swarm.Tester.swarmStopTestsStep = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -228,7 +233,7 @@ Swarm.SwarmTest.swarmStopTestsStep = extend(Swarm.WorkflowStep,
     },
 });
 
-Swarm.SwarmTest.swarmHaltFailTest = extend(Swarm.WorkflowStep,
+Swarm.Tester.swarmHaltFailTest = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -236,7 +241,7 @@ Swarm.SwarmTest.swarmHaltFailTest = extend(Swarm.WorkflowStep,
     },
 });
 
-Swarm.SwarmTest.swarmHaltFailTest = extend(Swarm.WorkflowStep,
+Swarm.Tester.swarmHaltFailTest = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -244,7 +249,7 @@ Swarm.SwarmTest.swarmHaltFailTest = extend(Swarm.WorkflowStep,
     },
 });
 
-Swarm.SwarmTest.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
+Swarm.Tester.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
@@ -252,13 +257,13 @@ Swarm.SwarmTest.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
     },
 });
 
-Swarm.SwarmTest.signPage = extend(Swarm.WorkflowStep,
+Swarm.Tester.signPage = extend(Swarm.WorkflowStep,
 {
     onStep: function(event, progress)
     {
-        FBTrace.sysout("Swarm.SwarmTest signPage ", event);
+        FBTrace.sysout("Swarm.Tester signPage ", event);
         var keyservice = this.getKeyService();
-        FBTrace.sysout("Swarm.SwarmTest doSigning keyservice: "+this.keyservice);
+        FBTrace.sysout("Swarm.Tester doSigning keyservice: "+this.keyservice);
         if (!keyservice)
             return;
         debugger;
@@ -384,10 +389,10 @@ function toHexString(charCode)
 }
 
 
-Swarm.workFlowMonitor.registerWorkflowStep("swarmRunAllTestsStep", Swarm.SwarmTest.swarmRunAllTestsStep);
-Swarm.workFlowMonitor.registerWorkflowStep("swarmStopTestsStep", Swarm.SwarmTest.swarmStopTestsStep);
-Swarm.workFlowMonitor.registerWorkflowStep("swarmHaltFailTest", Swarm.SwarmTest.swarmHaltFailTest);
-Swarm.workFlowMonitor.registerWorkflowStep("swarmNoTimeoutTest", Swarm.SwarmTest.swarmNoTimeoutTest);
+Swarm.workflowMonitor.registerWorkflowStep("swarmRunAllTestsStep", Swarm.Tester.swarmRunAllTestsStep);
+Swarm.workflowMonitor.registerWorkflowStep("swarmStopTestsStep", Swarm.Tester.swarmStopTestsStep);
+Swarm.workflowMonitor.registerWorkflowStep("swarmHaltFailTest", Swarm.Tester.swarmHaltFailTest);
+Swarm.workflowMonitor.registerWorkflowStep("swarmNoTimeoutTest", Swarm.Tester.swarmNoTimeoutTest);
 
 //************************************************************************************************
 }});

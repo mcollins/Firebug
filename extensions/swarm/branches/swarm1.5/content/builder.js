@@ -97,10 +97,30 @@ Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
         progress(msg);
 
         debugger;
-    }
+    },
+
+    getDateFormatted: function()
+    {
+        function pad(n)
+        {
+            return (n < 10) ? '0'+n : n;
+        }
+
+        var d = new Date();
+
+        var formatted =  d.getUTCFullYear()+'-';
+        formatted += pad(d.getUTCMonth()+1)+'-';
+        formatted += pad(d.getUTCDate())+'T';
+        formatted += pad(d.getUTCHours())+':';
+        formatted += pad(d.getUTCMinutes())+':';
+        formatted += pad(d.getUTCSeconds())+'Z';
+
+        return formatted;
+    },
+
 });
 
-Swarm.workFlowMonitor.registerWorkflowStep("swarmPackageStep", Swarm.SwarmBuild.swarmPackageStep);
+Swarm.workflowMonitor.registerWorkflowStep("swarmPackageStep", Swarm.SwarmBuild.swarmPackageStep);
 
 //************************************************************************************************
 }});

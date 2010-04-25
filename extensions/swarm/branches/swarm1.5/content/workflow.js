@@ -44,6 +44,15 @@ Swarm.WorkflowStep =
      * @param doc, the document containing the workflow UI
      */
     onWorkflowUnselect: function(doc) {},
+
+    /*
+     * Called when a step is allowed to fire
+     */
+    onStepEnabled: function(doc, stepElement) {},
+    /*
+     * Called when a step is disallowed to fire
+     */
+    onStepDisabled: function(doc, stepElement) {},
     /*
      * Called just before any workflow step, on all steps in the selected workflow
      * @param doc, the document containing the workflow UI
@@ -64,9 +73,29 @@ Swarm.WorkflowStep =
      * @param stepElement the element stepping
      */
     destroy: function() {},
+
+    //-------- Library Functions for workflowSteps ----------------------
+    showSwarmTaskData: function(doc) // remaining arguments are ids to be shown
+    {
+        var swarmTaskDataElements = doc.getElementsByClassName("swarmTaskData");
+        for (var i = 0; i < swarmTaskDataElements.length; i++)
+            swarmTaskDataElements[i].classList.add("swarmTaskDataNotNeeded");
+
+        var needed = 1;
+        while (needed < arguments.length)
+        {
+            var neededFrame = doc.getElementById(arguments[needed]);
+            if (neededFrame)
+                neededFrame.parentNode.classList.remove("swarmTaskDataNotNeeded");
+            else
+                throw new Error("showSwarmTaskData did not find element "+needed+" with id "+arguments[needed]);
+
+            needed++;
+        }
+    },
 };
 
-Swarm.workFlowMonitor =
+Swarm.workflowMonitor =
 {
     initialize: function(doc, progress)
     {
@@ -157,9 +186,15 @@ Swarm.workFlowMonitor =
         for (var j = 0; j < buttons.length; j++)
         {
             button = buttons[j];
-            if (button.classList.contains("swarmWorkflowStep")) continue; // leave disabled
-            if (button.classList.contains("swarmWorkflowEnd")) continue;
-            button.removeAttribute("disabled");
+            if ( button.classList.contains("swarmWorkflowStep") || button.classList.contains("swarmWorkflowEnd") )
+            {
+                this.dispatchToStepByButton(button, "onStepDisabled", [doc, button]);
+            }
+            else
+            {
+                button.removeAttribute("disabled");
+                this.dispatchToStepByButton(button, "onStepEnabled", [doc, button])
+            }
         }
 
         // mark the selector closed
@@ -183,7 +218,10 @@ Swarm.workFlowMonitor =
         var workFlows = doc.getElementById("swarmWorkflows");
         var buttons = workFlows.getElementsByTagName('button');
         for (var j = 0; j < buttons.length; j++)
+        {
             buttons[j].setAttribute("disabled", "disabled");
+            this.dispatchToStepByButton(buttons[j], "onStepDisabled", [doc, buttons[j]]);
+        }
 
         var inputs = workFlows.getElementsByTagName("input");
         for (var j = 0; j < inputs.length; j++)
@@ -197,7 +235,7 @@ Swarm.workFlowMonitor =
         for (var i = 0; i < swarmWorkflowIsSelected.length; i++)
             swarmWorkflowIsSelected[i].classList.remove("swarmWorkflowIsSelected");
 
-        Swarm.workFlowMonitor.unSelectSelectedWorkflow(doc);
+        Swarm.workflowMonitor.unSelectSelectedWorkflow(doc);
     },
 
     doWorkflowStep: function(event)
@@ -208,20 +246,14 @@ Swarm.workFlowMonitor =
         try
         {
             var button = event.target;
-
-            var step = this.getStepFromButton(button);
-            var doc = event.target.ownerDocument;
+            var doc = button.ownerDocument;
 
             button.classList.add("swarmWorkflowing");
+
             this.dispatch("onStepStarts", [doc, button])
-
-            var handler = this.registeredWorkflowSteps[step];
-            if (handler)
-                handler.onStep(event, this.progress);
-            else
-                this.progress("no workflow step registered at "+step);
-
+            this.dispatchToStepByButton(button, "onStepDisabled", [doc, button]);
             this.dispatch("onStepEnds", [doc, button])
+
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
             event.preventDefault();
@@ -234,6 +266,22 @@ Swarm.workFlowMonitor =
 
     },
 
+    dispatchToStepByButton: function(button, event, args)
+    {
+        var step = this.getStepFromButton(button);
+        if (!step)
+            return this.progress("ERROR: Swarm.WorkFlowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
+
+        var handler = this.registeredWorkflowSteps[step];
+        if (!handler)
+            return this.progress("no workflow step registered at "+step);
+
+        if (!handler[event])
+            return this.progress("no function "+event+" for workflow step "+step);
+
+        handler[event].apply(handler, args);
+    },
+
     getStepFromButton: function(button)
     {
         for(var i = 0; i < button.classList.length; i++)
@@ -241,8 +289,6 @@ Swarm.workFlowMonitor =
             if (button.classList[i] in this.registeredWorkflowSteps)
                 return button.classList[i];
         }
-
-        throw new Error("Swarm.WorkFlowMonitor.doWorkflowStep no handler registered for "+button.getAttribute("class"));
     },
 
     stepWorkflows: function(doc, stepClassName)
@@ -258,7 +304,9 @@ Swarm.workFlowMonitor =
                 if (nextStep)
                 {
                     elts[i].setAttribute('disabled', 'disabled');
+                    this.dispatchToStepByButton(elts[i], "onStepDisabled", [doc, elts[i]]);
                     nextStep.removeAttribute('disabled');
+                    this.dispatchToStepByButton(nextStep, "onStepEnabled", [doc, nextStep]);
                 }
             }
         }
@@ -302,7 +350,7 @@ Swarm.workFlowMonitor =
                 }
                 catch(exc)
                 {
-                    FBTrace.sysout("swarm.dispatch FAILS for "+eventName+" to "+p+" because "+exc, { exc: exc, listener: listener});
+                    FBTrace.sysout("swarm.dispatch FAILS for "+p+"["+eventName+"] because "+exc, { exc: exc, listener: listener});
                 }
             }
         }
@@ -316,7 +364,13 @@ Swarm.embedder = {
 
         progress: function(msg)
         {
-            document.getElementById("progressMessage").value = msg;
+            var elt = document.getElementById("progressMessage");
+            elt.value = msg;
+            if (/ERROR/i.test(msg))
+                elt.style.color = "red";
+            else
+                delete elt.style.color;
+            FBTrace.sysout("Swarm.progress "+msg);
         },
 
         attachToPage: function()
@@ -331,8 +385,8 @@ Swarm.embedder = {
             else
             {
                 this.progress("Noticed a Swarm Test Document");
-                Swarm.workFlowMonitor.initialize(doc, this.progress);
-                Swarm.workFlowMonitor.initializeUI(doc, this.progress);
+                Swarm.workflowMonitor.initialize(doc, this.progress);
+                Swarm.workflowMonitor.initializeUI(doc, this.progress);
             }
         },
 

@@ -12,6 +12,7 @@ body {
   background-color: #FFFFFF;
 }
 </style>
+<link rel="stylesheet" href="swarmWorkflow.css" type="text/css"/>
 </head>
 <body>
 
@@ -22,16 +23,22 @@ body {
 
 
 <!--  Extensions that make up this swarm. The exported file will be named based on src url -->
+<div class="swarmTaskData">
 <h2>Extensions to be tested together</h2>
 <iframe id="swarmDefinition" width="100%" name="swarmDefinition" src="basic.html"></iframe>
+</div>
 
 <!--  Tests that will be applied -->
+<div class="swarmTaskData">
 <h2>Test cases</h2>
 <iframe id="FBTest" width="100%" name="FBTest" src="https://getfirebug.com/tests/content/testlists/firebug1.6.html"></iframe>
+</div>
 
 <!-- The wrapper for the resulting certified test result. The export will have date post pended, eg basic-2009-09-28T19:03:12Z.html -->
+<div class="swarmTaskData">
 <h2>Template wrapper for results</h2>
 <iframe id="swarmCertification" width="100%" name="swarmCertification" src="../content/certificateTemplate.html"></iframe>
+</div>
 
 </body>
 </html>

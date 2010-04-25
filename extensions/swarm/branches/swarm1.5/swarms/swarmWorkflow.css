@@ -51,3 +51,7 @@ table.swarmWorkflowIsSelected td#selectWorkflow {
     padding-right: 5px;
     padding-left: 18px;
 }
+
+.swarmTaskDataNotNeeded {
+    display: none;
+}
