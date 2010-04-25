@@ -841,9 +841,12 @@ Firebug.Chromebug = extend(Firebug.Module,
     isChromebugURL: function(URL)
     {
         if (URL)
-            return (URL.indexOf("/chromebug/") != -1 || URL.indexOf("/fb4cb/") != -1 || URL.indexOf("/firebug-service.js") != -1);
+            var result = (URL.indexOf("/chromebug/") != -1 || URL.indexOf("/fb4cb/") != -1 || URL.indexOf("/firebug-service.js") != -1);
         else
-            return false;
+            var result = false;
+
+        // FBTrace.sysout("isChromebugURL "+result+" "+URL);
+        return result;
     },
 
     buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
@@ -982,8 +985,15 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Chromebug.eachContext(function visitContext(anotherContext)
         {
             if (anotherContext != context)
-                Firebug.Debugger.suppressEventHandling(anotherContext);
-            anotherContext.stopped;
+            {
+                if (anotherContext.window instanceof nsIDOMWindow)
+                {
+                    if (FBTrace.DBG_UI_LOOP)
+                        FBTrace.sysout("ChromeBugPanel.onStop suppressing context: "+(anotherContext?anotherContext.getName():null));
+                    Firebug.Debugger.suppressEventHandling(anotherContext);
+                    anotherContext.stopped;
+                }
+            }
         });
 
         var calledFrame = frame;

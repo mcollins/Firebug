@@ -142,6 +142,9 @@ var ChromebugOverrides = {
         var context = null;
         if (frame && frame.isValid)
         {
+            if (Firebug.Chromebug.isChromebugURL(frame.script.fileName))
+                return null;
+
             if (!global)
                 global = Firebug.Chromebug.getGlobalByFrame(frame);
 
