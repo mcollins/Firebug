@@ -82,6 +82,22 @@ Swarm.Installer =
         return extensions;
     },
 
+    eachDeclaredAndInstallableExtension: function(fnTakesExtension)
+    {
+        var declaredExtensions = Swarm.Installer.declaredExtensions;
+        var count = declaredExtensions.length;
+        for (var i = 0; i < count; i++)
+        {
+            if (declaredExtensions[i].statusElement.classList.contains("installNotAllowed"))
+                continue;
+
+            if (declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
+                continue;
+
+            fnTakesExtension(declaredExtensions[i]);
+        }
+    },
+
     extractVersion: function(href)
     {
         var slashSplit = href.split("/");
@@ -248,8 +264,8 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         if (swarmFrame)
         {
             progress("Found swarmDefinition");
-            var swarmDocument = swarmFrame.contentDocument;
-            Swarm.Installer.prepareDeclaredExtensions(swarmDocument, this.progress);
+            this.swarmDocument = swarmFrame.contentDocument;
+            Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
         }
         else
         {
@@ -270,20 +286,14 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         var urls = [];
         var hashes = [];
         var installingExtensions = [];
-        var declaredExtensions = Swarm.Installer.declaredExtensions;
-        var count = declaredExtensions.length;
-        for (var i = 0; i < count; i++)
+
+        Swarm.Installer.eachDeclaredAndInstallableExtension(function buildInstallManagerData(extension)
         {
-            if (declaredExtensions[i].statusElement.classList.contains("installNotAllowed"))
-                continue;
+            urls.push( extension.href );
+            hashes.push( extension.hash );
+            installingExtensions.push( extension );
+        });
 
-            if (declaredExtensions[i].statusElement.classList.contains("installedVersion-Same"))
-                continue;
-
-            urls.push( declaredExtensions[i].href );
-            hashes.push( declaredExtensions[i].hash );
-            installingExtensions.push( declaredExtensions[i] );
-        }
         count = urls.length;
 
         var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
@@ -296,6 +306,23 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
 });
 
 Swarm.workflowMonitor.registerWorkflowStep("swarmInstallStep", Swarm.Installer.swarmInstallStep);
+
+Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallStep,
+{
+    onStepEnds: function(doc, stepElement)
+    {
+        Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
+        var todo = [];
+        Swarm.Installer.eachDeclaredAndInstallableExtension(function buildToDoList(extension)
+        {
+            todo.push(extension);
+        });
+        if (todo.length)
+            window.alert(todo.length +" extension"+(todo.length==1?'':'s')+" can not be installed");
+    },
+});
+
+Swarm.workflowMonitor.registerWorkflowStep("swarmInstallAndCheckStep", Swarm.Installer.swarmInstallAndCheckStep);
 
 var errorNameByCode =
 {

@@ -75,20 +75,33 @@ Swarm.WorkflowStep =
     destroy: function() {},
 
     //-------- Library Functions for workflowSteps ----------------------
-    showSwarmTaskData: function(doc) // remaining arguments are ids to be shown
+    showSwarmTaskData: function(doc) // remaining arguments are ids to be shown; if zero show all
     {
         var swarmTaskDataElements = doc.getElementsByClassName("swarmTaskData");
         for (var i = 0; i < swarmTaskDataElements.length; i++)
-            swarmTaskDataElements[i].classList.add("swarmTaskDataNotNeeded");
+        {
+            if (arguments.length == 1)
+                swarmTaskDataElements[i].classList.remove("swarmTaskDataNotNeeded");
+            else
+                swarmTaskDataElements[i].classList.add("swarmTaskDataNotNeeded");
+
+            delete swarmTaskDataElements[i].style.height;
+        }
+
+        var header = doc.getElementById("swarmWorkflowInsertion");
+        var height = doc.documentElement.clientHeight - header.offsetHeight - header.offsetTop;  // height we have to work with
+        var eachHeight = height/(arguments.length - 1); // todo use CSS3 flex
 
         var needed = 1;
         while (needed < arguments.length)
         {
             var neededFrame = doc.getElementById(arguments[needed]);
-            if (neededFrame)
-                neededFrame.parentNode.classList.remove("swarmTaskDataNotNeeded");
-            else
+            if (!neededFrame)
                 throw new Error("showSwarmTaskData did not find element "+needed+" with id "+arguments[needed]);
+
+
+            var frameWrapper = neededFrame.parentNode.classList.remove("swarmTaskDataNotNeeded");
+            doc.getElementById('FBTest').style.height = eachHeight +"px";
 
             needed++;
         }
@@ -200,6 +213,9 @@ Swarm.workflowMonitor =
         // mark the selector closed
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         swarmWorkflows.classList.add("swarmWorkflowIsSelected");
+
+        // return the task data to default on
+        Swarm.WorkflowStep.showSwarmTaskData(doc);
 
         // initialize the newly selected workflow
         this.dispatch("onWorkflowSelect", [doc, selectedWorkflow]);
