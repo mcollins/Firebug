@@ -1289,15 +1289,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         cbContextList.showPopup();
     },
 
-    chromeList: function()
-    {
-        var w = window.screen.availWidth;
-        var h = window.screen.availHeight;
-        features = "outerWidth="+w+","+"outerHeight="+h;
-        var params = "";
-        this.chromeList = openWindow('chromelist', "chrome://chromebug/content/chromelist.xul", features, params);
-    },
-
     openXPCOMExplorer: function()
     {
         var xpcomExplorerURL = "chrome://xpcomExplorer/content/xpcomExplorer.xul";

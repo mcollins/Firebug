@@ -11,9 +11,5 @@ overlay  chrome://chromebug/content/chromebug.xul        chrome://chromebug/cont
 # Add ChromeBug menu items to Firebug Menu in FF Tools
 overlay chrome://firebug/content/browserOverlay.xul 	chrome://chromebug/content/ChromeBugMenuOverlay.xul
 
-content   chromebuglister                               chrome://chromelist/content/
-skin      chromebuglister      modern/1.0               chrome://chromelist/skin/
-locale    chromebuglister      en-US                   chrome://chromelist/locale/
-
 overlay chrome://explorer/content/tools/extension-project.xul chrome://chromebug/content/overlays/extension-project.xul
 
