@@ -21,6 +21,7 @@ function runTest()
             theWindow = win;
 
             var tests = [];
+            tests.push(test0);
             tests.push(test1);
             tests.push(test2);
             tests.push(test3);
@@ -34,14 +35,19 @@ function runTest()
 
 // ************************************************************************************************
 
-function test1(callback)
+function test0(callback)
 {
     executeTest(theWindow, function()
     {
         scrollToTop();
-        FBTestFirebug.selectPanel("html");
         callback();
     });
+};
+
+function test1(callback)
+{
+    FBTestFirebug.selectPanel("html");
+    callback();
 };
 
 function test2(callback)
