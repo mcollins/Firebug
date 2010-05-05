@@ -504,6 +504,14 @@ FBTestApp.TestConsole =
                 FBTestApp.TestConsole.onRunAll(function(canceled)
                 {
                     FBTestApp.TestSummary.dumpSummary();
+
+                    // If tests are launched automatically from the command line save
+                    // all results in a JSON based file that is located in the user
+                    // profile.
+                    FBTestApp.TestConsole.Logger.saveResultsAsJSON(
+                        FBTestApp.TestConsole.groups);
+
+                    // Quit Firefox now.
                     if (!canceled)
                         goQuitApplication();
                 });
@@ -791,6 +799,146 @@ FBTestApp.TestConsole =
         else
             setClass(this.table, "hidePassingTests");
     }
+};
+
+// ************************************************************************************************
+
+FBTestApp.TestConsole.Logger =
+{
+    saveResultsAsJSON: function(groups)
+    {
+        try
+        {
+            var now = new Date();
+            var report = this.getReport(groups);
+            report.system.exportDate = now.toGMTString();
+
+            function f(n, c) {
+                if (!c) c = 2;
+                var s = new String(n);
+                while (s.length < c) s = "0" + s;
+                return s;
+            }
+
+            var fileName = "firebug-" +
+                report.system.firebug + "-" +
+                now.getFullYear() + "-" + f(now.getMonth()+1) + "-" + f(now.getDate()) +
+                "+" + f(now.getHours()) + "-" + f(now.getMinutes()) + "-" +
+                report.system.osName;
+
+            var file = this.getDefaultFolder();
+            file.append(fileName + ".log");
+            file.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, 0666);
+
+            var jsonString = JSON.stringify(report, null, "  ");
+            this.saveToFile(file, jsonString);
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_ERRORS || FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtrace.TestConsole.Logger; saveResultsAsJSON EXCEPTION", err);
+        }
+    },
+
+    saveToFile: function(file, text)
+    {
+        var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
+            .createInstance(Ci.nsIFileOutputStream);
+        foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
+
+        var convertor = Cc["@mozilla.org/intl/converter-output-stream;1"]
+            .createInstance(Ci.nsIConverterOutputStream);
+
+        // Write JSON data.
+        convertor.init(foStream, "UTF-8", 0, 0);
+        convertor.writeString(text);
+        convertor.close();
+    },
+
+    getReport: function(groups)
+    {
+        var report = {};
+        report.system = this.getSystemInfo();
+
+        report.summary = {
+            testList: FBTestApp.TestConsole.testListPath,
+            failing: FBTestApp.TestSummary.passingTests.failing,
+            passing: FBTestApp.TestSummary.passingTests.passing,
+        }
+
+        report.failures = [];
+
+        for (group in groups)
+        {
+            var tests = groups[group].getFailingTests();
+            for (var i=0; i<tests.length; i++)
+            {
+                var failingTest = tests[i];
+
+                var test = {
+                    uri: failingTest.uri,
+                    desc: failingTest.desc,
+                    results: [],
+                };
+
+                for (var j=0; j<failingTest.results.length; j++)
+                {
+                    var testResult = failingTest.results[j];
+                    test.results.push({
+                        message: testResult.msg,
+                        pass: testResult.pass
+                    });
+                }
+
+                report.failures.push(test);
+            }
+        }
+
+        return report;
+    },
+
+    getSystemInfo: function()
+    {
+        var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+        var currLocale = Firebug.getPref("general.useragent", "locale");
+        var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
+        var osName = systemInfo.getProperty("name");
+        var osVersion = systemInfo.getProperty("version");
+
+        return {
+            fbTest: FBTestApp.TestConsole.getVersion(),
+            firebug: Firebug.version,
+            appName: appInfo.name,
+            appVersion: appInfo.version,
+            appPlatform: appInfo.platformVersion,
+            appBuildID: appInfo.appBuildID,
+            locale: currLocale,
+            osName: osName,
+            osVersion: osVersion,
+        };
+    },
+
+    getDefaultFolder: function()
+    {
+        var dir;
+        var path = Firebug.getPref(FBTestApp.prefDomain, "defaultLogDir");
+        if (!path)
+        {
+            // Create default folder for automated logs.
+            var dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+            var dir = dirService.get("ProfD", Ci.nsILocalFile);
+            dir.append("firebug");
+            dir.append("fbtest");
+            dir.append("logs");
+        }
+        else
+        {
+            dir = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
+            dir.initWithPath(path);
+        }
+
+        return dir;
+    },
 };
 
 // ************************************************************************************************

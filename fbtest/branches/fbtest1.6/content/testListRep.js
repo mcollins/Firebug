@@ -258,7 +258,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         catch (err)
         {
             if (FBTrace.DBG_ERRORS || FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbrace.FTestApp.GroupList; onCopyAllErrors EXCEPTION", err);
+                FBTrace.sysout("fbtrace.FBTestApp.GroupList; onCopyAllErrors EXCEPTION", err);
         }
     }
 });
@@ -512,6 +512,19 @@ FBTestApp.TestGroup.prototype =
                 text += errors + "\n";
         }
         return text;
+    },
+
+    getFailingTests: function()
+    {
+        var tests = [];
+        for (var i=0; i<this.tests.length; i++)
+        {
+            var test = this.tests[i];
+            if (!test.error || test.category == "fails")
+                continue;
+            tests.push(test);
+        }
+        return tests;
     },
 
     update: function()
