@@ -159,7 +159,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
         });
     },
 
-    destroy: function()
+    destroy: function(doc)
     {
         this.unmonitorStates(doc, this.progress);
     },

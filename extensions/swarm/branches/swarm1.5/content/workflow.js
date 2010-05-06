@@ -56,23 +56,26 @@ Swarm.WorkflowStep =
     /*
      * Called just before any workflow step, on all steps in the selected workflow
      * @param doc, the document containing the workflow UI
-     * @param stepElement the element stepping
+     * @param step, the object implementing the step code,
+     * @param element, the element with the stepping event
      */
-    onStepStarts: function(doc, stepElement) {},
+    onStepStarts: function(doc, step, element) {},
     /*
      * Called to execute this workflow step
      */
     onStep: function(event, progress) {},
     /*
      * Called just after any workflow step, on all steps in the selected workflow
+
+     * @param step, the object implementing the step code,
+     * @param element, the element with the stepping event
      */
-    onStepEnds: function(doc, stepElement) {},
+    onStepEnds: function(doc, step, element) {},
     /*
      * called when the workflow system is unloaded, on all steps
-     * * @param doc, the document containing the workflow UI
-     * @param stepElement the element stepping
+     * @param doc, the document containing the workflow UI
      */
-    destroy: function() {},
+    destroy: function(doc) {},
 
     //-------- Library Functions for workflowSteps ----------------------
     showSwarmTaskData: function(doc) // remaining arguments are ids to be shown; if zero show all
@@ -100,8 +103,9 @@ Swarm.WorkflowStep =
                 throw new Error("showSwarmTaskData did not find element "+needed+" with id "+arguments[needed]);
 
 
-            var frameWrapper = neededFrame.parentNode.classList.remove("swarmTaskDataNotNeeded");
-            doc.getElementById('FBTest').style.height = eachHeight +"px";
+            var frameWrapper = neededFrame.parentNode;
+            frameWrapper.classList.remove("swarmTaskDataNotNeeded");
+            neededFrame.style.height = eachHeight +"px";
 
             needed++;
         }
@@ -266,9 +270,13 @@ Swarm.workflowMonitor =
 
             button.classList.add("swarmWorkflowing");
 
-            this.dispatch("onStepStarts", [doc, button])
-            this.dispatchToStepByButton(button, "onStepDisabled", [doc, button]);
-            this.dispatch("onStepEnds", [doc, button])
+            var step = this.getStepFromButton(button);
+            if (!step)
+                return this.progress("ERROR: Swarm.WorkFlowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
+
+            this.dispatch("onStepStarts", [doc, step])
+            this.dispatchToStepByButton(button, "onStep", [event, this.progress]);
+            this.dispatch("onStepEnds", [doc, step])
 
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();

@@ -275,6 +275,10 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
 
     onWorkflowSelect: function(doc, selectedWorkflow)
     {
+        var installSteps = selectedWorkflow.getElementsByClassName("swarmInstallStep");
+        if (installSteps.length === 0)
+            return;
+
         var ext = Swarm.Installer.getInstallableExtensions();
         if (ext.length == 0)
             Swarm.workflowMonitor.stepWorkflows(doc, "swarmInstallStep");
@@ -309,8 +313,11 @@ Swarm.workflowMonitor.registerWorkflowStep("swarmInstallStep", Swarm.Installer.s
 
 Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallStep,
 {
-    onStepEnds: function(doc, stepElement)
+    onStepEnds: function(doc, step, element)
     {
+        if (step !== Swarm.Installer.swarmInstallAndCheckStep)
+            return;
+
         Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
         var todo = [];
         Swarm.Installer.eachDeclaredAndInstallableExtension(function buildToDoList(extension)
