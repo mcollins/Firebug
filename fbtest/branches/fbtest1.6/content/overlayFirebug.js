@@ -68,11 +68,20 @@ this.open = function(testListURI)
 
 this.onSelectionChanged = function()
 {
-    FBL.iterateBrowserWindows("FBTestConsole", function(win)
+    try
     {
-        win.FBTestApp.SelectionController.selectionChanged();
-        return true;
-    });
+        FBL.iterateBrowserWindows("FBTestConsole", function(win)
+        {
+            if (win.FBTestApp)
+                win.FBTestApp.SelectionController.selectionChanged();
+            return true;
+        });
+    }
+    catch (err)
+    {
+        if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+            FBTrace.sysout("fbtest.FBTestFirebugOverlay; onSelectionChanged", err);
+    }
 };
 
 // Register load listener for command line arguments handling.

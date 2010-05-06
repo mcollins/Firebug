@@ -16,7 +16,7 @@ const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBran
 /**
  * Test runner is intended to run single tests or test suites.
  */
-FBTestApp.TestRunner =
+FBTestApp.TestRunner = extend(new Firebug.Listener(),
 {
     testQueue: null,
     onFinishCallback: null,
@@ -29,6 +29,7 @@ FBTestApp.TestRunner =
         FBTestApp.TestConsole.updatePaths();
 
         // Update history
+        // xxxHonza: all related conmponents should be registerd as listeners.
         FBTestApp.TestConsole.appendToHistory(null,
             FBTestApp.TestConsole.testCasePath,
             FBTestApp.TestConsole.driverBaseURI);
@@ -41,8 +42,11 @@ FBTestApp.TestRunner =
 
         this.startTime = (new Date()).getTime();
         this.testCount = tests.length;
-        this.onFinishCallback = onFinishCallback;
         this.testQueue = tests;
+        this.onFinishCallback = onFinishCallback;
+
+        dispatch(this.fbListeners, "onTestSuiteStart", [tests]);
+
         this.runTest(this.getNextTest());
     },
 
@@ -82,6 +86,8 @@ FBTestApp.TestRunner =
             // Start the test after the parent group is expanded so the row
             // exists and can reflect the UI state.
             this.currentTest.onStartTest(FBTestApp.TestConsole.driverBaseURI);
+
+            dispatch(this.fbListeners, "onTestStart", [this.currentTest]);
 
             if (FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtest.TestRunner.Test START: " + this.currentTest.path,
@@ -125,6 +131,9 @@ FBTestApp.TestRunner =
 
             this.currentTest.end = this.currentTest.isManual ? this.currentTest.end : (new Date()).getTime();
             this.currentTest.onTestDone();
+
+            dispatch(this.fbListeners, "onTestDone", [this.currentTest]);
+
             this.currentTest = null;
         }
 
@@ -132,6 +141,7 @@ FBTestApp.TestRunner =
             FBTrace.sysout("fbtest.TestRunner.CANCELED");
 
         // Test is done so, clear the break-timeout.
+        // xxxHonza: all related conmponents should be registerd as listeners.
         FBTestApp.TestRunner.cleanUp();
 
         // If there are tests in the queue, execute them.
@@ -174,6 +184,8 @@ FBTestApp.TestRunner =
 
         // Preferences could be changed by tests so restore the previous values.
         FBTestApp.Preferences.restore();
+
+        dispatch(this.fbListeners, "onTestSuiteDone", [canceled]);
 
         // Execute callback to notify about finished test suit (used e.g. for
         // Firefox shutdown if test suite is executed from the command line).
@@ -526,7 +538,7 @@ FBTestApp.TestRunner =
     {
         FBTrace.sysout(msg, obj);
     },
-};
+});
 
 // ************************************************************************************************
 
