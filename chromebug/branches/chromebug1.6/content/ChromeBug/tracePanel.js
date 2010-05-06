@@ -122,13 +122,14 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
 
     destroyNode: function()
     {
-        if (FBTrace.DBG_CB_CONSOLE)
+        //if (FBTrace.DBG_CB_CONSOLE)
             FBTrace.sysout("TraceConsolePanel destroyNode");
     },
 
     destroy: function()
     {
-        FBTrace.sysout("TraceConsolePanel.destory");
+        FBTrace.sysout("TraceConsolePanel.destory no-op, panelNode: "+this.panelNode);
+        return true;  // we are in charge of destruction here.
     },
 
     show: function(state)
