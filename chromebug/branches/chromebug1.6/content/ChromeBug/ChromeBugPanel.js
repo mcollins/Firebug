@@ -988,10 +988,14 @@ Firebug.Chromebug = extend(Firebug.Module,
             {
                 if (anotherContext.window instanceof nsIDOMWindow)
                 {
-                    if (FBTrace.DBG_UI_LOOP)
-                        FBTrace.sysout("ChromeBugPanel.onStop suppressing context: "+(anotherContext?anotherContext.getName():null));
-                    Firebug.Debugger.suppressEventHandling(anotherContext);
-                    anotherContext.stopped;
+                    if ( !Firebug.Chromebug.isChromebugURL(anotherContext.getName()) )
+                    {
+                        if (FBTrace.DBG_UI_LOOP)
+                            FBTrace.sysout("ChromeBugPanel.onStop suppressing context: "+(anotherContext?anotherContext.getName():null));
+                        Firebug.Debugger.suppressEventHandling(anotherContext);
+                        anotherContext.suppressed = true;
+                        anotherContext.stopped;
+                    }
                 }
             }
         });
@@ -1040,8 +1044,9 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             delete anotherContext.stopped;
             delete anotherContext.debugFrame;
-            if (anotherContext != context)
+            if (anotherContext != context && anotherContext.suppressed)
                 Firebug.Debugger.unsuppressEventHandling(anotherContext);
+            delete anotherContext.suppressed;
         });
 
         FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
