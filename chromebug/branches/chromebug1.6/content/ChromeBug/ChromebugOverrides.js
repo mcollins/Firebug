@@ -186,6 +186,14 @@ var ChromebugOverrides = {
         var sourceFile = ChromebugOverrides._getSourceFileByScript( context, script );
         if (!sourceFile)
         {
+        	// Hack to workaround some enumerateScript bugs
+        	sourceFile = context.sourceFileMap[script.fileName];
+        	if (sourceFile && sourceFile.compilation_unit_type === "enumerated")
+        	{
+        		sourceFile.innerScripts[script.tag] = script;
+        		return sourceFile;
+        	}
+
             sourceFile = Firebug.Chromebug.eachContext(function visitContext(context)
             {
                 var rc = ChromebugOverrides._getSourceFileByScript( context, script );
