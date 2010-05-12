@@ -149,7 +149,14 @@ var ChromebugOverrides = {
                 global = Firebug.Chromebug.getGlobalByFrame(frame);
 
             if (global)
-                context = Firebug.Chromebug.getOrCreateContext(global, frame.script.fileName);
+            {
+            	var name = safeGetWindowLocation(global);
+            	if (Firebug.Chromebug.isChromebugURL(name)) // if the frame was compiled in chromebug, ignore it
+            		return null;
+
+            	context = Firebug.Chromebug.getOrCreateContext(global, frame.script.fileName);
+            }
+
         }
         if (context)
         {
@@ -322,6 +329,7 @@ function overrideFirebugFunctions()
         //top.Firebug.chrome.getLocationProvider = ChromebugOverrides.getLocationProvider;
         top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
+        top.Firebug.chrome.getCurrentURI = bind(Firebug.Chromebug.getCurrentURI, Firebug.Chromebug);
 
         // Override with added function: set the toolbar to match FirebugContext
         ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;

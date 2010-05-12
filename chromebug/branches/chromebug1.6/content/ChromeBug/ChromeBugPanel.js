@@ -69,7 +69,7 @@ const statusText = $("cbStatusText");
 
 Firebug.Chromebug = extend(Firebug.Module,
 {
-    // This is our interface to TabWatcher
+    // This is our interface to TabWatcher, total hack.
     fakeTabBrowser: {browsers: []},
 
     getBrowsers: function()
@@ -80,6 +80,11 @@ Firebug.Chromebug = extend(Firebug.Module,
     getCurrentBrowser: function()
     {
         return this.fakeTabBrowser.selectedBrowser;
+    },
+
+    getCurrentURI: function()
+    {
+    	return Firebug.Chromebug.getCurrentBrowser().currentURI;
     },
 
     onXULWindowAdded: function(xul_window, outerDOMWindow)
@@ -1008,7 +1013,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (callingContext && !callingContext.stopped)
             {
                 if (FBTrace.DBG_UI_LOOP)
-                    FBTrace.sysout("ChromeBugPanel.onStop stopping context: "+(callingContext?callingContext.getName():null));
+                    FBTrace.sysout("ChromeBugPanel.onStop marking context: "+(callingContext?callingContext.getName():null));
                 callingContext.stopped = true;
                 callingContext.debugFrame = calledFrame;
             }
