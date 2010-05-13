@@ -34,9 +34,13 @@ function runTest()
 }
 
 // ************************************************************************************************
+// Test logic implementation. The entire test takes > 10 sec to execute so, there must be
+// some log/trace messages during the execution to break test-timeout.
 
 function test0(callback)
 {
+    FBTest.progress("issue2122; Console panel selected, start logging.");
+
     executeTest(theWindow, function()
     {
         scrollToTop();
@@ -46,12 +50,16 @@ function test0(callback)
 
 function test1(callback)
 {
+    FBTest.progress("issue2122; Select HTML panel");
+
     FBTestFirebug.selectPanel("html");
     callback();
 };
 
 function test2(callback)
 {
+    FBTest.progress("issue2122; HTML panel selected, start logging.");
+
     executeTest(theWindow, function()
     {
         FBTestFirebug.selectPanel("console");
@@ -61,6 +69,8 @@ function test2(callback)
 
 function test3(callback)
 {
+    FBTest.progress("issue2122; Console panel selected, check scroll position.");
+
     FBTest.ok(isScrolledToTop(), "The Console panel must be scrolled to the top.");
     callback();
 }
