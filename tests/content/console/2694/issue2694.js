@@ -12,8 +12,6 @@ function runTest()
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableConsolePanel(function()
         {
-            FBTestFirebug.selectPanel("console");
-
             executeSetOfCommands(40, function() {
                 FBTest.ok(isScrolledToBottom(), "The Console panel must be scrolled to the bottom.");
                 FBTestFirebug.testDone("issue2694; DONE");
