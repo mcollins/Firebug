@@ -2,22 +2,16 @@
 <html>
 <head>
     <title>Test Case for Issue #2160</title>
-    <link rel="stylesheet" type="text/css" href="soria.css" />
-
     <script type="text/javascript">
-        djConfig = {
-            isDebug: true,
-            parseOnLoad: false,
-            require: [
-                'dojo.parser'  
-            ],
-            addOnLoad: function() {
-                console.log('Doing addOnLoad...');
-                dojo.parser.parse();
-            }
-        };
+        function onLoad()
+        {
+            for (var i = 0; i < 300; ++i)
+              console.log(i);
+
+            console.log("Doing addOnLoad...");
+        }
+        window.addEventListener("load", onLoad, true);
     </script>
-    <script type="text/javascript" src="dojo.xd.js"></script>
 </head>
 <body>
 
@@ -29,12 +23,9 @@
 <i>Jan Odvarko, odvarko@gmail.com</i>
 </p>
 
-<i>Make sure there is <b>only one</b> tab with this test opened in the browser window.</i>
-
 <ol>
-<li>Open Firebug, enable & select the Console panel.</li>
-<li>Ensure the Console has <span style="color:green">Show CSS Errors</span> enabled.</li>
-<li>Reload the test page.</li>
+<li>Open Firebug, enable and select the Console panel.</li>
+<li>Reload the test page. You should see bunch of logs in the panel.</li>
 <li>Scroll the Console panel to the top.</li>
 <li>Reload: the content must be again scrolled at the top.</li>
 <li>Scroll the Console panel to the bottom.</li>

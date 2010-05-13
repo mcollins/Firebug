@@ -2,17 +2,12 @@ function runTest()
 {
     FBTest.sysout("issue2160.START");
 
-    // Show CSS errors for this test.
-    FBTestFirebug.setPref("showCSSErrors", true);
-
     FBTestFirebug.openNewTab(basePath + "console/2160/issue2160.html", function(win)
     {
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableConsolePanel(function()
         {
             FBTestFirebug.selectPanel("console");
-
-            theWindow = win;
 
             var tests = [];
             tests.push(test1);
@@ -30,22 +25,22 @@ function runTest()
 function test1(callback)
 {
     scrollToTop();
+
+    // Must be still at the top after reload.
     reload(function()
     {
         FBTest.ok(isScrolledToTop(), "The Console content must be scrolled to the top");
-        scrollToBottom();
         callback();
     });
 }
 
 function test2(callback)
 {
+    scrollToBottom();
+
+    // Must be still at the bottom after reload.
     reload(function()
     {
-        var panelNode = FBTestFirebug.getPanel("console").panelNode;
-        FBTest.progress("scroll position: " + panelNode.scrollTop + ", " +
-            panelNode.scrollHeight + ", " + panelNode.scrollOffset);
-
         FBTest.ok(isScrolledToBottom(), "The Console content must be scrolled to the bottom");
         callback();
     });
