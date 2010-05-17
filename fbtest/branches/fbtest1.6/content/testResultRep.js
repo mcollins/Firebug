@@ -467,13 +467,17 @@ FBTestApp.TestResultTabView = domplate(
 
             if (this.isImage(result.expected))
                 this.insertImage(result.expected, expectedNode);
-            else
+            else if (this.isXml(result.expected))
                 this.insertXml(result.expected, expectedNode);
+            else
+                this.insertText(result.expected, expectedNode);
 
             if (this.isImage(result.result))
                 this.insertImage(result.result, actualNode);
-            else
+            else if (this.isXml(result.expected))
                 this.insertXml(result.result, actualNode);
+            else
+                this.insertText(result.result, actualNode);
 
             // The diff is generated only if there are any differences.
             if (result.expected != result.result) {
@@ -496,6 +500,11 @@ FBTestApp.TestResultTabView = domplate(
     isImage: function(text)
     {
         return (text && text.indexOf("data:image/") == 0);
+    },
+
+    isXml: function(text)
+    {
+        return text && text.indexOf("<") == 0;
     },
 
     onSwitchView: function(event)
@@ -576,6 +585,11 @@ FBTestApp.TestResultTabView = domplate(
         for (var i=0; i<docElem.childNodes.length; i++)
             Firebug.HTMLPanel.CompleteElement.getNodeTag(docElem.childNodes[i]).
                 append({object: docElem.childNodes[i]}, parentNode);
+    },
+
+    insertText: function(data, parentNode)
+    {
+        insertWrappedText(data, parentNode);
     },
 
     insertImage: function(data, parentNode)
