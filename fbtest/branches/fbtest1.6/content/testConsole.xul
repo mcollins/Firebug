@@ -136,8 +136,8 @@
 
     <hbox id="toAllowScrollBarsIGuess" flex="3">
         <vbox flex="3">
-            <browser id="taskBrowser" src="" flex="1"
-                 disablehistory="true" contextmenu="fbContextMenu"
+            <browser id="taskBrowser" src="" flex="1" type="content-primary"
+                disablehistory="true" contextmenu="fbContextMenu"
                 tooltip="fbTooltip"/>
 
             <findbar id="FindToolbar" browserid="taskBrowser"/>
