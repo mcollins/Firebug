@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for console object</title>
+</head>
+<body>
+
+<h1>Console object API: table</h1>
+
+<p>This test-case is intended for <b>console.table</b> method.
+<br/>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+</p>
+
+<ol>
+<li>Open Firebug and enable the Console panel.</li>
+<li>Click on the <code style="color:green">Execute Test</code> button below.</li>
+<li>The console should display two dimensional array using tabular layout.</li>
+</ol>
+
+<button id="testButton" onclick="onExecuteTest()">Execute Test</button>
+<br/><br/>
+
+<script type="text/javascript">
+function onExecuteTest()
+{
+    var array2d = [];
+    
+    var header = [];
+    for (var i=0; i<5; i++)
+        header.push("Col " + (i+1));
+
+    array2d.push(header);
+
+    for (var i=0; i<19; i++)
+    {
+        var arr = [];
+        for (var j=0; j<5; j++)
+        {
+            if (j == 1)
+                arr.push(i+j);
+            else if (j == 2)
+                arr.push(String.fromCharCode(65+i));
+            else
+                arr.push("item[" + j + ", " + i + "]");
+        }
+        array2d.push(arr);
+    }
+
+    array2d[1][0] = "This is a long very long string longer then others.";
+    array2d[2][0] = onExecuteTest;
+    array2d[3][0] = [1,2.3];
+    array2d[3][3] = 54;
+
+    var arr = [];
+    for (var i=0; i<20; i++)
+        arr.push(i);
+
+    array2d[6][4] = arr;
+
+    var arr2 = [];
+    for (var i=0; i<20; i++)
+        arr2.push("item " + i);
+
+    array2d[10][3] = arr2;
+    array2d[11][3] = arr2;
+
+    array2d[8][4] = document.getElementById("testButton");
+
+    array2d[1][3] = null;
+    delete array2d[3][3];
+
+    var empty = [];
+    console.table("This is two dimensional array ", array2d);
+}
+</script>
+  
+</body>
+</html>
