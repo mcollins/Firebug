@@ -4,7 +4,7 @@
 <?xul-overlay href="chrome://browser/content/baseMenuOverlay.xul"?>
 
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
-<?xml-stylesheet href="chrome://fb4cb/content/firebug.css"?>
+<?xml-stylesheet href="chrome://chromebug/content/fb4cb.css"?>
 <?xml-stylesheet href="chrome://firebug/skin/window.css"?>
 <!-- This triggers initialize, maybe after load?? -->
 <?xml-stylesheet href="chrome://chromebug/content/chromebug.css"?>
