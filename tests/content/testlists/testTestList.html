@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <title>Firebug 1.6 Test List</title>
+    <script type="text/javascript" src="testListUtils.js"></script>
+    <link rel="stylesheet" href="testList.css" type="text/css"/>
+<!--
+        // Some CSS from Firebug namespace.
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css"));
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
+        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/console.css"));
+ -->
+    <link rel="stylesheet" href="styles/testConsole.css" type="text/css"/>
+    <link rel="stylesheet" href="styles/testList.css" type="text/css"/>
+    <link rel="stylesheet" href="styles/testResult.css" type="text/css"/>
+    <link rel="stylesheet" href="styles/tabView.css" type="text/css"/>
+</head>
+<script type="text/javascript">
+/**
+ * Root directory of the test tree. If it's empty, the parent directory of this file
+ * is used as the test root directory.
+ */
+var driverBaseURI = getDriverBaseURI();
+var serverURI = driverBaseURI;
+
+/**
+ * List of registered tests.
+ * @param: {String} group       Name of the group where the test belongs to.
+ * @param: {String} uri         Relative location of the test file.
+ * @param: {String} desc        Test description.
+ * @param: {String} category    Test category, this can be set to:
+ *                              "passes": (default) - a test must pass, otherwise it's a blocking bug.
+ *                              "fails": - it's not blocking bug if the test fails.
+ * @param: {String} testPage    Relative location of the test page [optional]. This is useful for manual
+ *                              opening of the test page from FBTest console (context menu "Open Test Page").
+ * @param: {String} os          Target OS [optional]. Used to specify target OS where the test
+ *                              should be applied. Can be combination of following: win|mac|linux
+ *                              (separated by '|'). If not specified, the test is intended for all.
+ *                              Test, which is not targeted for the current OS is marked as "fails".
+ */
+var testList = [
+    {group: "script",  uri: "script/2279/errorBreakpoints.js",         desc: "Issue 2279; Error Breakpoint can't be toggled off.", testPage: "script/2279/testErrorBreakpoints.html" },
+    {group: "script",  uri: "script/1425/issue1425.js",                desc: "Issue1425: New Crippling Bug in 1.4a12 - Script source is incomplete for some JavaScripts", testPage: "script/1425/issue1425.html"},
+    {group: "commandLine", uri: "commandLine/profile.js",        desc: "Verify command line profile & profileEnd API.", testPage: "commandLine/profile.html" },
+    {group: "commandLine", uri: "commandLine/2934/issue2934.js", desc: "1.6a7 console and auto-complete (needs 'window.' prefix)", testPage: "commandLine/2934/issue2934.html" },
+];
+</script>
+<body>
+<h1> Test List</h1>
+<div><span>Test driver base URI: </span><span id="driverURI"></span></div>
+<div><span>Test case base URI: </span><span id="testcaseURI"></span></div>
+<h2>Test Groups</h2>
+<div id="tests"></div>
+
+</body>
+</html>
