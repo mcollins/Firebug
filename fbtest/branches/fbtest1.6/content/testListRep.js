@@ -42,23 +42,23 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
             TD({"class": "groupBodyCol", colspan: 1})
         ),
 
-    getGroupName: function(group) 
+    getGroupName: function(group)
     {
         var n = group.name;
         return n.charAt(0).toUpperCase() + n.substr(1).toLowerCase();
     },
 
-    getGroupCount: function(group) 
+    getGroupCount: function(group)
     {
         return "(" + group.tests.length + ")";
     },
 
-    onGroupClick: function(event) 
+    onGroupClick: function(event)
     {
-        if (isLeftClick(event)) 
+        if (isLeftClick(event))
         {
             var row = getAncestorByClass(event.target, "testGroupRow");
-            if (row) 
+            if (row)
             {
                 cancelEvent(event);
                 FBTestApp.TestRunner.runTests(row.repObject.tests);
@@ -68,10 +68,10 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
 
     onClick: function(event)
     {
-        if (isLeftClick(event)) 
+        if (isLeftClick(event))
         {
             var row = getAncestorByClass(event.target, "testGroupRow");
-            if (row) 
+            if (row)
             {
                 this.toggleRow(row);
                 cancelEvent(event);
@@ -98,7 +98,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
             return;
 
         toggleClass(row, "opened");
-        if (hasClass(row, "opened")) 
+        if (hasClass(row, "opened"))
         {
             var group = row.repObject;
             var infoBodyRow = this.groupBodyTag.insertRows({group: group}, row)[0];
@@ -222,37 +222,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
     {
         try
         {
-            var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
-            var currLocale = Firebug.getPref("general.useragent", "locale");
-            var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
-            var name = systemInfo.getProperty("name");
-            var version = systemInfo.getProperty("version");
-
-            // Store head info.
-            var text =
-                "FBTest: " + FBTestApp.TestConsole.getVersion() + "\n" +
-                "Firebug: " + Firebug.version + "\n" +
-                appInfo.name + ": " + appInfo.version + ", " +
-                appInfo.platformVersion + ", " +
-                appInfo.appBuildID + ", " + currLocale + "\n" +
-                "OS: " + name + " " + version + "\n" +
-                "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
-                "Export Date: " + (new Date()).toGMTString() +
-                "\n==========================================\n\n";
-
-            var groups = FBTestApp.TestConsole.groups;
-
-            text += "Summary:\n";
-
-            for (group in groups)
-                text += groups[group].getErrors(false);
-
-            text += "\n";
-            text += "Detailed Report:\n";
-
-            for (group in groups)
-                text += groups[group].getErrors(true);
-
+        	var text = FBTestApp.TestConsole.getErrorSummaryText();
             copyToClipboard(text);
         }
         catch (err)
@@ -260,7 +230,9 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
             if (FBTrace.DBG_ERRORS || FBTrace.DBG_FBTEST)
                 FBTrace.sysout("fbtrace.FBTestApp.GroupList; onCopyAllErrors EXCEPTION", err);
         }
-    }
+    },
+
+
 });
 
 //-------------------------------------------------------------------------------------------------
@@ -274,7 +246,7 @@ FBTestApp.TestList = domplate(
 
     rowTag:
         FOR("test", "$tests",
-            TR({"class": "testListRow", _repObject: "$test", 
+            TR({"class": "testListRow", _repObject: "$test",
                 $results: "$test|hasResults",
                 $error: "$test|hasError",
                 $todo: "$test|isTodo"},
@@ -359,7 +331,7 @@ FBTestApp.TestList = domplate(
             return;
 
         toggleClass(row, "opened");
-        if (hasClass(row, "opened")) 
+        if (hasClass(row, "opened"))
         {
             var test = row.repObject;
             var infoBodyRow = this.rowBodyTag.insertRows({test: test}, row)[0];
@@ -555,7 +527,7 @@ FBTestApp.Test = function(group, uri, desc, category, testPage)
     if (category != "passes" && category != "fails")
     {
         if (FBTrace.DBG_ERRORS || FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbrace.FTestApp.Test; Wrong category for a test: " + 
+            FBTrace.sysout("fbrace.FTestApp.Test; Wrong category for a test: " +
                 category + ", " + uri);
     }
 

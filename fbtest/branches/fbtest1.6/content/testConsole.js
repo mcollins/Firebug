@@ -311,9 +311,11 @@ FBTestApp.TestConsole =
 
     processTestList: function(doc, testListPath)
     {
-        this.addStyleSheets(doc);
+    	var win = unwrapObject(doc.defaultView);
+    	if (!win.testList)
+            return;
 
-        var win = unwrapObject(doc.defaultView);
+    	this.addStyleSheets(doc);
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.loadTestList; processTestList " + win.driverBaseURI +
@@ -340,13 +342,6 @@ FBTestApp.TestConsole =
             FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + this.driverBaseURI +
                 ", serverURI " + this.testCasePath);
 
-        if (!win.testList)
-        {
-            if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("fbtest.refreshTestList; ERROR testList is missing in: " +
-                    testListPath, win);
-            return;
-        }
 
         // Create group list from the provided test list. Also clone all JS objects
         // (tests) since they come from untrusted content.
@@ -393,6 +388,45 @@ FBTestApp.TestConsole =
         // -runFBTests argument on the command line.
         this.autoRun();
 
+    },
+
+    /*
+     * @return newline delinated text summary of the test run
+     */
+    getErrorSummaryText: function()
+    {
+        var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+        var currLocale = Firebug.getPref("general.useragent", "locale");
+        var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
+        var name = systemInfo.getProperty("name");
+        var version = systemInfo.getProperty("version");
+
+        // Store head info.
+        var text =
+            "FBTest: " + FBTestApp.TestConsole.getVersion() + "\n" +
+            "Firebug: " + Firebug.version + "\n" +
+            appInfo.name + ": " + appInfo.version + ", " +
+            appInfo.platformVersion + ", " +
+            appInfo.appBuildID + ", " + currLocale + "\n" +
+            "OS: " + name + " " + version + "\n" +
+            "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
+            "Export Date: " + (new Date()).toGMTString() +
+            "\n==========================================\n\n";
+
+        var groups = FBTestApp.TestConsole.groups;
+
+        text += "Summary:\n";
+
+        for (group in groups)
+            text += groups[group].getErrors(false);
+
+        text += "\n";
+        text += "Detailed Report:\n";
+
+        for (group in groups)
+            text += groups[group].getErrors(true);
+
+        return text;
     },
 
     /**
