@@ -300,12 +300,14 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
 
         count = urls.length;
 
-        var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
-            .getService(Components.interfaces.nsIXPInstallManager);
-
         progress("Installing "+count+" extensions");
 
-        xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.SwarmBuild.nsIXPIProgressDialog);
+        if (count)
+        {
+            var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
+                .getService(Components.interfaces.nsIXPInstallManager);
+            xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.SwarmBuild.nsIXPIProgressDialog);
+        }
     },
 });
 
@@ -315,7 +317,7 @@ Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallSt
 {
     onStepEnds: function(doc, step, element)
     {
-        if (step !== Swarm.Installer.swarmInstallAndCheckStep)
+        if (step !== "swarmInstallAndCheckStep")
             return;
 
         Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
@@ -326,6 +328,10 @@ Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallSt
         });
         if (todo.length)
             window.alert(todo.length +" extension"+(todo.length==1?'':'s')+" can not be installed");
+        else
+        {
+            Swarm.workflowMonitor.stepWorkflows(doc, "swarmInstallAndCheckStep");
+        }
     },
 });
 
