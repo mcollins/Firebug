@@ -211,6 +211,10 @@ FBTestApp.TestConsole =
         this.testListPath = $("testListUrlBar").testURL;
         this.testCasePath = $("testCaseUrlBar").testURL;
         this.driverBaseURI = $("testDriverUrlBar").testURL;
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.updatePaths; " + this.testListPath + ", " +
+                this.testCasePath + ", " + this.driverBaseURI);
     },
 
     updateURLBars: function()
@@ -277,7 +281,9 @@ FBTestApp.TestConsole =
         var taskBrowser = $("taskBrowser");
         function onTaskFrameLoaded(event)
         {
-            FBTrace.sysout("onTaskFrameLoaded "+event.target, event.target);
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("onTaskFrameLoaded "+event.target, event.target);
+
             if (event.target.getAttribute('id') === "FBTest")
             {
                 FBTestApp.TestConsole.processTestList(event.target.contentDocument, testListPath);
@@ -289,7 +295,8 @@ FBTestApp.TestConsole =
 
         function onTaskWindowLoaded(event)
         {
-            FBTrace.sysout("onTaskWindowLoaded "+event.target, event.target);
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("onTaskWindowLoaded "+event.target, event.target);
 
             FBTestApp.TestConsole.processTestList(event.target, testListPath);
             taskBrowser.removeEventListener("load", onTaskWindowLoaded, true);
@@ -304,33 +311,34 @@ FBTestApp.TestConsole =
 
     processTestList: function(doc, testListPath)
     {
-        FBTestApp.TestConsole.addStyleSheets(doc);
+        this.addStyleSheets(doc);
 
-        var win = doc.defaultView;
-        FBTrace.sysout("processTestList for "+win);
+        var win = unwrapObject(doc.defaultView);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.loadTestList; processTestList " + win.driverBaseURI +
+                ", serverURI " + win.testCasePath, win);
 
         if (win.driverBaseURI)
         {
-            FBTestApp.TestConsole.driverBaseURI = win.driverBaseURI;
+            this.driverBaseURI = win.driverBaseURI;
         }
         else
         {
             // If the driverBaseURI isn't provided use the directory where testList.html
             // file is located.
-            FBTestApp.TestConsole.driverBaseURI = "https://getfirebug.com/tests/content/"; //testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
+            //testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
+            this.driverBaseURI = "https://getfirebug.com/tests/content/";
         }
 
         if (win.serverURI)
-            FBTestApp.TestConsole.testCasePath = win.serverURI;
+            this.testCasePath = win.serverURI;
         else
-            FBTestApp.TestConsole.testCasePath = "https://getfirebug.com/tests/content/";
+            this.testCasePath = "https://getfirebug.com/tests/content/";
 
         if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + FBTestApp.TestConsole.driverBaseURI +
-                ", serverURI " + FBTestApp.TestConsole.testCasePath);
-
-        if (win.wrappedJSObject)
-            win = win.wrappedJSObject;
+            FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + this.driverBaseURI +
+                ", serverURI " + this.testCasePath);
 
         if (!win.testList)
         {
@@ -343,19 +351,19 @@ FBTestApp.TestConsole =
         // Create group list from the provided test list. Also clone all JS objects
         // (tests) since they come from untrusted content.
         var map = [];
-        FBTestApp.TestConsole.groups = [];
+        this.groups = [];
         for (var i=0; i<win.testList.length; i++)
         {
             var test = win.testList[i];
 
             // If the test isn't targeted for the current OS, mark it as "fails".
-            if (!FBTestApp.TestConsole.isTargetOS(test))
+            if (!this.isTargetOS(test))
                 test.category = "fails";
 
             var group = map[test.group];
             if (!group)
             {
-                FBTestApp.TestConsole.groups.push(group = map[test.group] =
+                this.groups.push(group = map[test.group] =
                     new FBTestApp.TestGroup(test.group));
             }
 
@@ -367,23 +375,23 @@ FBTestApp.TestConsole =
                 test.desc, test.category, test.testPage));
         }
 
-        FBTestApp.TestConsole.notifyObservers(FBTestApp.TestConsole, "fbtest", "restart")
+        this.notifyObservers(this, "fbtest", "restart")
 
         // Build new test list UI.
-        FBTestApp.TestConsole.refreshTestList();
+        this.refreshTestList();
 
         // Remember successfully loaded test within test history.
-        FBTestApp.TestConsole.appendToHistory(testListPath, FBTestApp.TestConsole.testCasePath, FBTestApp.TestConsole.driverBaseURI);
+        this.appendToHistory(testListPath, this.testCasePath, this.driverBaseURI);
 
-        FBTestApp.TestConsole.updateURLBars();
+        this.updateURLBars();
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
-                testListPath + ", " + FBTestApp.TestConsole.testCasePath);
+                testListPath + ", " + this.testCasePath);
 
         // Finally run all tests if the browser has been launched with
         // -runFBTests argument on the command line.
-        FBTestApp.TestConsole.autoRun();
+        this.autoRun();
 
     },
 
