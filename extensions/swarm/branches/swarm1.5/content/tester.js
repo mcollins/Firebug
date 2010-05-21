@@ -159,6 +159,17 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
         });
     },
 
+    onStepEnds: function(doc, step, element)
+    {
+        if (step !== "swarmRunAllTestsStep")
+            return;
+
+        var text = FBTestApp.TestConsole.getErrorSummaryText();
+
+        Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");
+
+    },
+
     destroy: function(doc)
     {
         this.unmonitorStates(doc, this.progress);
