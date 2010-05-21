@@ -1,3 +1,6 @@
+/**
+ * This test is intended to verify various usage of console.table() method.
+ */
 function runTest()
 {
     FBTest.sysout("console.table.START");
@@ -6,14 +9,103 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var config = {tagName: "div", classes: "logRow logRow-table"};
-            FBTest.waitForDisplayedElement("console", config, function(row)
-            {
+            var doc = win.document;
+
+            // #1 table with 3 columns, 2 rows and specified text content.
+            var table1 = {cols: 3, rows: 2, content: "abc234345"};
+
+            // #2 table with 4 columns, 4 rows and specified text content.
+            var text = "FirstLastAgeDesc\"Susan\"\"Doyle\"32\"mother\"\"John\"\"Doyle\"33\"father\"\"Lily\"\"Doyle\"5undefined\"Mike\"\"Doyle\"8undefined";
+            var table2 = {cols: 4, rows: 4, content: text};
+
+            // #3 table with 1 column, 2 rows and specified text content.
+            var table3 = {cols: 1, rows: 3, content: "header\"propA\"\"propB\"\"propC\""};
+
+            var tasks = new FBTest.TaskList();
+            tasks.push(executeTest, "testButton1", doc, null, [table1]);
+            tasks.push(executeTest, "testButton2", doc, null, [table2]);
+            tasks.push(executeTest, "testButton3", doc, null, [table1, table2]);
+            tasks.push(executeTest, "testButton4", doc, "My family", [table2]);
+            tasks.push(executeTest, "testButton5", doc, "Two tables", [table1, table2]);
+            tasks.push(executeTest, "testButton6", doc, "Simple Object", [table3]);
+
+            tasks.run(function() {
                 FBTest.testDone("console.table.DONE");
             });
-
-            // Execute test implemented on the test page.
-            FBTest.click(win.document.getElementById("testButton"));
         });
     });
+}
+
+/**
+ * Execute specified test on the test page.
+ * @param {Object} callback Called when individual test/task is finished.
+ * @param {Object} doc Test page document.
+ * @param {Object} title Expected title in case of expandable groups.
+ * @param {Object} expected Expected layout (number of rows and cols + text content).
+ */
+function executeTest(callback, buttonId, doc, title, expected)
+{
+    var config = {tagName: "div", classes: "logRow logRow-table"};
+    FBTest.waitForDisplayedElement("console", config, function(row)
+    {
+        if (title)
+        {
+            var titleNode = row.querySelector(".logGroupLabel");
+            FBTest.ok(titleNode, "Group title must be available.");
+            FBTest.ok(titleNode.textContent, "Group title must be: " + title);
+            FBTest.mouseDown(titleNode);
+        }
+
+        verifyLogBody(row, expected);
+
+        // Next test please.
+        callback();
+    });
+
+    // Click the test button on the page.
+    FBTest.click(doc.getElementById(buttonId));
+}
+
+/**
+ * Verify log body (can contain more tables).
+ */
+function verifyLogBody(logRow, expected)
+{
+    var tables = logRow.querySelectorAll(".profileTable");
+    FBTest.compare(expected.length, tables.length, "There must be " +
+        expected.length + " table(s).");
+
+    for (var i=0; i<expected.length; i++)
+    {
+        var e = expected[i];
+        if (!verifyTableLayout(tables[i], e.cols, e.rows, e.content))
+        {
+            FBTest.testDone("console.table.FAIL");
+            return;
+        }
+    }
+}
+
+/**
+ * Helper output verificator
+ * @param {Object} table The root table element.
+ * @param {Object} cols Number of expected columns.
+ * @param {Object} rows Number of expected rows.
+ * @param {Object} textContent Expected textual content.
+ */
+function verifyTableLayout(table, cols, rows, textContent)
+{
+    FBTest.compare(table.textContent, textContent, "Verify expected text content.");
+
+    var head = table.querySelector(".profileThead");
+    var body = table.querySelector(".profileTbody");
+
+    if (!FBTest.ok(table && body, "Table header and body must be available."))
+        return false;
+
+    FBTest.compare(1, head.childNodes.length, "The header must have one row.");
+    FBTest.compare(cols, head.firstChild.childNodes.length, "There must be " + cols + " columns.");
+    FBTest.compare(rows, body.childNodes.length, "There must be " + rows + " rows.");
+
+    return true;
 }
