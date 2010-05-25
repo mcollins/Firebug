@@ -45,20 +45,19 @@ body {
 </style>
 </head>
 <body>
-<h1 class="swarmTitle">Certified Extension Installation</h1>
+<!-- This template resembles shell.html but it is for the results -->
+<h1 class="swarmTitle">Swarm Installation</h1>
 
-<div id="basicSwarmUI" class="swarmUI swarmActive">
-<div class="firebug signed swarm"><!-- The nextSibling must be the signature -->
-<div class="certification">
-
-<!-- The content between the ending right angle bracket of this div and the beginning of its end tag will be replaced. -->
-
-</div>
-</div>
-<!-- The prevSibling.innerHTML is signed -->
-<div class="signature">Signature <span class="signatureHash" title="sha1:78fc1d2887eda35b4ad2e3a0b60120ca271ce6e6">Not </span>Verified</div>
+<!--  Extensions that make up this swarm.  -->
+<div class="swarmTaskData">
+<h2>These extensions were all tested together</h2>
+<iframe id="swarmDefinition" width="100%" name="swarmDefinition" src="basic.html"></iframe>
 </div>
 
-
+<!--  Tests that were applied and their results -->
+<div class="swarmTaskData">
+<h2>Test Results</h2>
+<iframe id="FBTest" width="100%" name="FBTestOutput" src=""></iframe>
+</div>
 </body>
 </html>
