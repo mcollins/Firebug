@@ -401,6 +401,13 @@ FBTestApp.TestConsole =
         var name = systemInfo.getProperty("name");
         var version = systemInfo.getProperty("version");
 
+        var extensionsText = "";
+        for (var i = 0; i < Application.extensions; i++)
+        {
+        	var extension = Applicaiton.extensions[i];
+        	extensionsText = "Extension: " + extension.name + " (" + extension.id +") version: "+extension.version+"\n";
+        }
+
         // Store head info.
         var text =
             "FBTest: " + FBTestApp.TestConsole.getVersion() + "\n" +
@@ -409,6 +416,7 @@ FBTestApp.TestConsole =
             appInfo.platformVersion + ", " +
             appInfo.appBuildID + ", " + currLocale + "\n" +
             "OS: " + name + " " + version + "\n" +
+            extensionsText + "\n" +
             "Test List: " + FBTestApp.TestConsole.testListPath + "\n" +
             "Export Date: " + (new Date()).toGMTString() +
             "\n==========================================\n\n";
