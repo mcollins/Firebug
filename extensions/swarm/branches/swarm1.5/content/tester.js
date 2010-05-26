@@ -164,10 +164,26 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
         if (step !== "swarmRunAllTestsStep")
             return;
 
-        var text = FBTestApp.TestConsole.getErrorSummaryText();
+        var testResult = FBTestApp.TestConsole.getErrorSummaryText();
+        var testResultAsDataURL = this.getDataURLForContent(testResult, "text/plain");
+
+        var swarmDefinition = doc.getElementById("swarmDefinition").contentDocument;
+        var swarmDefinitionAsDataURL = this.getDataURLForContent(swarmDefinition, "text/html");
 
         Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");
+    },
 
+    getDataURLForContent: function(content, mimetype, params)
+    {
+        // data:text/javascript;fileName=x%2Cy.js;baseLineNumber=10,<the-url-encoded-data>
+        var uri = "data:"+mimetype+";";
+        if (params)
+        {
+        	for (var p in params)
+        		uri += p +"="+encodeURIComponent(params[p])+",";
+        }
+        uri += encodeURIComponent(content);
+        return uri;
     },
 
     destroy: function(doc)

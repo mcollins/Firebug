@@ -88,7 +88,15 @@ Swarm.WorkflowStep =
             else
                 swarmTaskDataElements[i].classList.add("swarmTaskDataNotNeeded");
 
-            delete swarmTaskDataElements[i].style.height;
+            try
+            {
+            	delete swarmTaskDataElements[i].style.height;
+            }
+            catch (exc)
+            {
+            	FBTrace.sysout("showSwarmTaskData FAILS to delete style.height for "+swarmTaskDataElements[i], swarmTaskDataElements[i])
+            }
+
         }
 
         var header = doc.getElementById("swarmWorkflowInsertion");
