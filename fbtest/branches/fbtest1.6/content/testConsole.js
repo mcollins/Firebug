@@ -279,29 +279,9 @@ FBTestApp.TestConsole =
             this.testCasePath = testCasePath;
 
         var taskBrowser = $("taskBrowser");
-        function onTaskFrameLoaded(event)
-        {
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("onTaskFrameLoaded "+event.target, event.target);
 
-            if (event.target.getAttribute('id') === "FBTest")
-            {
-                FBTestApp.TestConsole.processTestList(event.target.contentDocument, testListPath);
-                taskBrowser.removeEventListener("DOMFrameContentLoaded", onTaskFrameLoaded, true);
-            }
-        }
-
-        taskBrowser.addEventListener("DOMFrameContentLoaded", onTaskFrameLoaded, true);
-
-        function onTaskWindowLoaded(event)
-        {
-            if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("onTaskWindowLoaded "+event.target, event.target);
-
-            FBTestApp.TestConsole.processTestList(event.target, testListPath);
-            taskBrowser.removeEventListener("load", onTaskWindowLoaded, true);
-        }
-        taskBrowser.addEventListener("load", onTaskWindowLoaded, true);
+        taskBrowser.addEventListener("DOMFrameContentLoaded", FBTestApp.TestConsole.onTaskFrameLoaded, true);
+        taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
 
         // Load test-list file into the content frame.
         taskBrowser.setAttribute("src", testListPath);
@@ -309,7 +289,30 @@ FBTestApp.TestConsole =
         this.updateURLBars();
     },
 
-    processTestList: function(doc, testListPath)
+    onTaskFrameLoaded: function(event)
+    {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("onTaskFrameLoaded "+event.target.getAttribute("id"), event.target);
+
+        if (event.target.getAttribute('id') === "FBTest")
+        {
+            FBTestApp.TestConsole.processTestList(event.target.contentDocument);
+            var taskBrowser = $("taskBrowser");
+            taskBrowser.removeEventListener("DOMFrameContentLoaded", FBTestApp.TestConsole.onTaskFrameLoaded, true);
+        }
+    },
+
+    onTaskWindowLoaded: function(event)
+    {
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("onTaskWindowLoaded "+event.target.location, event.target);
+
+        FBTestApp.TestConsole.processTestList(event.target);
+        var taskBrowser = $("taskBrowser");
+        taskBrowser.removeEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
+    },
+
+    processTestList: function(doc)
     {
     	var win = unwrapObject(doc.defaultView);
     	if (!win.testList)
@@ -376,13 +379,13 @@ FBTestApp.TestConsole =
         this.refreshTestList();
 
         // Remember successfully loaded test within test history.
-        this.appendToHistory(testListPath, this.testCasePath, this.driverBaseURI);
+        this.appendToHistory(this.testListPath, this.testCasePath, this.driverBaseURI);
 
         this.updateURLBars();
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
-                testListPath + ", " + this.testCasePath);
+                this.testListPath + ", " + this.testCasePath);
 
         // Finally run all tests if the browser has been launched with
         // -runFBTests argument on the command line.
