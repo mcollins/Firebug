@@ -13,120 +13,9 @@ const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBran
 const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
 // ************************************************************************************************
-// Monitors reloads in the FBTest window.
-// When a swarm is detected, prepare for swarm testing and certification
 
 top.Swarm.Tester =
 {
-    // initialization -------------------------------------------------------------------
-
-    /*
-     * Obtain the Public Key Infrastructure service.
-     * It may not be installed!
-     */
-    getKeyService: function()
-    {
-        if (!this.keyService)
-        {
-            try
-            {
-                var keyServiceClass = Cc["@toolkit.mozilla.org/keyservice;1"];
-                if (keyServiceClass)
-                    this.keyService = keyServiceClass.getService(Ci.nsIKeyService);
-                else
-                    this.downloadAndInstallKeyService();  // maybe we have to restart
-            }
-            catch(exc)
-            {
-                throw new Error("Failed to get nsIKeyService "+exc);
-            }
-        }
-
-        FBTrace.sysout("getKeyService "+this.keyService);
-
-        return this.keyService;
-    },
-
-    // User interface -------------------------------------------------------------------
-
-
-
-    showSwarmUI: function(doc, show)
-    {
-
-    },
-
-
-    // real work -------------------------------------------------------------------
-
-    installKeyServiceInstructionsURL: "chrome://swarm/content/installKeyService.html",
-    downloadAndInstallKeyService: function()
-    {
-        var componentsDir = this.getComponentsDirectory();
-        var taskBrowser = $("taskBrowser");
-        taskBrowser.addEventListener("load", function onInstructionsLoaded(event)
-        {
-            taskBrowser.removeEventListener("load",onInstructionsLoaded, true);
-
-            var doc = event.target;
-            var elt = doc.getElementById("openFBTestComponentDirectory");
-            elt.addEventListener("click", function onClickDirectory(event)
-            {
-                const nsIFilePicker = Ci.nsIFilePicker;
-
-                var fp = Cc["@mozilla.org/filepicker;1"]
-                               .createInstance(nsIFilePicker);
-                fp.init(window, "Dialog Title", nsIFilePicker.modeGetFolder);
-                fp.defaultString = componentsDir;
-                fp.appendFilters(nsIFilePicker.filterAll);
-
-                var rv = fp.show();
-
-            }, true);
-        }, true);
-        taskBrowser.setAttribute("src", installKeyServiceInstructionsURL);
-    },
-
-    getComponentsDirectory: function()
-    {
-        var fbtest = "fbtest@mozilla.com"; // the extension's id from install.rdf
-        var em = Cc["@mozilla.org/extensions/manager;1"].
-                 getService(Ci.nsIExtensionManager);
-        // the path may use forward slash ("/") as the delimiter
-        // returns nsIFile for the extension's install.rdf
-        var file = em.getInstallLocation(fbtest).getItemFile(fbtest, "components/");
-        return file.path;
-    },
-
-    // nsIWindowMediatorListener ------------------------------------------------------------------
-    onOpenWindow: function(xulWindow)
-    {
-        FBTrace.sysout("Swarm.Tester onOpenWindow");
-    },
-
-    onCloseWindow: function(xulWindow)
-    {
-        FBTrace.sysout("Swarm.Tester onCloseWindow");
-    },
-
-    onWindowTitleChange: function(xulWindow, newTitle)
-    {
-        FBTrace.sysout("Swarm.Tester onWindowTitleChange");
-        var docShell = xulWindow.docShell;
-        if (docShell instanceof Ci.nsIInterfaceRequestor)
-        {
-            var win = docShell.getInterface(Ci.nsIDOMWindow);
-            var location = safeGetWindowLocation(win);
-            FBTrace.sysout("Swarm.Tester onWindowTitleChange location: "+location);
-            if (location === "chrome://fbtest/content/testConsole.xul")
-            {
-                FBTrace.sysout("Swarm.Tester onWindowTitleChange FOUND at location "+location);
-                Swarm.Tester.addSigningButton(win.document);
-            }
-        }
-    },
-
-
 };
 
 // ----------------------------------------------------------------------------------
@@ -141,6 +30,8 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 
     onStepEnabled: function(doc, elt)
     {
+    	delete this.testResults;
+    	delete this.testedSwarmDefinition;
         this.showSwarmTaskData(doc, "FBTest");
     },
 
@@ -155,7 +46,12 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
         FBTestApp.TestConsole.onRunAll(function restoreButtonsAndGoToNextStep()
         {
             stopButton.setAttribute("disabled", "disabled");
-            FBTestApp.TestSummary.dumpSummary();
+
+            Swarm.Tester.testResults = FBTestApp.TestConsole.getErrorSummaryText();
+            Swarm.Tester.testedSwarmDefinition = getElementHTML(doc.getElementById("swarmDefinition").contentDocument);
+            Swarm.Tester.testedSwarmDefinitionURL = doc.getElementById("swarmDefinition").contentDocument.location +"";
+
+        	Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");
         });
     },
 
@@ -163,14 +59,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
     {
         if (step !== "swarmRunAllTestsStep")
             return;
-
-        var testResult = FBTestApp.TestConsole.getErrorSummaryText();
-        var testResultAsDataURL = this.getDataURLForContent(testResult, "text/plain");
-
-        var swarmDefinition = doc.getElementById("swarmDefinition").contentDocument;
-        var swarmDefinitionAsDataURL = this.getDataURLForContent(swarmDefinition, "text/html");
-
-        Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");
+        // the tests are async somehow
     },
 
     getDataURLForContent: function(content, mimetype, params)
@@ -284,18 +173,6 @@ Swarm.Tester.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
     },
 });
 
-Swarm.Tester.signPage = extend(Swarm.WorkflowStep,
-{
-    onStep: function(event, progress)
-    {
-        FBTrace.sysout("Swarm.Tester signPage ", event);
-        var keyservice = this.getKeyService();
-        FBTrace.sysout("Swarm.Tester doSigning keyservice: "+this.keyservice);
-        if (!keyservice)
-            return;
-        debugger;
-    },
-});
 
 
 // Secure download and hash calculation --------------------------------------------------------

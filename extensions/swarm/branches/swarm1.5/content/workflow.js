@@ -90,7 +90,9 @@ Swarm.WorkflowStep =
 
             try
             {
-            	delete swarmTaskDataElements[i].style.height;
+            	var iframe = swarmTaskDataElements[i].getElementsByTagName("iframe");
+            	if (iframe.style)
+            		delete iframe.style.height;
             }
             catch (exc)
             {
