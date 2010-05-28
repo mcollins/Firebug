@@ -90,13 +90,12 @@ Swarm.WorkflowStep =
 
             try
             {
-            	var iframe = swarmTaskDataElements[i].getElementsByTagName("iframe");
-            	if (iframe.style)
-            		delete iframe.style.height;
+            	var iframe = swarmTaskDataElements[i].getElementsByTagName("iframe")[0];
+            	iframe.removeAttribute('style');
             }
             catch (exc)
             {
-            	FBTrace.sysout("showSwarmTaskData FAILS to delete style.height for "+swarmTaskDataElements[i], swarmTaskDataElements[i])
+            	FBTrace.sysout("showSwarmTaskData FAILS to delete style.height for "+iframe+" "+exc, swarmTaskDataElements[i])
             }
 
         }
@@ -112,10 +111,9 @@ Swarm.WorkflowStep =
             if (!neededFrame)
                 throw new Error("showSwarmTaskData did not find element "+needed+" with id "+arguments[needed]);
 
-
             var frameWrapper = neededFrame.parentNode;
             frameWrapper.classList.remove("swarmTaskDataNotNeeded");
-            neededFrame.style.height = eachHeight +"px";
+            neededFrame.setAttribute('style',"height:"+ eachHeight +"px");
 
             needed++;
         }
@@ -206,6 +204,9 @@ Swarm.workflowMonitor =
             }
         }
 
+        // return the task data to default on
+        Swarm.WorkflowStep.showSwarmTaskData(doc);
+
         // enable some buttons in this workflow
         var selectedWorkflow = parent.getElementsByClassName("swarmWorkflow")[0];
 
@@ -227,9 +228,6 @@ Swarm.workflowMonitor =
         // mark the selector closed
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         swarmWorkflows.classList.add("swarmWorkflowIsSelected");
-
-        // return the task data to default on
-        Swarm.WorkflowStep.showSwarmTaskData(doc);
 
         // initialize the newly selected workflow
         this.dispatch("onWorkflowSelect", [doc, selectedWorkflow]);
