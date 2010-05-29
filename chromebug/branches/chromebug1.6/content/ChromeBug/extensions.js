@@ -94,9 +94,13 @@ Chromebug.ExtensionsPanel.prototype = extend(Firebug.DOMPanel.prototype,
         Firebug.DOMPanel.prototype.hide.apply(this, arguments);
     },
 
-    getOptionsMenuItems: function()
+    getContextMenuItems: function()
     {
          var items = [];
+         items.push(
+                 {label: "Add New Extension Link",
+                     command: bindFixed(this.addNewExtensionLink, this) }
+             );
          return items;
     },
 
@@ -104,7 +108,59 @@ Chromebug.ExtensionsPanel.prototype = extend(Firebug.DOMPanel.prototype,
     {
         if (FBTrace.DBG_CBWINDOW)
             FBTrace.sysout("Chromebug.ExtensionsPanel.onPrefChange; " + optionName + "=" + optionValue);
- },
+    },
+    
+    addNewExtensionLink: function()
+    {
+    	try
+    	{
+        	FBTrace.sysout("extensions.addNewExtensionLink ");
+        	// ask the user for the source folder
+        	var filePicker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
+        	filePicker.init(window, "Select the install.rdf file in the source folder you want to link", Ci.nsIFilePicker.modeOpen);
+        	filePicker.appendFilter("install.rdf", "install.rdf"); 
+
+        	var rv = filePicker.show();
+        	
+        	if (rv == Ci.nsIFilePicker.returnOK || rv == Ci.nsIFilePicker.returnReplace) 
+        	{
+        		var file = filePicker.file;
+          	  	FBTrace.sysout("extensions.addNewExtensionLink "+file.path);
+          	  	Components.utils.import("resource://firebug/storageService.js");
+          	  	var installRDF = TextService.readText(file);
+          	  	FBTrace.sysout("extensions.addNewExtensionLink read "+installRDF);
+          	  	var installRDF = installRDF.split('\n').join('');
+          	    FBTrace.sysout("extensions.addNewExtensionLink remove newlines "+installRDF);
+        	  	
+          	  	var reTargetApplication = /<[^>]*?targetApplication>.*?<[^>]*?targetApplication>/;
+          	  	var cleanup = installRDF.replace(reTargetApplication, "", 'gim');
+          	  	FBTrace.sysout("extensions.addNewExtensionLink remove targetApplication "+cleanup, cleanup.split(">"));
+          	  	
+          	  	var reId = /<[^>]*?id>(.*?)<[^>]*?id>/;
+          	  	var m = reId.exec(cleanup);
+          	  	if (m)
+          	  		var id = m[1];
+          	  	 
+          	  	if (!id)
+          	  	{
+          	  		window.alert("Did not find id in install.rdf, sorry");
+          	  		FBTrace.sysout("extensions.addNewExtensionLink FAILS to find id in "+cleanup, m);
+          	  	}
+          	  	FBTrace.sysout("extensions.addNewExtensionLink found id "+id);
+          	  	// Link files is just path to install.rdf directory in a file named by |id|
+          	  	var dir = TextService.getProfileDirectory();
+          	  	var link = TextService.getFileInDirectory(dir, "extensions/"+id);
+        	  	var result = TextService.writeText(link, file.parent.path);
+        	  	window.alert("wrote "+file.parent.path+" into file "+result);
+        	}
+    		
+    	}
+    	catch(exc)
+    	{
+    		FBTrace.sysout("extensions.addNewExtensionLink FAILS "+exc, exc);
+    	}
+    	
+    },
 });
 
 

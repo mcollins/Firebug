@@ -162,7 +162,9 @@ debugger;
 		if (typeof(TextService) != "undefined")
         {
 			var html = getElementHTML(template.documentElement);
-            var result = TextService.writeText(sourceLeafName, html);
+	        var file = TextService.getProfileDirectory();
+	        file = TextService.getFileInDirectory(file, "firebug/"+sourceLeafName);
+            var result = TextService.writeTextToFile(file, html);
             progress("exported to "+result)
         }
         else

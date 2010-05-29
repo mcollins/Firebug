@@ -20,7 +20,7 @@ function runTest() {
     {
         var restore = StorageService.getStorage(url);
 
-        FBTest.compare(restore.length, 1, "one item should be restored");
+        FBTest.compare(1, restore.length, "one item should be restored from "+url);
 
         var key = restore.key(0);
 
