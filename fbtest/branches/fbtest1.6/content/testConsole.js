@@ -279,14 +279,22 @@ FBTestApp.TestConsole =
             this.testCasePath = testCasePath;
 
         var taskBrowser = $("taskBrowser");
-
-        taskBrowser.addEventListener("DOMFrameContentLoaded", FBTestApp.TestConsole.onTaskFrameLoaded, true);
-        taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
+        taskBrowser.addEventListener("DOMContentLoaded", FBTestApp.TestConsole.onTaskWindowDOMLoaded, true);
 
         // Load test-list file into the content frame.
         taskBrowser.setAttribute("src", testListPath);
 
         this.updateURLBars();
+    },
+
+    onTaskWindowDOMLoaded: function(event)
+    {
+    	var taskBrowser = $("taskBrowser");
+        var fbTestFrame = event.target.getElementById("FBTest");
+        if (fbTestFrame)
+        	fbTestFrame.contentDocument.addEventListener("load", FBTestApp.TestConsole.onTaskFrameLoaded, true);
+        else
+        	taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
     },
 
     onTaskFrameLoaded: function(event)
