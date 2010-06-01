@@ -670,13 +670,14 @@ this.closeFirebugOnAllTabs = function()
 // ************************************************************************************************
 // Firebug Panel Enablement.
 
-this.updateModelState = function(model, callbackTriggersReload, enable)
+this.updateModelState = function(model, panelName, callbackTriggersReload, enable)
 {
     // Open Firebug UI
     this.pressToggleFirebug(true);
-
+    
     // Enable specified model.
     model.setDefaultState(enable);
+    FW.Firebug.PanelActivation.setDefaultState(panelName, enable);
 
     // Clear cache and reload.
     this.clearCache();
@@ -690,7 +691,7 @@ this.updateModelState = function(model, callbackTriggersReload, enable)
  */
 this.disableNetPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.NetMonitor, callback, false);
+    this.updateModelState(FW.Firebug.NetMonitor, "net", callback, false);
 }
 
 /**
@@ -699,7 +700,7 @@ this.disableNetPanel = function(callback)
  */
 this.enableNetPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.NetMonitor, callback, true);
+    this.updateModelState(FW.Firebug.NetMonitor, "net", callback, true);
 }
 
 /**
@@ -708,7 +709,7 @@ this.enableNetPanel = function(callback)
  */
 this.disableScriptPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Debugger, callback, false);
+    this.updateModelState(FW.Firebug.Debugger, "script", callback, false);
 }
 
 /**
@@ -717,7 +718,7 @@ this.disableScriptPanel = function(callback)
  */
 this.enableScriptPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Debugger, callback, true);
+    this.updateModelState(FW.Firebug.Debugger, "script", callback, true);
 }
 
 /**
@@ -726,7 +727,7 @@ this.enableScriptPanel = function(callback)
  */
 this.disableConsolePanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Console, callback, false);
+    this.updateModelState(FW.Firebug.Console, "console", callback, false);
 }
 
 /**
@@ -735,7 +736,7 @@ this.disableConsolePanel = function(callback)
  */
 this.enableConsolePanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Console, callback, true);
+    this.updateModelState(FW.Firebug.Console, "console", callback, true);
 }
 
 /**
