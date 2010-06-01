@@ -30,7 +30,7 @@ Swarm.WorkflowStep =
     /*
      * Called when the workflow system is loaded into the UI, on all steps
      * @param doc, the document containing the workflow UI
-     * @param progress, a place to post progress messages for users
+     * @param progress, a function taking a string, to post progress messages for users
      */
     initialize: function(doc, progress) {},
     /*

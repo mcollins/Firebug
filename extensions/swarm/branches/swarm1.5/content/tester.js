@@ -48,7 +48,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
             stopButton.setAttribute("disabled", "disabled");
 
             Swarm.Tester.testResults = FBTestApp.TestConsole.getErrorSummaryText();
-            Swarm.Tester.testedSwarmDefinition = getElementHTML(doc.getElementById("swarmDefinition").contentDocument);
+            Swarm.Tester.testedSwarmDefinition = getElementHTML(doc.getElementById("swarmDefinition").contentDocument.documentElement);
             Swarm.Tester.testedSwarmDefinitionURL = doc.getElementById("swarmDefinition").contentDocument.location +"";
 
         	Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");

@@ -89,16 +89,12 @@ top.Swarm.Exporter =
 // Handlers contributed to Swarm
 Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
 {
-    initializeUI: function(doc)
+    initialize: function(doc, progress)
     {
+		this.progress = progress;
     },
 
     onStepEnabled: function(doc, elt)
-    {
-        this.showSwarmTaskData(doc, "swarmCertification");
-    },
-
-    onStep: function(event, progress)
     {
     	if (!Swarm.Tester.testResults)
     	{
@@ -106,20 +102,29 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
     		alert("No Test Results to Export!");
     		return;
     	}
+    	this.progress("Found export document template frame");
+
+    	var template = this.getTemplate();
+        this.setSwarmDefined(template, this.progress);
+        this.setTestResults(template, this.progress);
+
+    	this.showSwarmTaskData(doc, "swarmCertification");
+    },
+
+    onStep: function(event, progress)
+    {
+    	var template = this.getTemplate();
+        this.doExport(template, progress);
+    },
+
+    getTemplate: function()
+    {
     	var taskBrowser = $("taskBrowser");
     	var templateFrame = taskBrowser.contentDocument.getElementById("swarmCertification");
     	if (!templateFrame)
-    	{
-    		progress("ERROR: exporter.js needs element id swarmCertification");
-    		return;
-    	}
-    	progress("Found export document template frame");
-
-    	var template = templateFrame.contentDocument;
-        this.setSwarmDefined(template, progress);
-        this.setTestResults(template, progress);
-
-        this.doExport(template, progress);
+    		this.progress("ERROR: exporter.js needs element id swarmCertification");
+    	else
+    		return templateFrame.contentDocument;
     },
 
     setSwarmDefined: function(template, progress)
@@ -131,7 +136,6 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
     		return;
     	}
         progress("Found export point for swarmDefinition");
-debugger;
         var swarmDefinitionAsDataURL = this.getDataURLForContent(Swarm.Tester.testedSwarmDefinition, "text/html");
         exportedSwarmDefinitionFrame.setAttribute("src", swarmDefinitionAsDataURL);
         progress("Set export on point for swarmDefinition");
@@ -164,7 +168,7 @@ debugger;
 			var html = getElementHTML(template.documentElement);
 	        var file = TextService.getProfileDirectory();
 	        file = TextService.getFileInDirectory(file, "firebug/"+sourceLeafName);
-            var result = TextService.writeTextToFile(file, html);
+            var result = TextService.writeText(file, html);
             progress("exported to "+result)
         }
         else
