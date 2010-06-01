@@ -142,3 +142,4 @@ pref("extensions.chromebug.DBG_INITIALIZE", false);   // registry (modules panel
 pref("extensions.chromebug.DBG_INSPECT", false);   // inspector  /*@explore*/
 pref("extensions.chromebug.DBG_OPTIONS", false);      // /*@explore*/
 pref("extensions.chromebug.DBG_FBCACHE", false);      // /*@explore*/
+pref("extensions.chromebug.DBG_CBWINDOW", false);      // /*@explore*/
