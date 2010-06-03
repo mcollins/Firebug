@@ -9,11 +9,16 @@
 <style>
 .swarmTitle {
   text-align: center;
-  font-weight: bold;
+  font-weight: normal;
+  font-size: 0.7em;
+}
+.swarmTaskDataTitle {
+  text-align: center;
+  margin: 0.5em;
 }
 body {
   font-family: Sans-serif;
-  margin: 45px;
+  margin: 5px;
   background-color: #FFFFFF;
 }
 .swarmUI { /* indicate the area toggled by the button */
@@ -42,21 +47,82 @@ body {
 .signature .verified span .signatureHash {
    display:none;
 }
+
+.hideTaskData {
+	display: none;
+}
 </style>
+<script>
+function initializeButtons(event)
+{
+	var buttons = document.getElementsByClassName('radioButton');
+	for (var i = 0; i < buttons.length; i++)
+		buttons[i].addEventListener('click', selectButton, true);
+	clearButtons();
+	turnOn(buttons[0]);
+
+	var installer = document.getElementById('swarmInstall');
+	installer.addEventListener('click', installExtensions, true);
+}
+function selectButton(event)
+{
+	clearButtons();
+	turnOn(event.target);
+}
+function clearButtons()
+{
+	var buttons = document.getElementsByClassName('radioButton');
+	for (var i = 0; i < buttons.length; i++)
+		turnOff(buttons[i]);
+}
+function turnOff(button)
+{
+	button.removeAttribute('disabled');
+	var target = button.getAttribute('id').split('_')[1]; // eg swarmDefinition from Button_swarmDefintion;
+	var taskDatas = document.getElementsByClassName(target);
+	for(var iData = 0; iData < taskDatas.length; iData++)
+		taskDatas[iData].classList.add('hideTaskData');
+}
+function turnOn(button)
+{
+	button.setAttribute('disabled', 'disabled');
+	var target = button.getAttribute('id').split('_')[1]; // eg swarmDefinition from Button_swarmDefintion;
+	var taskDatas = document.getElementsByClassName(target);
+	for(var iData = 0; iData < taskDatas.length; iData++)
+	{
+		var taskData = taskDatas[iData];
+		taskData.classList.remove('hideTaskData');
+	    var iframes = taskData.getElementsByTagName('iframe');
+	    var height = document.documentElement.clientHeight
+	    iframes[0].setAttribute('style',"height:"+ height +"px");
+	}
+}
+function installExtensions(event)
+{
+	alert("Installer required");
+}
+
+window.addEventListener('load', initializeButtons, false);
+</script>
 </head>
 <body>
 <!-- This template resembles shell.html but it is for the results -->
-<h1 class="swarmTitle">Swarm Installation</h1>
+<h1 class="swarmTitle">Swarm: A collection of extensions that work together.</h1>
+
+<div class="radioButtons">
+<button class="radioButton" id="Button_swarmDefinition">Show Extensions</button>
+<button class="radioButton" id="Button_FBTest">Show Test Results</button>
+</div>
 
 <!--  Extensions that make up this swarm.  -->
-<div class="swarmTaskData">
-<h2>These extensions were all tested together</h2>
-<iframe id="swarmDefinition" width="100%" name="swarmDefinition" src="basic.html"></iframe>
+<div class="swarmTaskData swarmDefinition">
+<div class="swarmTaskDataTitle"><span>The Extensions</span> <button id="swarmInstall">Install!</button></div>
+<iframe  id="swarmDefinition" width="100%" name="swarmDefinition" src="../swarms/basic.html"></iframe>
 </div>
 
 <!--  Tests that were applied and their results -->
-<div class="swarmTaskData">
-<h2>Test Results</h2>
+<div class="swarmTaskData FBTest">
+<div class="swarmTaskDataTitle"><span>The Test Results</span></div>
 <iframe id="FBTest" width="100%" name="FBTestOutput" src=""></iframe>
 </div>
 </body>
