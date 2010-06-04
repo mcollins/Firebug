@@ -822,11 +822,6 @@ Firebug.Chromebug = extend(Firebug.Module,
 
                 delete jsdState._chromebug.globalTagByScriptTag;
                 delete jsdState._chromebug.jsContexts;
-
-                // We turned on jsd to get initial values. Maybe we don't want it on
-                if (!Firebug.Debugger.isAlwaysEnabled())
-                    fbs.countContext(false); // connect to firebug-service
-
             }
             else
                 FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in startupObserver, maybe the command line handler is broken\n");
