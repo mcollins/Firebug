@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+<?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        id="Swarms"
+        windowtype="Swarms"
+        title="Install Swarms"
+        width="640" height="480"
+        persist="screenX screenY width height sizemode">
+
+    <hbox id="toAllowScrollBarsIGuess" flex="3">
+        <vbox flex="3">
+            <browser id="taskBrowser" src="https://getfirebug.com/swarms/index.html" flex="1" type="content-primary"
+                disablehistory="true" contextmenu="fbContextMenu"
+                tooltip="fbTooltip"/>
+
+            <findbar id="FindToolbar" browserid="taskBrowser"/>
+        </vbox>
+
+    </hbox>
+
+</window>

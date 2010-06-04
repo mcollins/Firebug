@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<!-- Overlay broswer.xul to add Swarms item to toolbar -->
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script>
+	function openSwarmWindow()
+	{
+		var uri = "chrome://swarm/content/swarms.xul";
+		var flags = "chrome,width="+window.outerWidth+",height="+window.outerHeight;
+		window.open(uri, "swarms", flags);
+	}
+
+	</script>
+
+    <commandset id="mainCommandSet">
+        <!-- TODO Firebug.Editors. -->
+        <command id="cmd_Swarms" oncommand="openSwarmWindow()"/>
+	</commandset>
+
+    <!-- Firefox Tools menu -->
+    <menupopup id="menu_ToolsPopup">
+        <menuitem id="menu_Swarms"  label="Swarms" insertbefore="javascriptConsole" command="cmd_Swarms">
+        </menuitem>
+    </menupopup>
+
+    <!-- SeaMonkey Tools menu -->
+    <menupopup id="toolsPopup">
+        <menuitem id="menu_Swarms"  label="Swarms" insertbefore="javascriptConsole" command="cmd_Swarms">
+        </menuitem>
+    </menupopup>
+
+</overlay>
