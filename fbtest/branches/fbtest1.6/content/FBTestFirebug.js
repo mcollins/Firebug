@@ -448,21 +448,21 @@ this.openFirebug = function()
 }
 
 /**
+ * Closes Firebug UI. if the UI is closed, it stays closed.
+ */
+this.closeFirebug = function()
+{
+    if (this.isFirebugOpen())
+        this.pressToggleFirebug();
+}
+
+/**
  * Detach Firebug into a new separate window.
  */
 this.detachFirebug = function()
 {
     this.openFirebug();
     return FW.Firebug.detachBar();
-}
-
-/**
- * Closes Firebug UI. if the UI is closed, it stays closed.
- */
-this.closeFirebug = function()
-{
-    if (this.isFirebugOpen())
-        FW.Firebug.closeFirebug(FW.FirebugContext)
 }
 
 /**
@@ -670,14 +670,14 @@ this.closeFirebugOnAllTabs = function()
 // ************************************************************************************************
 // Firebug Panel Enablement.
 
-this.updateModelState = function(model, panelName, callbackTriggersReload, enable)
+this.setPanelState = function(model, panelName, callbackTriggersReload, enable)
 {
     // Open Firebug UI
     this.pressToggleFirebug(true);
-    
-    // Enable specified model.
-    model.setDefaultState(enable);
-    FW.Firebug.PanelActivation.setDefaultState(panelName, enable);
+
+    // Enable specified panel.
+    var panelType = FW.Firebug.getPanelType(panelName);
+    FW.Firebug.PanelActivation.setPanelState(panelType, enable);
 
     // Clear cache and reload.
     this.clearCache();
@@ -691,7 +691,7 @@ this.updateModelState = function(model, panelName, callbackTriggersReload, enabl
  */
 this.disableNetPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.NetMonitor, "net", callback, false);
+    this.setPanelState(FW.Firebug.NetMonitor, "net", callback, false);
 }
 
 /**
@@ -700,7 +700,7 @@ this.disableNetPanel = function(callback)
  */
 this.enableNetPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.NetMonitor, "net", callback, true);
+    this.setPanelState(FW.Firebug.NetMonitor, "net", callback, true);
 }
 
 /**
@@ -709,7 +709,7 @@ this.enableNetPanel = function(callback)
  */
 this.disableScriptPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Debugger, "script", callback, false);
+    this.setPanelState(FW.Firebug.Debugger, "script", callback, false);
 }
 
 /**
@@ -718,7 +718,7 @@ this.disableScriptPanel = function(callback)
  */
 this.enableScriptPanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Debugger, "script", callback, true);
+    this.setPanelState(FW.Firebug.Debugger, "script", callback, true);
 }
 
 /**
@@ -727,7 +727,7 @@ this.enableScriptPanel = function(callback)
  */
 this.disableConsolePanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Console, "console", callback, false);
+    this.setPanelState(FW.Firebug.Console, "console", callback, false);
 }
 
 /**
@@ -736,7 +736,7 @@ this.disableConsolePanel = function(callback)
  */
 this.enableConsolePanel = function(callback)
 {
-    this.updateModelState(FW.Firebug.Console, "console", callback, true);
+    this.setPanelState(FW.Firebug.Console, "console", callback, true);
 }
 
 /**
@@ -789,6 +789,20 @@ this.selectPanelTab = function(name, doc)
         }
     }
     return false;
+}
+
+this.getSelectedPanelTab = function(doc)
+{
+    if (!doc)
+        doc = FW.document;
+
+    var panelTabs = doc.getElementById("fbPanelBar1-panelTabs");
+    for (var child = panelTabs.firstChild; child; child = child.nextSibling)
+    {
+        if (child.getAttribute("selected") == "true")
+            return child;
+    }
+    return null;
 }
 
 /* selected panel on UI (not via context) */
