@@ -10,11 +10,12 @@ function runTest()
     FBTestFirebug.openNewTab(basePath + "firebug/OpenFirebugOnThisPage.html", function(win)
     {
         FBTestFirebug.openFirebug();
-        FBTestFirebug.selectPanel("net");
+        FBTestFirebug.selectPanelTab("net");
         FBTestFirebug.closeFirebug();
         FBTestFirebug.openFirebug();
-        var panel = FBTestFirebug.getSelectedPanel();
-        FBTest.compare("net", panel.name, "Net panel must be selected now");
+        var tab = FBTestFirebug.getSelectedPanelTab();
+        var label = tab.getAttribute("label").toLowerCase();
+        FBTest.compare("net", label, "Net panel must be selected now");
         FBTestFirebug.testDone("selectedPanelAfterReopen.DONE");
     });
 }

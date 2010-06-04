@@ -50,8 +50,7 @@ function runTest()
                 FBTestFirebug.testDone("openDisableEnebleReload.DONE");
             });
         });
-
-        });
+    });
 }
 
 function enableAndCheck(panelName, module)
@@ -68,8 +67,7 @@ function checkIsDisabled(panelName, module)
     FBTest.compare("true", FBTestFirebug.isPanelTabDisabled(panelName), "The "+panelName+" panel's module should be disabled");
     var selectedPanel = FBTestFirebug.getSelectedPanel();
 
-    FBTest.compare(panelName, selectedPanel.name, "The selected panel should be "+panelName);
-    FBTest.compare("false", selectedPanel.disabledBox.getAttribute('collapsed'), "The "+panelName+" should have the disabled message");
+    FBTest.ok(!selectedPanel, "The selected panel should be null");
 
     var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+panelName+" should NOT be marked on the Firebug Statusbar Icon");
