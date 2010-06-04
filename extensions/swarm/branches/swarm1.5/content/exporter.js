@@ -169,7 +169,8 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
 	        var file = TextService.getProfileDirectory();
 	        file = TextService.getFileInDirectory(file, "firebug/"+sourceLeafName);
             var result = TextService.writeText(file, html);
-            progress("exported to "+result)
+            progress("exported to "+result);
+            FBL.openWindow(null, FBL.getURLFromLocalFile(file));
         }
         else
         {
