@@ -13,11 +13,12 @@ function isEmpty(obj) {
 function testCommandLineForError()
 {
     var panel = FW.FirebugChrome.selectPanel("console");
-    // FBTest.progress("looking up command line in " + panel);
+    FBTest.progress("looking up command line in " + panel);
+    FBTest.ok(panel, "The console panel is found ");
     
     var clickTarget = FW.document.getElementById("fbCommandLine");
 
-    // FBTest.progress("command line: " + clickTarget);
+    FBTest.progress("command line: " + clickTarget);
     FBTest.focus(clickTarget);
     
     // gather rows from panel
@@ -35,6 +36,6 @@ function runTest()
     {
         if (!FBTestFirebug.isFirebugOpen())
             FBTestFirebug.openFirebug();
-        FBTestFirebug.enableConsolePanel(testCommandLineForError());
+        FBTestFirebug.enableConsolePanel(testCommandLineForError);
     });
 }
