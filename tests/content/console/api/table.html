@@ -36,12 +36,10 @@ function Person(firstName, lastName, age)
 }
 
 var table = new Array(3);
-table[0] = ["a", "b", "c"];
-for (var i=1; i<table.length; i++)
+for (var i=0; i<table.length; i++)
     table[i] = [i+1, i+2, i+3];
 
 var family = {};
-family.header = ["First", "Last", "Age", "Desc"];
 family.mother = new Person("Susan", "Doyle", 32);
 family.father = new Person("John", "Doyle", 33);
 family.daughter = new Person("Lily", "Doyle", 5);
@@ -51,7 +49,12 @@ family.father.desc = "father";
 
 function onExecuteTest1()
 {
-    console.table(table);
+    var columns = [
+        {property:0, label: "a"},
+        {property:1, label: "b"},
+        {property:2, label: "c"}
+    ];
+    console.table(table, columns);
 }
 
 function onExecuteTest2()
@@ -61,30 +64,34 @@ function onExecuteTest2()
 
 function onExecuteTest3()
 {
-    console.table(table, family);
+    console.table({
+        a: "propA",
+        b: "propB",
+        c: "propC",
+    });
 }
 
 function onExecuteTest4()
 {
-    console.table("My family", family);
+    console.groupCollapsed("My family");
+    console.table(family);
+    console.groupEnd();
 }
 
 function onExecuteTest5()
 {
-    console.table("Two tables", table, family);
+    console.table(table, [1, 2]);
 }
 
 function onExecuteTest6()
 {
-    console.table("Simple object", {
-        _: "header",
-        b: "propA",
-        c: "propB",
-        d: "propC",
-    });
+    var columns = [
+        {property:1, label: "2nd"},
+        {property:2, label: "3rd"}
+    ];
+    console.table(table, columns);
 }
-
 </script>
-  
+
 </body>
 </html>

@@ -12,22 +12,22 @@ function runTest()
             var doc = win.document;
 
             // #1 table with 3 columns, 2 rows and specified text content.
-            var table1 = {cols: 3, rows: 2, content: "abc234345"};
+            var table1 = {cols: 3, rows: 3, content: "abc123234345"};
 
-            // #2 table with 4 columns, 4 rows and specified text content.
-            var text = "FirstLastAgeDesc\"Susan\"\"Doyle\"32\"mother\"\"John\"\"Doyle\"33\"father\"\"Lily\"\"Doyle\"5undefined\"Mike\"\"Doyle\"8undefined";
+            var text = "firstNamelastNameagedesc\"Susan\"\"Doyle\"32\"mother\"\"John\"\"Doyle\"33\"father\"\"Lily\"\"Doyle\"5undefined\"Mike\"\"Doyle\"8undefined";
             var table2 = {cols: 4, rows: 4, content: text};
-
-            // #3 table with 1 column, 2 rows and specified text content.
-            var table3 = {cols: 1, rows: 3, content: "header\"propA\"\"propB\"\"propC\""};
+            var table3 = {cols: 1, rows: 3, content: "Object Properties\"propA\"\"propB\"\"propC\""};
+            var table4 = table2;
+            var table5 = {cols: 2, rows: 3, content: "12233445"};
+            var table6 = {cols: 2, rows: 3, content: "2nd3rd233445"};
 
             var tasks = new FBTest.TaskList();
             tasks.push(executeTest, "testButton1", doc, null, [table1]);
             tasks.push(executeTest, "testButton2", doc, null, [table2]);
-            tasks.push(executeTest, "testButton3", doc, null, [table1, table2]);
-            tasks.push(executeTest, "testButton4", doc, "My family", [table2]);
-            tasks.push(executeTest, "testButton5", doc, "Two tables", [table1, table2]);
-            tasks.push(executeTest, "testButton6", doc, "Simple Object", [table3]);
+            tasks.push(executeTest, "testButton3", doc, null, [table3]);
+            tasks.push(executeTest, "testButton4", doc, "My family", [table4]);
+            tasks.push(executeTest, "testButton5", doc, null, [table5]);
+            tasks.push(executeTest, "testButton6", doc, null, [table6]);
 
             tasks.run(function() {
                 FBTest.testDone("console.table.DONE");
@@ -50,9 +50,11 @@ function executeTest(callback, buttonId, doc, title, expected)
     {
         if (title)
         {
-            var titleNode = row.querySelector(".logGroupLabel");
+            FBTrace.sysout("row", row);
+            var group = FW.FBL.getAncestorByClass(row, "logRow-group");
+            var titleNode = group.querySelector(".logGroupLabel");
             FBTest.ok(titleNode, "Group title must be available.");
-            FBTest.ok(titleNode.textContent, "Group title must be: " + title);
+            FBTest.compare(title, titleNode.textContent, "Group title must be: " + title);
             FBTest.mouseDown(titleNode);
         }
 
@@ -95,7 +97,7 @@ function verifyLogBody(logRow, expected)
  */
 function verifyTableLayout(table, cols, rows, textContent)
 {
-    FBTest.compare(table.textContent, textContent, "Verify expected text content.");
+    FBTest.compare(textContent, table.textContent, "Verify expected text content.");
 
     var head = table.querySelector(".profileThead");
     var body = table.querySelector(".profileTbody");
