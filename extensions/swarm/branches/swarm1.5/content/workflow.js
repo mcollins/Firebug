@@ -118,6 +118,25 @@ Swarm.WorkflowStep =
             needed++;
         }
     },
+    /*
+     * @param extensionId eg firebug@software.joehewitt.com
+     * @return nsIFile if the extension is a link, else null
+     */
+    getLinkToExtension: function(extensionId)
+    {
+        var installLocation = Swarm.Installer.getExtensionManager().getInstallLocation(extensionId);
+        if (installLocation instanceof Ci.nsIInstallLocation)
+        {
+            var link = installLocation.location;
+            if (link instanceof Ci.nsIFile)
+            {
+                link.append(extensionId); // dir/id
+                if (!link.isDirectory())
+                    return link;
+            }
+        }
+        return null;
+    },
 };
 
 Swarm.workflowMonitor =
@@ -390,14 +409,20 @@ Swarm.workflowMonitor =
 
 };
 
-Swarm.sourcePicker = 
+Swarm.sourcePicker =  extend(Swarm.WorkflowStep, 
 {
 	initialize: function(doc, progress)
 	{
 		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
 		{
-			sourcePickerButton.addEventListener("click", Swarm.sourcePicker.pick, true);
+			sourcePickerButton.addEventListener("keyup", Swarm.sourcePicker.pick, true);
 			sourcePickerButton.classList.remove("swarmTaskHidePicker");
+			var width = (sourcePickerButton.parentNode.offsetWidth - sourcePickerButton.offsetLeft);
+			sourcePickerButton.style.width = width+"px";
+			var url = Swarm.sourcePicker.getTaskDataElement(sourcePickerButton).getAttribute('src');
+			var baseURL = doc.location.toString();
+			var editURL = absoluteURL(url, baseURL);
+			sourcePickerButton.setAttribute("value", editURL);
 		});
 	},
 	
@@ -405,7 +430,7 @@ Swarm.sourcePicker =
 	{
 		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
 		{
-			sourcePickerButton.classList.add("swarmTaskHidePicker"); 
+			sourcePickerButton.classList.add("swarmTaskHidePicker");
 		});
 	},
 	
@@ -421,7 +446,7 @@ Swarm.sourcePicker =
 	{
 		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
 		{
-			sourcePickerButton.removeEventListener("click", Swarm.sourcePicker.pick, true);
+			sourcePickerButton.removeEventListener("keyup", Swarm.sourcePicker.pick, true);
 		});
 	},
 	// ------------------
@@ -433,20 +458,35 @@ Swarm.sourcePicker =
 			fnOfElement(sourcePickerButtons[i]); 
 	},
 	
+	getEnclosingTaskDataDiv: function(element)
+	{
+		var elt = element;
+		while (elt && !elt.classList.contains('swarmTaskData'))
+			elt = elt.parentNode;
+		
+		return elt;
+	},
+	
+	getTaskDataElement: function(sourcePickerButton)
+	{
+		var div = Swarm.sourcePicker.getEnclosingTaskDataDiv(sourcePickerButton);
+		if (div)
+		{
+			var taskData = div.getElementsByTagName('iframe')[0];
+			return taskData;		
+		}
+	},
+	
 	pick: function(event)
 	{
 		var sourcePickerButton = event.target;
-		var taskData = sourcePickerButton.parentNode.parentNode.getElementsByTagName('iframe')[0];
-		var src = taskData.getAttribute('src');
-		var win = open(src, 'SelectContent'); //, "chrome=no,resizeable=yes,scrollbars=yes,toolbars=yes,location=yes");
-		FBTrace.sysout("workflow.pick window "+win.location, win);
-		win.addEventListener('load', function trackURL(event)
-		{
-			FBTrace.sysout("workflow.pick load "+event.target.location, event);
-		}, true);
-		
+		var elt = Swarm.sourcePicker.getTaskDataElement(sourcePickerButton)
+		var toValue = event.target.value;
+		var fromValue = elt.value;
+		if (toValue !== fromValue)
+			elt.setAttribute('src', toValue);
 	}
-};
+});
 Swarm.workflowMonitor.registerWorkflowStep("swarmSourcePicker", Swarm.sourcePicker);
 
 

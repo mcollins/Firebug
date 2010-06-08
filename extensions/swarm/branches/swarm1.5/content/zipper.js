@@ -9,11 +9,11 @@ FBTestApp.ns(function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Swarm.zipper = {
+Swarm.Zipper = {
 
 };
 
-Swarm.Installer.swarmPackageStep = extend(Swarm.WorkflowStep,
+Swarm.Zipper.swarmPackageStep = extend(Swarm.WorkflowStep,
 {
 	initialize: function()
 	{

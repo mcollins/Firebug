@@ -47,22 +47,6 @@ Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
             this.disableStep(doc);
     },
 
-    getLinkToExtension: function(extensionId)
-    {
-        var installLocation = Swarm.extensions.getExtensionManager().getInstallLocation(extensionId);
-        if (installLocation instanceof Ci.nsIInstallLocation)
-        {
-            var link = installLocation.location;
-            if (link instanceof Ci.nsIFile)
-            {
-                link.append(extensionId); // dir/id
-                if (!link.isDirectory())
-                    return link;
-            }
-        }
-        return null;
-    },
-
     getExtensionIdsByElements: function(elts)
     {
         var extensionIds = [];

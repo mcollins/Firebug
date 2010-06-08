@@ -21,7 +21,7 @@
                                             .getService(Components.interfaces.nsIVersionComparator);
 
 
-Swarm.Installer =
+Swarm.Installer = 
 {
     getInstalledExtensions: function()
     {
@@ -145,9 +145,14 @@ Swarm.Installer =
                     setClass(declaredExtensionStatus, "installedVersion-Older");
 
                 if (this.isNotOverInstallable(installedExtensions[j].id))
-                    setClass(declaredExtensionStatus, "installNotAllowed");
-                
-                
+                {
+                	setClass(declaredExtensionStatus, "installNotAllowed");
+                	var linkToExtension = Swarm.WorkflowStep.getLinkToExtension(installedExtensions[j].id);
+                	if (linkToExtension)
+                		setClass(declaredExtensionStatus, "installLink");
+                	else
+                		setClass(declaredExtensionStatus, "installRegistry");
+                }
 
                 installedButNotDeclared.splice(j, 1);
             }
