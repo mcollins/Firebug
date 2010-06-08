@@ -390,6 +390,65 @@ Swarm.workflowMonitor =
 
 };
 
+Swarm.sourcePicker = 
+{
+	initialize: function(doc, progress)
+	{
+		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+		{
+			sourcePickerButton.addEventListener("click", Swarm.sourcePicker.pick, true);
+			sourcePickerButton.classList.remove("swarmTaskHidePicker");
+		});
+	},
+	
+	onWorkflowSelect: function(doc, selectedWorkflow) 
+	{
+		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+		{
+			sourcePickerButton.classList.add("swarmTaskHidePicker"); 
+		});
+	},
+	
+	onWorkflowUnselect: function(doc) 
+	{
+		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+		{
+			sourcePickerButton.classList.remove("swarmTaskHidePicker"); 
+		});
+	},
+	
+	shutdown: function(doc, progress)
+	{
+		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+		{
+			sourcePickerButton.removeEventListener("click", Swarm.sourcePicker.pick, true);
+		});
+	},
+	// ------------------
+	
+	eachPicker: function(doc, fnOfElement)
+	{
+		var sourcePickerButtons = doc.getElementsByClassName("swarmTaskSrc");
+		for (var i = 0; i < sourcePickerButtons.length; i++)
+			fnOfElement(sourcePickerButtons[i]); 
+	},
+	
+	pick: function(event)
+	{
+		var sourcePickerButton = event.target;
+		var taskData = sourcePickerButton.parentNode.parentNode.getElementsByTagName('iframe')[0];
+		var src = taskData.getAttribute('src');
+		var win = open(src, 'SelectContent'); //, "chrome=no,resizeable=yes,scrollbars=yes,toolbars=yes,location=yes");
+		FBTrace.sysout("workflow.pick window "+win.location, win);
+		win.addEventListener('load', function trackURL(event)
+		{
+			FBTrace.sysout("workflow.pick load "+event.target.location, event);
+		}, true);
+		
+	}
+};
+Swarm.workflowMonitor.registerWorkflowStep("swarmSourcePicker", Swarm.sourcePicker);
+
 
 // The interface between the swarm code and fbtest window
 Swarm.embedder = {

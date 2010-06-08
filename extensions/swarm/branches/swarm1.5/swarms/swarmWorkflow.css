@@ -1,3 +1,6 @@
 .swarmTaskDataNotNeeded {
 	display: none;
 }
+.swarmTaskHidePicker {
+	display: none;
+}

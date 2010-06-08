@@ -42,6 +42,8 @@ Swarm.Installer =
 
         this.notDeclared = this.getInstalledButNotDeclared(this.declaredExtensions, this.installedExtensions);
         progress("Profile has "+this.notDeclared.length+" extensions not listed in the swarm");
+        
+        //this.notInstalled = this.getDeclaredAndNotInstalledExtensions();
     },
 
     getInstallableExtensions: function(doc, progress)
@@ -144,6 +146,8 @@ Swarm.Installer =
 
                 if (this.isNotOverInstallable(installedExtensions[j].id))
                     setClass(declaredExtensionStatus, "installNotAllowed");
+                
+                
 
                 installedButNotDeclared.splice(j, 1);
             }
@@ -306,7 +310,16 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         {
             var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
                 .getService(Components.interfaces.nsIXPInstallManager);
-            xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.SwarmBuild.nsIXPIProgressDialog);
+            FBTrace.sysout("swarm.installer installing "+count+" extensions", {urls: urls, hashes: hashes});
+            try
+            {
+            	xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.SwarmBuild.nsIXPIProgressDialog);	
+            }
+            catch(exc)
+            {
+            	FBTrace.sysout("swarm.installer installing FAILS "+exc, exc);
+            }
+            
         }
     },
 });
@@ -327,7 +340,7 @@ Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallSt
             todo.push(extension);
         });
         if (todo.length)
-            window.alert(todo.length +" extension"+(todo.length==1?'':'s')+" can not be installed");
+            window.alert(todo.length +" extension"+(todo.length==1?'':'s')+" cannot be installed");
         else
         {
             Swarm.workflowMonitor.stepWorkflows(doc, "swarmInstallAndCheckStep");
