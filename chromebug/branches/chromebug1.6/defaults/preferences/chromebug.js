@@ -143,3 +143,4 @@ pref("extensions.chromebug.DBG_INSPECT", false);   // inspector  /*@explore*/
 pref("extensions.chromebug.DBG_OPTIONS", false);      // /*@explore*/
 pref("extensions.chromebug.DBG_FBCACHE", false);      // /*@explore*/
 pref("extensions.chromebug.DBG_CBWINDOW", false);      // /*@explore*/
+pref("extensions.chromebug.DBG_EXTENSIONS", false);      // /*@explore*/
