@@ -579,6 +579,12 @@ Firebug.Chromebug = extend(Firebug.Module,
             var browser = Firebug.Chromebug.createBrowser(global, name);  // I guess this has side effects we need
             var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
 
+            // we want to write window.console onto the actual window, not the wrapper
+            if (global.wrappedJSObject)
+            	global.wrappedJSObject.console = Firebug.Console.createConsole(context, global);
+            else // we don't know what we are doing
+            	global.console = Firebug.Console.createConsole(context, global);
+
             var url = safeToString(global ? global.location : null);
             if (isDataURL(url))
             {

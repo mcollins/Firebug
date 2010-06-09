@@ -116,7 +116,7 @@ var ChromebugOverrides = {
                 if (fileName && Firebug.Chromebug.isChromebugURL(fileName))
                     return false;
 
-                // global is the outmost scope
+                // global is the outermost scope
                 var context = ChromebugOverrides.getContextByFrame(frame, global);
             }
             this.breakContext = context;
