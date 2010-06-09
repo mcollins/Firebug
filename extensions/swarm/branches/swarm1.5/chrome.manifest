@@ -4,7 +4,6 @@ locale  swarm    en-US           locale/en-US/
 
 resource swarm modules/
 
-overlay chrome://firebug/content/browserOverlay.xul         chrome://swarm/content/swarmOverlayFirebug.xul
+overlay chrome://firebug/content/browserOverlay.xul     chrome://swarm/content/swarmOverlayFirebug.xul
 overlay chrome://fbtest/content/testConsole.xul         chrome://swarm/content/swarmOverlayTestConsole.xul
-
-overlay chrome://browser/content/browser.xul         chrome://swarm/content/swarmOverlayBrowser.xul
+overlay chrome://browser/content/browser.xul            chrome://swarm/content/swarmOverlayBrowser.xul

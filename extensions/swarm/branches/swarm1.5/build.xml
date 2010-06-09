@@ -19,6 +19,13 @@
     <!-- Build -->
     <target name="build" depends="clean">
 
+        <!-- Copy defaults directory -->
+        <copy todir="${build.dir}/defaults">
+            <fileset dir="defaults">
+               <include name="**/*.js"/>
+            </fileset>
+        </copy>
+
         <!-- Copy content directory -->
         <copy todir="${build.dir}/content">
             <fileset dir="content">

@@ -1,4 +1,5 @@
 /* See license.txt for terms of usage */
+
 FBL.ns(function() { with (FBL) {
 
 // ************************************************************************************************
@@ -10,20 +11,31 @@ const Ci = Components.interfaces;
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
 const SHOW_ALL = Ci.nsIDOMNodeFilter.SHOW_ALL;
 
+// ************************************************************************************************
+
+Firebug.Swarm = extend(Firebug.Module,
+{
+    initialize: function(owner)
+    {
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.addListener(this.TraceListener);
+
+        Firebug.Module.initialize.apply(this, arguments);
+    },
+
+    shutdown: function()
+    {
+        Firebug.Module.shutdown.apply(this, arguments);
+
+        if (Firebug.TraceModule)
+            Firebug.TraceModule.removeListener(this.TraceListener);
+    },
+});
 
 // ************************************************************************************************
 
-// Register string bundle of this extension so, $STR method (implemented by Firebug)
-// can be used. Also, perform the registration here so, localized strings used
-// in template definitions can be resolved.
-Firebug.registerStringBundle("chrome://swarm/locale/swarm.properties");
-
-// ************************************************************************************************
-
-
-// ************************************************************************************************
-Firebug.MenuItem = {
-
+Firebug.MenuItem =
+{
     createMainMenuItem: function(name, beforeID, controller)
     {
         var mainMenu = document.getElementById("fbFirebugMenuPopup");
@@ -50,6 +62,9 @@ Firebug.MenuItem = {
         return lastSibling.previousSibling;
     },
 };
+
+// ************************************************************************************************
+
 /**
  * @menuitem "Manage Firebug Extensions"
  */
@@ -59,6 +74,9 @@ var SwarmEntry = extend(Firebug.MenuItem,
 
     initialize: function()
     {
+        if (FBTrace.DBG_SWARM)
+            FBTrace.sysout("swarm.SwarmEntry.initialize();");
+
         this.mainMenuItem = this.createMainMenuItem(this.name, "menu_aboutSeparator", this);
     },
 
@@ -77,13 +95,13 @@ var SwarmEntry = extend(Firebug.MenuItem,
         }
         else
         {
-            FBTrace.sysout("FirebugSwarm: need to notify or prevent this case.");
+            if (FBTrace.DBG_SWARM)
+                FBTrace.sysout("swarm.SwarmEntry.onSelect need to notify or prevent this case.");
         }
-
     },
 });
 
-Firebug.registerMenuItem(SwarmEntry);
+// ************************************************************************************************
 
 var FirebugSwarm =
 {
@@ -115,7 +133,37 @@ var FirebugSwarm =
             event.target.innerHTML = "No valid swarm found";
         }
     },
-
 }
+
+// ************************************************************************************************
+
+Firebug.Swarm.TraceListener =
+{
+    onLoadConsole: function(win, rootNode)
+    {
+        var doc = rootNode.ownerDocument;
+        var styleSheet = createStyleSheet(doc, "chrome://swarm/skin/swarm.css");
+        styleSheet.setAttribute("id", "swarmLogs");
+        addStyleSheet(doc, styleSheet);
+    },
+
+    onDump: function(message)
+    {
+        var index = message.text.indexOf("swarm.");
+        if (index == 0)
+        {
+            message.text = message.text.substr(index);
+            message.type = "DBG_SWARM";
+        }
+    }
+};
+
+// ************************************************************************************************
+// Registration
+
+Firebug.registerMenuItem(SwarmEntry);
+Firebug.registerStringBundle("chrome://swarm/locale/swarm.properties");
+Firebug.registerModule(Firebug.Swarm);
+
 // ************************************************************************************************
 }});

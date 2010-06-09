@@ -1,25 +1,22 @@
 /* See license.txt for terms of usage */
 
-
-
-
 // This code runs in the FBTest Window and Firefox Window
 (function() { with (FBL) {
 
+// ************************************************************************************************
+// Constants
 
- // ************************************************************************************************
- // Constants
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
- const Cc = Components.classes;
- const Ci = Components.interfaces;
+const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
+const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+const Application = Components.classes["@mozilla.org/fuel/application;1"]
+    .getService(Components.interfaces.fuelIApplication);
+const versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+    .getService(Components.interfaces.nsIVersionComparator);
 
- const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
- const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-
- const Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
- const versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-                                            .getService(Components.interfaces.nsIVersionComparator);
-
+// ************************************************************************************************
 
 Swarm.Installer =
 {
@@ -271,7 +268,7 @@ Swarm.Installer.nsIXPIProgressDialog =
 
     onProgress: function(index, value, maxValue )
     {
-    	window.dump("onProgress "+index+"\n");
+        window.dump("onProgress "+index+"\n");
 
         FBTrace.sysout("onProgress "+this.installing[index].name+": "+value+"/"+maxValue);
         this.installing[index].statusElement.innerHTML = this.installing[index].version +" "+Math.ceil(100*value/maxValue)+"%";
@@ -279,7 +276,7 @@ Swarm.Installer.nsIXPIProgressDialog =
 
     QueryInterface: function(iid)
     {
-    	window.dump("QueryInterface "+iid+"\n");
+        window.dump("QueryInterface "+iid+"\n");
         return this;
     },
 };
@@ -309,9 +306,9 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         var uninstallable = this.swarmDocument.getElementsByClassName("installNotAllowed");
         if (uninstallable.length)
         {
-        	setClass(elt, "swarmStepBlocked");  /// TODO workflow lib function
-        	elt.disabled = 'disabled';
-        	this.progress("ERROR "+uninstallable.length+" extensions cannot be installed");
+            setClass(elt, "swarmStepBlocked");  /// TODO workflow lib function
+            elt.disabled = 'disabled';
+            this.progress("ERROR "+uninstallable.length+" extensions cannot be installed");
         }
     },
 

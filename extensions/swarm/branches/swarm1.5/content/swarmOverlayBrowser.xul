@@ -1,34 +1,33 @@
 <?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
 
-<!-- Overlay broswer.xul to add Swarms item to toolbar -->
-
+<!-- Overlay browser.xul to add Swarms item to toolbar -->
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script>
-	function openSwarmWindow()
-	{
-	    try
-	    {
-		    var url = "chrome://swarm/content/swarms.xul";
-			var features = "chrome,toolbar=yes,location=yes,outerWidth="+window.outerWidth+",outerHeight="+window.outerHeight;
+    <script>
+    function openSwarmWindow()
+    {
+        try
+        {
+            var url = "chrome://swarm/content/swarms.xul";
+            var features = "chrome,toolbar=yes,location=yes,outerWidth="+window.outerWidth+",outerHeight="+window.outerHeight;
 
-			var winFeatures = "resizable,dialog=no,centerscreen" + (features != "" ? ("," + features) : "");
-        	var parentWindow = (!window.opener || window.opener.closed) ? window : window.opener;
+            var winFeatures = "resizable,dialog=no,centerscreen" + (features != "" ? ("," + features) : "");
+            var parentWindow = (!window.opener || window.opener.closed) ? window : window.opener;
             winFeatures = "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes";
-        	win = parentWindow.open(url, "_blank", winFeatures); // could pass params to eg give URL of swarm def.
-		}
-		catch(exc)
-		{
-			Components.reportError("openSwarmWindow FAILS "+exc);
-		}
-	}
-
-	</script>
+            win = parentWindow.open(url, "_blank", winFeatures); // could pass params to eg give URL of swarm def.
+        }
+        catch(exc)
+        {
+            Components.reportError("openSwarmWindow FAILS "+exc);
+        }
+    }
+    </script>
 
     <commandset id="mainCommandSet">
         <!-- TODO Firebug.Editors. -->
         <command id="cmd_Swarms" oncommand="openSwarmWindow()"/>
-	</commandset>
+    </commandset>
 
     <!-- Firefox Tools menu -->
     <menupopup id="menu_ToolsPopup">
