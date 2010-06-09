@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+
+<!-- In order to build the extension run: $ant build
+    The final xpi file should be located in the release
+    directory -->
+<project name="swarm" basedir="." default="build">
+
+    <!-- Directories -->
+    <property name="build.dir" value="release"/>
+
+    <!-- Properties -->
+    <property file="content/swarm.properties"/>
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- Build -->
+    <target name="build" depends="clean">
+
+        <!-- Copy content directory -->
+        <copy todir="${build.dir}/content">
+            <fileset dir="content">
+               <include name="*.js"/>
+               <include name="*.xul"/>
+               <include name="*.html"/>
+               <include name="*.htm"/>
+               <include name="*.properties"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy locale directory -->
+        <copy todir="${build.dir}/locale">
+            <fileset dir="locale">
+               <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy skin directory -->
+        <copy todir="${build.dir}/skin">
+            <fileset dir="skin">
+               <include name="**/*.css"/>
+               <include name="**/*.png"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy swarms directory -->
+        <copy todir="${build.dir}/swarms">
+            <fileset dir="swarms">
+               <include name="**/*.css"/>
+               <include name="**/*.html"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy extension installation files and licence.txt -->
+        <copy file="chrome.manifest" todir="${build.dir}"/>
+        <copy file="install.rdf" todir="${build.dir}"/>
+        <copy file="license.txt" todir="${build.dir}"/>
+
+        <!-- Update release version from fbtest.properties file -->
+        <replace file="${build.dir}/install.rdf" propertyFile="content/swarm.properties">
+            <replacefilter token="@VERSION@" property="VERSION"/>
+            <replacefilter token="@RELEASE@" property="RELEASE"/>
+        </replace>
+
+        <!-- Create final fbTest.xpi file -->
+        <zip destfile="${build.dir}/swarm-${VERSION}${RELEASE}.xpi"
+            basedir="${build.dir}" update="true" />
+
+        <!-- Final version message -->
+        <echo message="Swarm version: ${VERSION}${RELEASE}"/>
+    </target>
+
+</project>
