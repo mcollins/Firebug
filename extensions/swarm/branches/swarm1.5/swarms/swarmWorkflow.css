@@ -4,3 +4,6 @@
 .swarmTaskHidePicker {
 	display: none;
 }
+.swarmStepBlocked button[disabled] {
+	color: red;
+}

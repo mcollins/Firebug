@@ -21,7 +21,7 @@
                                             .getService(Components.interfaces.nsIVersionComparator);
 
 
-Swarm.Installer = 
+Swarm.Installer =
 {
     getInstalledExtensions: function()
     {
@@ -42,7 +42,7 @@ Swarm.Installer =
 
         this.notDeclared = this.getInstalledButNotDeclared(this.declaredExtensions, this.installedExtensions);
         progress("Profile has "+this.notDeclared.length+" extensions not listed in the swarm");
-        
+
         //this.notInstalled = this.getDeclaredAndNotInstalledExtensions();
     },
 
@@ -129,19 +129,21 @@ Swarm.Installer =
             var declaredExtension = declaredExtensions[i];
             var declaredExtensionStatus = declaredExtension.element.parentNode.getElementsByClassName("extensionStatus")[0];
             if (!declaredExtensionStatus)
-                declaredExtension.element.innerHTML = "ERROR this element should have a sybling with class extensionStatus";
+                declaredExtension.element.innerHTML = "ERROR this element should have a sibling with class \'extensionStatus\'";
             declaredExtension.statusElement = declaredExtensionStatus;
 
-            var j = this.getExtensionIndexById(installedExtensions, declaredExtension.id);
-            if (j != -1)
-            {
-                var relative = versionComparator.compare(installedExtensions[j].version, declaredExtension.version);
+            var relativeAge = 99;
 
-                if (relative === 0)
+            var j = this.getExtensionIndexById(installedExtensions, declaredExtension.id);
+            if (j != -1)  // TODO this work does not belong in this method.
+            {
+                relativeAge = versionComparator.compare(installedExtensions[j].version, declaredExtension.version);
+
+                if (relativeAge === 0)
                     setClass(declaredExtensionStatus, "installedVersion-Same");
-                else if (relative < 0)
+                else if (relativeAge < 0)
                     setClass(declaredExtensionStatus, "installedVersion-Newer");
-                else if (relative > 0)
+                else if (relativeAge > 0)
                     setClass(declaredExtensionStatus, "installedVersion-Older");
 
                 if (this.isNotOverInstallable(installedExtensions[j].id))
@@ -158,6 +160,12 @@ Swarm.Installer =
             }
             else
                 setClass(declaredExtensionStatus, "installedVersion-None");
+
+            if (relativeAge > 0 && !declaredExtension.hash)
+            {
+            	setClass(declaredExtensionStatus, "installHashMissing");
+            	setClass(declaredExtensionStatus, "installNotAllowed");
+            }
 
             declaredExtensionStatus.innerHTML = declaredExtension.version;
         }
@@ -191,37 +199,51 @@ Swarm.Installer =
     // implement Swarm.WorkflowStep
 };
 
+// Unfortunately any error in the following code seems to cause silent failures :-(
 Swarm.Installer.nsIXPIProgressDialog =
 {
+	initialize: function()
+	{
+		this.installing = [];
+	},
+
+	add: function(extension)
+	{
+		this.installing.push(extension);
+	},
+
     states: ["download_start", "download_done", "install_start", "install_done", "dialog_close"],
+
+    reInstalledVersion: /installedVersion-[^\s]*/,
+    reInstalling: /installing-[^\s]*/,
 
     onStateChange: function(index, state, value )
     {
-        FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+value);
+        FBTrace.sysout("onStateChange "+this.installing[index].name+": "+this.states[state]+", "+value);
 
-        var classes = installingExtensions[index].statusElement.getAttribute('class');
-        var m = /installedVersion-[^\s]*/.exec(classes);
+        var classes = this.installing[index].statusElement.getAttribute('class');
+        var m = reInstalledVersion.exec(classes);
         if (m)
-            removeClass(installingExtensions[index].statusElement, m[0]);
+            removeClass(this.installing[index].statusElement, m[0]);
 
-        m = /installing-[^\s]*/.exec(classes);
+        m = reInstalling.exec(classes);
         if (m)
-            removeClass(installingExtensions[index].statusElement, m[0]);
+            removeClass(this.installing[index].statusElement, m[0]);
 
         if (this.states[state] === "install_done")
         {
             if (value != 0)
             {
-                FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
+                FBTrace.sysout("onStateChange "+this.installing[index].name+": "+this.states[state]+", "+errorNameByCode[value+""]);
                 var errorCodePage = "http://getfirebug.com/wiki/index.php/Extension_Installation_Error_Codes";
                 var errorCodeTitle ="Information on Installation Error Codes";
-                installingExtensions[index].statusElement.innerHTML += ": <a target=\"_blank\" title=\""+errorCodeTitle+"\" href=\""+
+                this.installing[index].statusElement.innerHTML += ": <a target=\"_blank\" title=\""+errorCodeTitle+"\" href=\""+
                     errorCodePage+"#"+errorNameByCode[value+""]+"_"+value+"\">"+errorNameByCode[value+""]+"</a>";
-                setClass(installingExtensions[index].statusElement, "install-failed");
+                setClass(this.installing[index].statusElement, "install-failed");
             }
             else
             {
-                setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
+                setClass(this.installing[index].statusElement, "installing-"+this.states[state]);
                 this.checkForRestart();
             }
         }
@@ -230,15 +252,15 @@ Swarm.Installer.nsIXPIProgressDialog =
             if (this.states[state] === "dialog_close")
                 return;
 
-            setClass(installingExtensions[index].statusElement, "installing-"+this.states[state]);
+            setClass(this.installing[index].statusElement, "installing-"+this.states[state]);
         }
     },
 
     checkForRestart: function()
     {
-        for (var i = 0; i < installingExtensions.length; i++)
+        for (var i = 0; i < this.installing.length; i++)
         {
-            if (installingExtensions[i].statusElement.classList.contains("installing-install_done"))
+            if (this.installing[i].statusElement.classList.contains("installing-install_done"))
                 continue;
             else
                 return false;
@@ -249,23 +271,21 @@ Swarm.Installer.nsIXPIProgressDialog =
 
     onProgress: function(index, value, maxValue )
     {
-        FBTrace.sysout("onStateChange "+installingExtensions[index].name+": "+value+"/"+maxValue);
-        installingExtensions[index].statusElement.innerHTML = installingExtensions[index].version +" "+Math.ceil(100*value/maxValue)+"%";
+    	window.dump("onProgress "+index+"\n");
+
+        FBTrace.sysout("onProgress "+this.installing[index].name+": "+value+"/"+maxValue);
+        this.installing[index].statusElement.innerHTML = this.installing[index].version +" "+Math.ceil(100*value/maxValue)+"%";
     },
 
     QueryInterface: function(iid)
     {
+    	window.dump("QueryInterface "+iid+"\n");
         return this;
     },
 };
 
 Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
 {
-    onStepEnabled: function(doc, elt)
-    {
-        this.showSwarmTaskData(doc, "swarmDefinition");
-    },
-
     initialize: function(doc, progress)
     {
         this.progress = progress;
@@ -279,6 +299,19 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         else
         {
             progress("No swarmDefinition element found");
+        }
+    },
+
+    onStepEnabled: function(doc, elt)
+    {
+        this.showSwarmTaskData(doc, "swarmDefinition");
+
+        var uninstallable = this.swarmDocument.getElementsByClassName("installNotAllowed");
+        if (uninstallable.length)
+        {
+        	setClass(elt, "swarmStepBlocked");  /// TODO workflow lib function
+        	elt.disabled = 'disabled';
+        	this.progress("ERROR "+uninstallable.length+" extensions cannot be installed");
         }
     },
 
@@ -298,13 +331,13 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
         var urls = [];
         var hashes = [];
-        var installingExtensions = [];
+        Swarm.Installer.nsIXPIProgressDialog.initialize();
 
         Swarm.Installer.eachDeclaredAndInstallableExtension(function buildInstallManagerData(extension)
         {
             urls.push( extension.href );
             hashes.push( extension.hash );
-            installingExtensions.push( extension );
+            Swarm.Installer.nsIXPIProgressDialog.add( extension );
         });
 
         count = urls.length;
@@ -315,16 +348,16 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         {
             var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
                 .getService(Components.interfaces.nsIXPInstallManager);
-            FBTrace.sysout("swarm.installer installing "+count+" extensions", {urls: urls, hashes: hashes});
+            FBTrace.sysout("swarm.installer installing "+count+" extensions", {urls: urls, hashes: hashes, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
             try
             {
-            	xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.SwarmBuild.nsIXPIProgressDialog);	
+            	xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.Installer.nsIXPIProgressDialog);
             }
             catch(exc)
             {
             	FBTrace.sysout("swarm.installer installing FAILS "+exc, exc);
             }
-            
+
         }
     },
 });
