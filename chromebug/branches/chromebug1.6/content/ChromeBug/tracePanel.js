@@ -11,7 +11,9 @@ FBL.ns(function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-const traceService = Cc["@joehewitt.com/firebug-trace-service;1"].getService(Ci.nsIObserverService);
+Components.utils.import("resource://firebug/firebug-trace-service.js");
+
+const traceService = traceConsoleService;
 
 // ***********************************************************************************
 // TraceConsole Module

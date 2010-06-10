@@ -12,13 +12,13 @@ const nsIObserverService = Ci.nsIObserverService
 const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
 // ************************************************************************************************
-
+Components.utils.import("resource://firebug/firebug-trace-service.js");
 Chromebug.globalObserver =
 {
     observe: function(subject, topic, data)
     {
-        var FirebugTrace = Cc["@joehewitt.com/firebug-trace-service;1"]
-            .getService(Ci.nsISupports).wrappedJSObject.getTracer("extensions.firebug");
+
+		var FirebugTrace = traceConsoleService.getTracer("extensions.firebug");
 
         // Log info into the Firebug tracing console.
         var shout = (Chromebug.globalObserver.shoutOptionValue?"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG globalObserver.":"");
