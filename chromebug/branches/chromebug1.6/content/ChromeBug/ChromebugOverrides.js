@@ -426,7 +426,7 @@ function overrideFirebugFunctions()
         Firebug.CommandLine.isAttached = ChromebugOverrides.commandLine.isAttached;
         // Trace message coming from Firebug should be displayed in Chromebug's panel
         //
-        Firebug.setPref("extensions.firebug", "enableTraceConsole", "panel");
+        //Firebug.setPref("extensions.firebug", "enableTraceConsole", "panel");
 
         window.dump("ChromebugPanel Overrides applied"+"\n");
     }
