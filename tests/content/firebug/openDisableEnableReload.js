@@ -56,7 +56,7 @@ function runTest()
 function enableAndCheck(panelName, module)
 {
     FBTestFirebug.selectPanelTab(panelName);
-    FBTestFirebug.updateModelState(module, null, true);
+    FBTestFirebug.setPanelState(module, panelName, null, true);
     checkIsEnabled(panelName, module);
 }
 
