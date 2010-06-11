@@ -134,15 +134,16 @@
         <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
     </popupset>
 
-    <hbox id="toAllowScrollBarsIGuess" flex="3">
+    <hbox flex="3">
         <vbox flex="3">
-            <browser id="taskBrowser" src="" flex="1" type="content-primary"
+            <!-- The type must be set to content in order to see scroll bar for 
+                pages like e.g. swarm (it was cotent-primary before -->
+            <browser id="taskBrowser" src="" flex="1" type="content"
                 disablehistory="true" contextmenu="fbContextMenu"
                 tooltip="fbTooltip"/>
 
             <findbar id="FindToolbar" browserid="taskBrowser"/>
         </vbox>
-
     </hbox>
 
     <splitter id="testConsoleSplitter" state="open" collapse="after" resizeBefore="closest"
