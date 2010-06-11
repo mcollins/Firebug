@@ -86,8 +86,9 @@ History.prototype =
         if (outer != null)
             throw Cr.NS_ERROR_NO_AGGREGATION;
 
-        FBTrace = Cc["@joehewitt.com/firebug-trace-service;1"]
-           .getService(Ci.nsISupports).wrappedJSObject.getTracer("extensions.firebug");
+        // Firebug trace service is now implemented as a module.
+        Components.utils.import("resource://firebug/firebug-trace-service.js");
+        FBTrace = traceConsoleService.getTracer("extensions.firebug");
 
         this.wrappedJSObject = this;
         return this.QueryInterface(iid);
