@@ -998,9 +998,17 @@ Firebug.Chromebug = extend(Firebug.Module,
                     {
                         if (FBTrace.DBG_UI_LOOP)
                             FBTrace.sysout("ChromeBugPanel.onStop suppressing context: "+(anotherContext?anotherContext.getName():null));
-                        Firebug.Debugger.suppressEventHandling(anotherContext);
-                        anotherContext.suppressed = true;
-                        anotherContext.stopped;
+                        try
+                        {
+                            Firebug.Debugger.suppressEventHandling(anotherContext);
+                            anotherContext.suppressed = true;
+                            anotherContext.stopped;
+                        }
+                        catch(exc)
+                        {
+                        	if(FBTrace.DBG_ERRORS)
+                        		FBTrace.sysout("ChromeBugPanel.onStop suppressing context FAILED:"+exc, exc);
+                        }
                     }
                 }
             }
