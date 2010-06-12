@@ -84,7 +84,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     getCurrentURI: function()
     {
-    	return Firebug.Chromebug.getCurrentBrowser().currentURI;
+        return Firebug.Chromebug.getCurrentBrowser().currentURI;
     },
 
     onXULWindowAdded: function(xul_window, outerDOMWindow)
@@ -581,9 +581,9 @@ Firebug.Chromebug = extend(Firebug.Module,
 
             // we want to write window.console onto the actual window, not the wrapper
             if (global.wrappedJSObject)
-            	global.wrappedJSObject.console = Firebug.Console.createConsole(context, global);
+                global.wrappedJSObject.console = Firebug.Console.createConsole(context, global);
             else // we don't know what we are doing
-            	global.console = Firebug.Console.createConsole(context, global);
+                global.console = Firebug.Console.createConsole(context, global);
 
             var url = safeToString(global ? global.location : null);
             if (isDataURL(url))
@@ -818,7 +818,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                    if (script.isValid)
                        script.clearBreakpoint(0);
                 }
-                delete 	jsdState._chromebug.breakpointedScripts;
+                delete     jsdState._chromebug.breakpointedScripts;
 
                 var globals = jsdState._chromebug.globals; // []
                 var globalTagByScriptTag = jsdState._chromebug.globalTagByScriptTag; // globals index by script tag

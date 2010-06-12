@@ -18,7 +18,7 @@ Chromebug.globalObserver =
     observe: function(subject, topic, data)
     {
 
-		var FirebugTrace = traceConsoleService.getTracer("extensions.firebug");
+        var FirebugTrace = traceConsoleService.getTracer("extensions.firebug");
 
         // Log info into the Firebug tracing console.
         var shout = (Chromebug.globalObserver.shoutOptionValue?"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG globalObserver.":"");

@@ -150,11 +150,11 @@ var ChromebugOverrides = {
 
             if (global)
             {
-            	var name = safeGetWindowLocation(global);
-            	if (Firebug.Chromebug.isChromebugURL(name)) // if the frame was compiled in chromebug, ignore it
-            		return null;
+                var name = safeGetWindowLocation(global);
+                if (Firebug.Chromebug.isChromebugURL(name)) // if the frame was compiled in chromebug, ignore it
+                    return null;
 
-            	context = Firebug.Chromebug.getOrCreateContext(global, frame.script.fileName);
+                context = Firebug.Chromebug.getOrCreateContext(global, frame.script.fileName);
             }
 
         }
@@ -193,13 +193,13 @@ var ChromebugOverrides = {
         var sourceFile = ChromebugOverrides._getSourceFileByScript( context, script );
         if (!sourceFile)
         {
-        	// Hack to workaround some enumerateScript bugs
-        	sourceFile = context.sourceFileMap[script.fileName];
-        	if (sourceFile && sourceFile.compilation_unit_type === "enumerated")
-        	{
-        		sourceFile.innerScripts[script.tag] = script;
-        		return sourceFile;
-        	}
+            // Hack to workaround some enumerateScript bugs
+            sourceFile = context.sourceFileMap[script.fileName];
+            if (sourceFile && sourceFile.compilation_unit_type === "enumerated")
+            {
+                sourceFile.innerScripts[script.tag] = script;
+                return sourceFile;
+            }
 
             sourceFile = Firebug.Chromebug.eachContext(function visitContext(context)
             {
