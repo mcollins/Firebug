@@ -222,7 +222,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
     {
         try
         {
-        	var text = FBTestApp.TestConsole.getErrorSummaryText();
+            var text = FBTestApp.TestConsole.getErrorSummaryText();
             copyToClipboard(text);
         }
         catch (err)

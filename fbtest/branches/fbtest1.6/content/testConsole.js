@@ -289,12 +289,12 @@ FBTestApp.TestConsole =
 
     onTaskWindowDOMLoaded: function(event)
     {
-    	var taskBrowser = $("taskBrowser");
+        var taskBrowser = $("taskBrowser");
         var fbTestFrame = event.target.getElementById("FBTest");
         if (fbTestFrame)
-        	fbTestFrame.contentDocument.addEventListener("load", FBTestApp.TestConsole.onTaskFrameLoaded, true);
+            fbTestFrame.contentDocument.addEventListener("load", FBTestApp.TestConsole.onTaskFrameLoaded, true);
         else
-        	taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
+            taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
     },
 
     onTaskFrameLoaded: function(event)
@@ -322,11 +322,11 @@ FBTestApp.TestConsole =
 
     processTestList: function(doc)
     {
-    	var win = unwrapObject(doc.defaultView);
-    	if (!win.testList)
+        var win = unwrapObject(doc.defaultView);
+        if (!win.testList)
             return;
 
-    	this.addStyleSheets(doc);
+        this.addStyleSheets(doc);
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.loadTestList; processTestList " + win.driverBaseURI +
@@ -415,8 +415,8 @@ FBTestApp.TestConsole =
         var extensionsText = "";
         for (var i = 0; i < Application.extensions; i++)
         {
-        	var extension = Applicaiton.extensions[i];
-        	extensionsText = "Extension: " + extension.name + " (" + extension.id +") version: "+extension.version+"\n";
+            var extension = Applicaiton.extensions[i];
+            extensionsText = "Extension: " + extension.name + " (" + extension.id +") version: "+extension.version+"\n";
         }
 
         // Store head info.
