@@ -91,50 +91,50 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
 {
     initialize: function(doc, progress)
     {
-		this.progress = progress;
+        this.progress = progress;
     },
 
     onStepEnabled: function(doc, elt)
     {
-    	if (!Swarm.Tester.testResults)
-    	{
-    		// TODO mark red
-    		alert("No Test Results to Export!");
-    		return;
-    	}
-    	this.progress("Found export document template frame");
+        if (!Swarm.Tester.testResults)
+        {
+            // TODO mark red
+            alert("No Test Results to Export!");
+            return;
+        }
+        this.progress("Found export document template frame");
 
-    	var template = this.getTemplate();
+        var template = this.getTemplate();
         this.setSwarmDefined(template, this.progress);
         this.setTestResults(template, this.progress);
 
-    	this.showSwarmTaskData(doc, "swarmCertification");
+        this.showSwarmTaskData(doc, "swarmCertification");
     },
 
     onStep: function(event, progress)
     {
-    	var template = this.getTemplate();
+        var template = this.getTemplate();
         this.doExport(template, progress);
     },
 
     getTemplate: function()
     {
-    	var taskBrowser = $("taskBrowser");
-    	var templateFrame = taskBrowser.contentDocument.getElementById("swarmCertification");
-    	if (!templateFrame)
-    		this.progress("ERROR: exporter.js needs element id swarmCertification");
-    	else
-    		return templateFrame.contentDocument;
+        var taskBrowser = $("taskBrowser");
+        var templateFrame = taskBrowser.contentDocument.getElementById("swarmCertification");
+        if (!templateFrame)
+            this.progress("ERROR: exporter.js needs element id swarmCertification");
+        else
+            return templateFrame.contentDocument;
     },
 
     setSwarmDefined: function(template, progress)
     {
-    	var exportedSwarmDefinitionFrame = template.getElementById("swarmDefinition");
-    	if (!exportedSwarmDefinitionFrame)
-    	{
-    		progress("ERROR: exporter.js needs swarmDefinition element in swarmCertification web page");
-    		return;
-    	}
+        var exportedSwarmDefinitionFrame = template.getElementById("swarmDefinition");
+        if (!exportedSwarmDefinitionFrame)
+        {
+            progress("ERROR: exporter.js needs swarmDefinition element in swarmCertification web page");
+            return;
+        }
         progress("Found export point for swarmDefinition");
         var swarmDefinitionAsDataURL = this.getDataURLForContent(Swarm.Tester.testedSwarmDefinition, "text/html");
         exportedSwarmDefinitionFrame.setAttribute("src", swarmDefinitionAsDataURL);
@@ -146,8 +146,8 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
         var exportedTestResultsFrame = template.getElementById("FBTest");
         if (!exportedTestResultsFrame)
         {
-    		progress("ERROR: exporter.js needs FBTest element in swarmCertification web page");
-    		return;
+            progress("ERROR: exporter.js needs FBTest element in swarmCertification web page");
+            return;
         }
         progress("Found export point for test results");
 
@@ -158,16 +158,16 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
 
     doExport: function(template, progress)
     {
-    	var sourceURL = Swarm.Tester.testedSwarmDefinitionURL;
-    	var sourceParts = sourceURL.split('/');
-    	var sourceLeafName = sourceParts[sourceParts.length - 1];
+        var sourceURL = Swarm.Tester.testedSwarmDefinitionURL;
+        var sourceParts = sourceURL.split('/');
+        var sourceLeafName = sourceParts[sourceParts.length - 1];
 
-    	Components.utils.import("resource://firebug/storageService.js");
-		if (typeof(TextService) != "undefined")
+        Components.utils.import("resource://firebug/storageService.js");
+        if (typeof(TextService) != "undefined")
         {
-			var html = getElementHTML(template.documentElement);
-	        var file = TextService.getProfileDirectory();
-	        file = TextService.getFileInDirectory(file, "firebug/"+sourceLeafName);
+            var html = getElementHTML(template.documentElement);
+            var file = TextService.getProfileDirectory();
+            file = TextService.getFileInDirectory(file, "firebug/"+sourceLeafName);
             var result = TextService.writeText(file, html);
             progress("exported to "+result);
             FBL.openWindow(null, FBL.getURLFromLocalFile(file));
@@ -184,7 +184,7 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
         if (step !== "swarmExportPageStep")
             return;
 
-    	Swarm.workflowMonitor.stepWorkflows(doc, "swarmExportPageStep");
+        Swarm.workflowMonitor.stepWorkflows(doc, "swarmExportPageStep");
     },
 
     getDataURLForContent: function(content, mimetype, params)
@@ -193,12 +193,12 @@ Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
         var uri = "data:"+mimetype+";";
         if (params)
         {
-        	for (var p in params)
-        		uri += p +"="+encodeURIComponent(params[p])+",";
+            for (var p in params)
+                uri += p +"="+encodeURIComponent(params[p])+",";
         }
         else
         {
-        	uri += ",";
+            uri += ",";
         }
         uri += encodeURIComponent(content);
         return uri;

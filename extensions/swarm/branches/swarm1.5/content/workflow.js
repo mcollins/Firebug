@@ -90,12 +90,12 @@ Swarm.WorkflowStep =
 
             try
             {
-            	var iframe = swarmTaskDataElements[i].getElementsByTagName("iframe")[0];
-            	iframe.removeAttribute('style');
+                var iframe = swarmTaskDataElements[i].getElementsByTagName("iframe")[0];
+                iframe.removeAttribute('style');
             }
             catch (exc)
             {
-            	FBTrace.sysout("showSwarmTaskData FAILS to delete style.height for "+iframe+" "+exc, swarmTaskDataElements[i])
+                FBTrace.sysout("showSwarmTaskData FAILS to delete style.height for "+iframe+" "+exc, swarmTaskDataElements[i])
             }
 
         }
@@ -137,6 +137,7 @@ Swarm.WorkflowStep =
         }
         return null;
     },
+    
 };
 
 Swarm.workflowMonitor =
@@ -411,81 +412,81 @@ Swarm.workflowMonitor =
 
 Swarm.sourcePicker =  extend(Swarm.WorkflowStep, 
 {
-	initialize: function(doc, progress)
-	{
-		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
-		{
-			sourcePickerButton.addEventListener("keyup", Swarm.sourcePicker.pick, true);
-			sourcePickerButton.classList.remove("swarmTaskHidePicker");
-			var width = (sourcePickerButton.parentNode.offsetWidth - sourcePickerButton.offsetLeft);
-			sourcePickerButton.style.width = width+"px";
-			var url = Swarm.sourcePicker.getTaskDataElement(sourcePickerButton).getAttribute('src');
-			var baseURL = doc.location.toString();
-			var editURL = absoluteURL(url, baseURL);
-			sourcePickerButton.setAttribute("value", editURL);
-		});
-	},
-	
-	onWorkflowSelect: function(doc, selectedWorkflow) 
-	{
-		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
-		{
-			sourcePickerButton.classList.add("swarmTaskHidePicker");
-		});
-	},
-	
-	onWorkflowUnselect: function(doc) 
-	{
-		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
-		{
-			sourcePickerButton.classList.remove("swarmTaskHidePicker"); 
-		});
-	},
-	
-	shutdown: function(doc, progress)
-	{
-		Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
-		{
-			sourcePickerButton.removeEventListener("keyup", Swarm.sourcePicker.pick, true);
-		});
-	},
-	// ------------------
-	
-	eachPicker: function(doc, fnOfElement)
-	{
-		var sourcePickerButtons = doc.getElementsByClassName("swarmTaskSrc");
-		for (var i = 0; i < sourcePickerButtons.length; i++)
-			fnOfElement(sourcePickerButtons[i]); 
-	},
-	
-	getEnclosingTaskDataDiv: function(element)
-	{
-		var elt = element;
-		while (elt && !elt.classList.contains('swarmTaskData'))
-			elt = elt.parentNode;
-		
-		return elt;
-	},
-	
-	getTaskDataElement: function(sourcePickerButton)
-	{
-		var div = Swarm.sourcePicker.getEnclosingTaskDataDiv(sourcePickerButton);
-		if (div)
-		{
-			var taskData = div.getElementsByTagName('iframe')[0];
-			return taskData;		
-		}
-	},
-	
-	pick: function(event)
-	{
-		var sourcePickerButton = event.target;
-		var elt = Swarm.sourcePicker.getTaskDataElement(sourcePickerButton)
-		var toValue = event.target.value;
-		var fromValue = elt.value;
-		if (toValue !== fromValue)
-			elt.setAttribute('src', toValue);
-	}
+    initialize: function(doc, progress)
+    {
+        Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+        {
+            sourcePickerButton.addEventListener("keyup", Swarm.sourcePicker.pick, true);
+            sourcePickerButton.classList.remove("swarmTaskHidePicker");
+            var width = (sourcePickerButton.parentNode.offsetWidth - sourcePickerButton.offsetLeft);
+            sourcePickerButton.style.width = width+"px";
+            var url = Swarm.sourcePicker.getTaskDataElement(sourcePickerButton).getAttribute('src');
+            var baseURL = doc.location.toString();
+            var editURL = absoluteURL(url, baseURL);
+            sourcePickerButton.setAttribute("value", editURL);
+        });
+    },
+    
+    onWorkflowSelect: function(doc, selectedWorkflow) 
+    {
+        Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+        {
+            sourcePickerButton.classList.add("swarmTaskHidePicker");
+        });
+    },
+    
+    onWorkflowUnselect: function(doc) 
+    {
+        Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+        {
+            sourcePickerButton.classList.remove("swarmTaskHidePicker"); 
+        });
+    },
+    
+    shutdown: function(doc, progress)
+    {
+        Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
+        {
+            sourcePickerButton.removeEventListener("keyup", Swarm.sourcePicker.pick, true);
+        });
+    },
+    // ------------------
+    
+    eachPicker: function(doc, fnOfElement)
+    {
+        var sourcePickerButtons = doc.getElementsByClassName("swarmTaskSrc");
+        for (var i = 0; i < sourcePickerButtons.length; i++)
+            fnOfElement(sourcePickerButtons[i]); 
+    },
+    
+    getEnclosingTaskDataDiv: function(element)
+    {
+        var elt = element;
+        while (elt && !elt.classList.contains('swarmTaskData'))
+            elt = elt.parentNode;
+        
+        return elt;
+    },
+    
+    getTaskDataElement: function(sourcePickerButton)
+    {
+        var div = Swarm.sourcePicker.getEnclosingTaskDataDiv(sourcePickerButton);
+        if (div)
+        {
+            var taskData = div.getElementsByTagName('iframe')[0];
+            return taskData;        
+        }
+    },
+    
+    pick: function(event)
+    {
+        var sourcePickerButton = event.target;
+        var elt = Swarm.sourcePicker.getTaskDataElement(sourcePickerButton)
+        var toValue = event.target.value;
+        var fromValue = elt.value;
+        if (toValue !== fromValue)
+            elt.setAttribute('src', toValue);
+    }
 });
 Swarm.workflowMonitor.registerWorkflowStep("swarmSourcePicker", Swarm.sourcePicker);
 
@@ -559,5 +560,124 @@ Swarm.embedder = {
 };
 
 observerService.addObserver(Swarm.embedder, "fbtest", false);  // removed in observe: 'shutdown'
+
+//-----------------------------------------------------------------------------------------------
+
+//Secure download and hash calculation --------------------------------------------------------
+//http://groups.google.com/group/mozilla.dev.platform/browse_thread/thread/9f1bdf8603b72384/74fcb44e8b701966?#74fcb44e8b701966
+
+Swarm.WorkflowStep.secureHashOverHTTPS = function(urlString, fncTakesHashString)
+{
+    const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci["nsIIOService"]);
+    try
+     {
+         if (urlString)
+             var uri = ioService.newURI(urlString, null, null);
+         else
+             throw new Error("secureHashOverHTTPS FAILS: no URL given");
+     }
+     catch(exc)
+     {
+         throw new Error("secureHashOverHTTPS FAILS: could not create URI from the given URL: "+urlString+" because: "+exc);
+     }
+
+     if (!uri.schemeIs("https"))
+         throw new Error("secureHashOverHTTPS FAILS: only https URL can be securely downloaded");
+
+     try
+     {
+         let channel = ioService.newChannel(urlString, null, null);
+
+         let hasher = Cc["@mozilla.org/security/hash;1"]
+             .createInstance(Ci.nsICryptoHash);
+
+         let listener =
+         {
+             onStartRequest: function(request, arg)
+             {
+                 hasher.init(hasher.SHA1);
+                 FBTrace.sysout("onStartRequest "+channel.URI.spec);
+             },
+             onDataAvailable: function(request, arg, stream, offset, count)
+             {
+                 FBTrace.sysout("onDataAvailable "+channel.URI.spec+" "+count);
+                 var problem = getSecurityProblem(request);
+                 if (!problem)
+                     hasher.updateFromStream(stream, count);
+                 else
+                     throw new Error("secureHashOverHTTPS FAILS: "+problem+" reading "+urlString);
+             },
+             onStopRequest: function(request, arg, statusCode)
+             {
+                 FBTrace.sysout("onStopRequest "+channel.URI.spec+" "+statusCode);
+                 try
+                 {
+                     var hash = hasher.finish(false);
+                     // convert the binary hash data to a hex string.
+                     var s = [toHexString(hash.charCodeAt(i)) for (i in hash)].join("");
+                     fncTakesHashString("sha1:"+s);
+                 }
+                 catch(exc)
+                 {
+                     throw new Error("secureHashOverHTTPS FAILS: "+exc);
+                 }
+
+             }
+         };
+
+        channel.asyncOpen(listener, hasher);
+     }
+     catch (e)
+     {
+         var cascade =  new Error("secureHashOverHTTPS FAILS "+e);
+         cascade.cause = e;
+         throw cascade;
+     }
+}
+
+function getSecurityProblem(channel)
+{
+    if (channel instanceof Ci.nsIHttpChannel)
+     {
+         var secInfo = channel.securityInfo;
+         if (secInfo instanceof Ci.nsITransportSecurityInfo)
+         {
+             var iListener = Ci.nsIWebProgressListener;
+
+             var secureBits = (iListener.STATE_IS_SECURE | iListener.STATE_SECURE_HIGH);
+             if (secInfo.securityState & secureBits)
+             {
+                 // https://developer.mozilla.org/En/How_to_check_the_security_state_of_an_XMLHTTPRequest_over_SSL
+                 if (secInfo instanceof Ci.nsISSLStatusProvider) // then the secInfo hasA cert
+                 {
+                     if (secInfo.SSLStatus instanceof Ci.nsISSLStatus)
+                     {
+                         var cert = secInfo.SSLStatus.serverCert;
+                         var certOverrideService = Cc["@mozilla.org/security/certoverride;1"]
+                                    .getService(Ci.nsICertOverrideService);
+
+                         var bits = {}, temp = {};
+
+                         if (certOverrideService.hasMatchingOverride(channel.URI.host, channel.URI.port, cert, bits, temp))
+                             return "user has overridden certificate checks";
+
+                         return false;
+                     }
+                     return "channel securityInfo SSLStatus is not an nsISSLStatus";
+                 }
+                 return "channel securityInfo is not an nsISSLStatusProvider";
+             }
+             return "channel securityInfo is not in secure state";
+         }
+         return "channel securityInfo is not valid";
+     }
+     return "request has no channel for security checks";
+}
+
+//return the two-digit hexadecimal code for a byte
+function toHexString(charCode)
+{
+    return ("0" + charCode.toString(16)).slice(-2);
+}
 
 }}());

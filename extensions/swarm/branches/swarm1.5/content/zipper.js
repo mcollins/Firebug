@@ -15,10 +15,10 @@ Swarm.Zipper = {
 
 Swarm.Zipper.swarmPackageStep = extend(Swarm.WorkflowStep,
 {
-	initialize: function()
-	{
-		// if restart pref set, ?
-	},
+    initialize: function()
+    {
+        // if restart pref set, ?
+    },
     onStepEnabled: function(doc, elt)
     {
         this.showSwarmTaskData(doc, "swarmDefinition");
@@ -26,16 +26,16 @@ Swarm.Zipper.swarmPackageStep = extend(Swarm.WorkflowStep,
 
     onWorkflowSelect: function(doc, selectedWorkflow)
     {
-    	var installed = Swarm.Installer.getInstalledExtensions();
-    	for (var i = 0; i < installed.length; i++)
+        var installed = Swarm.Installer.getInstalledExtensions();
+        for (var i = 0; i < installed.length; i++)
         {
-    		var id = installed[i].id;
+            var id = installed[i].id;
             var installLocation = this.getExtensionManager().getInstallLocation(id);
             var fileLink = getFileLink(id);
             if (fileLink)
             {
-            	// activate the packager button,
-            	// mark the extension div as packageable
+                // activate the packager button,
+                // mark the extension div as packageable
             }
         },
         
@@ -48,38 +48,38 @@ Swarm.Zipper.swarmPackageStep = extend(Swarm.WorkflowStep,
      */
     getFileLink: function(id)
     {
-    	var installLocation = this.getExtensionManager().getInstallLocation(id);
-    	var linkFileParent = installLocation.location;
-    	if (linkFileParent.isDirectory())
-    	{
-    		var linkFile = linkFileParent;
-    		linkFile.append(id);
-    		if (linkFile.exists() && !linkFile.isDirectory())
-    		{
-    			return linkFile;
-    		}
-    	}
-    	return null;
+        var installLocation = this.getExtensionManager().getInstallLocation(id);
+        var linkFileParent = installLocation.location;
+        if (linkFileParent.isDirectory())
+        {
+            var linkFile = linkFileParent;
+            linkFile.append(id);
+            if (linkFile.exists() && !linkFile.isDirectory())
+            {
+                return linkFile;
+            }
+        }
+        return null;
     },
 
     onStep: function(event, progress)
     {
         // if restart pref not set
-    	// Initialize the zipper with the root directory of the extension
-    	var installed = Swarm.Installer.getInstalledExtensions();
-    	for (var i = 0; i < installed.length; i++)
+        // Initialize the zipper with the root directory of the extension
+        var installed = Swarm.Installer.getInstalledExtensions();
+        for (var i = 0; i < installed.length; i++)
         {
-    		var id = installed[i].id;
-            	
-    		var fileLink = this.getFileLink(id);
-    		if (fileLink)
-    		{
-    	    	// Write the zip file into the staging area
-    	    	// Copy to link file from extensions/ to firebug/    			
-    		}	
-    		// else not packageable
+            var id = installed[i].id;
+                
+            var fileLink = this.getFileLink(id);
+            if (fileLink)
+            {
+                // Write the zip file into the staging area
+                // Copy to link file from extensions/ to firebug/                
+            }    
+            // else not packageable
         }
-    	// Exit to cause installation
+        // Exit to cause installation
     },
 
 });

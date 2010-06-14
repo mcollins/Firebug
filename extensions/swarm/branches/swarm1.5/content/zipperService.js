@@ -22,10 +22,10 @@ function Directory(path)
     }
     catch (exc)
     {
-    	if (path)
-    		throw "zipit.Directory("+path+") :"+exc;
-    	else
-    		throw "zipit.Directory called with no path";
+        if (path)
+            throw "zipit.Directory("+path+") :"+exc;
+        else
+            throw "zipit.Directory called with no path";
     }
 }
 
@@ -103,15 +103,15 @@ var Zipper  = {
 
         this.dispatch(this.packers, "rootDirectory", [xpi]);
 
-    	if (!rootDirectory)
-    		throw "mozzipper zipit: no source directory";
+        if (!rootDirectory)
+            throw "mozzipper zipit: no source directory";
 
         this.dispatch(this.packers, "filelist", [xpi]);
 
         this.dispatch(this.packers, "xpiFileName", [xpi]);
 
-    	if (!xpiName)
-    		throw "mozziper zipit: no target file name";
+        if (!xpiName)
+            throw "mozziper zipit: no target file name";
 
         this.dispatch(this.packers, "xpi", [xpi]);
 
@@ -128,14 +128,14 @@ var Zipper  = {
                 var packer = packers[i];
                 if ( packer.hasOwnProperty(name) )
                 {
-                	try
-                	{
-                		packer[name].apply(packer, args);
-                	}
-                	catch (exc)
+                    try
                     {
-                    	FBTrace.sysout(" Exception in mozzipper.dispatch "+ name, exc);
-                    	FBTrace.sysout(" Exception in mozzipper.dispatch "+ name+" For packer ", packer);
+                        packer[name].apply(packer, args);
+                    }
+                    catch (exc)
+                    {
+                        FBTrace.sysout(" Exception in mozzipper.dispatch "+ name, exc);
+                        FBTrace.sysout(" Exception in mozzipper.dispatch "+ name+" For packer ", packer);
                         FBTrace.sysout(" Exception in mozzipper.dispatch "+ name, exc);
                         throw "mozziper dispatch "+name+" FAILS: "+exc;
                     }
@@ -186,25 +186,25 @@ var Zipper  = {
  */
 var Packer =
 {
-		/*
-		 * Change the zip.rootDirectory
-		 */
-		rootDirectory: function(zip) {},
-		/*
-		 * Process zip.files, begins filled with files from rootDirectory
-		 * @param zip, the current zip object
-		 */
-		filelist: function(zip) {},
-		/*
-		 * Process zip.name
-		 * @param zip, the current zip object
-		 */
-		xpiFileName: function(zip) {},
-		/*
-		 * Process zip.zipFile, starts with zip of zip.files
-		 * @param zip, the current zip object
-		 */
-		xpi: function(zip) {},
+        /*
+         * Change the zip.rootDirectory
+         */
+        rootDirectory: function(zip) {},
+        /*
+         * Process zip.files, begins filled with files from rootDirectory
+         * @param zip, the current zip object
+         */
+        filelist: function(zip) {},
+        /*
+         * Process zip.name
+         * @param zip, the current zip object
+         */
+        xpiFileName: function(zip) {},
+        /*
+         * Process zip.zipFile, starts with zip of zip.files
+         * @param zip, the current zip object
+         */
+        xpi: function(zip) {},
 };
 
 var PrintZipperPacker = extend(Packer, {
@@ -285,85 +285,85 @@ var NoSvnZipperPacker = extend(Packer, {
 
 var RootDirectoryListPacker = extend(Packer,
 {
-	filelist: function(zip)
-	{
-	    zip.files = zip.rootDirectory.getAllFiles();
-	},
+    filelist: function(zip)
+    {
+        zip.files = zip.rootDirectory.getAllFiles();
+    },
 });
 
 var ZipAll = extend(Packer,
 {
-	xpi: function(zip)
-	{
-	    var zipWriter = Components.Constructor("@mozilla.org/zipwriter;1", "nsIZipWriter");
-	    var writer = new zipWriter();
+    xpi: function(zip)
+    {
+        var zipWriter = Components.Constructor("@mozilla.org/zipwriter;1", "nsIZipWriter");
+        var writer = new zipWriter();
 
-	    var xpi = Components.classes["@mozilla.org/file/local;1"]
-	                .createInstance(Components.interfaces.nsILocalFile);
-	    var path = zip.name;
-	    path = path.replace(/\//g, "\\");  // HACK!
-	    xpi.initWithPath(path);
+        var xpi = Components.classes["@mozilla.org/file/local;1"]
+                    .createInstance(Components.interfaces.nsILocalFile);
+        var path = zip.name;
+        path = path.replace(/\//g, "\\");  // HACK!
+        xpi.initWithPath(path);
 
-	    try
-	    {
-	        writer.open(xpi, PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE);
-	    }
-	    catch (exc)
-	    {
-	        if (exc.name == "NS_ERROR_FILE_NOT_FOUND")
-	        {
-	            FBTrace.sysout("ZipFile.zipall FAILS for file", xpi);
-	            throw "The file "+xpi.path+" was not found (or its directory does not exist) and the flags "+(PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE)+" didn't permit creating it."
-	        }
-	        else
-	            throw exc;
-	    }
+        try
+        {
+            writer.open(xpi, PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE);
+        }
+        catch (exc)
+        {
+            if (exc.name == "NS_ERROR_FILE_NOT_FOUND")
+            {
+                FBTrace.sysout("ZipFile.zipall FAILS for file", xpi);
+                throw "The file "+xpi.path+" was not found (or its directory does not exist) and the flags "+(PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE)+" didn't permit creating it."
+            }
+            else
+                throw exc;
+        }
 
-	    var prefixLength = zip.rootDirectory.length + 1;
-	    var allDirectories = [];
-	    for (var i = 0; i < zip.files.length; i++)
-	    {
-	        var file = zip.files[i];
-	        var absPath = file.path;
-	        var parentPath = file.parent.path;
-	        if (allDirectories.indexOf(parentPath) == -1)
-	        {
-	            var relPath = parentPath.substr(prefixLength).replace(/\\/g,"/");
-	            if (zip.debug) FBTrace.sysout("zipAll "+i+") "+relPath);
-	            if (relPath.length > 1)
-	            {
-	                if (zip.debug) FBTrace.sysout(" adding directory \n");
-	                writer.addEntryFile(relPath, Components.interfaces.nsIZipWriter.COMPRESSION_DEFAULT, file.parent, false);
-	                allDirectories.push(parentPath);
-	            }
-	            else
-	                if (zip.debug) FBTrace.sysout(" skipping directory \n");
-	        }
-	        var relPath = absPath.substr(prefixLength).replace(/\\/g,"/");
+        var prefixLength = zip.rootDirectory.length + 1;
+        var allDirectories = [];
+        for (var i = 0; i < zip.files.length; i++)
+        {
+            var file = zip.files[i];
+            var absPath = file.path;
+            var parentPath = file.parent.path;
+            if (allDirectories.indexOf(parentPath) == -1)
+            {
+                var relPath = parentPath.substr(prefixLength).replace(/\\/g,"/");
+                if (zip.debug) FBTrace.sysout("zipAll "+i+") "+relPath);
+                if (relPath.length > 1)
+                {
+                    if (zip.debug) FBTrace.sysout(" adding directory \n");
+                    writer.addEntryFile(relPath, Components.interfaces.nsIZipWriter.COMPRESSION_DEFAULT, file.parent, false);
+                    allDirectories.push(parentPath);
+                }
+                else
+                    if (zip.debug) FBTrace.sysout(" skipping directory \n");
+            }
+            var relPath = absPath.substr(prefixLength).replace(/\\/g,"/");
 
-	        if (zip.debug) FBTrace.sysout("zipAll "+i+") "+relPath);
-	        if (relPath.length < 1)
-	        {
-	            if (zip.debug) FBTrace.sysout(" skipping \n");
-	            continue;
-	        }
-	        else
-	            if (zip.debug) FBTrace.sysout(" adding \n");
+            if (zip.debug) FBTrace.sysout("zipAll "+i+") "+relPath);
+            if (relPath.length < 1)
+            {
+                if (zip.debug) FBTrace.sysout(" skipping \n");
+                continue;
+            }
+            else
+                if (zip.debug) FBTrace.sysout(" adding \n");
 
-	        try
-	        {
-	        	writer.addEntryFile(relPath, Components.interfaces.nsIZipWriter.COMPRESSION_DEFAULT, file, false);
-	        }
-	        catch (exc)
-	        {
-	        	FBTrace.sysout("zipit FAILS nsIZipWriter addEntryFile relPath:"+relPath+" file:"+file.path, exc);
-	        	throw exc;
-	        }
-	    }
-	    writer.close();
-	    zip.zipfile = xpi;
-	    return zip.zipfile;
-	}
+            try
+            {
+                writer.addEntryFile(relPath, Components.interfaces.nsIZipWriter.COMPRESSION_DEFAULT, file, false);
+            }
+            catch (exc)
+            {
+                FBTrace.sysout("zipit FAILS nsIZipWriter addEntryFile relPath:"+relPath+" file:"+file.path, exc);
+                throw exc;
+            }
+        }
+        writer.close();
+        zip.zipfile = xpi;
+        return zip.zipfile;
+    }
 });
 
 

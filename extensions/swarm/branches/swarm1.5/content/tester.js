@@ -30,8 +30,8 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 
     onStepEnabled: function(doc, elt)
     {
-    	delete this.testResults;
-    	delete this.testedSwarmDefinition;
+        delete this.testResults;
+        delete this.testedSwarmDefinition;
         this.showSwarmTaskData(doc, "FBTest");
     },
 
@@ -51,7 +51,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
             Swarm.Tester.testedSwarmDefinition = getElementHTML(doc.getElementById("swarmDefinition").contentDocument.documentElement);
             Swarm.Tester.testedSwarmDefinitionURL = doc.getElementById("swarmDefinition").contentDocument.location +"";
 
-        	Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");
+            Swarm.workflowMonitor.stepWorkflows(doc, "swarmRunAllTestsStep");
         });
     },
 
@@ -68,8 +68,8 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
         var uri = "data:"+mimetype+";";
         if (params)
         {
-        	for (var p in params)
-        		uri += p +"="+encodeURIComponent(params[p])+",";
+            for (var p in params)
+                uri += p +"="+encodeURIComponent(params[p])+",";
         }
         uri += encodeURIComponent(content);
         return uri;
@@ -91,7 +91,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
             if (/https/.test(url))
             {
                 let updateExtensionInfo = extensions[i];
-                secureHashOverHTTPS(url, function updateHash(hashString)
+                this.secureHashOverHTTPS(url, function updateHash(hashString)
                 {
                     updateExtensionInfo.element.setAttribute('hash', hashString);
                     updateExtensionInfo.hash = hashString;
@@ -174,123 +174,6 @@ Swarm.Tester.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
 });
 
 
-
-// Secure download and hash calculation --------------------------------------------------------
-// http://groups.google.com/group/mozilla.dev.platform/browse_thread/thread/9f1bdf8603b72384/74fcb44e8b701966?#74fcb44e8b701966
-
-function secureHashOverHTTPS(urlString, fncTakesHashString)
-{
-    const ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci["nsIIOService"]);
-    try
-    {
-        if (urlString)
-            var uri = ioService.newURI(urlString, null, null);
-        else
-            throw new Error("secureHashOverHTTPS FAILS: no URL given");
-    }
-    catch(exc)
-    {
-        throw new Error("secureHashOverHTTPS FAILS: could not create URI from the given URL: "+urlString+" because: "+exc);
-    }
-
-    if (!uri.schemeIs("https"))
-        throw new Error("secureHashOverHTTPS FAILS: only https URL can be securely downloaded");
-
-    try
-    {
-        let channel = ioService.newChannel(urlString, null, null);
-
-        let hasher = Cc["@mozilla.org/security/hash;1"]
-            .createInstance(Ci.nsICryptoHash);
-
-        let listener =
-        {
-            onStartRequest: function(request, arg)
-            {
-                hasher.init(hasher.SHA1);
-                FBTrace.sysout("onStartRequest "+channel.URI.spec);
-            },
-            onDataAvailable: function(request, arg, stream, offset, count)
-            {
-                FBTrace.sysout("onDataAvailable "+channel.URI.spec+" "+count);
-                var problem = getSecurityProblem(request);
-                if (!problem)
-                    hasher.updateFromStream(stream, count);
-                else
-                    throw new Error("secureHashOverHTTPS FAILS: "+problem+" reading "+urlString);
-            },
-            onStopRequest: function(request, arg, statusCode)
-            {
-                FBTrace.sysout("onStopRequest "+channel.URI.spec+" "+statusCode);
-                try
-                {
-                    var hash = hasher.finish(false);
-                    // convert the binary hash data to a hex string.
-                    var s = [toHexString(hash.charCodeAt(i)) for (i in hash)].join("");
-                    fncTakesHashString("sha1:"+s);
-                }
-                catch(exc)
-                {
-                    throw new Error("secureHashOverHTTPS FAILS: "+exc);
-                }
-
-            }
-        };
-
-       channel.asyncOpen(listener, hasher);
-    }
-    catch (e)
-    {
-        var cascade =  new Error("secureHashOverHTTPS FAILS "+e);
-        cascade.cause = e;
-        throw cascade;
-    }
-}
-
-function getSecurityProblem(channel)
-{
-    if (channel instanceof Ci.nsIHttpChannel)
-    {
-        var secInfo = channel.securityInfo;
-        if (secInfo instanceof Ci.nsITransportSecurityInfo)
-        {
-            var iListener = Ci.nsIWebProgressListener;
-
-            var secureBits = (iListener.STATE_IS_SECURE | iListener.STATE_SECURE_HIGH);
-            if (secInfo.securityState & secureBits)
-            {
-                // https://developer.mozilla.org/En/How_to_check_the_security_state_of_an_XMLHTTPRequest_over_SSL
-                if (secInfo instanceof Ci.nsISSLStatusProvider) // then the secInfo hasA cert
-                {
-                    if (secInfo.SSLStatus instanceof Ci.nsISSLStatus)
-                    {
-                        var cert = secInfo.SSLStatus.serverCert;
-                        var certOverrideService = Cc["@mozilla.org/security/certoverride;1"]
-                                   .getService(Ci.nsICertOverrideService);
-
-                        var bits = {}, temp = {};
-
-                        if (certOverrideService.hasMatchingOverride(channel.URI.host, channel.URI.port, cert, bits, temp))
-                            return "user has overridden certificate checks";
-
-                        return false;
-                    }
-                    return "channel securityInfo SSLStatus is not an nsISSLStatus";
-                }
-                return "channel securityInfo is not an nsISSLStatusProvider";
-            }
-            return "channel securityInfo is not in secure state";
-        }
-        return "channel securityInfo is not valid";
-    }
-    return "request has no channel for security checks";
-}
-
-// return the two-digit hexadecimal code for a byte
-function toHexString(charCode)
-{
-    return ("0" + charCode.toString(16)).slice(-2);
-}
 
 
 Swarm.workflowMonitor.registerWorkflowStep("swarmRunAllTestsStep", Swarm.Tester.swarmRunAllTestsStep);

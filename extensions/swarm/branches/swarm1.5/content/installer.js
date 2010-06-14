@@ -102,7 +102,7 @@ Swarm.Installer =
         var slashSplit = href.split("/");
         var filename = slashSplit[slashSplit.length - 1];
         var dashSplit = filename.split('-');
-        if (dashSplit.length > 1)     	// name-1.6X.0a5.xpi
+        if (dashSplit.length > 1)         // name-1.6X.0a5.xpi
         {
             var m = /(.*)\.xpi/.exec(dashSplit[dashSplit.length -1]);
             if (m)
@@ -145,12 +145,14 @@ Swarm.Installer =
 
                 if (this.isNotOverInstallable(installedExtensions[j].id))
                 {
-                	setClass(declaredExtensionStatus, "installNotAllowed");
-                	var linkToExtension = Swarm.WorkflowStep.getLinkToExtension(installedExtensions[j].id);
-                	if (linkToExtension)
-                		setClass(declaredExtensionStatus, "installLink");
-                	else
-                		setClass(declaredExtensionStatus, "installRegistry");
+                    var linkToExtension = Swarm.WorkflowStep.getLinkToExtension(installedExtensions[j].id);
+                    if (linkToExtension)
+                        setClass(declaredExtensionStatus, "installLink");
+                    else
+                        setClass(declaredExtensionStatus, "installRegistry");
+
+                    if (relativeAge > 0)  // then we would want to install, but cannot
+                        setClass(declaredExtensionStatus, "installNotAllowed");
                 }
 
                 installedButNotDeclared.splice(j, 1);
@@ -158,10 +160,10 @@ Swarm.Installer =
             else
                 setClass(declaredExtensionStatus, "installedVersion-None");
 
-            if (relativeAge > 0 && !declaredExtension.hash)
+            if (relativeAge > 0 && !declaredExtension.hash && !declaredExtensionStatus.classList.contains("installNotAllowed"))
             {
-            	setClass(declaredExtensionStatus, "installHashMissing");
-            	setClass(declaredExtensionStatus, "installNotAllowed");
+                setClass(declaredExtensionStatus, "installHashMissing");
+                setClass(declaredExtensionStatus, "installNotAllowed");
             }
 
             declaredExtensionStatus.innerHTML = declaredExtension.version;
@@ -199,15 +201,15 @@ Swarm.Installer =
 // Unfortunately any error in the following code seems to cause silent failures :-(
 Swarm.Installer.nsIXPIProgressDialog =
 {
-	initialize: function()
-	{
-		this.installing = [];
-	},
+    initialize: function()
+    {
+        this.installing = [];
+    },
 
-	add: function(extension)
-	{
-		this.installing.push(extension);
-	},
+    add: function(extension)
+    {
+        this.installing.push(extension);
+    },
 
     states: ["download_start", "download_done", "install_start", "install_done", "dialog_close"],
 
@@ -348,11 +350,11 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
             FBTrace.sysout("swarm.installer installing "+count+" extensions", {urls: urls, hashes: hashes, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
             try
             {
-            	xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.Installer.nsIXPIProgressDialog);
+                xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.Installer.nsIXPIProgressDialog);
             }
             catch(exc)
             {
-            	FBTrace.sysout("swarm.installer installing FAILS "+exc, exc);
+                FBTrace.sysout("swarm.installer installing FAILS "+exc, exc);
             }
 
         }
