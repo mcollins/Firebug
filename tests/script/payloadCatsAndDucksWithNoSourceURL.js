@@ -11,13 +11,13 @@ function prod( animal) {
 
 var duck = function() {
     this.say = function() { // line 13 rel to this file; 22 + 13 = 35
-        dump('quack\n');   // line 14 rel to this file 22+14=36
+        console.log('quack\n');   // line 14 rel to this file 22+14=36
     };
 };
 
 var cat = function() {
     this.say = function() {
-        dump('meow!!\n');
+        console.log('meow!!\n');
     };
 };
 
