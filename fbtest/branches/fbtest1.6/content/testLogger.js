@@ -155,7 +155,7 @@ FBTestApp.TestLogger.ProgressListener.prototype =
             return;
 
         // Log Start of the test.
-        var fileName = getFileName(FBTestApp.TestConsole.testListPath);
+        var fileName = getFileName(test.path);
         this.stream.writeString("FIREBUG INFO | " + test.group.name + "/" + fileName +
             " | [START] " + test.desc + "\n");
     },
