@@ -398,7 +398,6 @@ FBTestApp.TestConsole =
         // Finally run all tests if the browser has been launched with
         // -runFBTests argument on the command line.
         this.autoRun();
-
     },
 
     /*

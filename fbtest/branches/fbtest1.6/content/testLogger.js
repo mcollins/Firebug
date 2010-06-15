@@ -172,7 +172,7 @@ FBTestApp.TestLogger.ProgressListener.prototype =
         if (test.error)
             moniker = (test.category == "fails") ? "TEST-KNOWN-FAIL" : "TEST-UNEXPECTED-FAIL";
 
-        var fileName = getFileName(FBTestApp.TestConsole.testListPath);
+        var fileName = getFileName(test.path);
 
         // Report test messages for failures.
         if (test.error)

@@ -136,8 +136,8 @@
 
     <hbox flex="3">
         <vbox flex="3">
-            <!-- The type must be set to content in order to see scroll bar for 
-                pages like e.g. swarm (it was cotent-primary before -->
+            <!-- The type must be set to content in order to see the scroll bar for
+                pages like e.g. swarm (it was cotent-primary before) -->
             <browser id="taskBrowser" src="" flex="1" type="content"
                 disablehistory="true" contextmenu="fbContextMenu"
                 tooltip="fbTooltip"/>
