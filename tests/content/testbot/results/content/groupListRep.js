@@ -11,12 +11,20 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
             TBODY(
                 FOR("group", "$rows",
                     TR({"class": "testGroupRow", _repObject: "$group"},
-                        TD({"class": "groupName testGroupCol"},
+                        TD({"class": "groupName testGroupCol", width: "10%"},
                             SPAN({"class": "testGroupName"},
                                 "$group|getGroupName"
-                            ),
+                            )
+                        ),
+                        TD({"class": "groupName testGroupCol", width: "10%"},
                             SPAN({"class": "testGroupCount"},
                                 "$group|getGroupCount"
+                            )
+                        ),
+                        TD({"class": "groupName testGroupCol", width: "80%"},
+                            SPAN({"class": "testGroupInfo",
+                                title: "$group|getGroupTooltip"},
+                                "$group|getGroupInfo"
                             )
                         )
                     )
@@ -26,26 +34,46 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
 
     groupBodyTag:
         TR({"class": "groupBodyRow", _repObject: "$group"},
-            TD({"class": "groupBodyCol", colspan: 1},
+            TD({"class": "groupBodyCol", colspan: 3},
                 DIV({"class": "groupBodyDefault"})
             )
         ),
 
     getGroupName: function(group)
     {
-        var date = new Date(group.key[1]);
+        var date = new Date(group.value.doc['Export Date']);
         return date.toLocaleString();
     },
 
     getGroupCount: function(group)
     {
-        // xxxHonza: localization
-        if (group.value == 0)
+        var count = group.value.total;
+        if (count == 0)
             return "";
-        else if (group.value == 1)
-            return "(" + group.value + " failure)";
-        else
-            return "(" + group.value + " failures)";
+
+        var doc = group.value.doc;
+
+        // xxxHonza: localization
+        var label = (count > 1) ? "failures" : "failure";
+        return "(" + count + " " + label + " of " + 
+            doc['Total Tests'] + ")";
+    },
+
+    getGroupInfo: function(group)
+    {
+        var doc = group.value.doc;
+        return doc['App Name'] + " " + doc['App Version'] +
+            " + Firebug " + doc['Firebug'];
+    },
+
+    getGroupTooltip: function(group)
+    {
+        var doc = group.value.doc;
+        return doc['App Platform'] + ", " +
+            doc['App Build ID'] + ", " +
+            doc['Locale'] + ", " +
+            doc['OS Name'] + " " + doc["OS Version"] + 
+            ", FBTest " + doc['FBTest'];
     },
 
     onClick: function(event)
@@ -101,7 +129,7 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
         var parentNode = infoBodyRow.firstChild;
 
         // Asynchronous request for data.
-        FirebugDB.getGroupResults(group.key[0], function(data)
+        FirebugDB.getGroupResults(group.key, function(data)
         {
             //xxxHonza localization
             Reps.TableRep.render(data, infoBodyRow.firstChild, [

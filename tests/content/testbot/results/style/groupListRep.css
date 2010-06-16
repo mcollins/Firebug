@@ -1,13 +1,14 @@
 /* See license.txt for terms of usage */
 
 .groupTable {
-    width: 100%;
     overflow: hidden;
     font-family: Lucida Grande, Tahoma, sans-serif;
     font-size: 11px;
 }
 
 .testGroupCol {
+    cursor:pointer;
+    white-space:nowrap;
 }
 
 .testGroupRow {
@@ -24,12 +25,16 @@
     background-position: 2px 1px;
     padding-left: 18px;
     font-weight: bold;
-    cursor:pointer;
 }
 
 .testGroupCount {
+    color: #DD467B;
+    padding-left: 10px;
+}
+
+.testGroupInfo {
     color: gray;
-    padding-left: 3px;
+    padding-left: 10px;
 }
 
 .groupBodyCol {

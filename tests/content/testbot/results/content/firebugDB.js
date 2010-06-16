@@ -34,8 +34,7 @@ CDB.FirebugDB = extend(CDB.Module,
             }
         };
 
-        this.db.list("resultviews/allheaders", "json", options);
-        //this.db.view(view, options);
+        this.db.list("resultviews/headers", "json", options);
     },
 
     /**
