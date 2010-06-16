@@ -43,9 +43,9 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
         if (group.value == 0)
             return "";
         else if (group.value == 1)
-            return "(" + group.value + " fails)";
+            return "(" + group.value + " failure)";
         else
-            return "(" + group.value + " fail)";
+            return "(" + group.value + " failures)";
     },
 
     onClick: function(event)
