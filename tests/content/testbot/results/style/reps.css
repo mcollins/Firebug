@@ -1,0 +1,10 @@
+/* See license.txt for terms of usage */
+
+.objectLink {
+    text-decoration: none;
+}
+
+.objectLink:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}

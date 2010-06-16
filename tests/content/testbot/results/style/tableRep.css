@@ -1,0 +1,63 @@
+/* See license.txt for terms of usage */
+
+.profileSizer {
+    border: 1px solid rgb(215,215,215);
+    margin-bottom: 7px;
+    width: 650px;
+}
+
+.profileTable {
+}
+
+.profileTable TBODY {
+    overflow-x: hidden;
+}
+
+.profileTable tr:nth-child(even) {
+    background-color: #EFEFEF;
+}
+
+.profileTable a {
+    vertical-align:middle;
+}
+
+.profileTable td {
+    padding: 1px 4px 0 4px;
+}
+
+.headerCell {
+    cursor: pointer;
+    -moz-user-select: none;
+    border-bottom: 1px solid #9C9C9C;
+    padding: 0 !important;
+    font-weight: bold;
+    background: #BBBBBB url(chrome://firebug/skin/tableHeader.gif) repeat-x;
+}
+
+.headerCellBox {
+    padding: 2px 13px 2px 4px;
+    border-left: 1px solid #D9D9D9;
+    border-right: 1px solid #9C9C9C;
+    white-space: nowrap;
+}
+
+.headerCell:hover:active {
+    background: #959595 url(chrome://firebug/skin/tableHeaderActive.gif) repeat-x;
+}
+
+.headerSorted {
+    background: #7D93B2 url(chrome://firebug/skin/tableHeaderSorted.gif) repeat-x;
+}
+
+.headerSorted > .headerCellBox {
+    border-right-color: #6B7C93;
+    background: url(chrome://firebug/skin/arrowDown.png) no-repeat right;
+}
+
+.headerSorted.sortedAscending > .headerCellBox {
+    background-image: url(chrome://firebug/skin/arrowUp.png);
+}
+
+.headerSorted:hover:active {
+    background: #536B90 url(chrome://firebug/skin/tableHeaderSortedActive.gif) repeat-x;
+}
