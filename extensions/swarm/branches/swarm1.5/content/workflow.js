@@ -1,24 +1,20 @@
 /* See license.txt for terms of usage */
 
-
-
-
 // This code runs in the FBTest Window and Firefox Window
 (function() { with (FBL) {
 
+// ************************************************************************************************
+// Constants
 
- // ************************************************************************************************
- // Constants
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
- const Cc = Components.classes;
- const Ci = Components.interfaces;
+const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
+const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 
- const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
- const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-
- const Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
- const versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-                                            .getService(Components.interfaces.nsIVersionComparator);
+const Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
+const versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+    .getService(Components.interfaces.nsIVersionComparator);
 
 top.Swarm = {};
 
@@ -586,12 +582,12 @@ Swarm.WorkflowStep.secureHashOverHTTPS = function(urlString, fncTakesHashString)
 
      try
      {
-         let channel = ioService.newChannel(urlString, null, null);
+         var channel = ioService.newChannel(urlString, null, null);
 
-         let hasher = Cc["@mozilla.org/security/hash;1"]
+         var hasher = Cc["@mozilla.org/security/hash;1"]
              .createInstance(Ci.nsICryptoHash);
 
-         let listener =
+         var listener =
          {
              onStartRequest: function(request, arg)
              {
@@ -680,4 +676,5 @@ function toHexString(charCode)
     return ("0" + charCode.toString(16)).slice(-2);
 }
 
+// ************************************************************************************************
 }}());

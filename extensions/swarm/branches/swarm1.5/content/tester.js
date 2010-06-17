@@ -18,8 +18,9 @@ top.Swarm.Tester =
 {
 };
 
-// ----------------------------------------------------------------------------------
+// ************************************************************************************************
 // Handlers contributed to Swarm
+
 Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 {
     initializeUI: function(doc)
@@ -90,7 +91,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
             var url = extensions[i].href;
             if (/https/.test(url))
             {
-                let updateExtensionInfo = extensions[i];
+                var updateExtensionInfo = extensions[i];
                 this.secureHashOverHTTPS(url, function updateHash(hashString)
                 {
                     updateExtensionInfo.element.setAttribute('hash', hashString);
@@ -138,8 +139,9 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
         }
         FBTrace.sysout("monitorTestStep disabled "+event.attrChange+" for "+event.attrName+" to "+event.newValue, event);
     },
-
 });
+
+// ************************************************************************************************
 
 Swarm.Tester.swarmStopTestsStep = extend(Swarm.WorkflowStep,
 {
@@ -173,8 +175,8 @@ Swarm.Tester.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
     },
 });
 
-
-
+// ************************************************************************************************
+// Registration
 
 Swarm.workflowMonitor.registerWorkflowStep("swarmRunAllTestsStep", Swarm.Tester.swarmRunAllTestsStep);
 Swarm.workflowMonitor.registerWorkflowStep("swarmStopTestsStep", Swarm.Tester.swarmStopTestsStep);
