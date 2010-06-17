@@ -70,13 +70,7 @@ CDB.Reps.TableRep = domplate(CDB.Rep,
         var cols = [];
         for (var i=0; i<this.columns.length; i++)
         {
-            var prop = this.columns[i].property;
-            var props = (typeof(prop) == "string") ? prop.split(".") : [prop];
-
-            var value = row;
-            for (var p in props)
-                value = value[props[p]];
-
+            var value = getObjectProperty(row, this.columns[i].property);
             cols.push({value: value, rep: this.columns[i].rep});
         }
 

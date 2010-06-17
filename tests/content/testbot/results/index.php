@@ -55,7 +55,9 @@
 </div>
 <br/>
 
-<div id="groups"></div>
+<div id="groups">
+    <div class="groupBodyDefault"></div>
+</div>
 
 </body>
 </html>

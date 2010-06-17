@@ -464,7 +464,7 @@
         if (req.status == options.successStatus) {
           if (options.success) options.success(resp);
         } else if (options.error) {
-          options.error(req.status, resp.error, resp.reason);
+          options.error(req.status, req.statusText, resp ? resp.error : null, resp ? resp.reason : null);
         } else {
           alert(errorMessage + ": " + resp.reason);
         }

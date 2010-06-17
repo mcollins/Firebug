@@ -26,14 +26,17 @@ CDB.FirebugDB = extend(CDB.Module,
      */
     getGroupList: function(callback)
     {
+        var self = this;
         var options = {
             descending: true,
             group: true,
             success: function(data) {
+                //xxxHonza: the sort should be done by the DB.
+                self.sortByDate(data, "value.doc.Export Date", true);
                 callback(data);
             },
-            error: function(status, error, reason) {
-                log("Ajax Error: ", status, error, reason);
+            error: function(status, statusText, error, reason) {
+                log("Ajax Error: ", status, statusText, error, reason);
             }
         };
 
@@ -139,22 +142,22 @@ CDB.FirebugDB = extend(CDB.Module,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Sorting
 
-    sortByString: function(rows, prop, asc)
+    sortByString: function(rows, prop, desc)
     {
         function sort(a, b) {
-            var s1 = a[prop];
-            var s2 = b[prop];
-            return asc ? s1 > s2 : s1 < s2;
+            var s1 = getObjectProperty(a, prop);
+            var s2 = getObjectProperty(b, prop);
+            return desc ? s1 < s2 : s1 > s2;
         };
         rows.sort(sort);
     },
 
-    sortByDate: function(rows, prop, asc)
+    sortByDate: function(rows, prop, desc)
     {
         function sort(a, b){
-            var d1 = (new Date(a[prop])).getTime();
-            var d2 = (new Date(b[prop])).getTime();
-            return asc ? d1 - d2 : d2 - d1;
+            var d1 = (new Date(getObjectProperty(a, prop))).getTime();
+            var d2 = (new Date(getObjectProperty(b, prop))).getTime();
+            return desc ? d2 - d1 : d1 - d2;
         };
         rows.sort(sort);
     }

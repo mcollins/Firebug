@@ -23,7 +23,7 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
                         ),
                         TD({"class": "groupName testGroupCol", width: "80%"},
                             SPAN({"class": "testGroupInfo",
-                                title: "$group|getGroupTooltip"},
+                                /*title: "$group|getGroupTooltip"*/},
                                 "$group|getGroupInfo"
                             )
                         )
@@ -47,7 +47,7 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
 
     getGroupCount: function(group)
     {
-        var count = group.value.total;
+        var count = group.value.failures;
         if (count == 0)
             return "";
 
