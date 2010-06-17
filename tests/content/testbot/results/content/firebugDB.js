@@ -31,10 +31,21 @@ CDB.FirebugDB = extend(CDB.Module,
             group: true,
             success: function(data) {
                 callback(data);
+            },
+            error: function(status, error, reason) {
+                log("Ajax Error: ", status, error, reason);
             }
         };
 
-        this.db.list("resultviews/headers", "json", options);
+        try
+        {
+            this.db.list("resultviews/headers", "json", options);
+        }
+        catch (e)
+        {
+            callback(null);
+            exception(e);
+        }
     },
 
     /**

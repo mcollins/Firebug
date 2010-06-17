@@ -62,8 +62,8 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
     getGroupInfo: function(group)
     {
         var doc = group.value.doc;
-        return doc['App Name'] + " " + doc['App Version'] +
-            " + Firebug " + doc['Firebug'];
+        return "Firebug " + doc['Firebug'] + " + " +
+            doc['App Name'] + " " + doc['App Version'];
     },
 
     getGroupTooltip: function(group)

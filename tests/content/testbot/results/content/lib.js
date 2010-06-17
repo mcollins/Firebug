@@ -16,9 +16,12 @@ CDB.log = function()
 {
     try
     {
-        // Throws an exception in Chrome
-        if (window.console && window.console.log)
-            console.log.apply(console, arguments);
+        // Throws an exception in Chrome, IE
+        if (window.console && window.console.error && $.browser.msie)
+            for (var i=0; i<arguments.length; i++)
+                window.console.log(arguments[i]);
+        else if (window.console && window.console.log)
+            window.console.log.apply(window.console, arguments);
     }
     catch (err)
     {
@@ -29,9 +32,12 @@ CDB.error = function()
 {
     try
     {
-        // Throws an exception in Chrome
-        if (window.console && window.console.error)
-            console.error.apply(console, arguments);
+        // Throws an exception in Chrome, IE
+        if (window.console && window.console.error && $.browser.msie)
+            for (var i=0; i<arguments.length; i++)
+                window.console.error(arguments[i]);
+        else if (window.console && window.console.error)
+            window.console.error.apply(window.console, arguments);
     }
     catch (err)
     {

@@ -15,9 +15,14 @@ CDB.Main = extend(CDB.Module,
     initialize: function()
     {
         // Render list of test groups (a group == Firebug test suite launched once)
+        var parentNode = document.getElementById("groups");
         FirebugDB.getGroupList(function(data)
         {
-            Reps.GroupList.render(data, document.getElementById("groups"));
+            // xxxHonza: localization
+            if (data)
+                Reps.GroupList.render(data, parentNode);
+            else
+                parentNode.innerHTML = "Failed to execute remote AJAX! See debugging console for more details.";
         });
     }
 });

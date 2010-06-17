@@ -22,14 +22,14 @@
     <script src="couchdb/jquery.couch.js?0.9.0"></script>
 
     <!-- Viewer Javascript -->
+    <script type="text/javascript" src="content/domplate.js"></script>
     <script type="text/javascript" src="content/core.js"></script>
     <script type="text/javascript" src="content/lib.js"></script>
-    <script type="text/javascript" src="content/domplate.js"></script>
     <script type="text/javascript" src="content/reps.js"></script>
-    <script type="text/javascript" src="content/firebugDB.js"></script>
-    <script type="text/javascript" src="content/main.js"></script>
     <script type="text/javascript" src="content/tableRep.js"></script>
     <script type="text/javascript" src="content/groupListRep.js"></script>
+    <script type="text/javascript" src="content/firebugDB.js"></script>
+    <script type="text/javascript" src="content/main.js"></script>
 </head>
 <body>
 
