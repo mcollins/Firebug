@@ -14,6 +14,10 @@ CDB.Main = extend(CDB.Module,
 {
     initialize: function()
     {
+        // Preload twisty image to make UX better (it's there immediately after expanding).
+        var image1 = new Image();
+        pic1.src="style/twistyOpen.png";
+
         // Render list of test groups (a group == Firebug test suite launched once)
         var parentNode = document.getElementById("groups");
         FirebugDB.getGroupList(function(data)
