@@ -154,9 +154,10 @@ FBTestApp.TestLogger.ProgressListener.prototype =
         if (!this.stream)
             return;
 
+        var testName = test.testPage ? test.testPage : test.uri;
+
         // Log Start of the test.
-        var fileName = getFileName(test.path);
-        this.stream.writeString("FIREBUG INFO | " + test.group.name + "/" + fileName +
+        this.stream.writeString("FIREBUG INFO | " + testName +
             " | [START] " + test.desc + "\n");
     },
 
@@ -172,7 +173,7 @@ FBTestApp.TestLogger.ProgressListener.prototype =
         if (test.error)
             moniker = (test.category == "fails") ? "TEST-KNOWN-FAIL" : "TEST-UNEXPECTED-FAIL";
 
-        var fileName = getFileName(test.path);
+        var testName = test.testPage ? test.testPage : test.uri;
 
         // Report test messages for failures.
         if (test.error)
@@ -180,14 +181,13 @@ FBTestApp.TestLogger.ProgressListener.prototype =
             for (var i=0; i<test.results.length; i++)
             {
                 var result = test.results[i];
-                this.stream.writeString("FIREBUG INFO | " + test.group.name + "/" + fileName +
+                this.stream.writeString("FIREBUG INFO | " + testName +
                     " | " + (result.pass ? "[OK]" : "[ERROR]") + " " + result.msg + "\n");
             }
         }
 
         // Log result of the test.
-        this.stream.writeString("FIREBUG " + moniker + " | " + test.group.name + "/" +
-            fileName + " | [DONE]\n");
+        this.stream.writeString("FIREBUG " + moniker + " | " + testName + " | [DONE]\n");
     },
 };
 
