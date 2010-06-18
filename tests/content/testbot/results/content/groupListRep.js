@@ -2,7 +2,7 @@
 
 CDB.ns(function() { with (CDB) { with (Domplate) {
 
-/*************************************************************************************************/
+// ************************************************************************************************
 
 CDB.Reps.GroupList = domplate(CDB.Rep,
 {
@@ -129,7 +129,7 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
         var parentNode = infoBodyRow.firstChild;
 
         // Asynchronous request for data.
-        FirebugDB.getGroupResults(group.key, function(data)
+        FirebugDB.getGroupResults(group.value.doc._id, function(data)
         {
             //xxxHonza localization
             Reps.TableRep.render(data, infoBodyRow.firstChild, [
@@ -146,5 +146,5 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
     }
 });
 
-/*************************************************************************************************/
+// ************************************************************************************************
 }}});

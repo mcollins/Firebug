@@ -110,6 +110,11 @@ CDB.Module =
 // ************************************************************************************************
 // CSS
 
+CDB.getElementByClass = function(node, className)
+{
+    return node.querySelector("." + className);
+}
+
 CDB.getAncestorByClass = function(node, className)
 {
     for (var parent = node; parent; parent = parent.parentNode)
@@ -130,12 +135,12 @@ CDB.hasClass = function(node, name) // className, className, ...
         for (var i=1; i<arguments.length; ++i)
         {
             var name = arguments[i];
-            //var re = new RegExp("(^|\\s)"+name+"($|\\s)");
-            //if (!re.exec(node.getAttribute("class")))
-            //    return false;
-            var className = node.className;//node.getAttribute("class");
-            if (!className || className.indexOf(name) == -1)
+            var re = new RegExp("(^|\\s)"+name+"($|\\s)");
+            if (!re.exec(node.getAttribute("class")))
                 return false;
+            /*var className = node.className;//node.getAttribute("class");
+            if (!className || className.indexOf(name) == -1)
+                return false;*/
         }
 
         return true;
@@ -200,6 +205,11 @@ CDB.cancelEvent = function(event)
     e.preventDefault();
 }
 
+CDB.eventFix = function(event)
+{
+    return $.event.fix(event);
+}
+
 // ************************************************************************************************
 // String
 
@@ -212,11 +222,29 @@ CDB.getObjectProperty = function(object, propName)
     {
         for (var p in props)
             value = value[props[p]];
-    } catch (e) {
+    }
+    catch (e)
+    {
+        exception(e);
     }
 
-    return value;
+    return value ? value : null;
 }
 
-/*************************************************************************************************/
+// ************************************************************************************************
+// Localization
+
+CDB.$STR = function(string)
+{
+    //xxxHonza: TODO
+    return string;
+}
+
+CDB.$STRF = function(string)
+{
+    //xxxHonza: TODO
+    return string;
+}
+
+// ************************************************************************************************
 }});

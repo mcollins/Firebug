@@ -2,8 +2,8 @@
 
 body {
     background:url("bg-grad.jpg") repeat-x scroll 0 0 white;
-    color:#333333;
-    font-family:helvetica,sans-serif;
+    color: #333333;
+    font-family: helvetica,sans-serif;
     font-size: 62.5%;
 }
 
@@ -40,14 +40,13 @@ body {
     width:400px;
 }
 
-#title 
-{
-  padding: 20px; /* same as logo */
-  margin: 11px; /* half of the logo hgt - font height = (70 - 47)/2 */
+#title {
+    padding: 20px; /* same as logo */
+    margin: 11px; /* half of the logo hgt - font height = (70 - 47)/2 */
 }
 
-#title h1
-{
+#title h1 {
+    font-family: Tahoma;
     font-size: 4em;
     text-align: center;
     position: relative;
@@ -55,11 +54,18 @@ body {
 
 /*************************************************************************************************/
 
-#content {
+#description {
     padding-left: 8px;
 }
 
-#groups {
-    padding-right: 10px;
+/*************************************************************************************************/
+/* Tab View */
+
+.tabHomeBody {
+    padding: 7px;
 }
 
+.tabHomeHeader {
+    font-size: 13px;
+    padding-bottom: 7px;
+}

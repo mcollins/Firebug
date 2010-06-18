@@ -13,6 +13,7 @@
     <!-- Viewer --> 
     <link href="style/main.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/tableRep.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/tabView.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/groupListRep.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/reps.css" media="screen,projection" type="text/css" rel="stylesheet">
 
@@ -27,6 +28,7 @@
     <script type="text/javascript" src="content/lib.js"></script>
     <script type="text/javascript" src="content/reps.js"></script>
     <script type="text/javascript" src="content/tableRep.js"></script>
+    <script type="text/javascript" src="content/tabView.js"></script>
     <script type="text/javascript" src="content/groupListRep.js"></script>
     <script type="text/javascript" src="content/firebugDB.js"></script>
     <script type="text/javascript" src="content/main.js"></script>
@@ -44,20 +46,17 @@
     </div>
 </div>
 <div id="title">
-    <h1>Testbot Results</h1>
+    <h1>Test Results</h1>
 </div>
 
 <!-- Content -->
-<div id="content">
-<div>
+<div id="description">
     <a href="https://getfirebug.com/tests/content/testlists/firebug1.6.html">Firebug Test Suite</a>
     Expand an entry in order to see failing tests.
 </div>
-<br/>
+<br/><br/>
 
-<div id="groups">
-    <div class="groupBodyDefault"></div>
-</div>
+<div id="content"></div>
 
 </body>
 </html>
