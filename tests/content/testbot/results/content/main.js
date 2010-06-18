@@ -16,7 +16,7 @@ CDB.Main = extend(CDB.Module,
     {
         // Preload twisty image to make UX better (it's there immediately after expanding).
         var image1 = new Image();
-        pic1.src="style/twistyOpen.png";
+        image1.src="style/twistyOpen.png";
 
         // Render list of test groups (a group == Firebug test suite launched once)
         var parentNode = document.getElementById("groups");
