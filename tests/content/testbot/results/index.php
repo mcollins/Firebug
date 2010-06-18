@@ -11,7 +11,7 @@
     <link href="style/reset.css" media="screen,projection" type="text/css" rel="stylesheet">
 
     <!-- Viewer --> 
-    <link href="style/main.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/main2.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/tableRep.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/tabView.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/groupListRep.css" media="screen,projection" type="text/css" rel="stylesheet">
