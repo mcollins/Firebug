@@ -8,7 +8,7 @@ CDB.ns(function() { with (CDB) { with (Domplate) {
  * @domplate Basic template for tabular reports. This template is usually used for displaying
  * data from DB tables.
  */
-CDB.Reps.TableRep = domplate(CDB.Rep,
+var TableRep = domplate(CDB.Rep,
 {
     className: "table",
 
@@ -191,15 +191,27 @@ CDB.Reps.TableRep = domplate(CDB.Rep,
         }
 
         return header;
-    },
+    }
+});
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-    // Rendering
+// ************************************************************************************************
+//* Table object
 
+CDB.Reps.Table = function(columns, options)
+{
+    this.columns = columns;
+    this.options = options;
+}
+
+CDB.Reps.Table.prototype =
+{
     render: function(data, parentNode, cols)
     {
         if (!data)
             return;
+
+        if (!cols)
+            cols = this.columns;
 
         // Get header info from passed argument (can be null).
         var columns = [];
@@ -216,19 +228,22 @@ CDB.Reps.TableRep = domplate(CDB.Rep,
 
         // Generate header info from the data dynamically.
         if (!columns.length)
-            columns = this.getHeaderColumns(data);
+            columns = TableRep.getHeaderColumns(data);
 
         try
         {
-            this.columns = columns;
-            var table = this.tag.replace({object: data, columns: columns}, parentNode, this);
+            TableRep.columns = columns; //xxxHonza: how to get rid of this hack
+            this.table = TableRep.tag.replace({object: data, columns: columns}, parentNode);
 
             // Set vertical height for scroll bar.
-            // xxxHonza: works only in FF.
-            var tBody = table.querySelector(".profileTbody");
-            var maxHeight = 149; // Should be in prefs.
-            if (maxHeight > 0 && tBody.clientHeight > maxHeight)
-                tBody.style.height = maxHeight + "px";
+            var maxHeight = this.options ? this.options.maxHeight : 0;
+            if (maxHeight > 0)
+            {
+                // xxxHonza: works only in FF.
+                var tBody = this.table.querySelector(".profileTbody");
+                if (tBody.clientHeight > maxHeight)
+                    tBody.style.height = maxHeight + "px";
+            }
         }
         catch (err)
         {
@@ -236,10 +251,20 @@ CDB.Reps.TableRep = domplate(CDB.Rep,
         }
         finally
         {
-            delete this.columns;
+            delete TableRep.columns;
         }
+
+        return this.table;
+    },
+
+    sort: function(column, desc)
+    {
+        // xxxHonza: hack
+        TableRep.sort(this.table, 1, false);
+        if (desc)
+            TableRep.sort(this.table, 1, false);
     }
-});
+};
 
 // ************************************************************************************************
 }}});

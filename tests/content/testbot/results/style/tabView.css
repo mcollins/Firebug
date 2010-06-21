@@ -54,11 +54,6 @@
     margin: 0;
     border-top: 1px solid #D7D7D7;
     background-color: #FFFFFF;
-
-    /*position: absolute;*/
-    width: 100%;
-    top: 32px;
-    bottom: 0px;
     overflow: auto;
     z-index: -1;
 }

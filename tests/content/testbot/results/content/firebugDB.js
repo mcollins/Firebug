@@ -29,14 +29,11 @@ CDB.FirebugDB = extend(CDB.Module,
      */
     getGroupList: function(queryLimit, callback)
     {
-        var self = this;
         var options = {
             group_level: 1,
             descending: true,
             group: true,
             success: function(data) {
-                //xxxHonza: the sort should be done by the DB.
-                //self.sortByDate(data, "value.doc.Export Date", true);
                 callback(data);
             },
             error: function(status, statusText, error, reason) {
@@ -72,6 +69,34 @@ CDB.FirebugDB = extend(CDB.Module,
         };
 
         this.db.list("resultviews/results_by_header", "json", options);
+    },
+
+    /**
+     * Returns group document + all results for it.
+     * @param {Object} groupID
+     * @param {Object} callback
+     */
+    getGroupInfo: function(groupID, callback)
+    {
+        var options = {
+            key: groupID,
+            success: function(data) {
+                callback(data);
+            },
+            error: function(status, statusText, error, reason) {
+                log("Ajax Error: ", status, statusText, error, reason);
+            }
+        };
+
+        try
+        {
+            this.db.list("resultviews/header", "json", options);
+        }
+        catch (e)
+        {
+            callback(null);
+            exception(e);
+        }
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

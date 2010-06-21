@@ -9,6 +9,11 @@
 .testGroupCol {
     cursor:pointer;
     white-space:nowrap;
+    padding-left: 10px;
+}
+
+.testGroupCol.groupName {
+    padding-left: 0;
 }
 
 .testGroupRow {
@@ -29,22 +34,14 @@
 
 .testGroupCount {
     color: #DD467B;
-    padding-left: 10px;
 }
 
 .testGroupInfo {
     color: gray;
-    padding-left: 10px;
 }
 
 .groupBodyCol {
     padding-left: 18px;
-}
-
-.groupAction {
-    white-space:nowrap;
-    padding-left: 15px;
-    padding-right: 5px;
 }
 
 /************************************************************************************************/

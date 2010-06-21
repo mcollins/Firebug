@@ -5,7 +5,7 @@ CDB.ns(function() { with (CDB) { with (Domplate) {
 // ************************************************************************************************
 
 /**
- * Basic TabView implementation. This object is used as a base for all 
+ * Basic TabView implementation. This object is used as a base for all
  * tab views.
  */
 CDB.Reps.TabView = domplate(CDB.Rep,
@@ -30,7 +30,7 @@ CDB.Reps.TabView = domplate(CDB.Rep,
 
     onClickTab: function(event)
     {
-        var e = eventFix(event || window.event);
+        var e = fixEvent(event || window.event);
         var tab = getAncestorByClass(e.target, "tab");
         if (tab)
             this.selectTab(tab);

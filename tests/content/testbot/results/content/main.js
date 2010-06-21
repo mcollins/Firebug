@@ -12,13 +12,22 @@ CDB.Main = extend(CDB.Module,
     initialize: function()
     {
         // Preload twisty image to make UX better (it's there immediately after expanding).
+        //xxxHonza: this doesn't seem to work.
         var image1 = new Image(11, 11);
         image1.src = "style/twistyOpen.png";
 
-        // Render basic page content (tab view) and select the Input tab by default.
         var content = document.getElementById("content");
-        this.tabViewNode = this.TabView.render(content);
-        this.TabView.selectTabByName(this.tabViewNode, "Home");
+        var groupID = getURLParameter("headerid");
+        if (groupID)
+        {
+            this.GroupView.render(groupID, content);
+        }
+        else
+        {
+            // Render basic page content (tab view) and select the Input tab by default.
+            var tabViewNode = this.TabView.render(content);
+            this.TabView.selectTabByName(tabViewNode, "Home");
+        }
     }
 });
 
@@ -31,10 +40,10 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
 {
     limitTag:
         DIV({"class": "tabHomeHeader"},
-            SPAN("Number of last measurements: "), //xxxHonza: localization
+            SPAN("Number of displayed measurements: "), //xxxHonza: localization
             SELECT({"class": "queryLimit", onchange: "$onLimitChange"},
-                OPTION("10"),
-                OPTION({selected: true}, "20"),
+                OPTION({selected: true}, "10"),
+                OPTION("20"),
                 OPTION("50"),
                 OPTION("100")
             )
@@ -60,7 +69,7 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
 
     onLimitChange: function(event)
     {
-        var e = eventFix(event);
+        var e = fixEvent(event);
         var tabHomeBody = getAncestorByClass(e.target, "tabHomeBody");
         this.refreshGroupList(tabHomeBody);
     },
@@ -99,6 +108,97 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
     {
         var tabView = this.tag.replace({}, parentNode, this);
         return tabView;
+    }
+});
+
+// ************************************************************************************************
+
+/**
+ * Displays information about specific header (group of results).
+ */
+CDB.Main.GroupView = domplate(CDB.Rep,
+{
+    headerTag:
+        TABLE({"class": "", cellpadding: 0, cellspacing: 0},
+            TBODY(
+                FOR("param", "$object|headerIterator",
+                    TR(
+                        TD({"class": "paramName"},
+                            SPAN("$param.name")
+                        ),
+                        TD({"class": "paramValue"},
+                            SPAN("$param.value")
+                        )
+                    )
+                )
+            )
+        ),
+
+    tag:
+        DIV({"class": "groupView"},
+            DIV({"class": "groupViewHeader"},
+                DIV({"class": "groupBodyDefault"})
+            ),
+            BR(),
+            DIV({"class": "groupViewBody"})
+        ),
+
+    headerIterator: function(object)
+    {
+        var skip = {
+            "_id": 1,
+            "_rev": 1,
+            "type": 1
+        };
+
+        var result = [];
+        for (var p in object)
+        {
+            if (p in skip)
+                continue;
+
+            result.push({name: p, value: object[p]});
+        }
+
+        return result;
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    render: function(groupID, parentNode)
+    {
+        var view = this.tag.replace({}, parentNode, self);
+
+        var self = this;
+        FirebugDB.getGroupInfo(groupID, function(data)
+        {
+            if (data.length == 0)
+                return;
+
+            var header = data.shift();
+            assert(header.value.type == "header");
+
+            self.renderHeader(view.querySelector(".groupViewHeader"), header);
+            self.renderBody(view.querySelector(".groupViewBody"), data);
+        });
+    },
+
+    renderHeader: function(parentNode, header)
+    {
+        this.headerTag.replace({object: header.value}, parentNode, this);
+    },
+
+    renderBody: function(parentNode, results)
+    {
+        //xxxHonza localization
+        var table = new Reps.Table([
+            {property: "value.file", label: "Test", rep: Reps.Link},
+            {property: "value.result", label: "Error"},
+            {property: "value.description", label: "Description"}
+        ]);
+
+        table.render(results, parentNode);
+        table.sort("value.result", true);
     }
 });
 

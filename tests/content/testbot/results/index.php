@@ -10,17 +10,17 @@
     <link href="style/favicon.ico" type="image/x-icon" rel="shortcut icon">
     <link href="style/reset.css" media="screen,projection" type="text/css" rel="stylesheet">
 
-    <!-- Viewer --> 
-    <link href="style/main2.css" media="screen,projection" type="text/css" rel="stylesheet">
-    <link href="style/tableRep.css" media="screen,projection" type="text/css" rel="stylesheet">
-    <link href="style/tabView.css" media="screen,projection" type="text/css" rel="stylesheet">
-    <link href="style/groupListRep.css" media="screen,projection" type="text/css" rel="stylesheet">
-    <link href="style/reps.css" media="screen,projection" type="text/css" rel="stylesheet">
-
     <!-- http://brasstacks.mozilla.com/couchdb/_utils/script/ -->
     <script src="couchdb/json2.js"></script>
     <script src="couchdb/jquery.js?1.3.1"></script>
     <script src="couchdb/jquery.couch.js?0.9.0"></script>
+
+    <!-- Viewer --> 
+    <link href="style/main.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/tableRep.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/tabView.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/groupListRep.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/reps.css" media="screen,projection" type="text/css" rel="stylesheet">
 
     <!-- Viewer Javascript -->
     <script type="text/javascript" src="content/domplate.js"></script>
@@ -51,10 +51,9 @@
 
 <!-- Content -->
 <div id="description">
-    <a href="https://getfirebug.com/tests/content/testlists/firebug1.6.html">Firebug Test Suite</a>
-    Expand an entry in order to see failing tests.
+    See more about <a href="http://getfirebug.com/wiki/index.php/Firebug_Tests">Automated Firebug Testing</a>
 </div>
-<br/><br/>
+<br/>
 
 <div id="content"></div>
 

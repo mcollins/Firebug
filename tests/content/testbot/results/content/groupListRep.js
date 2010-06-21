@@ -11,20 +11,25 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
             TBODY(
                 FOR("group", "$rows",
                     TR({"class": "testGroupRow", _repObject: "$group"},
-                        TD({"class": "groupName testGroupCol", width: "10%"},
+                        TD({"class": "groupName testGroupCol"},
                             SPAN({"class": "testGroupName"},
                                 "$group|getGroupName"
                             )
                         ),
-                        TD({"class": "groupName testGroupCol", width: "10%"},
+                        TD({"class": "testGroupCol"},
                             SPAN({"class": "testGroupCount"},
                                 "$group|getGroupCount"
                             )
                         ),
-                        TD({"class": "groupName testGroupCol", width: "80%"},
+                        TD({"class": "testGroupCol"},
                             SPAN({"class": "testGroupInfo",
                                 /*title: "$group|getGroupTooltip"*/},
                                 "$group|getGroupInfo"
+                            )
+                        ),
+                        TD({"class": "testGroupCol"},
+                            A({"class": "groupLink", href: "$group|getPermaLink"},
+                                "[...]"
                             )
                         )
                     )
@@ -34,7 +39,7 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
 
     groupBodyTag:
         TR({"class": "groupBodyRow", _repObject: "$group"},
-            TD({"class": "groupBodyCol", colspan: 3},
+            TD({"class": "groupBodyCol", colspan: 4},
                 DIV({"class": "groupBodyDefault"})
             )
         ),
@@ -62,8 +67,9 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
     getGroupInfo: function(group)
     {
         var doc = group.value.doc;
-        return "Firebug " + doc['Firebug'] + " + " +
-            doc['App Name'] + " " + doc['App Version'];
+        return "Firebug " + doc['Firebug'] + ", " +
+            doc['App Name'] + " " + doc['App Version'] + ", " +
+            doc['OS Name'];
     },
 
     getGroupTooltip: function(group)
@@ -76,19 +82,29 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
             ", FBTest " + doc['FBTest'];
     },
 
+    getPermaLink: function(group)
+    {
+        return "?headerid=" + group.value.doc._id;
+    },
+
     onClick: function(event)
     {
-        var e = $.event.fix(event);
-        if (isLeftClick(e))
+        var e = fixEvent(event);
+        if (!isLeftClick(e))
+            return;
+
+        if (hasClass(e.target, "groupLink"))
+            return;
+
+        var row = getAncestorByClass(e.target, "testGroupRow");
+        if (row)
         {
-            var row = getAncestorByClass(e.target, "testGroupRow");
-            if (row)
-            {
-                this.toggleRow(row);
-                cancelEvent(e);
-            }
+            this.toggleRow(row);
+            cancelEvent(e);
         }
     },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     expandGroup: function(row)
     {
@@ -132,11 +148,13 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
         FirebugDB.getGroupResults(group.value.doc._id, function(data)
         {
             //xxxHonza localization
-            Reps.TableRep.render(data, infoBodyRow.firstChild, [
+            var table = new Reps.Table([
                 {property: "value.file", label: "Test", rep: Reps.Link},
                 {property: "value.result", label: "Error"},
                 {property: "value.description", label: "Description"}
-            ]);
+            ], {maxHeight: 150});
+
+            table.render(data, infoBodyRow.firstChild);
         });
     },
 

@@ -46,6 +46,12 @@ CDB.exception = function(exc)
 {
     CDB.error(exc);
 };
+
+CDB.assert = function(condition)
+{
+    if (!condition)
+        CDB.error("Assert false!");
+};
 // #endif
 
 // ************************************************************************************************
@@ -205,7 +211,7 @@ CDB.cancelEvent = function(event)
     e.preventDefault();
 }
 
-CDB.eventFix = function(event)
+CDB.fixEvent = function(event)
 {
     return $.event.fix(event);
 }
@@ -245,6 +251,27 @@ CDB.$STRF = function(string)
     //xxxHonza: TODO
     return string;
 }
+
+// ************************************************************************************************
+// URL
+
+/**
+ * Returns value of specified parameter in the current URL.
+ * @param {String} name Name of the requested parameter.
+ * @return {String} Value of the requested parameter.
+ */
+CDB.getURLParameter = function(name)
+{
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i=0;i<vars.length;i++)
+    {
+        var pair = vars[i].split("=");
+        if (pair[0] == name)
+            return unescape(pair[1]);
+    }
+    return null;
+};
 
 // ************************************************************************************************
 }});

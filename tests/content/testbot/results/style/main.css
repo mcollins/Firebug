@@ -52,6 +52,15 @@ body {
     position: relative;
 }
 
+a {
+    text-decoration: none;
+    color:  rgb(11, 83, 148);
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 /*************************************************************************************************/
 
 #description {
@@ -68,4 +77,24 @@ body {
 .tabHomeHeader {
     font-size: 13px;
     padding-bottom: 7px;
+}
+
+/*************************************************************************************************/
+/* Group Detail View */
+
+.groupView {
+    border-top: 1px solid #D7D7D7;
+    background-color: #FFFFFF;
+    padding: 7px;
+    font-size: 11px;
+}
+
+.groupViewHeader .paramName {
+    font-weight: bold;
+    text-align: right;
+}
+
+.groupViewHeader .paramValue {
+    text-align: left;
+    padding-left: 10px;
 }
