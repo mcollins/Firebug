@@ -25,9 +25,16 @@ function runTest()
 
                 // Expand the test request with params
                 var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
+                
+                var time = new Date().getTime();
+                FBTest.progress("onResponse selectPanel complete"+ (time - startTime)+"ms");
+
                 FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
                 FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
-
+                
+                var time = new Date().getTime();
+                FBTest.progress("onResponse expandElements complete"+ (time - startTime)+"ms");
+                
                 // The response must be displayed.
                 var responseBody = FW.FBL.getElementByClass(panelNode, "netInfoResponseText",
                     "netInfoText");
