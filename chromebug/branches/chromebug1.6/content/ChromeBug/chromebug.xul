@@ -57,6 +57,7 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/editor.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/infotip.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/commandLine.js"/>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/commandLinePreview.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/search.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/inspector.js"/>
 
