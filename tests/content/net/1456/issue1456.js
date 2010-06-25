@@ -16,7 +16,10 @@ function runTest()
         	var time = new Date().getTime();
         	FBTest.progress("enabled net panel at "+ (time - startTime)+"ms");
         	
-        	win.wrappedJSObject.runTest();  // it once just to see if we can fix it.
+        	win.wrappedJSObject.runTest(function doNothing(response)
+        	{
+        		FBTest.progress("Dummy run to workaround Mozilla bug");
+        	});  
 
         	win.wrappedJSObject.runTest(function(response)
             {
