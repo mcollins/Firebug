@@ -15,6 +15,8 @@ function runTest()
         {
         	var time = new Date().getTime();
         	FBTest.progress("enabled net panel at "+ (time - startTime)+"ms");
+        	
+        	win.wrappedJSObject.runTest();  // it once just to see if we can fix it.
 
         	win.wrappedJSObject.runTest(function(response)
             {
@@ -56,7 +58,7 @@ function runTest()
 
                 // Finish test
                 FBTestFirebug.testDone("issue1456.DONE");
-            })
+            });
         });
     })
 }
