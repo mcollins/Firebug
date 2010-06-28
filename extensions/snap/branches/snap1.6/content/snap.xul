@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <!-- snap files -->
+    <script src="chrome://snap/content/snap.js" type="application/x-javascript"/>
+    <script src="chrome://snap/content/snapPanel.js" type="application/x-javascript"/>
+
+    <!-- Extend Firebug's command set -->
+    <commandset id="mainCommandSet">
+        <command id="cmd_fbSnap" oncommand="Firebug.Snap.createShot(FirebugContext)"/>
+    </commandset>
+
+    <!-- Toolbar for Memory panel -->
+    <toolbar id="fbToolbar" align="center" role="toolbar">
+        <hbox id="fbToolbarInner" insertafter="fbNetButtons" flex="1" align="center">
+            <hbox id="fbSnapButtons" insertafter="fbNetButtons" collapsed="true">
+                <toolbarbutton id="fbSnapAppend" label="snap.Shot"
+                    class="toolbar-text-button"
+                    tooltiptext="snap.shot.tooltip"
+                    command="cmd_fbSnap" />
+            </hbox>
+        </hbox>
+    </toolbar>
+
+</overlay>

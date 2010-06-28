@@ -1,0 +1,7 @@
+content snap content/
+skin    snap classic/1.0 skin/classic/
+
+locale  snap en-US locale/en-US/
+
+overlay chrome://firebug/content/firebugOverlay.xul    chrome://snap/content/snap.xul
+overlay chrome://fb4cb/content/firebugOverlay.xul   chrome://snap/content/snap.xul

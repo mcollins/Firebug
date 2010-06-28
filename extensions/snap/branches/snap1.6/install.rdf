@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>snap@getfirebug.com</em:id>
+    <em:version>1.6</em:version>
+    <em:type>2</em:type>
+
+    <!-- toolkit@mozilla.org -->
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.9.0.11</em:minVersion>
+        <em:maxVersion>99.0.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+
+    <em:name>snap</em:name>
+    <em:description>Snapshot a web page</em:description>
+    <em:creator>johnjbarton@johnjbarton.com</em:creator>
+    <em:homepageURL>http://getfirebug.com/</em:homepageURL>
+    <em:updateURL>http://getfirebug.com/releases/chromebug/update.rdf</em:updateURL>
+    <em:updateKey>@PUBLICKEY@</em:updateKey>
+  </Description>
+</RDF>
