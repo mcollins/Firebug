@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Issue 3009: Erroneous display of CSS inheritance</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      body {
+        background: #ffffff;
+        font: small arial, sans-serif;
+        margin: 5px auto;
+        width: 815px;
+      }
+      h1 {
+        font-size: large;
+        font-weight: normal;
+        padding: 1em 0;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: medium;
+        font-weight: normal;
+        padding: 0.5em 0;
+        text-transform: uppercase;
+        margin: 0;
+      }
+      ol {
+        margin:0;
+      }
+      ol li {
+        padding-bottom: 1em;
+      }
+      ul li {
+        padding: 0;
+      }
+      #content {
+        background: #9acbe4;
+        padding: 10px 20px;
+      }
+      #content div {
+        margin: 5px 0;
+        padding: 5px;
+      }
+      #output {
+        width: auto!important;
+        background: #e8f0ff;
+      }
+      #output div {
+        border: 1px dotted black;
+        border-right: 1px solid blue;
+      }
+      #div1 {
+        border-top: 3px dashed #ff0000;
+        width: 200px;
+        background: #ffff8c;
+      }
+      #div1 div {
+        border-top: 3px dashed #ff0000;
+        border-right-width: 6px;
+      }
+      #output #div2 {
+        border: 1px solid green;
+        background: #8cff8c;
+      }
+      #output #div3 {
+        border-top-color: #ffff00;
+        background: #ff8c8c;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Issue 3009: Erroneous display of CSS inheritance</h1>
+    <div id="content">
+      <div id="output">
+        <div id="div1">
+          <div id="div2">
+            <div id="div3">
+              Text
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2>Shorthand properties overwriting other shorthand property</h2>
+      <ol>
+        <li>Inspect the yellow DIV (<code>#div1</code>)</li>
+        <li>Switch to the Style Side Panel</li>
+      </ol>
+      <ul>
+        <li><strong>Observed:</strong> The styles of <code>#div1</code> are not marked as overwritten</li>
+        <li><strong>Expected:</strong> The styles of <code>#output div</code> are overwriting the <code>border-top</code> styles of <code>#div1</code>, so they should be striked out</li>
+      </ul>
+      <h2>Shorthand property overwriting single-value properties</h2>
+      <ol>
+        <li>Inspect the green DIV (<code>#div2</code>)</li>
+        <li>Switch to the Style Side Panel</li>
+      </ol>
+      <ul>
+        <li><strong>Observed:</strong> The styles of <code>#output div</code> are not marked as overwritten</li>
+        <li><strong>Expected:</strong> The <code>border</code> style of <code>#output div2</code> is overwriting all former styles related to the borders, so they should be striked out</li>
+      </ul>
+      <h2>Single-value property overwriting part of shorthand property</h2>
+      <ol>
+        <li>Inspect the red DIV (<code>#div3</code>)</li>
+        <li>Switch to the Style Side Panel</li>
+      </ol>
+      <ul>
+        <li><strong>Observed:</strong> The styles of <code>#div1 div</code> are not marked as overwritten</li>
+        <li><strong>Expected:</strong> The <code>border-top-color</code> style of <code>#output div3</code> is overwriting the border color of the shorthand property <code>border-top</code> of <code>#div1 div</code>, so it should be striked out</li>
+      </ul>
+    </div>
+  </body>
+</html>
