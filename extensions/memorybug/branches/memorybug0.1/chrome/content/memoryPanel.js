@@ -339,7 +339,7 @@ Firebug.MemoryBug.NoJetpack = domplate(Firebug.Rep,
 
 Firebug.registerPanel(Firebug.MemoryBug.Panel);
 Firebug.registerStringBundle("chrome://memorybug/locale/memorybug.properties");
-Firebug.registerModule(Firebug.MemoryBug);
+Firebug.registerModule(Firebug.MemoryBug);  // XXXjjb the module is also registered in the memorybug.js??
 
 // ************************************************************************************************
 }});
