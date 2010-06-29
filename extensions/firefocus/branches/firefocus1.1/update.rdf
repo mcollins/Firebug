@@ -32,7 +32,7 @@
               <RDF:Description>
                 <em:id>toolkit@mozilla.org</em:id>
                 <em:minVersion>1.9.0.11</em:minVersion>
-                <em:maxVersion>1.9.3.*</em:maxVersion>
+                <em:maxVersion>2.0.0.*</em:maxVersion>
 
                 <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.1.xpi</em:updateLink>
                 <em:updateHash>sha1:9eabc60ef403916d19373220976b72d993f5a069</em:updateHash>
