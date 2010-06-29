@@ -23,22 +23,18 @@
 </ol>
 
 <pre id="response" style="color:green"></pre>
-<button onclick="runTest(null)">Execute Request</button>
+<button id="testButton" onclick="runTest()">Execute Request</button>
 <input type="textbox" name="tb" id="tb" style="display:none" />
 <br/><br/>
 
 <script type="text/javascript">
-function runTest(callback)
+function runTest()
 {
     new Ajax.Request("issue1456.txt",
     {
         method: "get",
         onSuccess: function(response) {
             document.getElementById("response").innerHTML = response.responseText;
-            setTimeout(function() {
-                if (callback)
-                    callback(response);
-            }, 300);
         },
     });
 }
