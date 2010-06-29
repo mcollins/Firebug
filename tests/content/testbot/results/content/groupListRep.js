@@ -4,7 +4,7 @@ CDB.ns(function() { with (CDB) { with (Domplate) {
 
 // ************************************************************************************************
 
-CDB.Reps.GroupList = domplate(CDB.Rep,
+CDB.Reps.GroupList = domplate(Reps.Rep,
 {
     tag:
         TABLE({"class": "groupTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
@@ -149,7 +149,7 @@ CDB.Reps.GroupList = domplate(CDB.Rep,
         {
             //xxxHonza localization
             var table = new Reps.Table([
-                {property: "value.file", label: "Test", rep: Reps.Link},
+                {property: "value", label: "Test", rep: Reps.ProgressList},
                 {property: "value.result", label: "Error"},
                 {property: "value.description", label: "Description"}
             ], {maxHeight: 150});

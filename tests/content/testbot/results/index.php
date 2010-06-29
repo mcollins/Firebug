@@ -20,6 +20,7 @@
     <link href="style/tableRep.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/tabView.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/groupListRep.css" media="screen,projection" type="text/css" rel="stylesheet">
+    <link href="style/progressListRep.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/reps.css" media="screen,projection" type="text/css" rel="stylesheet">
 
     <!-- Viewer Javascript -->
@@ -30,6 +31,7 @@
     <script type="text/javascript" src="content/tableRep.js"></script>
     <script type="text/javascript" src="content/tabView.js"></script>
     <script type="text/javascript" src="content/groupListRep.js"></script>
+    <script type="text/javascript" src="content/progressListRep.js"></script>
     <script type="text/javascript" src="content/firebugDB.js"></script>
     <script type="text/javascript" src="content/main.js"></script>
 </head>

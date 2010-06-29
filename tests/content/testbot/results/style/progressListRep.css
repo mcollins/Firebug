@@ -1,0 +1,16 @@
+/* See license.txt for terms of usage */
+
+.progressList {
+    background-repeat: no-repeat;
+    background-position: 2px 3px;
+    padding-left: 18px;
+}
+
+.progressList.hasProgress {
+    background-image: url(twistyClosed.png);
+}
+
+.progressList.hasProgress.opened {
+    background-image: url(twistyOpen.png);
+}
+

@@ -192,7 +192,7 @@ CDB.Main.GroupView = domplate(CDB.Rep,
     {
         //xxxHonza localization
         var table = new Reps.Table([
-            {property: "value.file", label: "Test", rep: Reps.Link},
+            {property: "value", label: "Test", rep: Reps.ProgressList},
             {property: "value.result", label: "Error"},
             {property: "value.description", label: "Description"}
         ]);
