@@ -7,6 +7,20 @@
 <form onsubmit="return false;/* prevent false submit event */">
 <table >
 <tbody>
+<tr class="swarmCreator swarmWorkflowSelection" id="smartFlow">
+   <td class="swarmWorkflowSelector"> <input type="radio" class="swarmWorkflowSelector" checked="checked"  name="swarmWorkflowSelector" value="smartFlow" id="smartFlow_0">Swarm Testing</td>
+   <td class="swarmWorkflow">
+    <button class="swarmPackageStep swarmWorkflowStart" disabled>Package</button>
+    <button class="swarmInstallStep swarmWorkflowStep" disabled>Install</button>
+    <button class="swarmRunAllTestsStep swarmWorkflowStep" disabled>Test</button>
+    <!--  <button class="swarmSignPageStep swarmWorkflowStep" disabled>Sign</button>  -->
+    <button class="swarmExportPageStep swarmWorkflowEnd" disabled>Export</button> 
+    <button class="swarmStopTestsStep swarmWorkflowOption" disabled>Stop</button>
+    <button class="swarmHaltFailTest swarmWorkflowOption" disabled>Fail Halt</button>
+    <button class="swarmNoTimeoutTest swarmWorkflowOption" disabled>No Timeout</button>
+   </td>
+</tr>
+
 <tr class="swarmCreator swarmWorkflowSelection" id="preTest">
    <td class="swarmWorkflowSelector"> <input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="preTest" id="preTest_0">Pre-test </td>
    <td class="swarmWorkflow">
@@ -17,7 +31,7 @@
      <button class="swarmNoTimeoutTest swarmWorkflowOption" disabled>No Timeout</button>
    </td>
 </tr>
-<!-- <tr class="swarmCreator swarmWorkflowSelection" id="buildExtension">
+<tr class="swarmCreator swarmWorkflowSelection" id="buildExtension">
     <td class="swarmWorkflowSelector"><input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="buildExtension" id="buildAll_0">Build Extension</td>
     <td class="swarmWorkflow">
     <button class="swarmPackageStep swarmWorkflowStart" disabled>Package</button>
@@ -28,7 +42,7 @@
     <button class="swarmStopTestsStep swarmWorkflowOption" disabled>Stop</button>
      </td>
 </tr>
- -->
+
 <tr class="swarmCreator swarmWorkflowSelection" id="certify">
     <td class="swarmWorkflowSelector"><input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="ceritfy" id="certify_0">Certify Tests</td>
     <td class="swarmWorkflow">
@@ -48,7 +62,6 @@
     <button class="swarmRestartBrowserStep swarmWorkflowEnd" disabled>Restart Browser</button>
     </td>
 </tr>
-<!--
 <tr class="swarmUser swarmWorkflowSelection" id="userInstall">
     <td class="swarmWorkflowSelector"><input type="radio" class="swarmWorkflowSelector" name="swarmWorkflowSelector" value="userInvestigate" id="userInvestigate_0" class="swarmWorkflowSelector">Investigate</input></td>
     <td class="swarmWorkflow">
@@ -58,7 +71,6 @@
     <button class="swarmShowReviewsStep swarmWorkflowEnd" disabled>Find Reviews</button>
     </td>
 </tr>
- -->
 </tbody>
 
 </table>

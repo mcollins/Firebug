@@ -3,6 +3,7 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script src="chrome://swarm/content/workflow.js" type="text/javascript"/>
+    <script src="chrome://swarm/content/smartWorkflow.js" type="text/javascript"/>
     <script src="chrome://swarm/content/installer.js" type="text/javascript"/>
     <script src="chrome://swarm/content/tester.js" type="text/javascript"/>
     <script src="chrome://swarm/content/exporter.js" type="text/javascript"/>

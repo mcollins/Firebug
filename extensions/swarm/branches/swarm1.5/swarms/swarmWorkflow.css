@@ -1,3 +1,16 @@
+/* blank anything but the smartFlow option for now */
+.swarmWorkflowSelection {
+ 	display: none;
+ 	}
+ 	
+tr#smartFlow.swarmCreator {
+	display: block;
+}	
+
+#selectWorkflow {
+	display: none;
+	}
+
 .swarmTaskDataNotNeeded {
 	display: none;
 }
@@ -6,4 +19,8 @@
 }
 .swarmStepBlocked button[disabled] {
 	color: red;
+} 
+
+.swarmWorkflowEnd {
+	margin-right: 20px;
 }
