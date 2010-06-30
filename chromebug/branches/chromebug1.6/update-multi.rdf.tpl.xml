@@ -12,7 +12,7 @@
             <r:Description>
               <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
               <minVersion>0.8</minVersion>
-              <maxVersion>3.9</maxVersion>
+              <maxVersion>4.0</maxVersion>
               <updateLink>@UPDATEPATH@/chromebug-multi-@FULLVERSION@.xpi</updateLink>
             </r:Description>
           </targetApplication>
