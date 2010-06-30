@@ -40,6 +40,8 @@ pref("extensions.chromebug.showErrorCount", true);
 pref("extensions.chromebug.showIntroduction", true);
 pref("extensions.chromebug.viewPanelOrient", "horizontal");
 pref("extensions.chromebug.allowDoublePost", false);
+pref("extensions.chromebug.currentVersion", "");              // If Firebug version is bigger than the one in this string, a first-run welcome page is displayed.
+
 
 // Console
 pref("extensions.chromebug.showJSErrors", true);
