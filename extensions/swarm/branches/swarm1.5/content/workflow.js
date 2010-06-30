@@ -133,7 +133,7 @@ Swarm.WorkflowStep =
         }
         return null;
     },
-    
+
 };
 
 Swarm.workflowMonitor =
@@ -159,7 +159,18 @@ Swarm.workflowMonitor =
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         this.hookButtons(swarmWorkflows);
         swarmWorkflows.style.display = "block";
-        this.dispatch("initialize", [doc, this.progress]);
+        this.dispatch(this.registeredWorkflowSteps, "initialize", [doc, this.progress]);
+
+        var swarmWorkflowSelectors = doc.getElementsByClassName("swarmWorkflowSelector");
+        for (var i = 0; i < swarmWorkflowSelectors.length; i++)
+        {
+            if (swarmWorkflowSelectors[i].checked)
+            {
+                var selectedWorkflow = this.getWorkflowBySelector(swarmWorkflowSelectors[i]);
+                this.setSelectedWorkflow(doc, selectedWorkflow);
+            }
+
+        }
     },
 
     detachFromPage: function()  // XXXjjb NOT BEING CALLED!
@@ -189,7 +200,7 @@ Swarm.workflowMonitor =
 
     shutdown: function(doc, progress)
     {
-        this.dispatch("destroy", [doc, this.progress]);
+        this.dispatch(this.registeredWorkflowSteps, "destroy", [doc, this.progress]);
     },
 
     unHookButtons: function(workflowsElement)
@@ -208,6 +219,17 @@ Swarm.workflowMonitor =
 
         // select the new workflow
         var selectedWorkflowSelector = event.target;
+        var selectedWorkflow = this.getWorkflowBySelector(selectedWorkflowSelector);
+
+        // return the task data to default on
+        Swarm.WorkflowStep.showSwarmTaskData(doc);
+
+        // enable some buttons in this workflow
+        this.enableStepButtons(doc, selectedWorkflow);
+    },
+
+    getWorkflowBySelector: function(selectedWorkflowSelector)
+    {
         var parent = selectedWorkflowSelector;
         while(parent = parent.parentNode)
         {
@@ -219,12 +241,11 @@ Swarm.workflowMonitor =
                 break;
             }
         }
+        return parent;
+    },
 
-        // return the task data to default on
-        Swarm.WorkflowStep.showSwarmTaskData(doc);
-
-        // enable some buttons in this workflow
-        var selectedWorkflow = parent.getElementsByClassName("swarmWorkflow")[0];
+    enableStepButtons: function(doc, selectedWorkflow)
+    {
 
         var buttons = selectedWorkflow.getElementsByTagName('button');
         for (var j = 0; j < buttons.length; j++)
@@ -240,19 +261,23 @@ Swarm.workflowMonitor =
                 this.dispatchToStepByButton(button, "onStepEnabled", [doc, button])
             }
         }
+    },
 
+    setSelectedWorkflow: function(doc, selectedWorkflow)
+    {
         // mark the selector closed
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         swarmWorkflows.classList.add("swarmWorkflowIsSelected");
 
         // initialize the newly selected workflow
-        this.dispatch("onWorkflowSelect", [doc, selectedWorkflow]);
+        var stepsInSelectedWorkflow = null;
+        this.dispatch(this.registeredWorkflowSteps, "onWorkflowSelect", [doc, selectedWorkflow]);
         return true;
     },
 
     unSelectSelectedWorkflow: function(doc)
     {
-        this.dispatch("onWorkflowUnselect", [doc])
+        this.dispatch(this.registeredWorkflowSteps, "onWorkflowUnselect", [doc])
         // unselect the previously selected workflow
         var workFlowSelectors = doc.body.getElementsByClassName("swarmWorkflowSelection");
         for (var i = 0; i < workFlowSelectors.length; i++)
@@ -296,11 +321,11 @@ Swarm.workflowMonitor =
 
             var step = this.getStepFromButton(button);
             if (!step)
-                return this.progress("ERROR: Swarm.WorkFlowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
+                return this.progress("ERROR: Swarm.WorkflowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
 
-            this.dispatch("onStepStarts", [doc, step])
+            this.dispatch(this.registeredWorkflowSteps, "onStepStarts", [doc, step])
             this.dispatchToStepByButton(button, "onStep", [event, this.progress]);
-            this.dispatch("onStepEnds", [doc, step])
+            this.dispatch(this.registeredWorkflowSteps, "onStepEnds", [doc, step])
 
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
@@ -318,7 +343,7 @@ Swarm.workflowMonitor =
     {
         var step = this.getStepFromButton(button);
         if (!step)
-            return this.progress("ERROR: Swarm.WorkFlowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
+            return this.progress("ERROR: Swarm.WorkflowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
 
         var handler = this.registeredWorkflowSteps[step];
         if (!handler)
@@ -383,7 +408,7 @@ Swarm.workflowMonitor =
         this.registeredWorkflowSteps[key] = obj;
     },
 
-    dispatch: function(eventName, args)
+    dispatch: function(list, eventName, args)
     {
         FBTrace.sysout("swarm dispatch "+eventName, args);
 
@@ -406,7 +431,7 @@ Swarm.workflowMonitor =
 
 };
 
-Swarm.sourcePicker =  extend(Swarm.WorkflowStep, 
+Swarm.sourcePicker =  extend(Swarm.WorkflowStep,
 {
     initialize: function(doc, progress)
     {
@@ -422,23 +447,23 @@ Swarm.sourcePicker =  extend(Swarm.WorkflowStep,
             sourcePickerButton.setAttribute("value", editURL);
         });
     },
-    
-    onWorkflowSelect: function(doc, selectedWorkflow) 
+
+    onWorkflowSelect: function(doc, selectedWorkflow)
     {
         Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
         {
             sourcePickerButton.classList.add("swarmTaskHidePicker");
         });
     },
-    
-    onWorkflowUnselect: function(doc) 
+
+    onWorkflowUnselect: function(doc)
     {
         Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
         {
-            sourcePickerButton.classList.remove("swarmTaskHidePicker"); 
+            sourcePickerButton.classList.remove("swarmTaskHidePicker");
         });
     },
-    
+
     shutdown: function(doc, progress)
     {
         Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
@@ -447,33 +472,33 @@ Swarm.sourcePicker =  extend(Swarm.WorkflowStep,
         });
     },
     // ------------------
-    
+
     eachPicker: function(doc, fnOfElement)
     {
         var sourcePickerButtons = doc.getElementsByClassName("swarmTaskSrc");
         for (var i = 0; i < sourcePickerButtons.length; i++)
-            fnOfElement(sourcePickerButtons[i]); 
+            fnOfElement(sourcePickerButtons[i]);
     },
-    
+
     getEnclosingTaskDataDiv: function(element)
     {
         var elt = element;
         while (elt && !elt.classList.contains('swarmTaskData'))
             elt = elt.parentNode;
-        
+
         return elt;
     },
-    
+
     getTaskDataElement: function(sourcePickerButton)
     {
         var div = Swarm.sourcePicker.getEnclosingTaskDataDiv(sourcePickerButton);
         if (div)
         {
             var taskData = div.getElementsByTagName('iframe')[0];
-            return taskData;        
+            return taskData;
         }
     },
-    
+
     pick: function(event)
     {
         var sourcePickerButton = event.target;

@@ -301,6 +301,17 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         }
     },
 
+    onWorkflowSelect: function(doc, selectedWorkflow)
+    {
+        var installSteps = selectedWorkflow.getElementsByClassName("swarmInstallStep");
+        if (installSteps.length === 0)
+            return;
+
+        var ext = Swarm.Installer.getInstallableExtensions();
+        if (ext.length == 0)
+            Swarm.workflowMonitor.stepWorkflows(doc, "swarmInstallStep");
+    },
+
     onStepEnabled: function(doc, elt)
     {
         this.showSwarmTaskData(doc, "swarmDefinition");
@@ -312,17 +323,6 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
             elt.disabled = 'disabled';
             this.progress("ERROR "+uninstallable.length+" extensions cannot be installed");
         }
-    },
-
-    onWorkflowSelect: function(doc, selectedWorkflow)
-    {
-        var installSteps = selectedWorkflow.getElementsByClassName("swarmInstallStep");
-        if (installSteps.length === 0)
-            return;
-
-        var ext = Swarm.Installer.getInstallableExtensions();
-        if (ext.length == 0)
-            Swarm.workflowMonitor.stepWorkflows(doc, "swarmInstallStep");
     },
 
     onStep: function(event, progress)

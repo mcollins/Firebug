@@ -20,17 +20,17 @@ const versionComparator = Components.classes["@mozilla.org/xpcom/version-compara
 
 Swarm.smartWorkflowStep =   extend(Swarm.WorkflowStep,  // Don't you just hate things called "smart..."?
 {
-	initialize: function(doc, progress)
-	{
-		this.checkPackage();
-		
-		
-	},
-	
-	checkPackage: function()
-	{
-		 
-	},
+    initialize: function(doc, progress)
+    {
+        this.checkPackage(doc, progress);
+
+
+    },
+
+    checkPackage: function(doc, progress)
+    {
+
+    },
 });
 
 Swarm.workflowMonitor.registerWorkflowStep("swarmSmartWorkflowStep", Swarm.smartWorkflowStep);

@@ -48,57 +48,57 @@ body {
 }
 
 .hideTaskData {
-	display: none;
+    display: none;
 }
 </style>
 <script type="text/javascript">
 function initializeButtons(event)
 {
-	var buttons = document.getElementsByClassName('radioButton');
-	for (var i = 0; i < buttons.length; i++)
-		buttons[i].addEventListener('click', selectButton, true);
-	clearButtons();
-	turnOn(buttons[0]);
+    var buttons = document.getElementsByClassName('radioButton');
+    for (var i = 0; i < buttons.length; i++)
+        buttons[i].addEventListener('click', selectButton, true);
+    clearButtons();
+    turnOn(buttons[0]);
 
-	var installer = document.getElementById('swarmInstall');
-	installer.addEventListener('click', installExtensions, true);
+    var installer = document.getElementById('swarmInstall');
+    installer.addEventListener('click', installExtensions, true);
 }
 function selectButton(event)
 {
-	clearButtons();
-	turnOn(event.target);
+    clearButtons();
+    turnOn(event.target);
 }
 function clearButtons()
 {
-	var buttons = document.getElementsByClassName('radioButton');
-	for (var i = 0; i < buttons.length; i++)
-		turnOff(buttons[i]);
+    var buttons = document.getElementsByClassName('radioButton');
+    for (var i = 0; i < buttons.length; i++)
+        turnOff(buttons[i]);
 }
 function turnOff(button)
 {
-	button.removeAttribute('disabled');
-	var target = button.getAttribute('id').split('_')[1]; // eg swarmDefinition from Button_swarmDefintion;
-	var taskDatas = document.getElementsByClassName(target);
-	for(var iData = 0; iData < taskDatas.length; iData++)
-		taskDatas[iData].classList.add('hideTaskData');
+    button.removeAttribute('disabled');
+    var target = button.getAttribute('id').split('_')[1]; // eg swarmDefinition from Button_swarmDefintion;
+    var taskDatas = document.getElementsByClassName(target);
+    for(var iData = 0; iData < taskDatas.length; iData++)
+        taskDatas[iData].classList.add('hideTaskData');
 }
 function turnOn(button)
 {
-	button.setAttribute('disabled', 'disabled');
-	var target = button.getAttribute('id').split('_')[1]; // eg swarmDefinition from Button_swarmDefintion;
-	var taskDatas = document.getElementsByClassName(target);
-	for(var iData = 0; iData < taskDatas.length; iData++)
-	{
-		var taskData = taskDatas[iData];
-		taskData.classList.remove('hideTaskData');
-	    var iframes = taskData.getElementsByTagName('iframe');
-	    var height = document.documentElement.clientHeight
-	    iframes[0].setAttribute('style',"height:"+ height +"px");
-	}
+    button.setAttribute('disabled', 'disabled');
+    var target = button.getAttribute('id').split('_')[1]; // eg swarmDefinition from Button_swarmDefintion;
+    var taskDatas = document.getElementsByClassName(target);
+    for(var iData = 0; iData < taskDatas.length; iData++)
+    {
+        var taskData = taskDatas[iData];
+        taskData.classList.remove('hideTaskData');
+        var iframes = taskData.getElementsByTagName('iframe');
+        var height = document.documentElement.clientHeight
+        iframes[0].setAttribute('style',"height:"+ height +"px");
+    }
 }
 function installExtensions(event)
 {
-	alert("Installer required");
+    alert("Installer required");
 }
 
 window.addEventListener('load', initializeButtons, false);

@@ -23,6 +23,9 @@ Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
 {
     stepName: "swarmPackageStep",
 
+    /*
+     * The builder can only be invoked if there is a file link
+     */
     onWorkflowSelect: function(doc, selectedWorkflow)
     {
         this.extensionSources = [];
