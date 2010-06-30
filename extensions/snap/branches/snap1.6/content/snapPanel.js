@@ -22,6 +22,7 @@ Firebug.Snap.Panel.prototype = extend(Firebug.Panel,
 {
     name: "snap",
     title: $STR("snap.Snapshots"),
+    serialNumber: 1,
 
     initialize: function(context, doc)
     {
@@ -38,6 +39,8 @@ Firebug.Snap.Panel.prototype = extend(Firebug.Panel,
     {
         Firebug.Panel.show.apply(this, arguments);
 
+        this.setDefaultSnapShotName();
+        collapse($('fbSnapshotNameBox'), false);
         this.showToolbarButtons("fbSnapButtons", true);
     },
 
@@ -46,24 +49,49 @@ Firebug.Snap.Panel.prototype = extend(Firebug.Panel,
         Firebug.Panel.hide.apply(this, arguments);
 
         this.showToolbarButtons("fbSnapButtons", false);
+        collapse($('fbSnapshotNameBox'), true);
     },
 
     refresh: function()
     {
-        var binary = Firebug.Snap.Profiler.getBinaryComponent();
-        if (!binary)
-        {
-            Firebug.Console.log("Snapshots Profiler: Required binary component not found! " +
-                "One may not be available for your OS and Firefox version.");
-
-            Firebug.Snap.NoJetpack.render(this.panelNode);
-            return;
-        }
-
-        var profileData = Firebug.Snap.Profiler.profile(this.context);
-        this.table = ReportView.render(profileData, this.panelNode);
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    setSnapShotName: function(name, isDefault)
+    {
+    	var textBox = $('fbSnapshotNameBox');
+    	textBox.value = name;
+    	if (isDefault)
+    		textBox.classList.add('fbDefaultSnapName');
+    	else
+    		textBox.classList.remove('fbDefaultSnapName');
+    },
+
+    getSnapShotName: function()
+    {
+    	return $('fbSnapshotNameBox').value;
+    },
+
+    setDefaultSnapShotName: function()
+    {
+    	var name = this.getSnapShotName();
+    	if (!name)
+    	{
+    		name = this.getDefaultSnapShotName();
+    		this.setSnapShotName(name, true);
+    	}
+
+    	return name;
+    },
+
+    getDefaultSnapShotName: function()
+    {
+    	// TODO this should be a compact summary of last UI event or CSS edit eg.
+    	if (this.context.loaded)
+    		return "loaded+"+this.serialNumber++;
+    	else
+    		return "notLoaded+"+this.serialNumber++;
+    },
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Selection
 
