@@ -16,6 +16,7 @@
     <script src="couchdb/jquery.couch.js?0.9.0"></script>
 
     <!-- Viewer --> 
+    <link href="style/global.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/main.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/tableRep.css" media="screen,projection" type="text/css" rel="stylesheet">
     <link href="style/tabView.css" media="screen,projection" type="text/css" rel="stylesheet">

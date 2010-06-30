@@ -1,0 +1,62 @@
+/* See license.txt for terms of usage */
+
+body {
+    background:url("bg-grad.jpg") repeat-x scroll 0 0 white;
+    color: #333333;
+    font-family: helvetica,sans-serif;
+    font-size: 62.5%;
+}
+
+#header {
+    background: url("header-bg.png") no-repeat scroll 0 0 transparent;
+    margin: 0 auto;
+    position: relative;
+    z-index: -1;
+}
+
+#logo {
+    float:left;
+    position:relative;
+    padding 20px;
+}
+
+#logo h1 {
+    background:url("firebug-logo.png") repeat scroll 0 0 transparent;
+    height:89px;
+    text-indent:-5000px;
+    width:293px;
+}
+
+#logo h2 {
+    letter-spacing: -1px;
+    margin:-35px 0 0 100px;
+    font-size: 1.3em;
+}
+
+#logo a {
+    display:block;
+    height:75px;
+    position:absolute;
+    width:400px;
+}
+
+#title {
+    padding: 20px; /* same as logo */
+    margin: 11px; /* half of the logo hgt - font height = (70 - 47)/2 */
+}
+
+#title h1 {
+    font-family: Tahoma;
+    font-size: 4em;
+    text-align: center;
+    position: relative;
+}
+
+a {
+    text-decoration: none;
+    color:  rgb(11, 83, 148);
+}
+
+a:hover {
+    text-decoration: underline;
+}
