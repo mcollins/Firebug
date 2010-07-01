@@ -24,4 +24,4 @@
 <script type="text/javascript" src="/tests/content/testbot/results/content/main.js"></script>
 
 <br/>
-<div id="content"></div>
+<div id="testResults"></div>

@@ -58,7 +58,7 @@
 </div>
 <br/>
 
-<div id="content"></div>
+<div id="testResults"></div>
 
 </body>
 </html>

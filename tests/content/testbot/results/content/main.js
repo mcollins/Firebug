@@ -13,10 +13,10 @@ CDB.Main = extend(CDB.Module,
     {
         // Preload twisty image to make UX better (it's there immediately after expanding).
         //xxxHonza: this doesn't seem to work.
-        var image1 = new Image(11, 11);
-        image1.src = "style/twistyOpen.png";
+        this.image1 = new Image(11, 11);
+        this.image1.src = "style/twistyOpen.png";
 
-        var content = document.getElementById("content");
+        var content = document.getElementById("testResults");
         var groupID = getURLParameter("headerid");
         if (groupID)
         {
