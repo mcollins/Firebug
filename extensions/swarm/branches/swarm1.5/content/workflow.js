@@ -30,16 +30,16 @@ Swarm.WorkflowStep =
      */
     initialize: function(doc, progress) {},
     /*
-     * Called just after the UI selects any workflow, on all steps
+     * Called just after the UI selects any workflow, on all steps in the newly selected workflow
      * @param doc, the document containing the workflow UI
      * @param selectedWorkflow, the element selected
      */
     onWorkflowSelect: function(doc, selectedWorkflow) {},
     /*
-     * Called just before the UI unselects any workflow, on all steps
+     * Called just before the UI unselects any workflow, on all steps in the unselected workflow
      * @param doc, the document containing the workflow UI
      */
-    onWorkflowUnselect: function(doc) {},
+    onWorkflowUnselect: function(doc, unSelectedWorkflow) {},
 
     /*
      * Called when a step is allowed to fire
@@ -246,7 +246,6 @@ Swarm.workflowMonitor =
 
     enableStepButtons: function(doc, selectedWorkflow)
     {
-
         var buttons = selectedWorkflow.getElementsByTagName('button');
         for (var j = 0; j < buttons.length; j++)
         {
@@ -265,13 +264,22 @@ Swarm.workflowMonitor =
 
     setSelectedWorkflow: function(doc, selectedWorkflow)
     {
+    	if (this.currentWorkflow)
+    	{
+    		var stepsInWorkflow = this.getStepsFromWorkflow(selectedWorkflow);
+    		this.dispatch(stepsInWorkflow, "onWorkflowSelect", [doc, selectedWorkflow]);
+    	}
+
+    	this.currentWorkflow = selectedWorkflow;
+
         // mark the selector closed
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
         swarmWorkflows.classList.add("swarmWorkflowIsSelected");
 
         // initialize the newly selected workflow
-        var stepsInSelectedWorkflow = null;
-        this.dispatch(this.registeredWorkflowSteps, "onWorkflowSelect", [doc, selectedWorkflow]);
+        var stepsInSelectedWorkflow = this.getStepsFromWorkflow(this.currentWorkflow);
+        this.dispatch(stepsInSelectedWorkflow, "onWorkflowSelect", [doc, this.currentWorkflow]);
+        debugger; // TODO stepWorkflow
         return true;
     },
 
@@ -324,7 +332,7 @@ Swarm.workflowMonitor =
                 return this.progress("ERROR: Swarm.WorkflowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
 
             this.dispatch(this.registeredWorkflowSteps, "onStepStarts", [doc, step])
-            this.dispatchToStepByButton(button, "onStep", [event, this.progress]);
+            step["onStep"].apply(step, [event, this.progress]);
             this.dispatch(this.registeredWorkflowSteps, "onStepEnds", [doc, step])
 
             button.classList.remove("swarmWorkflowing");
@@ -345,14 +353,10 @@ Swarm.workflowMonitor =
         if (!step)
             return this.progress("ERROR: Swarm.WorkflowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
 
-        var handler = this.registeredWorkflowSteps[step];
-        if (!handler)
-            return this.progress("no workflow step registered at "+step);
-
-        if (!handler[event])
+        if (!step[event])
             return this.progress("no function "+event+" for workflow step "+step);
 
-        handler[event].apply(handler, args);
+        step[event].apply(step, args);
     },
 
     getStepFromButton: function(button)
@@ -360,8 +364,31 @@ Swarm.workflowMonitor =
         for(var i = 0; i < button.classList.length; i++)
         {
             if (button.classList[i] in this.registeredWorkflowSteps)
-                return button.classList[i];
+            {
+            	var stepName = button.classList[i];
+            	return this.registeredWorkflowSteps[stepName];
+            }
         }
+    },
+
+    getStepsFromWorkflow: function(workflow)
+    {
+    	var buttons = workflow.getElementsByTagName("button");
+    	var steps = [];
+        for (var i = 0 ; i < buttons.length; i++ )
+        	steps.push(this.getStepFromButton(buttons[i]));
+        return steps;
+    },
+
+    stepWorkflow: function(doc, workflow)
+    {
+    	if (this.currentStep)
+    	{
+
+    	}
+    	var steps = this.getStepsFromWorkflow(workflow);
+    	this.currentStep = steps[0];
+
     },
 
     stepWorkflows: function(doc, stepClassName)
