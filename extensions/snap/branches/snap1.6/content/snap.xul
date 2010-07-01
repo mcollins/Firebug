@@ -20,9 +20,9 @@
                     command="cmd_fbSnap" />
             </hbox>
                  <!-- Name input Box -->
-            <vbox flex="40">
+            <vbox flex="40"  id="fbSnapshotNameBox" collapsed="true">
                   <spacer flex="1"/>
-                  <textbox id="fbSnapshotNameBox"/>
+                  <textbox id="fbSnapshotName"/>
                   <spacer flex="1"/>
             </vbox>
         </hbox>
