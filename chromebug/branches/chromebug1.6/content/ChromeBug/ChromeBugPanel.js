@@ -305,7 +305,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }, true);
     },
 
-    internationalizeUI: function()
+    internationalizeUI: function(doc)
     {
         var elements = ["view-menu", "window-menu"];
         for (var i=0; i<elements.length; i++)
