@@ -140,8 +140,12 @@ Swarm.workflowMonitor =
 {
     initialize: function(doc, progress)
     {
-        this.injectSwarmWorkflows(doc);
-        this.progress = progress;
+        if (!this.initialzed)
+        {
+            this.injectSwarmWorkflows(doc);
+            this.progress = progress;
+            this.initialized = true;
+        }
     },
 
     injectSwarmWorkflows: function(doc)
@@ -264,13 +268,13 @@ Swarm.workflowMonitor =
 
     setSelectedWorkflow: function(doc, selectedWorkflow)
     {
-    	if (this.currentWorkflow)
-    	{
-    		var stepsInWorkflow = this.getStepsFromWorkflow(selectedWorkflow);
-    		this.dispatch(stepsInWorkflow, "onWorkflowSelect", [doc, selectedWorkflow]);
-    	}
+        if (this.currentWorkflow)
+        {
+            var stepsInWorkflow = this.getStepsFromWorkflow(selectedWorkflow);
+            this.dispatch(stepsInWorkflow, "onWorkflowUnselect", [doc, selectedWorkflow]);
+        }
 
-    	this.currentWorkflow = selectedWorkflow;
+        this.currentWorkflow = selectedWorkflow;
 
         // mark the selector closed
         var swarmWorkflows = doc.getElementById("swarmWorkflows");
@@ -365,29 +369,29 @@ Swarm.workflowMonitor =
         {
             if (button.classList[i] in this.registeredWorkflowSteps)
             {
-            	var stepName = button.classList[i];
-            	return this.registeredWorkflowSteps[stepName];
+                var stepName = button.classList[i];
+                return this.registeredWorkflowSteps[stepName];
             }
         }
     },
 
     getStepsFromWorkflow: function(workflow)
     {
-    	var buttons = workflow.getElementsByTagName("button");
-    	var steps = [];
+        var buttons = workflow.getElementsByTagName("button");
+        var steps = [];
         for (var i = 0 ; i < buttons.length; i++ )
-        	steps.push(this.getStepFromButton(buttons[i]));
+            steps.push(this.getStepFromButton(buttons[i]));
         return steps;
     },
 
     stepWorkflow: function(doc, workflow)
     {
-    	if (this.currentStep)
-    	{
+        if (this.currentStep)
+        {
 
-    	}
-    	var steps = this.getStepsFromWorkflow(workflow);
-    	this.currentStep = steps[0];
+        }
+        var steps = this.getStepsFromWorkflow(workflow);
+        this.currentStep = steps[0];
 
     },
 

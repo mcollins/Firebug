@@ -1,26 +1,37 @@
 /* blank anything but the smartFlow option for now */
 .swarmWorkflowSelection {
- 	display: none;
- 	}
- 	
+     display: none;
+     }
+
 tr#smartFlow.swarmCreator {
-	display: block;
-}	
+    display: block;
+}
 
 #selectWorkflow {
-	display: none;
-	}
+    display: none;
+    }
 
 .swarmTaskDataNotNeeded {
-	display: none;
+    display: none;
 }
 .swarmTaskHidePicker {
-	display: none;
+    display: none;
 }
 .swarmStepBlocked button[disabled] {
-	color: red;
-} 
+    color: red;
+}
 
 .swarmWorkflowEnd {
-	margin-right: 20px;
+    margin-right: 20px;
 }
+
+#progressTable {
+    border-collapse:collapse;
+}
+#progressTable td {
+    border: 1px solid #BEBEBE;
+    margin: 2px;
+}
+#progressTable .extensionStatus {
+    float: none;
+    }

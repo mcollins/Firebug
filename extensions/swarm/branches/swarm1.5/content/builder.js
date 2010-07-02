@@ -30,7 +30,7 @@ Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
     {
         this.extensionSources = [];
 
-        var externalExtensions = doc.getElementsByClassName("installNotAllowed");
+        var externalExtensions = Swarm.Installer.getDeclaredExtensions();
         if (externalExtensions.length)
         {
             var externalExtensionIds = this.getExtensionIdsByElements(externalExtensions);

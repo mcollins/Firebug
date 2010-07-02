@@ -28,10 +28,10 @@ Swarm.Installer =
         return extensions.all;
     },
 
-    prepareDeclaredExtensions: function(doc, progress)
+    prepareDeclaredExtensions: function(swarmDoc, progress)
     {
         progress("Swarm Tester checking your extensions");
-        this.declaredExtensions = this.getDeclaredExtensions(doc);
+        this.declaredExtensions = this.getDeclaredExtensions(swarmDoc);
         progress("Swarm document declares "+this.declaredExtensions.length+" extensions");
 
         this.installedExtensions = this.getInstalledExtensions();
@@ -39,8 +39,12 @@ Swarm.Installer =
 
         this.notDeclared = this.getInstalledButNotDeclared(this.declaredExtensions, this.installedExtensions);
         progress("Profile has "+this.notDeclared.length+" extensions not listed in the swarm");
+    },
 
-        //this.notInstalled = this.getDeclaredAndNotInstalledExtensions();
+    buildProgressTable: function(doc, progress)
+    {
+        this.notDeclared.forEach(bind(this.appendProgressTable, this, doc));
+        this.declaredExtensions.forEach(bind(this.appendProgressTable, this, doc));
     },
 
     getInstallableExtensions: function(doc, progress)
@@ -62,6 +66,9 @@ Swarm.Installer =
 
     getDeclaredExtensions: function(doc)
     {
+        if (this.declaredExtensions)
+            return this.declaredExtensions;
+
         var extensionElts = doc.getElementsByClassName("extensionURL");
         var extensions = [];
         for (var i = 0; i < extensionElts.length; i++)
@@ -78,7 +85,7 @@ Swarm.Installer =
                 element: elt,
             });
         }
-        return extensions;
+        return this.declaredExtensions = extensions;
     },
 
     eachDeclaredAndInstallableExtension: function(fnTakesExtension)
@@ -194,6 +201,27 @@ Swarm.Installer =
         }
         return -1;
     },
+
+    appendProgressTable: function(extension, index, extensions, doc)
+    {
+        var progressTable = doc.getElementById('progressTableBody');
+        var row = doc.createElement("tr");
+        progressTable.appendChild(row);
+        row.innerHTML = "<td>"+extension.name+"</td><td>"+extension.id+"</td><td>"+extension.version+"</td><td>"+"</td>";
+        if(extension.statusElement)
+        {
+            row.lastChild.appendChild(extension.statusElement)
+        }
+        else
+        {
+            row.lastChild.innerHTML = "installed, but Tnot in swarm";
+        }
+
+        extension.progressTableRow = row;
+
+        debugger;
+    },
+
     // -------------------------------------------------------------
     // implement Swarm.WorkflowStep
 };
@@ -293,7 +321,6 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
         {
             progress("Found swarmDefinition");
             this.swarmDocument = swarmFrame.contentDocument;
-            Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
         }
         else
         {
@@ -303,6 +330,9 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
 
     onWorkflowSelect: function(doc, selectedWorkflow)
     {
+        Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
+        Swarm.Installer.buildProgressTable(doc, this.progress);
+
         var installSteps = selectedWorkflow.getElementsByClassName("swarmInstallStep");
         if (installSteps.length === 0)
             return;
@@ -372,6 +402,7 @@ Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallSt
 
         Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
         var todo = [];
+
         Swarm.Installer.eachDeclaredAndInstallableExtension(function buildToDoList(extension)
         {
             todo.push(extension);
