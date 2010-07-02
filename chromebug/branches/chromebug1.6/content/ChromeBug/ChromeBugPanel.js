@@ -305,6 +305,23 @@ Firebug.Chromebug = extend(Firebug.Module,
         }, true);
     },
 
+    internationalizeUI: function()
+    {
+        var elements = ["view-menu", "window-menu"];
+        for (var i=0; i<elements.length; i++)
+        {
+            var element = doc.getElementById(elements[i]);
+            if (!element)
+                continue;
+
+            if (element.hasAttribute("label"))
+                FBL.internationalize(element, "label");
+
+            if (element.hasAttribute("tooltiptext"))
+                FBL.internationalize(element, "tooltiptext");
+        }
+    },
+
     prepareForCloseEvents: function()
     {
         // Prepare for close events
