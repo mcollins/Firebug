@@ -11,7 +11,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
 
-const STARTUP_TOPIC = "app-startup";
+const STARTUP_TOPIC = "profile-after-change";
 
 var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
@@ -253,22 +253,7 @@ StartupObserver.prototype =
    },
 
    /* API */
-   startOnStartupNextTime: function()
-   {
-       return; // these fail, I don't know why
-       categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
-               "service," + CONTRACT_ID, true, true);
-       Components.utils.reportError("chromebug registered to listen for "+STARTUP_TOPIC+" components next time this program runs");
-   },
-
-   dontStartOnStartupNextTime: function()
-   {
-       return; // these fail, I don't know why
-       categoryManager.deleteCategoryEntry(STARTUP_TOPIC, CLASS_NAME, true);
-       Components.utils.reportError("chromebug deregistered to listen for "+STARTUP_TOPIC+" components next time this program runs");
-   },
-
-   getJSDState: function()
+    getJSDState: function()
    {
        if (!gStartupObserverSingleton.jsdState)
            gStartupObserverSingleton.jsdState = {};
@@ -289,6 +274,7 @@ StartupObserver.prototype =
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
+    	Components.utils.reportError("StartupObserver "+topic);
         if (topic == STARTUP_TOPIC) {
             if (trace) Components.utils.reportError("StartupObserver "+topic);
             this.initialize();
@@ -585,8 +571,11 @@ var StartupObserverModule =
         compMgr.registerFactoryLocation(CLASS_ID, CLASS_NAME,
             CONTRACT_ID, fileSpec, location, type);
 
+        // For app-startup
+        //categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
+        //    "service," + CONTRACT_ID, true, true);
         categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
-            "service," + CONTRACT_ID, true, true);
+                CONTRACT_ID, true, true);
     },
 
     unregisterSelf: function(compMgr, fileSpec, location)
