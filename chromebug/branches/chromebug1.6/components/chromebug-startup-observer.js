@@ -27,8 +27,15 @@ function StartupObserver()
     this.observers = [];
 }
 
+Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+
 StartupObserver.prototype =
 {
+	/* XPCOM voodoo */
+    classID: Components.ID("{287716D2-140B-11DE-912E-E0FC55D89593}"),
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),
+
+	/* end XPCOM voodoo */
     debug: false,
 
     getWindow: function()
@@ -320,18 +327,6 @@ StartupObserver.prototype =
         return null;
     },
 
-    /* nsISupports */
-    QueryInterface: function(iid)
-    {
-        if (iid.equals(Ci.nsISupports) ||
-            iid.equals(Ci.nsIObserverService) ||
-            iid.equals(Ci.nsIObserver)) {
-            return this;
-        }
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
-
     trackFiles: {
             allFiles: {},
 
@@ -528,6 +523,8 @@ function analyzeScope(cb, frame, jsdState)
 // ************************************************************************************************
 // Service factory
 
+
+
 var gStartupObserverSingleton = null;
 var StartupObserverFactory =
 {
@@ -609,6 +606,12 @@ function NSGetModule(compMgr, fileSpec)
 {
     return StartupObserverModule;
 }
+/**
+* XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+* XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+*/
+if (XPCOMUtils.generateNSGetFactory)
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([StartupObserver]);
 
 
 function getTmpFile()

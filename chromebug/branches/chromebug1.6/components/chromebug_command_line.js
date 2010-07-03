@@ -18,16 +18,9 @@ const iosvc = Components.classes["@mozilla.org/network/io-service;1"].getService
 const chromeReg = Components.classes["@mozilla.org/chrome/chrome-registry;1"].getService(Components.interfaces.nsIToolkitChromeRegistry);
 const appShellService = Components.classes["@mozilla.org/appshell/appShellService;1"].getService(Components.interfaces.nsIAppShellService);
 
-const  clh_CID = Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}");
-const  clh_contractID = "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug";
-
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
-
-// category names are sorted alphabetically. Typical command-line handlers use a
-// category that begins with the letter "m".
-const  clh_category = "aaa-chromebug";
 
 const nsIWindowMediator = Components.interfaces.nsIWindowMediator;
 const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
@@ -35,9 +28,13 @@ const reXUL = /\.xul$|\.xml$|^XStringBundle$|\/modules\//;
 const trace = false;
 /**
  * The XPCOM component that implements nsICommandLineHandler.
- * It also implements nsIFactory to serve as its own singleton factory.
  */
-const  chromebugCommandLineHandler = {
+
+Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+
+function chromebugCommandLineHandler(){} // not really a class, but needed for xpcom voodoo
+
+chromebugCommandLineHandler.prototype = {
 
     debug: false,
 
@@ -70,7 +67,7 @@ const  chromebugCommandLineHandler = {
             var features = "outerWidth="+w+","+"outerHeight="+h;
 
             var winFeatures = "resizable,dialog=no,centerscreen" + (features != "" ? ("," + features) : "");
-            if (chromebugCommandLineHandler.debug)
+            if (chromebugCommandLineHandler.prototype.debug)
             {
                 Components.utils.reportError("chromebug_command_line opening window with features: "+features);
             }
@@ -91,7 +88,7 @@ const  chromebugCommandLineHandler = {
         var chromeBugWindow = this.openWindow(window, inType, url, prefedWidth, prefedHeight);
         chromeBugWindow.document.title = title;
 
-        if (chromebugCommandLineHandler.debug)
+        if (chromebugCommandLineHandler.prototype.debug)
         {
             var chromeURI = iosvc.newURI(url, null, null);
             var localURI = chromeReg.convertChromeURL(chromeURI);
@@ -103,21 +100,7 @@ const  chromebugCommandLineHandler = {
         return chromeBugWindow;
     },
 
-
-  /* nsISupports */
-  QueryInterface : function clh_QI(iid)
-  {
-    if (iid.equals(nsICommandLineHandler) ||
-        iid.equals(nsIFactory) ||
-        iid.equals(nsISupports))
-    {
-        this.wrappedJSObject = this;
-        return this;
-    }
-
-    throw Components.results.NS_ERROR_NO_INTERFACE;
-  },
-
+    wrappedJSObject: this,
 
   /* nsICommandLineHandler */
 
@@ -144,7 +127,7 @@ const  chromebugCommandLineHandler = {
                     if (launchChromebug)
                     {
                         prefs.setBoolPref("extensions.firebug.service.filterSystemURLs", false);  // See firebug-service.js
-                        chromebugCommandLineHandler.openChromebug(window);
+                        chromebugCommandLineHandler.prototype.openChromebug(window);
                     }
                 }
                 catch (e)
@@ -168,23 +151,37 @@ const  chromebugCommandLineHandler = {
   // 72 characters with embedded newlines,
   // and finally, the string should end with a newline
   //          01234567890123456789001234
-  helpInfo :  "  -chromebug              start chromebug then continue as normal\n",
+    helpInfo :  "  -chromebug              start chromebug then continue as normal\n",
 
-  /* nsIFactory */
+	/* XPCOM voodoo */
+    classID: Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}"),
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsICommandLineHandler]),
+    classDescription: "unique text description",
+    contractID:       "@mozilla.org/commandlinehandler/general-startup;1?type=chromebug",
 
-  createInstance : function clh_CI(outer, iid)
-  {
-    if (outer != null)
-      throw Components.results.NS_ERROR_NO_AGGREGATION;
+    // category names are sorted alphabetically. Typical command-line handlers use a
+    // category that begins with the letter "m".
 
-    return this.QueryInterface(iid);
-  },
+    _xpcom_categories: [{
+    	 // Each object in the array specifies the parameters to pass to
+    	// nsICategoryManager.addCategoryEntry(). 'true' is passed for
+    	// both aPersist and aReplace params.
+    	category: "command-line-handler",
+    	// optional, defaults to the object's classDescription
+    	entry: "aaa-chromebug",
+    	}],
+	/* end XPCOM voodoo */
 
-  lockFactory : function clh_lock(lock)
-  {
-    /* no-op */
-  }
 };
+Components.utils.reportError("Chromebug command line top level");
+/**
+* XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+* XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+*/
+if (XPCOMUtils.generateNSGetFactory)
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([chromebugCommandLineHandler]);
+else
+    var NSGetModule = XPCOMUtils.generateNSGetModule([chromebugCommandLineHandler]);
 
 function getStartupObserver()
 {
@@ -194,72 +191,6 @@ function getStartupObserver()
         return chromebugAppStartService.wrappedJSObject;
     else
         return null;
-}
-
-/**
- * The XPCOM glue that implements nsIModule
- */
-const  chromebugCommandLineHandlerModule =
-{
-      /* nsISupports */
-      QueryInterface : function mod_QI(iid)
-    {
-        if (iid.equals(nsIModule) ||
-            iid.equals(nsISupports))
-          return this;
-
-        throw Components.results.NS_ERROR_NO_INTERFACE;
-    },
-
-  /* nsIModule */
-  getClassObject : function mod_gch(compMgr, cid, iid)
-  {
-    if (cid.equals(clh_CID))
-      return chromebugCommandLineHandler.QueryInterface(iid);
-
-    throw Components.results.NS_ERROR_NOT_REGISTERED;
-  },
-
-  registerSelf : function mod_regself(compMgr, fileSpec, location, type)
-  {
-    compMgr.QueryInterface(nsIComponentRegistrar);
-
-    compMgr.registerFactoryLocation(clh_CID,
-                                    "chromebugCommandLineHandler",
-                                    clh_contractID,
-                                    fileSpec,
-                                    location,
-                                    type);
-
-    var catMan = Components.classes["@mozilla.org/categorymanager;1"].
-      getService(Ci.nsICategoryManager);
-    catMan.addCategoryEntry("command-line-handler",
-                            clh_category,
-                            clh_contractID, true, true);
-  },
-
-  unregisterSelf : function mod_unreg(compMgr, location, type)
-  {
-    compMgr.QueryInterface(nsIComponentRegistrar);
-    compMgr.unregisterFactoryLocation(clh_CID, location);
-
-    var catMan = Components.classes["@mozilla.org/categorymanager;1"].
-      getService(nsICategoryManager);
-    catMan.deleteCategoryEntry("command-line-handler", clh_category);
-  },
-
-  canUnload : function (compMgr)
-  {
-    return true;
-  }
-};
-
-/* The NSGetModule function is the magic entry point that XPCOM uses to find what XPCOM objects
- * this component provides
- */
-function NSGetModule(comMgr, fileSpec)
-{
-  return chromebugCommandLineHandlerModule;
 }
 
 function getTmpFile()
