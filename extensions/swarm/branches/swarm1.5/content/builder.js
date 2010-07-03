@@ -21,7 +21,7 @@ Swarm.SwarmBuild =
 
 Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
 {
-    stepName: "swarmPackageStep",
+    dispatchName: "swarmPackageStep",
 
     /*
      * The builder can only be invoked if there is a file link
@@ -33,15 +33,14 @@ Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
         var externalExtensions = Swarm.Installer.getDeclaredExtensions();
         if (externalExtensions.length)
         {
-            var externalExtensionIds = this.getExtensionIdsByElements(externalExtensions);
-            for(var i = 0; i < externalExtensionIds.length; i++)
+            for(var i = 0; i < externalExtensions.length; i++)
             {
-                var extensionId = externalExtensionIds[i];
+                var extensionId = externalExtensions[i].id;
                 var linkToExtension = this.getLinkToExtension(extensionId);
                 if (linkToExtension)
                 {
                     this.extensionSources.push({link: linkToExtension, id: extensionId});
-                    externalExtensions[i].classList.add("buildableExtension");
+                    externalExtensions[i].element.classList.add("buildableExtension");
                 }
             }
         }
@@ -107,7 +106,7 @@ Swarm.SwarmBuild.swarmPackageStep = extend(Swarm.WorkflowStep,
 
 });
 
-Swarm.workflowMonitor.registerWorkflowStep("swarmPackageStep", Swarm.SwarmBuild.swarmPackageStep);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.SwarmBuild.swarmPackageStep);
 
 //************************************************************************************************
 }});

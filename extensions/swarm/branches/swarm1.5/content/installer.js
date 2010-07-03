@@ -169,8 +169,11 @@ Swarm.Installer =
 
             if (relativeAge > 0 && !declaredExtension.hash && !declaredExtensionStatus.classList.contains("installNotAllowed"))
             {
-                setClass(declaredExtensionStatus, "installHashMissing");
-                setClass(declaredExtensionStatus, "installNotAllowed");
+            	if (declaredExtension.href.substr(0,6) !== "https:") // we don't need the hash for https sites
+            	{
+            		setClass(declaredExtensionStatus, "installHashMissing");
+                    setClass(declaredExtensionStatus, "installNotAllowed");	
+            	}
             }
 
             declaredExtensionStatus.innerHTML = declaredExtension.version;
@@ -210,16 +213,14 @@ Swarm.Installer =
         row.innerHTML = "<td>"+extension.name+"</td><td>"+extension.id+"</td><td>"+extension.version+"</td><td>"+"</td>";
         if(extension.statusElement)
         {
-            row.lastChild.appendChild(extension.statusElement)
+            row.lastChild.appendChild(extension.statusElement.cloneNode(true))
         }
         else
         {
-            row.lastChild.innerHTML = "installed, but Tnot in swarm";
+            row.lastChild.innerHTML = "installed, but not in swarm";
         }
 
         extension.progressTableRow = row;
-
-        debugger;
     },
 
     // -------------------------------------------------------------
@@ -249,11 +250,11 @@ Swarm.Installer.nsIXPIProgressDialog =
         FBTrace.sysout("onStateChange "+this.installing[index].name+": "+this.states[state]+", "+value);
 
         var classes = this.installing[index].statusElement.getAttribute('class');
-        var m = reInstalledVersion.exec(classes);
+        var m = this.reInstalledVersion.exec(classes);
         if (m)
             removeClass(this.installing[index].statusElement, m[0]);
 
-        m = reInstalling.exec(classes);
+        m = this.reInstalling.exec(classes);
         if (m)
             removeClass(this.installing[index].statusElement, m[0]);
 
@@ -306,31 +307,24 @@ Swarm.Installer.nsIXPIProgressDialog =
 
     QueryInterface: function(iid)
     {
-        window.dump("QueryInterface "+iid+"\n");
+        window.dump("QueryInterface "+iid+" this: "+this.onStateChange+"\n");
         return this;
     },
 };
 
 Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmInstallStep", 
+	
     initialize: function(doc, progress)
     {
         this.progress = progress;
-        var swarmFrame = doc.getElementById('swarmDefinition');
-        if (swarmFrame)
-        {
-            progress("Found swarmDefinition");
-            this.swarmDocument = swarmFrame.contentDocument;
-        }
-        else
-        {
-            progress("No swarmDefinition element found");
-        }
+
     },
 
     onWorkflowSelect: function(doc, selectedWorkflow)
     {
-        Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
+        Swarm.Installer.prepareDeclaredExtensions(Swarm.swarmDocument, this.progress);
         Swarm.Installer.buildProgressTable(doc, this.progress);
 
         var installSteps = selectedWorkflow.getElementsByClassName("swarmInstallStep");
@@ -346,12 +340,12 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
     {
         this.showSwarmTaskData(doc, "swarmDefinition");
 
-        var uninstallable = this.swarmDocument.getElementsByClassName("installNotAllowed");
+        var uninstallable = Swarm.swarmDocument.getElementsByClassName("installHashMissing");
         if (uninstallable.length)
         {
             setClass(elt, "swarmStepBlocked");  /// TODO workflow lib function
             elt.disabled = 'disabled';
-            this.progress("ERROR "+uninstallable.length+" extensions cannot be installed");
+            this.progress("ERROR "+uninstallable.length+" extension"+((uninstallable.length > 1)?'s':'')+" are not secure to install");
         }
     },
 
@@ -359,64 +353,64 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
     {
         // http://mxr.mozilla.org/mozilla-central/source/xpinstall/public/nsIXPInstallManager.idl#70
         var urls = [];
+        var httpsUrls = [];
         var hashes = [];
         Swarm.Installer.nsIXPIProgressDialog.initialize();
 
         Swarm.Installer.eachDeclaredAndInstallableExtension(function buildInstallManagerData(extension)
         {
-            urls.push( extension.href );
-            hashes.push( extension.hash );
+        	if (extension.hash)
+        	{
+        		urls.push( extension.href );
+                hashes.push( extension.hash );	
+        	}
+        	else
+        	{
+        		httpsUrls.push(extension.href);
+        	}
+            
             Swarm.Installer.nsIXPIProgressDialog.add( extension );
         });
 
-        count = urls.length;
+        var count = urls.length;
+        var counts = httpsUrls.length;
 
-        progress("Installing "+count+" extensions");
+        progress("Installing "+count+" extensions with hashes and "+counts+" extensions with https URLs");
 
-        if (count)
+        if (count || counts)
         {
             var xpInstallManager = Components.classes["@mozilla.org/xpinstall/install-manager;1"]
                 .getService(Components.interfaces.nsIXPInstallManager);
-            FBTrace.sysout("swarm.installer installing "+count+" extensions", {urls: urls, hashes: hashes, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
-            try
+            if (count)
             {
-                xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.Installer.nsIXPIProgressDialog);
+            	FBTrace.sysout("swarm.installer installing "+count+" hashed extensions", {urls: urls, hashes: hashes, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
+                try
+                {
+                    xpInstallManager.initManagerWithHashes(urls, hashes, count, Swarm.Installer.nsIXPIProgressDialog);
+                }
+                catch(exc)
+                {
+                    FBTrace.sysout("swarm.installer hash installing FAILS "+exc, exc);
+                }	
             }
-            catch(exc)
+            if (counts)
             {
-                FBTrace.sysout("swarm.installer installing FAILS "+exc, exc);
+            	FBTrace.sysout("swarm.installer installing "+counts+" https extensions", {httpsUrls: urls, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
+                try
+                {
+                    xpInstallManager.initManagerFromChrome(httpsUrls, counts, Swarm.Installer.nsIXPIProgressDialog);
+                }
+                catch(exc)
+                {
+                    FBTrace.sysout("swarm.installer https installing FAILS "+exc, exc);
+                }
             }
-
+            
         }
     },
 });
 
-Swarm.workflowMonitor.registerWorkflowStep("swarmInstallStep", Swarm.Installer.swarmInstallStep);
-
-Swarm.Installer.swarmInstallAndCheckStep = extend(Swarm.Installer.swarmInstallStep,
-{
-    onStepEnds: function(doc, step, element)
-    {
-        if (step !== "swarmInstallAndCheckStep")
-            return;
-
-        Swarm.Installer.prepareDeclaredExtensions(this.swarmDocument, this.progress);
-        var todo = [];
-
-        Swarm.Installer.eachDeclaredAndInstallableExtension(function buildToDoList(extension)
-        {
-            todo.push(extension);
-        });
-        if (todo.length)
-            window.alert(todo.length +" extension"+(todo.length==1?'':'s')+" cannot be installed");
-        else
-        {
-            Swarm.workflowMonitor.stepWorkflows(doc, "swarmInstallAndCheckStep");
-        }
-    },
-});
-
-Swarm.workflowMonitor.registerWorkflowStep("swarmInstallAndCheckStep", Swarm.Installer.swarmInstallAndCheckStep);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.Installer.swarmInstallStep);
 
 var errorNameByCode =
 {

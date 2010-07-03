@@ -17,7 +17,7 @@ tr#smartFlow.swarmCreator {
 .swarmTaskHidePicker {
     display: none;
 }
-.swarmStepBlocked button[disabled] {
+.swarmStepBlocked {
     color: red;
 }
 
@@ -30,7 +30,7 @@ tr#smartFlow.swarmCreator {
 }
 #progressTable td {
     border: 1px solid #BEBEBE;
-    margin: 2px;
+    margin-left: 2px;
 }
 #progressTable .extensionStatus {
     float: none;

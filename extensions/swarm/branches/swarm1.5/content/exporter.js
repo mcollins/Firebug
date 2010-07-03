@@ -89,6 +89,8 @@ top.Swarm.Exporter =
 // Handlers contributed to Swarm
 Swarm.Exporter.swarmExportPageStep = extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmExportPageStep", 
+	
     initialize: function(doc, progress)
     {
         this.progress = progress;
@@ -220,7 +222,7 @@ Swarm.Tester.signPage = extend(Swarm.WorkflowStep,
     },
 });
 
-Swarm.workflowMonitor.registerWorkflowStep("swarmExportPageStep", Swarm.Exporter.swarmExportPageStep);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.Exporter.swarmExportPageStep);
 
 //************************************************************************************************
 }});

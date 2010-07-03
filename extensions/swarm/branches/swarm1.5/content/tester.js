@@ -23,6 +23,7 @@ top.Swarm.Tester =
 
 Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmRunAllTestsStep", 
     initializeUI: function(doc)
     {
         this.addHashes(Swarm.extensions.getInstallableExtensions());
@@ -145,6 +146,7 @@ Swarm.Tester.swarmRunAllTestsStep = extend(Swarm.WorkflowStep,
 
 Swarm.Tester.swarmStopTestsStep = extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmStopTestsStep", 
     onStep: function(event, progress)
     {
         FBTestApp.TestConsole.onStop();
@@ -153,22 +155,17 @@ Swarm.Tester.swarmStopTestsStep = extend(Swarm.WorkflowStep,
 
 Swarm.Tester.swarmHaltFailTest = extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmHaltFailTest", 
     onStep: function(event, progress)
     {
         FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
     },
 });
 
-Swarm.Tester.swarmHaltFailTest = extend(Swarm.WorkflowStep,
-{
-    onStep: function(event, progress)
-    {
-        FBTestApp.TestWindowLoader.HaltOnFailedTest.onToggleHaltOnFailedTest();
-    },
-});
 
 Swarm.Tester.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmNoTimeoutTest", 
     onStep: function(event, progress)
     {
         FBTestApp.TestConsole.onToggleNoTestTimeout();
@@ -178,10 +175,10 @@ Swarm.Tester.swarmNoTimeoutTest = extend(Swarm.WorkflowStep,
 // ************************************************************************************************
 // Registration
 
-Swarm.workflowMonitor.registerWorkflowStep("swarmRunAllTestsStep", Swarm.Tester.swarmRunAllTestsStep);
-Swarm.workflowMonitor.registerWorkflowStep("swarmStopTestsStep", Swarm.Tester.swarmStopTestsStep);
-Swarm.workflowMonitor.registerWorkflowStep("swarmHaltFailTest", Swarm.Tester.swarmHaltFailTest);
-Swarm.workflowMonitor.registerWorkflowStep("swarmNoTimeoutTest", Swarm.Tester.swarmNoTimeoutTest);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.Tester.swarmRunAllTestsStep);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.Tester.swarmStopTestsStep);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.Tester.swarmHaltFailTest);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.Tester.swarmNoTimeoutTest);
 
 //************************************************************************************************
 }});

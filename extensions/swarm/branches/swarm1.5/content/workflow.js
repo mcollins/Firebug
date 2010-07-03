@@ -283,7 +283,8 @@ Swarm.workflowMonitor =
         // initialize the newly selected workflow
         var stepsInSelectedWorkflow = this.getStepsFromWorkflow(this.currentWorkflow);
         this.dispatch(stepsInSelectedWorkflow, "onWorkflowSelect", [doc, this.currentWorkflow]);
-        debugger; // TODO stepWorkflow
+        
+        this.stepWorkflow(doc, this.currentWorkflow);
         return true;
     },
 
@@ -335,9 +336,7 @@ Swarm.workflowMonitor =
             if (!step)
                 return this.progress("ERROR: Swarm.WorkflowMonitor.getStepFromButton no handler registered for "+button.getAttribute("class"));
 
-            this.dispatch(this.registeredWorkflowSteps, "onStepStarts", [doc, step])
             step["onStep"].apply(step, [event, this.progress]);
-            this.dispatch(this.registeredWorkflowSteps, "onStepEnds", [doc, step])
 
             button.classList.remove("swarmWorkflowing");
             event.stopPropagation();
@@ -378,9 +377,14 @@ Swarm.workflowMonitor =
     getStepsFromWorkflow: function(workflow)
     {
         var buttons = workflow.getElementsByTagName("button");
-        var steps = [];
+        var steps = {};
         for (var i = 0 ; i < buttons.length; i++ )
-            steps.push(this.getStepFromButton(buttons[i]));
+        {
+        	var step = this.getStepFromButton(buttons[i]);
+        	steps[step.dispatchName] = step;
+        	step.element = buttons[i];
+        }
+            
         return steps;
     },
 
@@ -388,11 +392,21 @@ Swarm.workflowMonitor =
     {
         if (this.currentStep)
         {
-
+              this.currentStep.onStepDisabled(doc, this.currentStep.element);
+              this.currentStep = this.getNextStep(this.currentStep.element);
         }
-        var steps = this.getStepsFromWorkflow(workflow);
-        this.currentStep = steps[0];
-
+        else
+        {
+        	var steps = this.getStepsFromWorkflow(workflow);
+        	var elts = doc.getElementsByClassName("swarmWorkflowStart");
+        	if (elts && elts[0])
+        		this.currentStep = this.getStepFromButton(elts[0]);
+        	else 
+        		this.progress("ERROR: No step with swarmWorkflowStart class")
+        }
+        
+        this.currentStep.element.removeAttribute('disabled');
+        this.currentStep.onStepEnabled(doc, this.currentStep.element);
     },
 
     stepWorkflows: function(doc, stepClassName)
@@ -434,20 +448,23 @@ Swarm.workflowMonitor =
 
     registeredWorkflowSteps: {}, // key CSS class name, value obj shaped as Swarm.WorkflowStep
 
-    registerWorkflowStep: function(key, obj)
+    registerWorkflowStep: function(obj)
     {
-        this.registeredWorkflowSteps[key] = obj;
+    	if (obj.dispatchName)
+    		this.registeredWorkflowSteps[obj.dispatchName] = obj;
+    	else
+    		debugger;
     },
 
-    dispatch: function(list, eventName, args)
+    dispatch: function(object, eventName, args)
     {
-        FBTrace.sysout("swarm dispatch "+eventName, args);
+        FBTrace.sysout("swarm dispatch "+eventName, {object: object, args:args});
 
-        for(var p in this.registeredWorkflowSteps)
+        for(var p in object)
         {
-            if (this.registeredWorkflowSteps.hasOwnProperty(p))
+            if (object.hasOwnProperty(p))
             {
-                var listener = this.registeredWorkflowSteps[p];
+                var listener = object[p];
                 try
                 {
                     listener[eventName].apply(listener, args);
@@ -464,6 +481,8 @@ Swarm.workflowMonitor =
 
 Swarm.sourcePicker =  extend(Swarm.WorkflowStep,
 {
+	dispatchName: "swarmSourcePicker", 
+	
     initialize: function(doc, progress)
     {
         Swarm.sourcePicker.eachPicker(doc, function addListenerAndShow(sourcePickerButton)
@@ -540,7 +559,7 @@ Swarm.sourcePicker =  extend(Swarm.WorkflowStep,
             elt.setAttribute('src', toValue);
     }
 });
-Swarm.workflowMonitor.registerWorkflowStep("swarmSourcePicker", Swarm.sourcePicker);
+Swarm.workflowMonitor.registerWorkflowStep(Swarm.sourcePicker);
 
 
 // The interface between the swarm code and fbtest window
@@ -561,16 +580,18 @@ Swarm.embedder = {
         {
             var browser = $("taskBrowser");
             var doc = browser.contentDocument;
-            if(!doc.getElementById('swarmDefinition'))
+            var swarmFrame = doc.getElementById('swarmDefinition');
+            if (swarmFrame)
             {
-                this.progress("Not a swarm document");
-                return;
+                this.progress("Found swarmDefinition");
+                Swarm.swarmDocument = swarmFrame.contentDocument;
+            
+                Swarm.workflowMonitor.initialize(doc, this.progress);
+                Swarm.workflowMonitor.initializeUI(doc, this.progress);
             }
             else
             {
-                this.progress("Noticed a Swarm Test Document");
-                Swarm.workflowMonitor.initialize(doc, this.progress);
-                Swarm.workflowMonitor.initializeUI(doc, this.progress);
+                this.progress("No swarmDefinition element found");
             }
         },
 
