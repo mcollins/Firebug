@@ -213,7 +213,7 @@ Swarm.Installer =
         row.innerHTML = "<td>"+extension.name+"</td><td>"+extension.id+"</td><td>"+extension.version+"</td><td>"+"</td>";
         if(extension.statusElement)
         {
-            row.lastChild.appendChild(extension.statusElement.cloneNode(true))
+            extension.progressElement = row.lastChild.appendChild(extension.statusElement.cloneNode(true))
         }
         else
         {
@@ -256,7 +256,11 @@ Swarm.Installer.nsIXPIProgressDialog =
 
         m = this.reInstalling.exec(classes);
         if (m)
-            removeClass(this.installing[index].statusElement, m[0]);
+        {
+        	removeClass(this.installing[index].statusElement, m[0]);
+        	removeClass(this.installing[index].progressElement, m[0]);
+        }
+            
 
         if (this.states[state] === "install_done")
         {
@@ -267,11 +271,14 @@ Swarm.Installer.nsIXPIProgressDialog =
                 var errorCodeTitle ="Information on Installation Error Codes";
                 this.installing[index].statusElement.innerHTML += ": <a target=\"_blank\" title=\""+errorCodeTitle+"\" href=\""+
                     errorCodePage+"#"+errorNameByCode[value+""]+"_"+value+"\">"+errorNameByCode[value+""]+"</a>";
+                this.installing[index].progressElement.innerHTML = this.installing[index].statusElement.innerHTML;
                 setClass(this.installing[index].statusElement, "install-failed");
+                setClass(this.installing[index].progressElement, "install-failed");
             }
             else
             {
                 setClass(this.installing[index].statusElement, "installing-"+this.states[state]);
+                setClass(this.installing[index].progressElement, "installing-"+this.states[state]);
                 this.checkForRestart();
             }
         }
@@ -281,6 +288,7 @@ Swarm.Installer.nsIXPIProgressDialog =
                 return;
 
             setClass(this.installing[index].statusElement, "installing-"+this.states[state]);
+            setClass(this.installing[index].progressElement, "installing-"+this.states[state]);
         }
     },
 
@@ -302,7 +310,9 @@ Swarm.Installer.nsIXPIProgressDialog =
         window.dump("onProgress "+index+"\n");
 
         FBTrace.sysout("onProgress "+this.installing[index].name+": "+value+"/"+maxValue);
-        this.installing[index].statusElement.innerHTML = this.installing[index].version +" "+Math.ceil(100*value/maxValue)+"%";
+        var message = this.installing[index].version +" "+Math.ceil(100*value/maxValue)+"%";
+        this.installing[index].statusElement.innerHTML = message;
+        this.installing[index].progressElement.innerHTML = message;
     },
 
     QueryInterface: function(iid)
@@ -395,7 +405,7 @@ Swarm.Installer.swarmInstallStep = extend(Swarm.WorkflowStep,
             }
             if (counts)
             {
-            	FBTrace.sysout("swarm.installer installing "+counts+" https extensions", {httpsUrls: urls, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
+            	FBTrace.sysout("swarm.installer installing "+counts+" https extensions", {httpsUrls: httpsUrls, xpInstallManager: xpInstallManager, nsIXPIProgressDialog: Swarm.Installer.nsIXPIProgressDialog});
                 try
                 {
                     xpInstallManager.initManagerFromChrome(httpsUrls, counts, Swarm.Installer.nsIXPIProgressDialog);
