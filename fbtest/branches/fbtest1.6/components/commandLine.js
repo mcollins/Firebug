@@ -17,12 +17,14 @@ const appShellService = Cc["@mozilla.org/appshell/appShellService;1"].getService
 
 const CMDLINE_FLAG = "runFBTests";
 
-Components.utils["import"]("resource://gre/modules/XPCOMUtils.jsm");
-
 // ************************************************************************************************
 // Command Line Handler
 
-function CommandLineHandler() {};
+function CommandLineHandler()
+{
+    this.wrappedJSObject = this;
+};
+
 CommandLineHandler.prototype =
 {
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -42,12 +44,11 @@ CommandLineHandler.prototype =
         entry: CLD_CATEGORY,
     }],
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // nsICommandLineHandler
 
     runFBTests: false,
     testListURI: null,
-    wrappedJSObject: this,
 
     handle: function(cmdLine)
     {
@@ -78,8 +79,8 @@ CommandLineHandler.prototype =
             window.dump("FBTest; No test list URI specified.");
 
         // This info will be used by FBTest overlay as soon as the browser window is loaded.
-        this.prototype.runFBTests = true;
-        this.prototype.testListURI = testListURI;
+        this.runFBTests = true;
+        this.testListURI = testListURI;
 
         window.dump("FBTest; FBTests will be executed as soon as Firefox is ready.\n");
         window.dump("FBTest; Test List URI: " + testListURI + "\n");
@@ -91,7 +92,7 @@ CommandLineHandler.prototype =
     // xxxHonza: weird is that if I run Firefox with -help parameter the second column
     // begins on 33th character.
     helpInfo: "  -" + CMDLINE_FLAG + " <test-list-uri>   Automatically run all Firebug tests \n" +
-              "                                chrome://firebug/content/testList.html\n",
+              "                https://getfirebug.com/tests/content/testlists/firebug1.6.html\n",
 };
 
 // ************************************************************************************************
@@ -104,4 +105,3 @@ if (XPCOMUtils.generateNSGetFactory)
     var NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
 else
     var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
-
