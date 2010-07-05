@@ -17,6 +17,8 @@ const appShellService = Cc["@mozilla.org/appshell/appShellService;1"].getService
 
 const CMDLINE_FLAG = "runFBTests";
 
+Components.utils["import"]("resource://gre/modules/XPCOMUtils.jsm");
+
 // ************************************************************************************************
 // Command Line Handler
 
