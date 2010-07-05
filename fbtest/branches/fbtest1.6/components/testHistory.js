@@ -24,39 +24,30 @@ const Cr = Components.results;
 
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
 
-var FBTrace = null;
+Components.utils["import"]("resource://gre/modules/XPCOMUtils.jsm");
 
 // ************************************************************************************************
 // Test URL History, nsIAutoCompleteSearch
 
-function History(pref)
-{
-    this.pref = pref;
-}
-
+function History() {}
 History.prototype =
 {
-    /* nsISupports */
-    QueryInterface: function(iid)
-    {
-        if (iid.equals(Ci.nsIAutoCompleteSearch) ||
-            iid.equals(Ci.nsIFactory) ||
-            iid.equals(Ci.nsISupports))
-            return this;
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // XPCOM
 
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
+    QueryInterface: XPCOMUtils.generateQI([
+        Ci.nsISupports,
+        Ci.nsIAutoCompleteSearch
+    ]),
 
-    /* nsIAutoCompleteSearch */
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // nsIAutoCompleteSearch
+
     startSearch: function(searchString, searchParam, previousResult, listener)
     {
         // Get all test-lists from preferences.
         var history = prefs.getCharPref(this.pref);
         var arr = history.split(",");
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.History; startSearch " + this.pref +
-                " '" + searchString + "'", arr);
 
         var map = {};
         var results = [];
@@ -77,95 +68,12 @@ History.prototype =
 
     stopSearch: function()
     {
-        
-    },
-
-    /* nsIFactory */
-    createInstance: function (outer, iid)
-    {
-        if (outer != null)
-            throw Cr.NS_ERROR_NO_AGGREGATION;
-
-        // Firebug trace service is now implemented as a module.
-        Components.utils.import("resource://firebug/firebug-trace-service.js");
-        FBTrace = traceConsoleService.getTracer("extensions.firebug");
-
-        this.wrappedJSObject = this;
-        return this.QueryInterface(iid);
-    },
-
-    lockFactory: function(lock)
-    {
     }
 };
 
 function trimSpaces(text)
 {
     return text.replace(/^\s*|\s*$/g,"");
-}
-
-var testHistory = new History("extensions.fbtest.history");
-var testCaseHistory = new History("extensions.fbtest.testCaseHistory");
-var testDriverHistory = new History("extensions.fbtest.testDriverHistory");
-
-// ************************************************************************************************
-// Module implementation
-
-var HistoryModule =
-{
-    QueryInterface: function(iid)
-    {
-        if (iid.equals(Ci.nsIModule) ||
-            iid.equals(Ci.nsISupports))
-            return this;
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
-
-    /* nsIModule */
-    getClassObject: function(compMgr, cid, iid)
-    {
-        if (cid.equals(TEST_CLASS_ID))
-            return testHistory.QueryInterface(iid);
-        else if (cid.equals(CASE_CLASS_ID))
-            return testCaseHistory.QueryInterface(iid);
-        else if (cid.equals(DRIVER_CLASS_ID))
-            return testDriverHistory.QueryInterface(iid);
-
-        throw Cr.NS_ERROR_NOT_REGISTERED;
-    },
-
-    registerSelf: function(compMgr, fileSpec, location, type)
-    {
-        compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-
-        compMgr.registerFactoryLocation(TEST_CLASS_ID, TEST_CLASS_NAME,
-            TEST_CONTRACT_ID, fileSpec, location, type);
-        compMgr.registerFactoryLocation(CASE_CLASS_ID, CASE_CLASS_NAME,
-            CASE_CONTRACT_ID, fileSpec, location, type);
-        compMgr.registerFactoryLocation(DRIVER_CLASS_ID, DRIVER_CLASS_NAME,
-            DRIVER_CONTRACT_ID, fileSpec, location, type);
-      },
-
-    unregisterSelf: function(compMgr, location, type)
-    {
-        compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.unregisterFactoryLocation(TEST_CLASS_ID, location);
-        compMgr.unregisterFactoryLocation(CASE_CLASS_ID, location);
-        compMgr.unregisterFactoryLocation(DRIVER_CLASS_ID, location);
-    },
-
-    canUnload: function(compMgr)
-    {
-        return true;
-    }
-};
-
-// ************************************************************************************************
-
-function NSGetModule(comMgr, fileSpec)
-{
-    return HistoryModule;
 }
 
 // ************************************************************************************************
@@ -179,7 +87,8 @@ function SearchResult(searchString, searchResult, defaultIndex, results)
     this.results = results;
 }
 
-SearchResult.prototype = {
+SearchResult.prototype =
+{
     searchString: "",
     searchResult: 0,
     defaultIndex: 0,
@@ -219,3 +128,71 @@ SearchResult.prototype = {
         return this;
     }
 };
+
+// ************************************************************************************************
+// Helper
+
+function extend(l, r)
+{
+    var newOb = {};
+    for (var n in l)
+        newOb[n] = l[n];
+    for (var n in r)
+        newOb[n] = r[n];
+    return newOb;
+};
+
+// ************************************************************************************************
+// Registration
+
+function TestHistory()
+{
+    this.pref = "extensions.fbtest.history";
+    this.wrappedJSObject = this;
+}
+
+TestHistory.prototype = extend(History.prototype,
+{
+    classID: TEST_CLASS_ID,
+    classDescription: TEST_CLASS_NAME,
+    contractID: TEST_CONTRACT_ID,
+});
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+function TestCaseHistory()
+{
+    this.pref = "extensions.fbtest.testCaseHistory";
+    this.wrappedJSObject = this;
+}
+
+TestCaseHistory.prototype = extend(History.prototype,
+{
+    classID: CASE_CLASS_ID,
+    classDescription: CASE_CLASS_NAME,
+    contractID: CASE_CONTRACT_ID,
+});
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+function TestDriverHistory()
+{
+    this.pref = "extensions.fbtest.testDriverHistory";
+    this.wrappedJSObject = this;
+}
+
+TestDriverHistory.prototype = extend(History.prototype,
+{
+    classID: DRIVER_CLASS_ID,
+    classDescription: DRIVER_CLASS_NAME,
+    contractID: DRIVER_CONTRACT_ID,
+});
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+var components = [TestHistory, TestCaseHistory, TestDriverHistory];
+
+if (XPCOMUtils.generateNSGetFactory)
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory(components);
+else
+    var NSGetModule = XPCOMUtils.generateNSGetModule(components);
