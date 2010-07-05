@@ -17,26 +17,38 @@ const appShellService = Cc["@mozilla.org/appshell/appShellService;1"].getService
 
 const CMDLINE_FLAG = "runFBTests";
 
+Components.utils["import"]("resource://gre/modules/XPCOMUtils.jsm");
+
 // ************************************************************************************************
 // Command Line Handler
 
-var CommandLineHandler =
+function CommandLineHandler() {};
+CommandLineHandler.prototype =
 {
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // XPCOM
+
+    classID: CLASS_ID,
+    classDescription: CLASS_NAME,
+    contractID: CONTRACT_ID,
+
+    QueryInterface: XPCOMUtils.generateQI([
+        Ci.nsISupports,
+        Ci.nsICommandLineHandler
+    ]),
+
+    _xpcom_categories: [{
+        category: "command-line-handler",
+        entry: CLD_CATEGORY,
+    }],
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // nsICommandLineHandler
+
     runFBTests: false,
     testListURI: null,
+    wrappedJSObject: this,
 
-    /* nsISupports */
-    QueryInterface: function(iid)
-    {
-        if (iid.equals(Ci.nsICommandLineHandler) ||
-            iid.equals(Ci.nsIFactory) ||
-            iid.equals(Ci.nsISupports))
-            return this;
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
-
-    /* nsICommandLineHandler */
     handle: function(cmdLine)
     {
         window = appShellService.hiddenDOMWindow;
@@ -66,8 +78,8 @@ var CommandLineHandler =
             window.dump("FBTest; No test list URI specified.");
 
         // This info will be used by FBTest overlay as soon as the browser window is loaded.
-        this.runFBTests = true;
-        this.testListURI = testListURI;
+        this.prototype.runFBTests = true;
+        this.prototype.testListURI = testListURI;
 
         window.dump("FBTest; FBTests will be executed as soon as Firefox is ready.\n");
         window.dump("FBTest; Test List URI: " + testListURI + "\n");
@@ -80,72 +92,16 @@ var CommandLineHandler =
     // begins on 33th character.
     helpInfo: "  -" + CMDLINE_FLAG + " <test-list-uri>   Automatically run all Firebug tests \n" +
               "                                chrome://firebug/content/testList.html\n",
-
-    /* nsIFactory */
-    createInstance: function (outer, iid)
-    {
-        if (outer != null)
-            throw Cr.NS_ERROR_NO_AGGREGATION;
-
-        this.wrappedJSObject = this;
-        return this.QueryInterface(iid);
-    },
-
-    lockFactory: function(lock)
-    {
-    }
-};
-
-// ************************************************************************************************
-// Module implementation
-
-var CommandLineModule =
-{
-    QueryInterface: function(iid)
-    {
-        if (iid.equals(Ci.nsIModule) ||
-            iid.equals(Ci.nsISupports))
-            return this;
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
-
-    /* nsIModule */
-    getClassObject: function(compMgr, cid, iid)
-    {
-        if (cid.equals(CLASS_ID))
-            return CommandLineHandler.QueryInterface(iid);
-
-        throw Cr.NS_ERROR_NOT_REGISTERED;
-    },
-
-    registerSelf: function(compMgr, fileSpec, location, type)
-    {
-        compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.registerFactoryLocation(CLASS_ID, CLASS_NAME,
-            CONTRACT_ID, fileSpec, location, type);
-
-        categoryManager.addCategoryEntry("command-line-handler",
-            CLD_CATEGORY, CONTRACT_ID, true, true);
-      },
-
-    unregisterSelf: function(compMgr, location, type)
-    {
-        compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.unregisterFactoryLocation(CLASS_ID, location);
-
-        categoryManager.deleteCategoryEntry("command-line-handler", CLD_CATEGORY);
-    },
-
-    canUnload: function(compMgr)
-    {
-        return true;
-    }
 };
 
 // ************************************************************************************************
 
-function NSGetModule(comMgr, fileSpec)
-{
-    return CommandLineModule;
-}
+/**
+* XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+* XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+*/
+if (XPCOMUtils.generateNSGetFactory)
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler]);
+else
+    var NSGetModule = XPCOMUtils.generateNSGetModule([CommandLineHandler]);
+
