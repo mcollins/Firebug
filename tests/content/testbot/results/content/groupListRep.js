@@ -52,16 +52,23 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
 
     getGroupCount: function(group)
     {
+        var doc = group.value.doc;
+        var totalTests = doc['Total Tests'];
+
+        // If total tests is zero, the entire test suite probably failed.
+        // xxxHonza: localization
+        if (totalTests == 0)
+            return "No test executed";
+
+        // This is what we want - no failures at all.
         var count = group.value.failures;
         if (count == 0)
             return "";
 
-        var doc = group.value.doc;
-
+        // Report number of failures.
         // xxxHonza: localization
         var label = (count > 1) ? "failures" : "failure";
-        return "(" + count + " " + label + " of " + 
-            doc['Total Tests'] + ")";
+        return "(" + count + " " + label + " of " + totalTests + ")";
     },
 
     getGroupInfo: function(group)
