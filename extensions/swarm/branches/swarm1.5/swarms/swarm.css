@@ -2,12 +2,15 @@
 ol {
     padding-right: 40px;
 }
-.certification {
-  text-align: center;
+body {
+	font-family:"trebuchet ms",helvetica,sans-serif;
 }
-.certification .date:before {
-   content: " tested and signed: ";
+
+
+#swarmSelector {
+	margin-left: 50px;
 }
+
 .extension {
    padding: 5px;
    border-style: solid;
@@ -25,7 +28,9 @@ ol {
 .extensionHash {
    display: none;
 }
-
+.extensionInfo {
+	font-size: small;
+}
 .extensionMoreInfo {
    float: right;
 }

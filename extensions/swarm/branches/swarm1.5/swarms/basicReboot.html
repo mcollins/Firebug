@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Basic Firebug Swarm from the Firebug Team</title>
+<meta http-equiv="content-type"
+        content="text/html;charset=utf-8" />
+<link rel="stylesheet" href="swarmExtensionStatus.css" type="text/css"/>
+<link rel="stylesheet" href="swarm.css" type="text/css"/>
+<script>
+
+var swarmCommands =
+{
+    installAll: function(event)
+    {
+        this.selectAll();
+        this.installSelected();
+    },
+    
+    selectAll: function()
+    {
+        this.selected = document.getElementsByClassName("extensionURL");
+        // TODO mark selected
+        
+    },
+    
+    installSelected: function()
+    {
+        var installInfo = {};
+        for (var i = 0; i < this.selected.length; i++)
+        {
+            installInfo[this.selected[i].id] = 
+            {
+                URL: this.selected[i].href,
+                IconURL: "http://getfirebug.com/img/firebug-tiny.png", // should be 32x32 not 24x24
+                hash: this.selected[i].hash,
+            }
+            
+        }
+        InstallTrigger.install(installInfo);
+    }
+};
+
+function doSwarmCommand(event)
+{
+    console.log('doSwarmCommand', event.target);
+    var command = event.target.getAttribute('id');
+    if ( swarmCommands.hasOwnProperty(command) )
+        swarmCommands[command].call(swarmCommands,event);
+    else
+        console.error("no swarm command "+command, swarmCommands);
+}
+
+function hookSwarmButtons()
+{
+    var swarmButtons = document.getElementsByClassName("swarmCommand");
+    for (var i = 0; i < swarmButtons.length; i++)
+    {
+        swarmButtons[i].addEventListener('click', doSwarmCommand, 'true');
+    }
+}
+
+function onload()
+{
+    hookSwarmButtons();
+}
+window.addEventListener('load', onload, false);
+
+</script>
+</head>
+<body>
+  <table>
+  <tbody>
+  <tr>
+  <td>
+  <form id="swarmSelector">
+  <input type="checkbox" name="swarms" value="basic" checked="true"/>Basic Extensions, includes Firebug<br/>
+  <input type="checkbox" name="swarms" value="designer" />Designer Extensions<br/>
+  <input type="checkbox" name="swarms" value="developer" />Developer Extensions<br/>
+  <input type="checkbox" name="swarms" value="performance" />Network Performance Extensions<br/>
+  <button class="swarmCommand" id="installAll">Install These Swarms!</button>
+  </form>
+  </td>
+  <td>
+  <img id="logo" src="http://getfirebug.com/img/firebug-logo.png"/>  
+  </td>
+  </tr>
+  </tbody>
+  </table>
+ <div class="swarmSpecification">
+ 
+ <ol> <!-- One item for every extension in the Swarm -->
+  <li>
+   <div class="extension">
+   <a class="extensionURL"
+        href="https://getfirebug.com/releases/firebug/1.6X/firebug-1.6X.0a11.xpi"
+        id="firebug@software.joehewitt.com"
+        >Firebug</a>
+  <span class="extensionAuthor">The Firebug Working Group</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+
+  <p>  The Firebug Web Page Debugger, Firefox version
+  <a class="extensionMoreInfo" target="_blank" href="http://getfirebug.com">more info</a>
+  </p>
+  </div>
+  </div>
+</li>
+ <li>
+  <div class="extension">
+  <a class="extensionURL"
+        href="https://getfirebug.com/releases/eventbug/1.5/eventbug-0.1b4.xpi"
+        id="eventbug@getfirebug.com"
+        >eventbug</a>
+  <span class="extensionAuthor">Jan 'Honza' Odvarko and John J. Barton</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>This extension brings a new <b>Events</b> panel that lists all of the event handlers
+   on the page grouped by event type. The panel also nicely integrates with other Firebug
+   panels and allows to quickly find out,
+  which HTML element is associated with specific event listener or see the Javascript source code.
+  <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/firebug/eventbug-alpha-released/">more info</a>
+  </p>
+  </div>
+  </div>
+</li>
+<li>
+  <div class="extension">
+  <a class="extensionURL"
+        href="http://www.incaseofstairs.com/download/firediff/firediff1.0.xpi"
+        hash="sha1:00860600198e7a12eae019f507f8037da961888d"
+        id="firediff@johnjbarton.com"
+        >Firediff</a>
+  <span class="extensionAuthor">Kevin Decker</a>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>Firediff is a Firebug extension that tracks changes to a pages DOM and CSS.
+
+  <a class="extensionMoreInfo" target="_blank" href="http://www.incaseofstairs.com/firediff/">more info</a>
+  </p>
+  </div>
+  </div>
+</li>
+<li>
+  <div class="extension">
+  <a class="extensionURL"
+        href="https://getfirebug.com/releases/netexport/netExport-0.7.xpi"
+        hash="md5:7e118eaa0cd0691b7b8eee97dbffc83d"
+        id="netexport@getfirebug.com"
+        >NetExport</a>
+  <span class="extensionAuthor">Jan 'Honza' Odvarko</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>Allows exporting data from the Net panel.
+
+  <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/netexport/">more info</a>
+  </p>
+  </div>
+  </div>
+
+</li>
+<li>
+<div class="extension">
+ <a class="extensionURL"
+       href="https://addons.mozilla.org/en-US/firefox/downloads/file/74625/firecookie-1.0.2-fx.xpi"
+       id="firecookie@janodvarko.cz"
+       >FireCookie</a>
+         <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>View and manage cookies in your browser
+
+  <a class="extensionMoreInfo" target="_blank" href="http://www.janodvarko.cz/firecookie">more info</a>
+  </p>
+</div>
+</li>
+<li>
+<div class="extension">
+ <a class="extensionURL"
+       href="https://getfirebug.com/releases/firestarter/1.5/fireStarter-0.1.a5.xpi"
+       id="firestarter@janodvarko.cz"
+       >FireStarter</a>
+         <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>extends Firebug's activation model with advanced features.
+
+  <!-- <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/netexport/">more info</a>  -->
+  </p>
+</div>
+</li>
+</ol>
+<h2><img src="http://getfirebug.com/images/firebug3.jpg"><span class="date"><i>Tested with FBTest</i></span></h2>
+</div> <!-- swarmSpecification -->
+
+</body>
+</html>
