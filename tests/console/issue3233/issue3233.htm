@@ -10,6 +10,15 @@
         background-color: #e8;
       }
     </style>
+    <script type="text/javascript">
+      function init() {
+        document.getElementById('content').style.backgroundColor = 'foo';
+      }
+
+      window.addEventListener('load',init,false);
+
+      var test = asdf;
+    </script>
   </head>
   <body>
     <h1>Issue 3233: Break on This Error for CSS errors causes internal errors</h1>
@@ -28,11 +37,12 @@
           <ul>
             <li>Enabling <em>Break on This Error</em> for the first CSS error is not causing an error, but doesn't have any effect when reloading the page the breakpoint</li>
             <li>Clicking the breakpoint at the second CSS error as well as using the context menu to enable <em>Break on This Error</em> is causing internal errors</li>
+            <li>There's no possibility to enable <em>Break on This Error</em> for the last warning, which was caused applying an incorrect style via JavaScript</li>
           </ul>
         </li>
         <li><strong>Expected:</strong>
           <ul>
-            <li>CSS errors shouldn't give the possibility for breaking script execution, because there's no JavaScript involved</li>
+            <li>CSS errors shouldn't give the possibility for breaking script execution as long as they were not applied via JavaScript</li>
             <li>Generally all errors, for which no source file is available shouldn't offer the option to break script execution at them</li>
           </ul>
         </li>
