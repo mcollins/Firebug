@@ -116,7 +116,7 @@
 
     </toolbox>
 
-    <popup id="consoleToolbarContextMenu"
+    <menupopup id="consoleToolbarContextMenu"
         onpopupshowing="FBTestApp.TestConsole.onViewToolbarsPopupShowing(event);">
         <menuitem id="menu_showTestListURLBar" type="checkbox" checked="true"
             label="fbtest.urlbar.name.Test List URL Bar" toolbar="testListUrlBar"
@@ -127,10 +127,10 @@
         <menuitem id="menu_showTestDriverURLBar" type="checkbox" checked="false"
             label="fbtest.urlbar.name.Test Drivers URL Bar" toolbar="testDriverUrlBar"
             oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
-    </popup>
+    </menupopup>
 
     <popupset id="mainPopupSet">
-        <popup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
+        <menupopup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
         <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
     </popupset>
 
@@ -167,11 +167,11 @@
         <progressmeter id="progressMeter" mode="determined" style="display:none"/>
     </statusbar>
 
-    <popup id="statusBarContextMenu"
+    <menupopup id="statusBarContextMenu"
         onpopupshowing="return FBTestApp.TestConsole.onStatusBarPopupShowing(event);">
         <menuitem id="menu_hidePassingTests" type="checkbox" checked="false"
             label="fbtest.contextmenu.label.Hide Passing Tests"
             oncommand="FBTestApp.TestConsole.hidePassingTests(event)"/>
-    </popup>
+    </menupopup>
 
 </window>
