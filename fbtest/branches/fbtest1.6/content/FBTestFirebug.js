@@ -189,6 +189,10 @@ this.setToKnownState = function()
 
     Firebug.resetAllOptions(false);
     Firebug.Debugger.clearAllBreakpoints(null);
+
+    // Console preview is hiden by default
+    if (this.isConsolePreviewVisible())
+        this.clickConsolePreviewButton();
 };
 
 // ************************************************************************************************
@@ -1030,6 +1034,22 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
         utils.sendMouseEvent("mousedown", left, top, button, clickCount, 0);
         utils.sendMouseEvent("mouseup", left, top, button, clickCount, 0);
     }
+}
+
+// ************************************************************************************************
+// Console preview
+
+/**
+ * 
+ */
+this.clickConsolePreviewButton = function(chrome)
+{
+    this.clickToolbarButton(chrome, "fbCommandPreviewButton");
+}
+
+this.isConsolePreviewVisible = function()
+{
+    return FW.Firebug.CommandLine.Preview.isVisible();
 }
 
 // ************************************************************************************************
