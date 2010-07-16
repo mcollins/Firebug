@@ -44,7 +44,7 @@ FBTestApp.TestWindowLoader =
         var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
             "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox",
-            "passingTests", "failingTests", "menu_hidePassingTests"];
+            "passingTests", "failingTests", "menu_hidePassingTests", "menu_uploadTestResults"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -98,6 +98,7 @@ FBTestApp.TestConsole =
     {
         try
         {
+            // xxxHonza: initialization would deserve to be done throug a dispatched event.
             FBTestApp.TestWindowLoader.initialize();
 
             this.notifyObservers(this, "fbtest", "initialize");
@@ -414,7 +415,7 @@ FBTestApp.TestConsole =
         var extensionsText = "";
         for (var i = 0; i < Application.extensions; i++)
         {
-            var extension = Applicaiton.extensions[i];
+            var extension = Application.extensions[i];
             extensionsText = "Extension: " + extension.name + " (" + extension.id +") version: "+extension.version+"\n";
         }
 
@@ -865,6 +866,10 @@ FBTestApp.TestConsole =
         var menuItem = $("menu_hidePassingTests");
         menuItem.setAttribute("checked", hidePassingTests ? "true" : "false");
 
+        // This could deserve more generic aproach like dispatching an event
+        // to all listeners.
+        FBTestApp.TestCouchUploader.onStatusBarPopupShowing(event);
+
         return true;
     },
 
@@ -877,7 +882,25 @@ FBTestApp.TestConsole =
             removeClass(this.table, "hidePassingTests");
         else
             setClass(this.table, "hidePassingTests");
-    }
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    iterateTests: function(callback)
+    {
+        var groups = FBTestApp.TestConsole.groups;
+        for (groupIdx in groups)
+        {
+            var group = groups[groupIdx];
+            var tests = group.tests;
+            for (testIdx in tests)
+            {
+                var stop = callback(group, tests[testIdx]);
+                if (stop)
+                    return stop;
+            }
+        }
+    },
 };
 
 // ************************************************************************************************

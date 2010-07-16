@@ -40,6 +40,7 @@
     <script type="application/x-javascript" src="chrome://fbtest/content/testRunner.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testConsole.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testLogger.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testCouchUploader.js"/>
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="strings_firebug" src="chrome://firebug/locale/firebug.properties"/>
@@ -167,11 +168,15 @@
         <progressmeter id="progressMeter" mode="determined" style="display:none"/>
     </statusbar>
 
+    <!-- Status bar context menu -->
     <menupopup id="statusBarContextMenu"
         onpopupshowing="return FBTestApp.TestConsole.onStatusBarPopupShowing(event);">
         <menuitem id="menu_hidePassingTests" type="checkbox" checked="false"
             label="fbtest.contextmenu.label.Hide Passing Tests"
             oncommand="FBTestApp.TestConsole.hidePassingTests(event)"/>
+        <menuitem id="menu_uploadTestResults"
+            label="fbtest.contextmenu.label.Upload Test Results"
+            oncommand="FBTestApp.TestCouchUploader.onUpload()"/>
     </menupopup>
 
 </window>
