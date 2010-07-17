@@ -133,6 +133,7 @@ pref("extensions.chromebug.DBG_CONSOLE", false);        // console              
 pref("extensions.chromebug.DBG_CSS", false);          //                                             /*@explore*/
 pref("extensions.chromebug.DBG_DBG2FIREBUG", false);  //                                             /*@explore*/
 pref("extensions.chromebug.DBG_DOM", false);  //                                             /*@explore*/
+pref("extensions.chromebug.DBG_DOMPLATE", false);  //                                             /*@explore*/
 pref("extensions.chromebug.DBG_DISPATCH", false);     //                                          /*@explore*/
 pref("extensions.chromebug.DBG_HTML", false);         //                                          /*@explore*/
 pref("extensions.chromebug.DBG_LINETABLE", false);    // /*@explore*/
