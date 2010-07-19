@@ -175,7 +175,7 @@
             label="fbtest.contextmenu.label.Hide Passing Tests"
             oncommand="FBTestApp.TestConsole.hidePassingTests(event)"/>
         <menuitem id="menu_uploadTestResults"
-            label="fbtest.contextmenu.label.Upload Test Results"
+            label="fbtest.contextmenu.label.Submit Test Results"
             oncommand="FBTestApp.TestCouchUploader.onUpload()"/>
     </menupopup>
 
