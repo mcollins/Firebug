@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <RDF:Description about="urn:mozilla:extension:firediff@johnjbarton.com">
+    <em:updates>
+      <RDF:Seq>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>0.1a1</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>1.5</em:minVersion>
+                <em:maxVersion>3.5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firediff/firediff0.1a1.xpi</em:updateLink>
+                <em:updateHash>sha1:BAAA663273ED3D1E8487473DF2490FFC09BAE695</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>0.1a2</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>1.5</em:minVersion>
+                <em:maxVersion>3.5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firediff/firediff0.1a2.xpi</em:updateLink>
+                <em:updateInfoURL>http://www.incaseofstairs.com/2009/04/firediff-01a2-releasedfirediff-01a2-released/</em:updateInfoURL>
+                <em:updateHash>sha1:714F5E445920D4A953CA7B257C851F9F0BF60C35</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>0.2</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>1.5</em:minVersion>
+                <em:maxVersion>3.5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firediff/firediff0.2.xpi</em:updateLink>
+                <em:updateInfoURL>http://www.incaseofstairs.com/2009/06/firediff-02-released/</em:updateInfoURL>
+                <em:updateHash>sha1:16E9EFB45E23972777C495BF8A058080AD74E5AC</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>0.2.1</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>1.5</em:minVersion>
+                <em:maxVersion>3.5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firediff/firediff0.2.1.xpi</em:updateLink>
+                <em:updateInfoURL>http://www.incaseofstairs.com/2009/07/firediff-021-released/</em:updateInfoURL>
+                <em:updateHash>sha1:8c2e50c5ad68e1017bafc886b5bcddd53bd1eeaf</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.0</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>1.5</em:minVersion>
+                <em:maxVersion>3.6.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firediff/firediff1.0.xpi</em:updateLink>
+                <em:updateInfoURL>http://www.incaseofstairs.com/2010/03/firediff-10-released/</em:updateInfoURL>
+                <em:updateHash>sha1:00860600198e7a12eae019f507f8037da961888d</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+      </RDF:Seq>
+    </em:updates>
+
+    <em:signature>
+      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAGvVdVGolwwuW7nuNIVBX95zWNt6+6b6+eizgrlm5LAyHt
+      GqI4Su6xb4wkDIOiOaguhRFnmya1eIHmwzGCxQjxRzz+0/aqwKejy0WqPDjiV7uWtUZd10ofW1
+      GOxlU51coxFo84q0vqRlmua4nsl3DFO+RZ2ELrBB4x/rgJPeRJS+
+    </em:signature>
+  </RDF:Description>
+</RDF:RDF>
