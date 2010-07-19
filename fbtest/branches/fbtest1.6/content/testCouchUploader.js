@@ -34,7 +34,7 @@ FBTestApp.TestCouchUploader =
         {
             success: function(headerResp)
             {
-                self.onHeaderUploaded(headerResp);
+                self.onHeaderUploaded(headerResp, header);
             },
             error: function(status, error, reason)
             {
@@ -48,7 +48,7 @@ FBTestApp.TestCouchUploader =
         CouchDB.saveDoc(header, options);
     },
 
-    onHeaderUploaded: function(headerResp)
+    onHeaderUploaded: function(headerResp, header)
     {
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestCouchUploader.onUploaonHeaderUploaded; " +
@@ -64,6 +64,7 @@ FBTestApp.TestCouchUploader =
             {
                 var resultDoc = self.getResultDoc(test);
                 resultDoc.headerid = headerResp.id;
+                resultDoc["Export Date"] = header["Export Date"];
                 results.docs.push(resultDoc);
             }
         })
@@ -90,16 +91,16 @@ FBTestApp.TestCouchUploader =
     onResultsUploaded: function(headerid, data)
     {
         var remoteFBL = FBTestApp.FBTest.FirebugWindow.FBL;
-        remoteFBL.openNewTab("http://legoas/firebug/tests/content/testbot/results/?headerid=" + headerid);
-        //remoteFBL.openNewTab("http://getfirebug.com/tests/content/testbot/results/?headerid=" + headerid);
+        //remoteFBL.openNewTab("http://legoas/firebug/tests/content/testbot/results/?userheaderid=" + headerid);
+        //remoteFBL.openNewTab("http://getfirebug.com/tests/content/testbot/results/?userheaderid=" + headerid);
+        remoteFBL.openNewTab("http://getfirebug.com/testsresults/?userheaderid=" + headerid);
     },
 
     onStatusBarPopupShowing: function(event)
     {
         // Can't upload if there are no results.
         var total = this.getTotalTests();
-        if (!total)
-            $("menu_uploadTestResults").disabled = true;
+        $("menu_uploadTestResults").disabled = !total;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -121,11 +122,11 @@ FBTestApp.TestCouchUploader =
         header["FBTest"] = FBTestApp.TestConsole.getVersion();
         header["Firebug"] = Firebug.version;
         header["Locale"] = currLocale;
-        //header["OS Detailed Name"] =
+        header["OS Detailed Name"] = ""; //xxxHonza todo
         header["OS Name"] = systemInfo.getProperty("name");
         header["OS Version"] = systemInfo.getProperty("version");
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
-        header["Total Tests"] = this.getTotalTests();
+        header["Total Tests"] = this.getTotalTests().toString();
 
         return header;
     },
