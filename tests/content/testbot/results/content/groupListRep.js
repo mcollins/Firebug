@@ -91,7 +91,7 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
 
     getPermaLink: function(group)
     {
-        return "?headerid=" + group.value.doc._id;
+        return "?" + this.viewName + "=" + group.value.doc._id;
     },
 
     onClick: function(event)
@@ -165,8 +165,9 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         });
     },
 
-    render: function(rows, parentNode)
+    render: function(rows, viewName, parentNode)
     {
+        this.viewName = (viewName == "user-headers") ? "userheaderid" : "headerid";
         this.tag.replace({rows: rows}, parentNode, this);
     }
 });

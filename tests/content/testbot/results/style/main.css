@@ -8,10 +8,11 @@
     font-family: helvetica,sans-serif;
     font-size: 62.5%;
 }
+
 /*************************************************************************************************/
 /* Tab View */
 
-.tabHomeBody {
+.tabHomeBody, .tabUsersBody {
     padding: 7px;
 }
 

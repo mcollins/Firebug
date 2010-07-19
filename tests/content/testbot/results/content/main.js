@@ -17,10 +17,15 @@ CDB.Main = extend(CDB.Module,
         this.image1.src = "style/twistyOpen.png";
 
         var content = document.getElementById("testResults");
-        var groupID = getURLParameter("headerid");
-        if (groupID)
+        var headerID = getURLParameter("headerid");
+        var userHeaderID = getURLParameter("userheaderid");
+        if (headerID)
         {
-            this.GroupView.render(groupID, content);
+            this.GroupView.render(headerID, "header", content);
+        }
+        else if (userHeaderID)
+        {
+            this.GroupView.render(userHeaderID, "user-header", content);
         }
         else
         {
@@ -56,10 +61,19 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
         DIV({"class": "tabViewBody"},
             DIV({"class": "tabBar", onmousedown: "$onClickTab"},
                 A({"class": "HomeTab tab", view: "Home"},
-                    $STR("By Date")
+                    $STR("Test Bot")
+                ),
+                A({"class": "UsersTab tab", view: "Users"},
+                    $STR("Users")
                 )
             ),
             DIV({"class": "tabHomeBody tabBody"},
+                TAG("$limitTag"),
+                DIV({"class": "groupList"},
+                    TAG("$defaultContentTag")
+                )
+            ),
+            DIV({"class": "tabUsersBody tabBody"},
                 TAG("$limitTag"),
                 DIV({"class": "groupList"},
                     TAG("$defaultContentTag")
@@ -70,11 +84,12 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
     onLimitChange: function(event)
     {
         var e = fixEvent(event);
-        var tabHomeBody = getAncestorByClass(e.target, "tabHomeBody");
-        this.refreshGroupList(tabHomeBody);
+        var viewBody = getAncestorByClass(e.target, "tabViewBody");
+        var view = viewBody.selectedTab.getAttribute("view");
+        this.updateTabBody(viewBody, view, null);
     },
 
-    refreshGroupList: function(tabHomeBody)
+    refreshGroupList: function(tabHomeBody, viewName)
     {
         var parentNode = getElementByClass(tabHomeBody, "groupList");
         var queryLimit = getElementByClass(tabHomeBody, "queryLimit").value;
@@ -82,11 +97,11 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
         this.defaultContentTag.replace({}, parentNode);
 
         // Render list of test groups (a group == Firebug test suite launched once)
-        FirebugDB.getGroupList(queryLimit, function(data)
+        FirebugDB.getGroupList(queryLimit, viewName, function(data)
         {
             // xxxHonza: localization
             if (data)
-                Reps.GroupList.render(data, parentNode);
+                Reps.GroupList.render(data, viewName, parentNode);
             else
                 parentNode.innerHTML = "Failed to execute remote AJAX! See debugging console for more details.";
         });
@@ -97,10 +112,15 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
         var tab = viewBody.selectedTab;
 
         var tabHomeBody = getElementByClass(viewBody, "tabHomeBody");
-        if (hasClass(tab, "HomeTab") && !tabHomeBody.updated)
+        if (hasClass(tab, "HomeTab"))
         {
-            tabHomeBody.updated = true;
-            this.refreshGroupList(tabHomeBody);
+            this.refreshGroupList(tabHomeBody, "headers");
+        }
+
+        var tabUsersBody = getElementByClass(viewBody, "tabUsersBody");
+        if (hasClass(tab, "UsersTab"))
+        {
+            this.refreshGroupList(tabUsersBody, "user-headers");
         }
     },
 
@@ -143,6 +163,10 @@ CDB.Main.GroupView = domplate(CDB.Rep,
             DIV({"class": "groupViewBody"})
         ),
 
+    // xxxHonza: localization
+    emptyTag:
+        DIV("Empty JSON returned from the Database!"),
+
     headerIterator: function(object)
     {
         var skip = {
@@ -165,22 +189,31 @@ CDB.Main.GroupView = domplate(CDB.Rep,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    render: function(groupID, parentNode)
+    render: function(groupID, viewName, parentNode)
     {
         var view = this.tag.replace({}, parentNode, self);
 
         var self = this;
-        FirebugDB.getGroupInfo(groupID, function(data)
+        FirebugDB.getGroupInfo(groupID, viewName, function(data)
         {
             if (data.length == 0)
+            {
+                self.renderEmptyResult(view.querySelector(".groupViewHeader"));
                 return;
+            }
 
             var header = data.shift();
-            assert(header.value.type == "header");
+            assert(header.value.type == "header" ||
+                header.value.type == "user-header");
 
             self.renderHeader(view.querySelector(".groupViewHeader"), header);
             self.renderBody(view.querySelector(".groupViewBody"), data);
         });
+    },
+
+    renderEmptyResult: function(parentNode)
+    {
+        this.emptyTag.replace({}, parentNode, this);
     },
 
     renderHeader: function(parentNode, header)

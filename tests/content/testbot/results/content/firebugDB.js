@@ -6,6 +6,7 @@ CDB.ns(function() { with (CDB) {
 
 // <root-uri>/_design/resultviews/_list/values/allresults
 // <root-uri>/_utils/document.html?firebug/_design/resultviews
+// See: http://wiki.apache.org/couchdb/URI_templates
 
 /**
  * @modules Firebug database wrapper. This object implements domin specific methods for acessing
@@ -27,7 +28,7 @@ CDB.FirebugDB = extend(CDB.Module,
      * Returns list of all groups in the database. Part of the result data
      * is also a number of failing tests in each group.
      */
-    getGroupList: function(queryLimit, callback)
+    getGroupList: function(queryLimit, viewName, callback)
     {
         var options = {
             group_level: 1,
@@ -46,7 +47,7 @@ CDB.FirebugDB = extend(CDB.Module,
 
         try
         {
-            this.db.list("resultviews/headers", "json", options);
+            this.db.list("resultviews/" + viewName, "json", options);
         }
         catch (e)
         {
@@ -76,7 +77,7 @@ CDB.FirebugDB = extend(CDB.Module,
      * @param {Object} groupID
      * @param {Object} callback
      */
-    getGroupInfo: function(groupID, callback)
+    getGroupInfo: function(groupID, viewName, callback)
     {
         var options = {
             key: groupID,
@@ -90,7 +91,7 @@ CDB.FirebugDB = extend(CDB.Module,
 
         try
         {
-            this.db.list("resultviews/header", "json", options);
+            this.db.list("resultviews/" + viewName, "json", options);
         }
         catch (e)
         {

@@ -27,6 +27,7 @@
     font-weight: bold;
     font-family: Lucida Grande, Tahoma, sans-serif;
     white-space: nowrap;
+    line-height:normal;
 }
 
 .tab:hover {
@@ -36,6 +37,7 @@
     -webkit-border-top-left-radius: 4px;
     -webkit-border-top-right-radius: 4px;
     border-radius: 4px 4px 0 0;
+    text-decoration: none;
 }
 
 .tab[selected="true"],

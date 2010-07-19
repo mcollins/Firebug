@@ -21,6 +21,6 @@
 <script type="text/javascript" src="/tests/content/testbot/results/content/groupListRep.js"></script>
 <script type="text/javascript" src="/tests/content/testbot/results/content/progressListRep.js"></script>
 <script type="text/javascript" src="/tests/content/testbot/results/content/firebugDB.js"></script>
-<script type="text/javascript" src="/tests/content/testbot/results/content/perch.js"></script>
+<script type="text/javascript" src="/tests/content/testbot/results/content/main.js"></script>
 
 <div id="testResults"></div>
