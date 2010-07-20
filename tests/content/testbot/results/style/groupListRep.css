@@ -33,6 +33,10 @@
 }
 
 .testGroupCount {
+    color: green;
+}
+
+.testGroupCount.failures {
     color: #DD467B;
 }
 

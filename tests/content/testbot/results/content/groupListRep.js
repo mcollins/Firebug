@@ -17,7 +17,7 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
                             )
                         ),
                         TD({"class": "testGroupCol"},
-                            SPAN({"class": "testGroupCount"},
+                            SPAN({"class": "testGroupCount", $failures: "$group|hasFailures"},
                                 "$group|getGroupCount"
                             )
                         ),
@@ -50,6 +50,11 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         return date.toLocaleString();
     },
 
+    hasFailures: function(group)
+    {
+        return group.value.failures > 0;
+    },
+
     getGroupCount: function(group)
     {
         var doc = group.value.doc;
@@ -63,7 +68,10 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         // This is what we want - no failures at all.
         var count = group.value.failures;
         if (count == 0)
-            return "";
+        {
+            var label = (totalTests > 1) ? "pass" : "passes";
+            return totalTests + " " + label;
+        }
 
         // Report number of failures.
         // xxxHonza: localization
