@@ -39,31 +39,31 @@ function debuggerShallow()
 function debuggerDeep()
 {
     var foo = 42;
-    debuggerdeep2();
+    debuggerdeep2(1, "TheStringValue");
 }
 
-function debuggerdeep2()
+function debuggerdeep2(aNumber, aString)
 {
     var fun = "no";
-    debuggerdeep3();
+    debuggerdeep3(aNumber, aString, fun, debuggerDeep);
     fun = "yes";
     var stuff = 88;
 }
 
-function debuggerdeep3()
+function debuggerdeep3(bNumber, bString, bAlsoString, aFunction)
 {
     var bar = "hello";
     var baz = document.body;
 
     var obj = {
         touch:
-        function()
+        function(cString)
         {
             debugger;   //@debuggerDeepRow - don't remove this comment
-            this.touched = true;
+            this.touched = cString;
         }
     };
-    obj.touch();
+    obj.touch(bString+bAlsoString);
 }
 
 function loadXHRDebugger(callback)
