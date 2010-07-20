@@ -182,6 +182,13 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
           command: bindFixed(this.onCopyAllErrors, this)
         });
 
+        items.push({
+          label: $STR("fbtest.contextmenu.label.Submit Test Results"),
+          nol10n: true,
+          disabled: !FBTestApp.TestCouchUploader.isEnabled(),
+          command: bindFixed(FBTestApp.TestCouchUploader.onUpload, FBTestApp.TestCouchUploader)
+        });
+
         return items;
     },
 
@@ -423,6 +430,13 @@ FBTestApp.TestList = domplate(
               command: bindFixed(this.onCopyAllErrors, this, test)
             });
         }
+
+        items.push({
+          label: $STR("fbtest.contextmenu.label.Submit Test Results"),
+          nol10n: true,
+          disabled: !FBTestApp.TestCouchUploader.isEnabled(),
+          command: bindFixed(FBTestApp.TestCouchUploader.onUpload, FBTestApp.TestCouchUploader)
+        });
 
         return items;
     },

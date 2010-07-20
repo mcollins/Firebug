@@ -93,14 +93,18 @@ FBTestApp.TestCouchUploader =
         var remoteFBL = FBTestApp.FBTest.FirebugWindow.FBL;
         //remoteFBL.openNewTab("http://legoas/firebug/tests/content/testbot/results/?userheaderid=" + headerid);
         //remoteFBL.openNewTab("http://getfirebug.com/tests/content/testbot/results/?userheaderid=" + headerid);
-        remoteFBL.openNewTab("http://getfirebug.com/testsresults/?userheaderid=" + headerid);
+        remoteFBL.openNewTab("http://getfirebug.com/testresults/?userheaderid=" + headerid);
     },
 
     onStatusBarPopupShowing: function(event)
     {
         // Can't upload if there are no results.
-        var total = this.getTotalTests();
-        $("menu_uploadTestResults").disabled = !total;
+        $("menu_uploadTestResults").disabled = !this.isEnabled();
+    },
+
+    isEnabled: function()
+    {
+        return this.getTotalTests() > 0;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
