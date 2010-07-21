@@ -1,2 +1,0 @@
-function scriptTest2script() {
-}
