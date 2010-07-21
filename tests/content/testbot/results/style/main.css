@@ -34,6 +34,7 @@
 .groupViewHeader .paramName {
     font-weight: bold;
     text-align: right;
+    white-space: nowrap;
 }
 
 .groupViewHeader .paramValue {
