@@ -181,7 +181,19 @@ CDB.Main.GroupView = domplate(CDB.Rep,
             if (p in skip)
                 continue;
 
-            result.push({name: p, value: object[p]});
+            var value = object[p];
+            if (p == "Extensions")
+            {
+                var extList = [];
+                for (var i=0; i<value.length; i++)
+                {
+                    var ext = value[i];
+                    extList.push(ext.name + (ext.enabled ? "" : " (disabled)"));
+                }
+                value = extList.join(", ");
+            }
+
+            result.push({name: p, value: value});
         }
 
         return result;
