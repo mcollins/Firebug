@@ -114,6 +114,7 @@ FBTestApp.TestCouchUploader =
         var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
         var currLocale = Firebug.getPref("general.useragent", "locale");
         var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
+        var application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
 
         var header = {type: "user-header"};
         header["App Build ID"] = appInfo.appBuildID;
@@ -131,6 +132,19 @@ FBTestApp.TestCouchUploader =
         header["OS Version"] = systemInfo.getProperty("version");
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
         header["Total Tests"] = this.getTotalTests().toString();
+
+        // Put together a list of installed extensions.
+        var extensions = [];
+        for (var i=0; i<application.extensions.all.length; i++)
+        {
+            var ext = application.extensions.all[i];
+            extensions.push({
+                name: ext.name,
+                id: ext.id,
+                enabled: ext.enabled
+            });
+        }
+        header["Extensions"] = extensions;
 
         return header;
     },
