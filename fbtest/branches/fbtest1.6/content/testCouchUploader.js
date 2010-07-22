@@ -26,7 +26,7 @@ FBTestApp.TestCouchUploader =
         }
 
         // Get header document...
-        var header = this.getHeaderDoc();
+        var header = this.getHeaderDoc(true);
 
         // ...and store it into the DB to get ID.
         var self = this;
@@ -109,7 +109,7 @@ FBTestApp.TestCouchUploader =
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    getHeaderDoc: function()
+    getHeaderDoc: function(extInfo)
     {
         var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
         var currLocale = Firebug.getPref("general.useragent", "locale");
@@ -133,28 +133,31 @@ FBTestApp.TestCouchUploader =
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
         header["Total Tests"] = this.getTotalTests().toString();
 
-        // Put together a list of installed extensions.
-        var extensions = [];
-        for (var i=0; i<application.extensions.all.length; i++)
+        if (extInfo)
         {
-            var ext = application.extensions.all[i];
-            extensions.push({
-                name: ext.name,
-                id: ext.id,
-                enabled: ext.enabled
-            });
+            // Put together a list of installed extensions.
+            var extensions = [];
+            for (var i=0; i<application.extensions.all.length; i++)
+            {
+                var ext = application.extensions.all[i];
+                extensions.push({
+                    name: ext.name,
+                    id: ext.id,
+                    enabled: ext.enabled
+                });
+            }
+            header["Extensions"] = extensions;
         }
-        header["Extensions"] = extensions;
 
         return header;
     },
 
     getResultDoc: function(test)
     {
-        var result = extend(this.getHeaderDoc(), {type: "user-result"});
+        var result = extend(this.getHeaderDoc(false), {type: "user-result"});
 
         result.description = test.desc;
-        result.file = test.uri;
+        result.file = test.testPage ? test.testPage : test.uri;
         result.result = test.error ? (test.category == "fails" ? "TEST-KNOWN-FAIL" :
             "TEST-UNEXPECTED-FAIL") : "TEST-PASS"
 
