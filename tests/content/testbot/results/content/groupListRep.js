@@ -10,14 +10,15 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         TABLE({"class": "groupTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
             TBODY(
                 FOR("group", "$rows",
-                    TR({"class": "testGroupRow", _repObject: "$group"},
+                    TR({"class": "testGroupRow", _repObject: "$group",
+                        $failures: "$group|hasFailures"},
                         TD({"class": "groupName testGroupCol"},
                             SPAN({"class": "testGroupName"},
                                 "$group|getGroupName"
                             )
                         ),
                         TD({"class": "testGroupCol"},
-                            SPAN({"class": "testGroupCount", $failures: "$group|hasFailures"},
+                            SPAN({"class": "testGroupCount"},
                                 "$group|getGroupCount"
                             )
                         ),
@@ -112,6 +113,10 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
             return;
 
         var row = getAncestorByClass(e.target, "testGroupRow");
+
+        if (!this.hasFailures(row.repObject))
+            return;
+
         if (row)
         {
             this.toggleRow(row);

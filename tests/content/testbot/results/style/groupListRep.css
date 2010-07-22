@@ -7,9 +7,12 @@
 }
 
 .testGroupCol {
-    cursor:pointer;
     white-space:nowrap;
     padding-left: 10px;
+}
+
+.failures .testGroupCol {
+    cursor:pointer;
 }
 
 .testGroupCol.groupName {
@@ -20,23 +23,26 @@
     height:17px;
 }
 
-.opened > .testGroupCol > .testGroupName {
-    background-image: url(twistyOpen.png);
+.testGroupName {
+    padding-left: 18px;
+    font-weight: bold;
 }
 
-.testGroupName {
+.failures .testGroupName {
     background-image: url(twistyClosed.png);
     background-repeat: no-repeat;
     background-position: 2px 1px;
-    padding-left: 18px;
-    font-weight: bold;
+}
+
+.failures.opened > .testGroupCol > .testGroupName {
+    background-image: url(twistyOpen.png);
 }
 
 .testGroupCount {
     color: green;
 }
 
-.testGroupCount.failures {
+.failures .testGroupCount {
     color: #DD467B;
 }
 
