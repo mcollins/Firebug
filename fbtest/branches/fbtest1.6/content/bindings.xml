@@ -40,18 +40,24 @@
             var menuPopup = document.getAnonymousElementByAttribute(inputBox,
                 "anonid", "input-box-contextmenu");
 
-            // Create additional item into the context menu.
-            var resetHistory = document.createElement("menuitem");
-            resetHistory.setAttribute("label", "Reset History List"); // xxxHonza: localization
-
             var self = this;
-            resetHistory.addEventListener("command", function() {
-                FBTestApp.TestConsole.resetHistoryList(self);
-            }, false);
 
-            // Append into the menu.
-            menuPopup.appendChild(document.createElement("menuseparator"));
-            menuPopup.appendChild(resetHistory);
+            // xxxHonza: how to do the localization? Firebug object doesn't exist at this time.
+            var items = [];
+            items.push("-");
+            items.push({
+                label: "Reset History List",
+                nol10n: true,
+                command: function() { FBTestApp.TestConsole.resetHistoryList(self); }
+            });
+            items.push({
+                label: "Get Available Test Lists",
+                nol10n: true,
+                command: function() { FBTestApp.TestConsole.getAvailableTestLists(self); }
+            });
+
+            for (var i = 0; i < items.length; ++i)
+                FBL.createMenuItem(menuPopup, items[i]);
         ]]></constructor>
 
         <property name="testLabel"

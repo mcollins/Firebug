@@ -273,6 +273,16 @@ FBTestApp.TestConsole =
             Firebug.clearPref(FBTestApp.prefDomain, "testDriverHistory");
     },
 
+    getAvailableTestLists: function(urlBar)
+    {
+        var testLists = [];
+        dispatch([Firebug], "onGetTestList", [testLists]);
+        dispatch(Firebug.modules, "onGetTestList", [testLists]);
+
+        if (FBTrace.DBG_FBTEST)
+            FBTrace.sysout("fbtest.getAvailableTestLists; ", testLists);
+    },
+
     loadTestList: function(testListPath, testCasePath)
     {
         this.testListPath = testListPath;
