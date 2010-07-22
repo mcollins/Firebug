@@ -14,7 +14,8 @@ function runTest()
             // See executeAndVerify method below for description of individual
             // parameters.
 
-            tasks.push(executeAndVerify, "$(\"test1\")", "<div id=\"test1\">",
+            // \u00A0 == &nbsp; == #160 -> used by nodeTag domplate.
+            tasks.push(executeAndVerify, "$(\"test1\")", "<div\u00A0id=\"test1\">",
                 "a", "objectLink objectLink-element");
 
             tasks.push(executeAndVerify, "$$(\".a.c\")", "[div.a, div.a]",
@@ -27,7 +28,7 @@ function runTest()
                 "table", "domTable");
 
             tasks.push(executeAndVerify, "dirxml($('test3'))",
-                "<div id=\"test3\"><div></div></div>",
+                "<div\u00A0id=\"test3\"><div></div></div>",
                 "div", "logRow logRow-dirxml");
 
             tasks.push(executeAndVerify, "keys(b)", "[\"a\", \"name\"]",
