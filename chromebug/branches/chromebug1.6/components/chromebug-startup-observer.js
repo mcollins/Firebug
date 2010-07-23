@@ -33,8 +33,7 @@ StartupObserver.prototype =
 {
 	/* XPCOM voodoo */
     classID: Components.ID("{287716D2-140B-11DE-912E-E0FC55D89593}"),
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),
-
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),    
 	/* end XPCOM voodoo */
     debug: false,
 
@@ -57,7 +56,7 @@ StartupObserver.prototype =
 
         jsd.on();
         jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
-        jsd.initAtStartup = false;
+// Not allowed in FF 4.0b2       jsd.initAtStartup = false;
 
         this.setJSDFilters(jsd);
 
@@ -270,7 +269,13 @@ StartupObserver.prototype =
    /*  END API */
     initialize: function()
     {
-       gStartupObserverSingleton.startJSDOnce();
+        if(!gStartupObserverSingleton)
+        {
+            gStartupObserverSingleton = new StartupObserver();
+             gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
+        }
+            
+        gStartupObserverSingleton.startJSDOnce();
     },
 
     shutdown: function()
@@ -602,18 +607,16 @@ var StartupObserverModule =
 
 // ************************************************************************************************
 
-function NSGetModule(compMgr, fileSpec)
-{
-    return StartupObserverModule;
-}
+
 /**
 * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
 * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
 */
 if (XPCOMUtils.generateNSGetFactory)
     var NSGetFactory = XPCOMUtils.generateNSGetFactory([StartupObserver]);
-
-
+else
+    var NSGetModule = XPCOMUtils.generateNSGetModule([StartupObserver]);
+    
 function getTmpFile()
 {
     var file = Components.classes["@mozilla.org/file/directory_service;1"].
@@ -639,3 +642,4 @@ function getTmpStream(file)
 
     return foStream;
 }
+Components.utils.reportError("Chromebug startup observer top level");
