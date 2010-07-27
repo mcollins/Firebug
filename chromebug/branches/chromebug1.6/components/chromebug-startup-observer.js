@@ -34,14 +34,14 @@ var gStartupObserverSingleton = null;
 
 StartupObserver.prototype =
 {
-	/* XPCOM voodoo */
+    /* XPCOM voodoo */
     classID: Components.ID("{287716D2-140B-11DE-912E-E0FC55D89593}"),
-    contractID: CONTRACT_ID, 
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),
-	
-	_xpcom_categories: [ {category: STARTUP_TOPIC, entry: CLASS_NAME, value: CONTRACT_ID, service: true} ],
-	
-	_xpcom_factory: 
+    contractID: CONTRACT_ID,
+    QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),
+
+    _xpcom_categories: [ {category: STARTUP_TOPIC, entry: CLASS_NAME, value: CONTRACT_ID, service: true} ],
+
+    _xpcom_factory:
     {
         createInstance: function (outer, iid)
         {
@@ -61,8 +61,9 @@ StartupObserver.prototype =
             throw Cr.NS_ERROR_NO_INTERFACE;
         },
         lockFactory: function(){}, // no-op
-    },   
-	/* end XPCOM voodoo */
+    },
+    /* end XPCOM voodoo */
+
     debug: false,
 
     getWindow: function()
@@ -287,12 +288,12 @@ StartupObserver.prototype =
    },
 
    /* API */
-   
+
     getSingleton: function()
     {
         return gStartupObserverSingleton;
     },
-    
+
     getJSDState: function()
     {
        if (!gStartupObserverSingleton.jsdState)
@@ -309,7 +310,7 @@ StartupObserver.prototype =
             gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
             //Components.utils.reportError("StartupObserver created singleton "+gStartupObserverSingleton.wrappedJSObject);
         }
-            
+
         gStartupObserverSingleton.startJSDOnce();
     },
 
@@ -321,7 +322,7 @@ StartupObserver.prototype =
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
-    	//Components.utils.reportError("StartupObserver "+topic);
+        //Components.utils.reportError("StartupObserver "+topic);
         if (topic == STARTUP_TOPIC) {
             if (trace) Components.utils.reportError("StartupObserver "+topic);
             this.initialize();
@@ -653,7 +654,7 @@ if (XPCOMUtils.generateNSGetFactory)
     var NSGetFactory = XPCOMUtils.generateNSGetFactory([StartupObserver]);
 else
     var NSGetModule = XPCOMUtils.generateNSGetModule([StartupObserver]);
-    
+
 function getTmpFile()
 {
     var file = Components.classes["@mozilla.org/file/directory_service;1"].
