@@ -813,7 +813,10 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            var startupObserver = Cc["@getfirebug.com/chromebug-startup-observer;1"].getService(Ci.nsISupports).wrappedJSObject;
+        	var startupObserverClass =  Cc["@getfirebug.com/chromebug-startup-observer;1"];
+        	var startupObserverInstance = startupObserverClass.createInstance();
+        	
+        	var startupObserver = startupObserverInstance.wrappedJSObject;
 
             var jsdState = startupObserver.getJSDState();
             if (!jsdState || !jsdState._chromebug)

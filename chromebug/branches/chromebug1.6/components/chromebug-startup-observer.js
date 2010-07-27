@@ -19,9 +19,10 @@ var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICate
 
 const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 const trace = false;
+
 // ************************************************************************************************
 // Startup Request Observer implementation
-
+//Components.utils.reportError("Chromebug startup observer start top level");
 function StartupObserver()
 {
     this.observers = [];
@@ -29,11 +30,38 @@ function StartupObserver()
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
+var gStartupObserverSingleton = null;
+
 StartupObserver.prototype =
 {
 	/* XPCOM voodoo */
     classID: Components.ID("{287716D2-140B-11DE-912E-E0FC55D89593}"),
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),    
+    contractID: CONTRACT_ID, 
+	QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsIObserverService,Ci.nsIObserver]),
+	
+	_xpcom_categories: [ {category: STARTUP_TOPIC, entry: CLASS_NAME, value: CONTRACT_ID, service: true} ],
+	
+	_xpcom_factory: 
+    {
+        createInstance: function (outer, iid)
+        {
+            if (outer != null)
+                throw Cr.NS_ERROR_NO_AGGREGATION;
+
+            if (iid.equals(Ci.nsISupports) ||
+                iid.equals(Ci.nsIObserverService) ||
+                iid.equals(Ci.nsIObserver))
+            {
+                if (!gStartupObserverSingleton)
+                    gStartupObserverSingleton = new StartupObserver();
+                gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
+                return gStartupObserverSingleton.QueryInterface(iid);
+            }
+
+            throw Cr.NS_ERROR_NO_INTERFACE;
+        },
+        lockFactory: function(){}, // no-op
+    },   
 	/* end XPCOM voodoo */
     debug: false,
 
@@ -259,12 +287,18 @@ StartupObserver.prototype =
    },
 
    /* API */
+   
+    getSingleton: function()
+    {
+        return gStartupObserverSingleton;
+    },
+    
     getJSDState: function()
-   {
+    {
        if (!gStartupObserverSingleton.jsdState)
            gStartupObserverSingleton.jsdState = {};
        return gStartupObserverSingleton.jsdState;
-   },
+    },
 
    /*  END API */
     initialize: function()
@@ -272,7 +306,8 @@ StartupObserver.prototype =
         if(!gStartupObserverSingleton)
         {
             gStartupObserverSingleton = new StartupObserver();
-             gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
+            gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
+            //Components.utils.reportError("StartupObserver created singleton "+gStartupObserverSingleton.wrappedJSObject);
         }
             
         gStartupObserverSingleton.startJSDOnce();
@@ -286,7 +321,7 @@ StartupObserver.prototype =
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
-    	Components.utils.reportError("StartupObserver "+topic);
+    	//Components.utils.reportError("StartupObserver "+topic);
         if (topic == STARTUP_TOPIC) {
             if (trace) Components.utils.reportError("StartupObserver "+topic);
             this.initialize();
@@ -525,6 +560,8 @@ function analyzeScope(cb, frame, jsdState)
     cb.innerScripts = [];
 }
 
+
+/*
 // ************************************************************************************************
 // Service factory
 
@@ -604,7 +641,7 @@ var StartupObserverModule =
         return true;
     }
 };
-
+*/
 // ************************************************************************************************
 
 
@@ -642,4 +679,4 @@ function getTmpStream(file)
 
     return foStream;
 }
-Components.utils.reportError("Chromebug startup observer top level");
+//Components.utils.reportError("Chromebug startup observer top level");
