@@ -1,0 +1,12 @@
+<body>
+<script>
+        window.addEventListener('resize', function() {
+                var div = document.createElement('div');
+                // put a breakpoint here, and resize window, and it will hang Firefox, and it hangs Windows Explorer.
+                debugger;
+                div.textContent = 'hello';
+                document.body.appendChild(div);
+        }, false);
+</script>
+</body>
+
