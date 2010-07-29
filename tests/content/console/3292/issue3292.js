@@ -9,12 +9,14 @@ function runTest()
         {
             var panelNode = FW.FirebugChrome.selectPanel("console").panelNode;
 
-            var errorNode = panelNode.querySelector(".objectBox.objectBox-errorMessage");
-            var titleNode = errorNode.querySelector(".errorTitle");
+            var textNodes = panelNode.querySelectorAll(".objectBox.objectBox-text");
 
-            // Verify the error message
-            FBTest.compare(titleNode.textContent, "iframe log",
-                "An log message must be displayed");
+            // Verify the log content
+            FBTest.compare(textNodes[0].textContent, "parent log",
+            "parent log must be displayed");
+
+            FBTest.compare(textNodes[1].textContent, "iframe log",
+            "iframe log must be displayed");
 
             FBTest.testDone("issue3292.DONE");
         });
