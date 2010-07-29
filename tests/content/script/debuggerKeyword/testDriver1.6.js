@@ -19,7 +19,7 @@ function runTest()
         FBTestFirebug.selectPanel("script");
         FBTestFirebug.enableScriptPanel(function(win)
         {
-            var doc = win.wrappedJSObject.document;
+            var doc = win.document;
 
             // List of tasks for this test.
             var taskList = new FBTest.TaskList();
