@@ -4,6 +4,7 @@ function runTest()
     FBTest.openNewTab(basePath + "commandLine/2934/issue2934.html", function(win)
     {
         FBTest.openFirebug();
+        FBTest.selectPanel("console");
         FBTest.enableConsolePanel(function(win)
         {
             var doc = FW.FirebugChrome.window.document;
@@ -13,9 +14,11 @@ function runTest()
             FBTest.focus(cmdLine);
 
             // Set command line expression and press Tab key.
-            cmdLine.value = "docu";
-            FBTest.pressKey(9, "fbCommandLine");
-
+            cmdLine.value = "document";
+             
+            FBTest.sendChar('.', "fbCommandLine");
+            //FBTest.pressKey(13, "fbCommandLine");
+ 
             FBTest.compare("document", cmdLine.value,
                 "The command line must display 'document' after auto completion.");
 
