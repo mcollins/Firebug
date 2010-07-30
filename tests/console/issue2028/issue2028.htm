@@ -84,11 +84,12 @@
       <ol>
         <li>Enable and switch to the console panel</li>
         <li>Reload the page</li>
-        <li>See the different messages inside the console</li>
+        <li>Click the <em>Create iframe</em> button</li>
+        <li>Inside the appearing iframe click the link <em>Log to the console</em></li>
       </ol>
       <ul>
-        <li><strong>Observed:</strong> There is no possibility to filter the different message types</li>
-        <li><strong>Expected:</strong> The different message types should be filterable like the requests inside the net panel</li>
+        <li><strong>Observed:</strong> The Console is not defined inside the dynamically created iframe</li>
+        <li><strong>Expected:</strong> When creating dynamic iframes the Console has to be injected into them</li>
       </ul>
     </div>
   </body>
