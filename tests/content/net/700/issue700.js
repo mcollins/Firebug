@@ -11,7 +11,7 @@ function runTest()
     {
         FBTestFirebug.enableNetPanel(function(win)
         {
-            win.wrappedJSObject.postRequest(function(request)
+            win.postRequest(function(request)
             {
                 var panelNode = FBTestFirebug.selectPanel("net").panelNode;
                 FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr");

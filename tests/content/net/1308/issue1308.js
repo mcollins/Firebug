@@ -9,7 +9,7 @@ function runTest()
     {
         FBTestFirebug.enableNetPanel(function(win)
         {
-            win.wrappedJSObject.runTest(checkCopyLocationWithParametersAction);
+            win.runTest(checkCopyLocationWithParametersAction);
         });
     });
 }

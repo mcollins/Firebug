@@ -12,7 +12,7 @@ function runTest()
             var panel = FW.FirebugChrome.selectPanel("console");
 
             // Run test implemented on the page.
-            win.wrappedJSObject.onMultipart(function(request)
+            win.onMultipart(function(request)
             {
                 // Expand XHR log in the Console panel.
                 var rows = FW.FBL.getElementsByClass(panel.panelNode,

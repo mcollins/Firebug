@@ -16,7 +16,7 @@ function runTest()
             // Let's load the issue1299.js file again. It's already
             // included within the test page so, it must be in 
             // Firefox cache now.
-            win.wrappedJSObject.runTest(function(request)
+            win.runTest(function(request)
             {
                 // OK, the script file must be in Firebug cache again.
                 var text = FW.FirebugContext.sourceCache.loadText(scriptURI);

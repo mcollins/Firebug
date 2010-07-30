@@ -35,7 +35,7 @@ function runTest()
 function breakOnMutation(win, type, buttonId, lineNo, callback)
 {
     var chrome = FW.Firebug.chrome;
-    var content = win.wrappedJSObject.document.getElementById("content");
+    var content = win.document.getElementById("content");
     var context = chrome.window.FirebugContext;
 
     FBTestFirebug.selectPanel("html");
@@ -52,6 +52,6 @@ function breakOnMutation(win, type, buttonId, lineNo, callback)
         callback();
     });
 
-    FBTest.click(win.wrappedJSObject.document.getElementById(buttonId));
+    FBTest.click(win.document.getElementById(buttonId));
     FBTest.sysout("html.breakpoints; " + buttonId + " button clicked");
 }

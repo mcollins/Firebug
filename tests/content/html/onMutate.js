@@ -168,7 +168,7 @@ function waitForHtmlMutation(chrome, tagName, object, callback)
 }
 function breakOnMutation(win, type, buttonId, lineNo, callback)
 {
-    var content = win.wrappedJSObject.document.getElementById("content");
+    var content = win.document.getElementById("content");
     var context = chrome.window.FirebugContext;
 
     waitForBreakInDebugger(chrome, lineNo, false, function(sourceRow)
@@ -179,6 +179,6 @@ function breakOnMutation(win, type, buttonId, lineNo, callback)
         callback();
     });
 
-    FBTest.click(win.wrappedJSObject.document.getElementById(buttonId));
+    FBTest.click(win.document.getElementById(buttonId));
     FBTest.sysout("html.breakpoints; " + buttonId + " button clicked");
 }

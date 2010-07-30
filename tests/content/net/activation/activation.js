@@ -49,7 +49,7 @@ function selectTabAndVerify(tab, callback)
 
     var win = tab.linkedBrowser.contentWindow;
     FBTest.progress("Selected Firefox tab "+win.location);
-    win.wrappedJSObject.runTest(function(request)
+    win.runTest(function(request)
     {
         var panel = FW.FirebugChrome.selectPanel("net");
         var netRow = FW.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");

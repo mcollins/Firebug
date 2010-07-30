@@ -6,7 +6,7 @@ function runTest(request)
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win)
         {
-            win.wrappedJSObject.runTest(function(request)
+            win.runTest(function(request)
             {
                 // Expand the test request with params
                 var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
@@ -18,7 +18,7 @@ function runTest(request)
                 var postBody = FW.FBL.getElementByClass(panelNode, "netInfoPostText");
                 if (FBTest.ok(postBody, "Post tab must exist."))
                 {
-                    FBTest.compare(win.wrappedJSObject.xml, postBody.textContent, 
+                    FBTest.compare(win.xml, postBody.textContent, 
                         "Post tab body content verified");
                 }
 

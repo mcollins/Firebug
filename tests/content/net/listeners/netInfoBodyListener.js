@@ -7,7 +7,7 @@ function runTest()
         FBTestFirebug.enableNetPanel(function(win)
         {
             NetInfoBody.addListener(netInfoBodyListener);
-            win.wrappedJSObject.runTest(function(request)
+            win.runTest(function(request)
             {
                 var panelNode = FBTestFirebug.selectPanel("net").panelNode;
                 var netRow = FW.FBL.getElementByClass(panelNode, "netRow", "category-xhr", 

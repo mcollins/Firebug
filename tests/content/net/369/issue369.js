@@ -9,13 +9,13 @@ function runTest()
         {
             var panel = FBTestFirebug.selectPanel("net");
 
-            win.wrappedJSObject.makeRequest1(onRequest);
-            win.wrappedJSObject.makeRequest2(onRequest);
-            win.wrappedJSObject.makeRequest3(onRequest);
-            win.wrappedJSObject.makeRequest4(onRequest);
+            win.makeRequest1(onRequest);
+            win.makeRequest2(onRequest);
+            win.makeRequest3(onRequest);
+            win.makeRequest4(onRequest);
             // xxxHonza: Not implemented yet.
-            //win.wrappedJSObject.makeRequest5(onRequest);
-            //win.wrappedJSObject.makeRequest6(onRequest);
+            //win.makeRequest5(onRequest);
+            //win.makeRequest6(onRequest);
         });
     });
 }

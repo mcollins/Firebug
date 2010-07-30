@@ -13,7 +13,7 @@ function runTest()
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win)
         {
-            win.wrappedJSObject.runTest(function(responses)
+            win.runTest(function(responses)
             {
                 FBTest.sysout("issue846.onRunTest", responses);
 

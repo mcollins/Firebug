@@ -155,6 +155,5 @@ function removeBreakpoint(win, callback)
 
 function pushButton(win, buttonId)
 {
-    var win = win.wrappedJSObject ? win.wrappedJSObject : win;
     FBTest.click(win.document.getElementById(buttonId));
 }

@@ -81,5 +81,5 @@ function executeTest(testId, lineNo, callback)
 
     // Execute a method with debuggger; keyword in it. This is done
     // asynchronously since it stops the execution context.
-    FBTest.click(win.wrappedJSObject.document.getElementById(testId));
+    FBTest.click(win.document.getElementById(testId));
 }

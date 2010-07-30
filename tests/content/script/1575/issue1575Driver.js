@@ -41,7 +41,7 @@ function runTest()
 
             FBTest.progress("Breakpoint Listener set, run the function");
             // Execute test method and hit the breakpoint.
-            win.setTimeout(win.wrappedJSObject.issue1575GlobalFunction);
+            win.setTimeout(win.issue1575GlobalFunction);
         });
     })
 }

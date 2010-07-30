@@ -46,6 +46,6 @@ function breakOnMutation(win, buttonId, lineNo, callback)
         callback();
     });
 
-    FBTest.click(win.wrappedJSObject.document.getElementById(buttonId));
+    FBTest.click(win.document.getElementById(buttonId));
     FBTest.sysout("html.breakpoints; " + buttonId + " button clicked");
 }

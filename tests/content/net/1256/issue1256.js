@@ -12,7 +12,7 @@ function runTest()
             FBTest.sysout("issue1256.onReload; " + win.location.href);
 
             // Run test implemented on the page.
-            win.wrappedJSObject.runTest(function(request)
+            win.runTest(function(request)
             {
                 FBTest.sysout("issue1256.response received: " + request.channel.URI.spec, request);
 

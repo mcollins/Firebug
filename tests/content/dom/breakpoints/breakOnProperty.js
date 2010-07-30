@@ -25,11 +25,11 @@ function runTest()
                     var doc = element.ownerDocument;
                     var testSuite = [];
                     testSuite.push(function(callback) {
-                        FBTest.progress("4 " + win.wrappedJSObject);
+                        FBTest.progress("4 " + win);
                         breakOnMutation(win, "changeProperty", 45, callback);
                     });
                     testSuite.push(function(callback) {
-                        FBTest.click(win.wrappedJSObject.document.getElementById("removeProperty"));
+                        FBTest.click(win.document.getElementById("removeProperty"));
                         callback();
                     });
                     testSuite.push(function(callback) {
@@ -77,7 +77,7 @@ function breakOnMutation(win, buttonId, lineNo, callback)
         callback();
     });
 
-    FBTest.click(win.wrappedJSObject.document.getElementById(buttonId));
+    FBTest.click(win.document.getElementById(buttonId));
 }
 
 function getPropertyRow(panel, propName)
