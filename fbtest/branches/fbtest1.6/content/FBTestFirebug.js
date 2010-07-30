@@ -140,16 +140,7 @@ this.sysout = function(text, obj)
         FBTrace.sysout(text, obj);
 };
 
-/**
- * Allow to load a script into the test driver (e.g. additional APIs for Firebug extensions).
- * @param {String} scriptURI
- * @param {Object} scope
- */
-this.loadScript = function(scriptURI, scope)
-{
-    var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader);
-    return loader.loadSubScript(FBTestApp.TestConsole.driverBaseURI + scriptURI, scope);
-};
+
 
 // ************************************************************************************************
 // APIs used by test harness (direct access to FBTestApp)
@@ -609,8 +600,8 @@ function waitForWindowLoad(browser, callback)
             // This is a workaround for missing wrappedJSObject property,
             // if the test case comes from http (and not from chrome)
             // xxxHonza: this is rather a hack, it should be removed if possible.
-            if (!win.wrappedJSObject)
-                win.wrappedJSObject = win;
+            //if (!win.wrappedJSObject)
+            //    win.wrappedJSObject = win;
 
             // The window is loaded, execute the callback now.
             callback(win);
