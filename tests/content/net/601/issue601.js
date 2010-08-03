@@ -10,10 +10,11 @@ function runTest()
     {
         FBTestFirebug.enableNetPanel(function(win)
         {
-            var date = (new Date()).toUTCString();
-            var postData = "date=" + date;
 
             FBTestFirebug.selectPanel("net");
+
+            var date = (new Date()).toUTCString();
+            var postData = "date=" + date;
 
             onRequestDisplayed(function(row)
             {
@@ -23,9 +24,14 @@ function runTest()
                 FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 
                 var responseBody = FW.FBL.getElementByClass(panelNode, "netInfoResponseText", "netInfoText");
+                var responseText = responseBody.textContent;
+
                 FBTest.ok(responseBody, "Response tab must exist.");
+
+                // If the 'date' above is near to the end of the minute, then the response can be in the next minute
+                // and the test will fail incorrectly.
                 if (responseBody)
-                    FBTest.compare(postData, responseBody.textContent, "Test response must match.");
+                    FBTest.compare(postData, responseText, "Test response must match.");
 
                 FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue601.DONE");
