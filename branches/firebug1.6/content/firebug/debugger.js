@@ -2914,12 +2914,25 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
 
         if (enabled)
         {
-            if (!this.context.jsDebuggerActive)
+            this.location = this.getDefaultLocation(this.context);
+
+            if (this.location && !this.context.jsDebuggerActive) // then we have a file, but debugger did not see it
             {
-                // Fill the panel node with a warning, the take it out if the user selects a sourceFile
-                var args = {
-                        pageTitle: $STR("Script Panel was inactive during page load"),
-                        suggestion: $STR("Reload to see all sources")
+                // Fill the panel node with a warning
+                var jsEnabled = Firebug.getPref("javascript", "enabled");
+                if (jsEnabled)
+                {
+                    var args = {
+                            pageTitle: $STR("Script Panel was inactive during page load"),
+                            suggestion: $STR("Reload to see all sources")
+                    }
+                }
+                else
+                {
+                    var args = {
+                            pageTitle: $STR("Javascript is not enabled"),
+                            suggestion: $STR("See Firefox > Tools > Options > Content > Enable Javascript")
+                    }
                 }
                 this.activeWarningTag = this.warningTag.replace(args, this.panelNode, this);
                 this.location = null;
@@ -2938,8 +2951,36 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
                     this.navigate(this.location);
 
                 this.restored = true;
+
+                if (!this.location)
+                {
+                    // Fill the panel node with a warning
+                    var jsEnabled = Firebug.getPref("javascript", "enabled");
+                    if (!jsEnabled)
+                    {
+                        var args = {
+                                pageTitle: $STR("Javascript is not enabled"),
+                                suggestion: $STR("See Firefox > Tools > Options > Content > Enable Javascript")
+                        }
+                    }
+                    else if (this.context.allScriptsWereFiltered)
+                    {
+                        var args = {
+                                pageTitle: $STR("Warning. All scripts were filtered"),
+                                suggestion: $STR("See Script Filter setting on tool bar or \'Show Chrome Sources Option\"")
+                        };
+                    }
+                    else  // they were not filtered, we just had none
+                    {
+                        var args = {
+                                pageTitle: $STR("No Javascript on this page"),
+                                suggestion: $STR("If <script> tags have a \"type\" attribute it should equal \"text/javascript\" or \"application/javascript\"'")
+                        }
+                    }
+                    this.activeWarningTag = this.warningTag.replace(args, this.panelNode, this);
+                }
             }
-            else // show default
+            else  // show default
                 this.navigate(this.location);
 
             var breakpointPanel = this.context.getPanel("breakpoints", true);
@@ -3198,14 +3239,7 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
         var allSources = sourceFilesAsArray(context.sourceFileMap);
 
         if (!allSources.length)
-        {
-            var noJSURL = "firebug:// Warning. No Javascript on this page";
-            var dummySourceFile = new Firebug.NoScriptSourceFile(context, noJSURL);
-            context.sourceCache.store(noJSURL, 'If <script> tags have a \"type\" attribute it should equal \"text/javascript\" or \"application/javascript\"');
-            context.addSourceFile(dummySourceFile);
-            allSources = sourceFilesAsArray(context.sourceFileMap);
-            return allSources;
-        }
+            return [];
 
         if (Firebug.showAllSourceFiles)
         {
@@ -3225,12 +3259,10 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
         }
 
         if (!list.length && allSources.length)
-        {
-            var allFilteredURL = "firebug:// Warning. All scripts were filtered";
-            var dummySourceFile = new Firebug.NoScriptSourceFile(context, allFilteredURL);
-            context.sourceCache.store(allFilteredURL, 'see Show Chrome Sources Option');
-            context.addSourceFile(dummySourceFile);
-        }
+            this.context.allScriptsWereFiltered = true;
+        else
+            delete this.context.allScriptsWereFiltered;
+
         if (FBTrace.DBG_SOURCEFILES)
             FBTrace.sysout("debugger.getLocationList enabledOnLoad:"+context.onLoadWindowContent+" all:"+allSources.length+" filtered:"+list.length, list);
         return list;
@@ -3308,6 +3340,9 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
     getDefaultLocation: function(context)
     {
         var sourceFiles = this.getLocationList();
+        if (!sourceFiles.length)
+            return null;
+
         if (context)
         {
             var url = context.getWindowLocation();
