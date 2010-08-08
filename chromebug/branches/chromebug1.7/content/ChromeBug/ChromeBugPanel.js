@@ -187,13 +187,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+safeGetWindowLocation(context.window) );
 
-        if (FirebugContext)
-            context.panelName = FirebugContext.panelName; // don't change the panel with the context in Chromebug
+        if (Firebug.currentContext)
+            context.panelName = Firebug.currentContext.panelName; // don't change the panel with the context in Chromebug
 
         Firebug.Chromebug.contextList.setCurrentLocation(context);
 
         Firebug.chrome.setFirebugContext(context);  // we've overridden this one to prevent Firebug code from doing...
-        FirebugContext = context;                   // ...this
+        Firebug.currentContext = context;                   // ...this
 
         dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
 
@@ -665,7 +665,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         var context = Firebug.Chromebug.getContextByGlobal(global);
 
-        if (FBTrace.DBG_CHROMEBUG)
+        if (FBTrace.DBG_CHROMEBUG && FBTrace.DBG_ACTIVATION)
             FBTrace.sysout("--------------------------- getOrCreateContext got context: "+(context?context.getName():"to be created as "+name));
         if (!context)
             context = Firebug.Chromebug.createContext(global, name);
@@ -716,7 +716,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         if (FBTrace.DBG_CHROMEBUG)
         {
                 try {
-                    FBTrace.sysout("Firebug.Chromebug.Module.initContext "+this.dispatchName+" context: "+context.uid+", "+context.getName()+" FirebugContext="+(FirebugContext?FirebugContext.getName():"undefined")+"\n");
+                    FBTrace.sysout("Firebug.Chromebug.Module.initContext "+this.dispatchName+" context: "+context.uid+", "+context.getName()+" Firebug.currentContext="+(Firebug.currentContext?Firebug.currentContext.getName():"undefined")+"\n");
                     //window.dump(getStackDump());
                 } catch(exc) {
                     FBTrace.sysout("Firebug.Chromebug.Module.initContext "+exc+"\n");
@@ -729,7 +729,7 @@ Firebug.Chromebug = extend(Firebug.Module,
          if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Firebug.Chromebug.Module.loadedContext context: "+context.getName()+"\n");
     },
-    reattachContext: function(browser, context) // FirebugContext from chrome.js
+    reattachContext: function(browser, context) // Firebug.currentContext from chrome.js
     {
         // this is called after the chromebug window has opened.
         if (FBTrace.DBG_CHROMEBUG)
@@ -813,10 +813,10 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-        	var startupObserverClass =  Cc["@getfirebug.com/chromebug-startup-observer;1"];
-        	var startupObserverInstance = startupObserverClass.createInstance();
-        	
-        	var startupObserver = startupObserverInstance.wrappedJSObject;
+            var startupObserverClass =  Cc["@getfirebug.com/chromebug-startup-observer;1"];
+            var startupObserverInstance = startupObserverClass.createInstance();
+
+            var startupObserver = startupObserverInstance.wrappedJSObject;
 
             var jsdState = startupObserver.getJSDState();
             if (!jsdState || !jsdState._chromebug)
@@ -984,9 +984,9 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     onStop: function(context, frame, type, rv)
     {
-        // FirebugContext is not context. Maybe this does not happen in firebug because the user always starts
-        // with an active tab with FirebugContext and cause the breakpoints to land in the default context.
-        if (FirebugContext != context)
+        // Firebug.currentContext is not context. Maybe this does not happen in firebug because the user always starts
+        // with an active tab with Firebug.currentContext and cause the breakpoints to land in the default context.
+        if (Firebug.currentContext != context)
             Firebug.showContext(context.browser, context);
 
         var stopName = getExecutionStopNameFromType(type);
@@ -1026,8 +1026,8 @@ Firebug.Chromebug = extend(Firebug.Module,
                         }
                         catch(exc)
                         {
-                        	if(FBTrace.DBG_ERRORS)
-                        		FBTrace.sysout("ChromeBugPanel.onStop suppressing context FAILED:"+exc, exc);
+                            if(FBTrace.DBG_ERRORS)
+                                FBTrace.sysout("ChromeBugPanel.onStop suppressing context FAILED:"+exc, exc);
                         }
                     }
                 }
@@ -1128,7 +1128,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var isAStackFrame = hasClass(event.target, "stackFrameLink");
                 if (isAStackFrame)
                 {
-                    var context = FirebugContext;
+                    var context = Firebug.currentContext;
                     var info = getAncestorByClass(event.target, "messageInfoBody");
                     var message = info.repObject;
                     if (!message && info.wrappedJSObject)
@@ -1423,24 +1423,24 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     onClickStatusIcon: function()
     {
-        Firebug.Chromebug.contextAnalysis(FirebugContext);
+        Firebug.Chromebug.contextAnalysis(Firebug.currentContext);
     },
 
     contextAnalysis: function(context)
     {
-        if (!FirebugContext)
+        if (!Firebug.currentContext)
             return;
-        Firebug.Console.openGroup("Context Analysis", FirebugContext)
-        Firebug.Console.log(Firebug.Chromebug.contexts, FirebugContext);
-        Firebug.Console.log(Firebug.Chromebug.jsContexts, FirebugContext);
+        Firebug.Console.openGroup("Context Analysis", Firebug.currentContext)
+        Firebug.Console.log(Firebug.Chromebug.contexts, Firebug.currentContext);
+        Firebug.Console.log(Firebug.Chromebug.jsContexts, Firebug.currentContext);
         var ejs = fbs.eachJSContext();
         if (ejs)
-            Firebug.Console.log(ejs, FirebugContext);
+            Firebug.Console.log(ejs, Firebug.currentContext);
         if (context)
-            Firebug.Console.log(context, FirebugContext);
+            Firebug.Console.log(context, Firebug.currentContext);
         else
-            Firebug.Console.log(FirebugContext, FirebugContext);
-        Firebug.Console.closeGroup(FirebugContext, true);
+            Firebug.Console.log(Firebug.currentContext, Firebug.currentContext);
+        Firebug.Console.closeGroup(Firebug.currentContext, true);
     },
 });
 
@@ -1706,7 +1706,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
         if (pkg)
         {
             Firebug.Chromebug.PackageList.setCurrentLocation(pkg);
-            Firebug.Chromebug.saveState(FirebugContext);
+            Firebug.Chromebug.saveState(Firebug.currentContext);
         }
         else
         {
@@ -1789,13 +1789,13 @@ Firebug.Chromebug.contextList =
         var context = event.currentTarget.repObject;
         if (context)
         {
-            if (!FirebugContext)
-                FirebugContext = context;
+            if (!Firebug.currentContext)
+                Firebug.currentContext = context;
 
             Firebug.Chromebug.selectContext(context);
 
             if (FBTrace.DBG_LOCATIONS)
-                FBTrace.sysout("Chromebug.contextList.onSelectLocation context:"+ context.getName()+" FirebugContext:"+FirebugContext.getName());
+                FBTrace.sysout("Chromebug.contextList.onSelectLocation context:"+ context.getName()+" Firebug.currentContext:"+Firebug.currentContext.getName());
 
             event.currentTarget.location = context;
 
@@ -1895,7 +1895,7 @@ Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
 
     onViewportChange: function(sourceLink)
     {
-        var context = FirebugContext;
+        var context = Firebug.currentContext;
         Firebug.Chromebug.saveState(context);
     },
 });
