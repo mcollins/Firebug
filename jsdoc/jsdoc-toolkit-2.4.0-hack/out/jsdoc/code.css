@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  overflow: auto;
+}
+.STRN { color: #080; }
+.KEYW { color: #008; }
+.COMM { color: #800; }
+.PUNC { color: #660; }
+.REGX { color: #606; }
+.NUMB { color: #606; }
+pre {
+  border: none;
+  font: 12px Monospace;
+  margin-left: 0;
+  padding: 2px 2px 2px 5px;
+  border-left: 56px solid #ddd;
+}
+.lineNumbers {
+  font: 12px Monospace;
+  position: absolute;
+  width: 40px;
+  text-align: right;
+  top: 0;
+  left: 0;
+  
+  border-right: 2px solid #ccc; 
+  color: #fff; 
+  font-style: normal; 
+  padding: 2px 7px;
+   
+  background-image: -moz-linear-gradient(right, #ddd, #bbb); /* FF3.6 */
+  background-image: -webkit-gradient(linear,right top,left top,color-stop(0, #ddd),color-stop(1, #bbb)); /* Saf4+, Chrome */
+            filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#ddd', EndColorStr='#bbb', GradientType='1'); /* IE6,IE7 */
+        -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#ddd', EndColorStr='#bbb', GradientType='1')"; /* IE8 */
+}
+.lineNumbers a, .lineNumbers a:visited { 
+  color: #777; 
+  text-decoration: none;
+}
+#sourceSpacer {
+  height: 768px; /* space at the bottom so we can #link to elements there */
+  position: relative;
+}
+
+pre a, pre a:visited { 
+  color: #555;
+  background: #fff5ec; 
+  text-decoration: none;
+}
