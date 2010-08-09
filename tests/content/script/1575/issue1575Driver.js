@@ -7,14 +7,19 @@ function runTest()
         FBTestFirebug.enableScriptPanel(function()
         {
             FBTestFirebug.selectPanel("script");
+            
+            
             FBTest.progress("reloaded, now set breakpoint");
+            
             var panel = FW.Firebug.chrome.getSelectedPanel();
 
             FBTest.compare("script", panel.name, "Got selected panel "+panel.name);
 
             var lineNo = 3;
-            panel.toggleBreakpoint(lineNo);
 
+            FBTest.Firebug.selectSourceLine(basePath + "script/1575/issue1575.js", lineNo, "js")
+            
+            panel.toggleBreakpoint(lineNo);
             FBTest.progress("toggled breakpoint on line "+lineNo);
 
             // use chromebug to see the elements that make up the row
