@@ -256,7 +256,7 @@ FBTestApp.TestRunner = extend(new Firebug.Listener(),
         var testURL = test.path;
         if (/\.js$/.test(testURL))  // then the js needs a wrapper
         {
-        	testURL = this.wrapJS(testURL); // a data url with script tags for FBTestFirebug.js and the test.path
+            testURL = this.wrapJS(testURL, FBTestApp.TestConsole.testIncludes); // a data url with script tags for FBTestFirebug.js and the test.path
             // Load the empty test frame
             this.browser.loadURI(testURL);
         }
@@ -488,14 +488,18 @@ FBTestApp.TestRunner = extend(new Firebug.Listener(),
         }
     },
 
-    wrapJS: function(jsURL)
+    wrapJS: function(jsURL, scriptIncludes)
     {
         const wrapperURL = "chrome://fbtest/content/wrapAJSFile.html";
         if (!this.wrapAJSFile)
             this.wrapAJSFile = getResource(wrapperURL);
 
+        scriptIncludes = scriptIncludes.map(function(src) {
+            src = FBTestApp.TestConsole.driverBaseURI + src;
+            return "<script type=\"application/x-javascript\" src=\"" + src + "\"></script>";
+        });
         var wrapAJSFile = new String(this.wrapAJSFile);
-        var temp = wrapAJSFile.replace("__TestDriverURL__", jsURL);
+        var temp = wrapAJSFile.replace("__TestIncludeURLs__", scriptIncludes.join("")).replace("__TestDriverURL__", jsURL);
 
         var testURL = getDataURLForContent(temp, wrapperURL);
         if (FBTrace.DBG_FBTEST)

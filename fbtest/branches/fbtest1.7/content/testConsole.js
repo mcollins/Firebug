@@ -360,6 +360,12 @@ FBTestApp.TestConsole =
         else
             this.testCasePath = "https://getfirebug.com/tests/content/";
 
+        if (win.testIncludes) {
+            this.testIncludes = win.testIncludes;
+        } else {
+            this.testIncludes = [];
+        }
+
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + this.driverBaseURI +
                 ", serverURI " + this.testCasePath);

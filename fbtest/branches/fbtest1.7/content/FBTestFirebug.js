@@ -140,8 +140,6 @@ this.sysout = function(text, obj)
         FBTrace.sysout(text, obj);
 };
 
-
-
 // ************************************************************************************************
 // APIs used by test harness (direct access to FBTestApp)
 
