@@ -532,6 +532,7 @@ var fbs =
             dispatch(debuggers, "onToggleBreakpoint", [url, lineNo, false, bp]);
             fbs.saveBreakpoints(url);
         }
+        return bp;
     },
 
     enableBreakpoint: function(url, lineNo)
@@ -622,11 +623,17 @@ var fbs =
 
             var urlBreakpoints = fbs.getBreakpoints(url);
 
-            while(urlBreakpoints && urlBreakpoints.length)
+            if (FBTrace.DBG_FBS_BP)
+                FBTrace.sysout("clearAllBreakpoints "+url+" urlBreakpoints: "+
+                    (urlBreakpoints?urlBreakpoints.length:"null"));
+
+            if (!urlBreakpoints)
+                return false;
+
+            for(var ibp = 0; ibp < urlBreakpoints.length; ibp++)
             {
-                var bp = urlBreakpoints[0];  // this one will be spliced out each time
+                var bp = urlBreakpoints[ibp];
                 this.clearBreakpoint(url, bp.lineNo);
-                var urlBreakpoints = fbs.getBreakpoints(url);
             }
          }
     },
@@ -1020,7 +1027,9 @@ var fbs =
             fbs.pauseDepth--;
             fbs.hookScripts();
 
-            var depth = jsd.unPause();
+            if(jsd.pauseDepth)
+                var depth = jsd.unPause();
+
             var active = fbs.isJSDActive();
 
 

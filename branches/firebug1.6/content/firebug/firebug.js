@@ -280,7 +280,7 @@ top.Firebug =
 
             "menu_inspectElement", "menu_profileScript", "menu_focusCommandLine",
             "menu_focusFirebugSearch", "Firebug_About",
-            
+
             "fbPanelBar2-panelTabs", "fbWindowButtons", "fbPanelBar1-innerToolbar", "fbLocationList",
 
             /* browserOverlay.xul */
@@ -1624,6 +1624,9 @@ top.Firebug =
         }
     },
 
+    /*
+     * The child node that has a repObject
+     */
     getRepNode: function(node)
     {
         for (var child = node; child; child = child.parentNode)
@@ -2746,7 +2749,7 @@ Firebug.ActivablePanel = extend(Firebug.Panel,
         if (type != Ci.nsIPrefBranch.PREF_BOOL)
         {
             if (FBTrace.DBG_ERRORS || FBTrace.DBG_ACTIVATION)
-                FBTrace.sysout("firebug.ActivablePanel.setEnabled FAILS not a PREF_BOOL: " + type);
+                FBTrace.sysout("firebug.ActivablePanel.setEnabled FAILS "+prefDomain+".enableSites"+" not a PREF_BOOL: " + type);
             return;
         }
 
@@ -2968,6 +2971,17 @@ Firebug.Rep = domplate(
     supportsObject: function(object, type)
     {
         return false;
+    },
+
+    highlightObject: function(object, context)
+    {
+        var realObject = this.getRealObject(object, context);
+        if (realObject)
+            Firebug.Inspector.highlightObject(realObject, context);
+    },
+
+    unhighlightObject: function(object, context) {
+        Firebug.Inspector.highlightObject(null);
     },
 
     inspectObject: function(object, context)
