@@ -101,6 +101,9 @@ FBTestApp.TestConsole =
             // xxxHonza: initialization would deserve to be done throug a dispatched event.
             FBTestApp.TestWindowLoader.initialize();
 
+            // Display the current version.
+            window.document.title = "Firebug Test Console " + this.getVersion();
+
             this.notifyObservers(this, "fbtest", "initialize");
 
             // Load all tests from the default test list file (testList.html).
@@ -114,7 +117,8 @@ FBTestApp.TestConsole =
             $("testCaseUrlBar").testURL = this.testCasePath;
 
             if (FBTrace.DBG_FBTEST)
-                FBTrace.sysout("fbtest.TestConsole.initialize; " + this.testCasePath);
+                FBTrace.sysout("fbtest.TestConsole.initialize; " + this.getVersion() + ", " +
+                    this.testCasePath);
 
             gFindBar = $("FindToolbar");
         }
