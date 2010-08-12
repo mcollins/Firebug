@@ -5,10 +5,12 @@
 </head>
 <body>
 
-<h1>Issue #2914</h1>
+<h1>Issue #3292 and Issue #3327</h1>
 
 <p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=3292">Issue #3292</a>
-- <span class="h3">console not defined in iframe</span>.
+- <span class="h3">console not defined in iframe</span> and
+<a href="http://code.google.com/p/fbug/issues/detail?id=3327">Issue #3327</a>
+- <span class="h3"> Issue 3327:  Firebug Console token changed! never stops outputting</span>.
 <br/>
 <i>johnjbarton@johnjbarton.com</i>
 </p>
@@ -25,6 +27,7 @@
 <script type="text/javascript">
 window.console.log("parent log");
 </script>
+<script type="text/javascript" src="js/issue3292-included.js"></script>
 
 <iframe src="./issue3292-innerFrame.html" height="300"></iframe>
 </script>
