@@ -145,7 +145,7 @@ FBTestApp.TestConsole =
 
         // 3) If no list is specified, use the default from currently installed Firebug.
         if (!defaultTestList)
-            defaultTestList = "http://getfirebug.com/tests/content/testlists/firebug1.6.html";
+            defaultTestList = "http://getfirebug.com/tests/content/testlists/firebug1.7.html";
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestConsole.getDefaultTestList; " + defaultTestList);
