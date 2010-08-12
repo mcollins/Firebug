@@ -15,6 +15,12 @@ function runTest()
             FBTest.compare(textNodes[0].textContent, "parent log",
             "parent log must be displayed");
 
+            FBTest.compare(textNodes[1].textContent, "included in iframe",
+            "included in iframe must be displayed");
+
+            FBTest.compare(textNodes[1].textContent, "included in iframe",
+            "included in iframe must be displayed");
+
             FBTest.compare(textNodes[1].textContent, "iframe log",
             "iframe log must be displayed");
 
