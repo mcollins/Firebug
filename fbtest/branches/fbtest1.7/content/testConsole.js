@@ -592,12 +592,17 @@ FBTestApp.TestConsole =
             if (FBTestApp.defaultTest)
             {
                 var test = FBTestApp.TestConsole.getTest(FBTestApp.defaultTest);
-                if (FBTrace.DBG_FBTEST && !test)
-                    FBTrace.sysout("fbtest.autoRun; Test from command line doesn't exist: " +
-                        FBTestApp.defaultTest);
 
                 if (test)
-                    FBTestApp.TestRunner.runTests([test], goQuitApplication);
+                {
+                    FBTestApp.TestRunner.runTests([test]);
+                }
+                else
+                {
+                    throw new Error("fbtest.autoRun; Test from command line doesn't exist: " +
+                            FBTestApp.defaultTest);
+                }
+
             }
             else
             {
