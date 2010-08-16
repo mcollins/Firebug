@@ -1,4 +1,1 @@
-function issue1299()
-{
-    return "issue1299";
-}
+function issue1299() { return "issue1299"; }
