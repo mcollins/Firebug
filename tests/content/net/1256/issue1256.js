@@ -7,24 +7,19 @@ function runTest()
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win) 
         {
-            FBTestFirebug.selectPanel("net");
-
             FBTest.sysout("issue1256.onReload; " + win.location.href);
 
+            var options = {
+                tagName: "tr",
+                classes: "netRow category-xhr hasHeaders loaded"
+            };
+
             // Run test implemented on the page.
-            win.runTest(function(request)
+            FBTest.waitForDisplayedElement("net", options, function(netRow)
             {
-                FBTest.sysout("issue1256.response received: " + request.channel.URI.spec, request);
+                FBTest.sysout("issue1256.response received");
 
-                // Expand the test request with params
-                var panel = FW.FirebugChrome.selectPanel("net");
-                var netRow = FW.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr",
-                    "hasHeaders", "loaded");
-
-                FBTest.ok(netRow, "There must be just one xhr request.");
-                if (!netRow)
-                    return FBTestFirebug.testDone();
-
+                // Expand net entry.
                 FBTest.click(netRow);
 
                 // Activate Params tab.
@@ -43,6 +38,8 @@ function runTest()
 
                 FBTestFirebug.testDone("issue1256.DONE");
             });
+
+            FBTest.click(win.document.getElementById("testButton"));
         });
     });
 }
