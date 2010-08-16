@@ -1,7 +1,7 @@
 function runTest()
 {
-    FBTest.sysout("console.assert.START");
-    FBTest.setPref("service.filterSystemURLs", true);
+    FBTest.sysout("console.assertCB.START");
+    FBTest.setPref("service.filterSystemURLs", false);
 
     FBTest.openNewTab(basePath + "console/api/assert.html", function(win)
     {
@@ -12,7 +12,7 @@ function runTest()
             FBTest.waitForDisplayedElement("console", config, function(row)
             {
                 verifyConsoleUI(config);
-                FBTest.testDone("console.assert.DONE");
+                FBTest.testDone("console.assertCB.DONE");
             });
 
             // Execute test implemented on the test page.
@@ -31,10 +31,10 @@ function verifyConsoleUI(config)
         return;
 
     // Verify the first assert message.
-    var reExpectedLog1 = /negative\s*console.assert\(false,\s*\"negative\"\);\\r\\nassert.html\s*\(line\s*42\)/
+    var reExpectedLog1 = /negative\s*onExecuteTest\(\);\\n1\s*\(line\s*2\)/;
     if (!FBTest.compare(reExpectedLog1, rows[0].textContent,
         "The log must be something like as follows: " +
-        "negative    console.assert(false, \"negative\");\r\nassert.html (line 42)"))
+        "negative        onExecuteTest();\n1 (line 2)"))
         return;
 
     // Verify the second assert message.

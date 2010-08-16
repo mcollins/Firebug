@@ -1,7 +1,7 @@
 function runTest()
 {
-    FBTest.sysout("net.breakpoints; START");
-    FBTest.setPref("service.filterSystemURLs", true);
+    FBTest.sysout("net.breakpoints.CB; START");
+    FBTest.setPref("service.filterSystemURLs", false);
 
     FBTestFirebug.openNewTab(basePath + "net/breakpoints/breakOnXHR.html", function(win)
     {
@@ -16,13 +16,13 @@ function runTest()
             addBreakpoint(win, callback);
         });
         testSuite.push(function(callback) {
-            breakOnXHR(win, 43, callback);
+            breakOnXHR(win, 2, callback);
         });
         testSuite.push(function(callback) {
             setCondition(win, callback);
         });
         testSuite.push(function(callback) {
-            breakOnXHR(win, 43, callback);
+            breakOnXHR(win, 2, callback);
         });
         testSuite.push(function(callback) {
             removeBreakpoint(win, callback);
@@ -31,7 +31,7 @@ function runTest()
         // Reload window to activate debugger and run all tests.
         FBTestFirebug.reload(function(win) {
             FBTestFirebug.runTestSuite(testSuite, function() {
-                FBTestFirebug.testDone("dom.breakpoints; DONE");
+                FBTestFirebug.testDone("dom.breakpoints.CB; DONE");
             });
         })
     });
@@ -42,7 +42,7 @@ function runTest()
 
 function addBreakpoint(win, callback)
 {
-    FBTest.sysout("net.breakpoints; addBreakpoint");
+    FBTest.sysout("net.breakpoints.CB; addBreakpoint");
 
     var panel = FBTestFirebug.selectPanel("net");
 
@@ -56,7 +56,7 @@ function addBreakpoint(win, callback)
     // Wait till the XHR request is visible
     recognizer.onRecognize(function(row)
     {
-        FBTest.sysout("net.breakpoints; XHR visible");
+        FBTest.sysout("net.breakpoints.CB; XHR visible");
 
         if (row.repObject)
         {
@@ -76,12 +76,12 @@ function addBreakpoint(win, callback)
 
     pushButton(win, "executeRequest1");
 
-    FBTest.sysout("net.breakpoints; XHR executed");
+    FBTest.sysout("net.breakpoints.CB; XHR executed");
 }
 
 function createBreakpoint(panel, repObject, callback)
 {
-    FBTest.sysout("net.breakpoints; createBreakpoint", repObject);
+    FBTest.sysout("net.breakpoints.CB; createBreakpoint", repObject);
 
     var bpUrl = basePath + "net/breakpoints/process1.php";
     var breakpoints = panel.context.netProgress.breakpoints;
@@ -100,7 +100,7 @@ function createBreakpoint(panel, repObject, callback)
 
 function breakOnXHR(win, lineNo, callback)
 {
-    FBTest.sysout("net.breakpoints; breakOnXHR");
+    FBTest.sysout("net.breakpoints.CB; breakOnXHR");
 
     FBTestFirebug.selectPanel("script");
 
@@ -119,7 +119,7 @@ function breakOnXHR(win, lineNo, callback)
 
 function setCondition(win, callback)
 {
-    FBTest.progress("net.breakpoints; setCondition");
+    FBTest.progress("net.breakpoints.CB; setCondition");
 
     var panel = FBTestFirebug.selectPanel("net");
     var bpUrl = basePath + "net/breakpoints/process1.php";
@@ -134,13 +134,13 @@ function setCondition(win, callback)
 
 function removeBreakpoint(win, callback)
 {
-    FBTest.progress("net.breakpoints; removeBreakpoint");
+    FBTest.progress("net.breakpoints.CB; removeBreakpoint");
 
     var panel = FBTestFirebug.selectPanel("net");
 
     var row = FW.FBL.getElementByClass(panel.panelNode, "netRow",
         "category-xhr", "hasHeaders", "loaded");
-    FBTest.sysout("net.breakpoints; removeBreakpoint, row", row.repObject);
+    FBTest.sysout("net.breakpoints.CB; removeBreakpoint, row", row.repObject);
 
     // Remove breakpoint
     panel.breakOnRequest(row.repObject);

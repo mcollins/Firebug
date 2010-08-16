@@ -25,6 +25,7 @@ a new breakpoint for this request.</li>
 <li>Left click on the breakpoint to open a condition editor and set
 the condition to <span style="color:green">param == 1</span>.</li>
 <li>Click the <span style="color:green">Execute Test</span> button again.</li>
+</ol>
 <br/>
 <i>Add #8, the same request is there twice and so is the breakpoint. Just pick
 one of them.</i>
@@ -50,6 +51,10 @@ function executePostRequest(value)
     request.send(value);
 }
 </script>
-  
+
+<br/><br/>
+<i>Make sure <b>extensions.firebug.service.filterSystemURLs</b> preference is set to true.
+If not, set it and reload the page.</i>
+
 </body>
 </html>
