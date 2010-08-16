@@ -49,11 +49,18 @@ function selectTabAndVerify(tab, callback)
 
     var win = tab.linkedBrowser.contentWindow;
     FBTest.progress("Selected Firefox tab "+win.location);
-    win.runTest(function(request)
+
+    var options = {
+        tagName: "tr",
+        classes: "netRow category-xhr hasHeaders loaded"
+    };
+
+    // Asynchronously wait for the request beeing displayed.
+    FBTest.waitForDisplayedElement("net", options, function(netRow)
     {
-        var panel = FW.FirebugChrome.selectPanel("net");
-        var netRow = FW.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
         FBTest.ok(netRow, "There must be one xhr request.");
         callback();
     });
+
+    FBTest.click(win.document.getElementById("testButton"));
 }
