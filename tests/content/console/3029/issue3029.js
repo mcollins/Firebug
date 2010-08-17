@@ -1,3 +1,4 @@
+var testProp = "0123456789012345678901234567890123456789012345678901234567890123456789";
 function runTest()
 {
     FBTest.sysout("issue3029.START");
@@ -14,7 +15,7 @@ function runTest()
                 FBTest.click(label);
 
                 var value = row.querySelector(".memberValueCell");
-                FBTest.compare("\"" + win.oTest.myProperty + "\"",
+                FBTest.compare("\"" + testProp + "\"",
                     value.textContent, "Full value must be displayed now.");
 
                 FBTest.testDone("issue3029.DONE");
