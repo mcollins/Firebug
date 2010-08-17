@@ -49,13 +49,14 @@ function onExecuteTest()
 
 function onOpenPopup()
 {
-    this.popup = window.open("issue2948-popup.html", "bug", "width=500");
+    var popup = window.open("issue2948-popup.html", "bug", "width=500");
 
     // Catch load event and notify possible listener (test driver).
-    this.popup.addEventListener("load", function()
+    popup.addEventListener("load", function()
     {
         var event = document.createEvent("Events");
         event.initEvent("popup-loaded", true, false);
+        document.setUserData("popup-window", popup, null);
         document.dispatchEvent(event)
     }, false);
 }

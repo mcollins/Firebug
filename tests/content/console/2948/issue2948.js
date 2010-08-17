@@ -25,6 +25,8 @@ function runTest()
 
 function executeResponse(callback, win)
 {
+    FBTest.progress("XHR is going to be executed.");
+
     // Wait for request being displayed in the Console panel.
     FBTestFirebug.waitForDisplayedElement("console", null, function(row)
     {
@@ -43,7 +45,11 @@ function openPopup(callback, win)
         FBTest.progress("Great, the popup is loaded");
 
         // close the popup window.
-        win.popup.close();
+        var popup = win.document.getUserData("popup-window");
+        popup.close();
+
+        FBTest.progress("The popup should be closed now");
+
         callback();
     }, true);
 
