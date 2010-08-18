@@ -9,7 +9,7 @@ function runTest()
         {
             var panelNode = FW.FirebugChrome.selectPanel("console").panelNode;
 
-            var textNodes = panelNode.querySelectorAll(".objectBox.objectBox-text");
+            var textNodes = panelNode.querySelectorAll(".logRow-log .objectBox.objectBox-text");
             if (FBTest.compare(textNodes.length, 4, "There must be 4 logs."))
             {
                 // Verify the log content
