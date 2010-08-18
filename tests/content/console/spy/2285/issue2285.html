@@ -13,7 +13,7 @@
 <i>Jan Odvarko, odvarko@gmail.com</i>
 </p>
 
-<i>You need Firefox 3.6 to pass this test.</i>
+<i>You need at least Firefox 3.6 to pass this test.</i>
 
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
@@ -29,11 +29,10 @@
 </li>
 </ol>
 
-<button onclick="onMultipart(null)">Execute Test</button>
-
+<button id="testButton" onclick="onMultipart()">Execute Test</button>
 
 <script type="text/javascript">
-function onMultipart(callback)
+function onMultipart()
 {
     var content = document.getElementById("content");
 
@@ -49,8 +48,12 @@ function onMultipart(callback)
         if (request.readyState == 4 && request.status == 200)
         {
             content.innerHTML = ++counter;
-            if (counter == 4 && callback)
-                setTimeout(function() { callback(request); }, 100);
+            if (counter == 4)
+            {
+                var event = document.createEvent("Events");
+                event.initEvent("test-done", true, false);
+                document.dispatchEvent(event);
+            }
         }
     }
 

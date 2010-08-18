@@ -2,9 +2,6 @@ function runTest()
 {
     FBTest.sysout("issue2285.START");
 
-    var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
-    FBTestFirebug.setPref("showXMLHttpRequests", true);
-
     FBTestFirebug.openNewTab(basePath + "console/spy/2285/issue2285.html", function(win)
     {
         FBTestFirebug.enableConsolePanel(function()
@@ -12,7 +9,7 @@ function runTest()
             var panel = FW.FirebugChrome.selectPanel("console");
 
             // Run test implemented on the page.
-            win.onMultipart(function(request)
+            win.document.addEventListener("test-done", function(event)
             {
                 // Expand XHR log in the Console panel.
                 var rows = FW.FBL.getElementsByClass(panel.panelNode,
@@ -40,9 +37,10 @@ function runTest()
                 }
 
                 // Finish test
-                FBTestFirebug.setPref("showXMLHttpRequests", prefOrigValue);
                 FBTestFirebug.testDone("issue2285.DONE");
-            });
+            }, false);
+
+            FBTest.click(win.document.getElementById("testButton"));
         });
     });
 }
