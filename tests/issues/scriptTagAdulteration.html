@@ -46,7 +46,16 @@ function removeAppendTarget()
 window.addEventListener('load', removeAppendTarget, false);
 
 </script>
-
+<script>
+oldWrite = document.write;
+document.write = function(msg) { console.log(msg); }
+</script>
+<script>
+document.write("I command you!");
+</script>
+<script>
+document.write = oldWrite;
+</script>
 </head>
 <body>
 <h1>Demo script tag adulteration. Best viewed with Firebug ;-)</h1>
