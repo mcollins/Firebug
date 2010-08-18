@@ -21,18 +21,15 @@
     progress spinner stoppped.</li>
 </ol>
 
-<button onclick="onExecuteTest()">Execute Test</button>
+<button id="testButton" onclick="onExecuteTest()">Execute Test</button>
 
 <script type="text/javascript">
-function onExecuteTest(callback)
+function onExecuteTest()
 {
     var request = new XMLHttpRequest();
     request.open("POST", "issue2462.php", true);
     request.send(null);
     request.abort();
-
-    if (callback)
-        callback();
 }
 </script>
   
