@@ -6,6 +6,8 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
+            // Don't forget to select the console panel (so the Clear button is visible).
+            FBTest.selectPanel("console");
             FBTest.clearConsole();
 
             var config = {tagName: "div", classes: "logRow", counter: 2};
