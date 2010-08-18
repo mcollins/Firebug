@@ -28,15 +28,20 @@
 <i>Read only property can't be edited in Firebug (using double click).</i>
 
 <script type="text/javascript">
+var _private2 = "a property with getter & setter";
+var _private3 = "value for prop3";
+
 this.__defineGetter__("prop1", function test1() {
     return "read only getter (can't be edited), dimmed";
 });
 this.__defineGetter__("prop2", function test2() {
-    return "a property with getter & setter";
+    return _private2;
 });
-this.__defineSetter__("prop2", function test2() {
+this.__defineSetter__("prop2", function test2(v) {
+    _private2 = v;
 });
-this.__defineSetter__("prop3", function test3() {
+this.__defineSetter__("prop3", function test3(v) {
+    _private3 = v;
 });
 var prop4 = "a simple property";
 var myFunction = function justAFunction()
