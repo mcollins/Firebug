@@ -61,7 +61,7 @@ const prefNames =  // XXXjjb TODO distribute to modules
     "largeCommandLine", "textWrapWidth", "openInWindow", "showErrorCount",
     "activateSameOrigin", "allPagesActivation", "hiddenPanels",
     "panelTabMinWidth", "sourceLinkLabelWidth", "currentVersion",
-    "useDefaultLocale", "knownIssues40Displayed",
+    "useDefaultLocale",
 
     // Search
     "searchCaseSensitive", "searchGlobal", "searchUseRegularExpression",
@@ -72,6 +72,9 @@ const prefNames =  // XXXjjb TODO distribute to modules
     "showChromeErrors", "showChromeMessages", "showExternalErrors",
     "showXMLHttpRequests", "showNetworkErrors", "tabularLogMaxHeight",
     "consoleFilterTypes",
+
+    // CommandLine
+    "commandLineShowCompleterPopup",
 
     // HTML
     "showFullTextNodes", "showCommentNodes",
@@ -126,6 +129,7 @@ var activeContexts = [];
 var activableModules = [];
 var extensions = [];
 var panelTypes = [];
+var earlyRegPanelTypes = []; // See Firebug.registerPanelType for more info
 var reps = [];
 var defaultRep = null;
 var defaultFuncRep = null;
@@ -194,7 +198,14 @@ top.Firebug =
         else if (FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("firebug.initialize FBL: " + FBL);
 
+        // Till now all registered panels (too soon) have been inserted into earlyRegPanelTypes.
+        var tempPanelTypes = earlyRegPanelTypes;
+        earlyRegPanelTypes = null;
+
         FBL.initialize();  // TODO FirebugLoader
+
+        // Append early registered panels at the end.
+        panelTypes.push.apply(panelTypes, tempPanelTypes);
 
         const tabBrowser = $("content");
         if (tabBrowser) // TODO TabWatcher
@@ -626,6 +637,29 @@ top.Firebug =
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Registration
 
+    /*
+     * Set a default value for a preference into the firebug preferences list.
+     * @param name preference name, possibly dot segmented, will be stored under extensions.firebug.<name>
+     * @param value default value of preference
+     * @return true if default set, else false
+     */
+    registerPreference: function(name, value)
+    {
+         if (FBTrace.DBG_INITIALIZE)
+             FBTrace.sysout("registerPreference "+name+" -> "+value);
+
+        var currentValue = this.getPref(this.prefDomain, name);
+        if (!currentValue)
+        {
+            var defaultBranch = prefService.getDefaultBranch(this.prefDomain);
+
+            var type = this.getPreferenceTypeByExample( typeof(value) );
+            if (this.setPreference(name, value, type, defaultBranch))
+                return true;
+        }
+        return false;
+    },
+
     registerModule: function()
     {
         modules.push.apply(modules, arguments);
@@ -684,7 +718,14 @@ top.Firebug =
 
     registerPanel: function()
     {
-        panelTypes.push.apply(panelTypes, arguments);
+        // In order to keep built in panels (like Console, Script...) be the first one
+        // and insert all panels coming from extension at the end, catch any early registered
+        // panel (i.e. before FBL.initialize is called, such as YSlow) in a temp array
+        // that is appended at the end as soon as FBL.initialize is called.
+        if (earlyRegPanelTypes)
+            earlyRegPanelTypes.push.apply(earlyRegPanelTypes, arguments);
+        else
+            panelTypes.push.apply(panelTypes, arguments);
 
         for (var i = 0; i < arguments.length; ++i)
             panelTypeMap[arguments[i].prototype.name] = arguments[i];
@@ -834,6 +875,40 @@ top.Firebug =
     {
         var prefName = prefDomain + "." + name;
 
+        var type = this.getPreferenceTypeByExample( (prefType?prefType:typeof(value)) );
+
+        if (!this.setPreference(prefName, value, type, prefs))
+            return;
+
+        setTimeout(function delaySavePrefs()
+        {
+            if (FBTrace.DBG_OPTIONS)
+                FBTrace.sysout("firebug.delaySavePrefs type="+type+" name="+prefName+" value="+value+"\n");
+            prefs.savePrefFile(null);
+        });
+
+        if (FBTrace.DBG_OPTIONS)
+            FBTrace.sysout("firebug.setPref type="+type+" name="+prefName+" value="+value+"\n");
+    },
+
+    setPreference: function(prefName, value, type, prefBranch)
+    {
+        if (type == nsIPrefBranch.PREF_STRING)
+            prefBranch.setCharPref(prefName, value);
+        else if (type == nsIPrefBranch.PREF_INT)
+            prefBranch.setIntPref(prefName, value);
+        else if (type == nsIPrefBranch.PREF_BOOL)
+            prefBranch.setBoolPref(prefName, value);
+        else if (type == nsIPrefBranch.PREF_INVALID)
+        {
+            FBTrace.sysout("firebug.setPref FAILS: Invalid preference "+prefName+" with type "+type+", check that it is listed in defaults/prefs.js");
+            return false;
+        }
+        return true;
+    },
+
+    getPreferenceTypeByExample: function(prefType)
+    {
         if (prefType)
         {
             if (prefType === typeof("s"))
@@ -849,20 +924,7 @@ top.Firebug =
         {
             var type = prefs.getPrefType(prefName);
         }
-
-        if (type == nsIPrefBranch.PREF_STRING)
-            prefs.setCharPref(prefName, value);
-        else if (type == nsIPrefBranch.PREF_INT)
-            prefs.setIntPref(prefName, value);
-        else if (type == nsIPrefBranch.PREF_BOOL)
-            prefs.setBoolPref(prefName, value);
-        else if (type == nsIPrefBranch.PREF_INVALID)
-        {
-            FBTrace.sysout("firebug.setPref FAILS: Invalid preference "+prefName+" check that it is listed in defaults/prefs.js");
-        }
-
-        if (FBTrace.DBG_OPTIONS)
-            FBTrace.sysout("firebug.setPref type="+type+" name="+prefName+" value="+value+"\n");
+        return type;
     },
 
     clearPref: function(prefDomain, name)
@@ -2505,11 +2567,17 @@ Firebug.Panel = extend(new Firebug.Listener(),
         }
     },
 
-
+    /*
+     * Firebug wants to show an object to the user and this panel has the best supportsObject() result for the object.
+     * If the panel displays a container for objects of this type, it should set this.selectedObject = object
+     */
     updateSelection: function(object)
     {
     },
 
+    /*
+     * Redisplay the panel based on the current location and selection
+     */
     refresh: function()
     {
 

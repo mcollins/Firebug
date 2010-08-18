@@ -3558,7 +3558,6 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
 
 /**
  * @domplate Displays various warning messages within the Script panel.
- * xxxHonza: localization
  */
 Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
 {
@@ -3574,7 +3573,7 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
 
     enableScriptTag:
         DIV({"class": "objectLink", onclick: "$onEnableScript", style: "color: blue"},
-            SPAN("Enable JavaScript and Refresh")
+            SPAN($STR("script.button.enable_javascript"))
         ),
 
     onEnableScript: function(event)
@@ -3590,8 +3589,8 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
     showInactive: function(parentNode)
     {
         var args = {
-            pageTitle: $STR("Script Panel was inactive during page load"),
-            suggestion: $STR("Reload to see all sources")
+            pageTitle: $STR("script.warning.inactive_during_page_load"),
+            suggestion: $STR("script.suggestion.inactive_during_page_load")
         };
         return this.tag.replace(args, parentNode, this);
     },
@@ -3599,8 +3598,8 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
     showNotEnabled: function(parentNode)
     {
         var args = {
-            pageTitle: $STR("Javascript is not enabled"),
-            suggestion: $STR("See Firefox > Tools > Options > Content > Enable Javascript")
+            pageTitle: $STR("script.warning.javascript_not_enabled"),
+            suggestion: $STR("script.suggestion.javascript_not_enabled")
         }
 
         var box = this.tag.replace(args, parentNode, this);
@@ -3612,8 +3611,8 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
     showFiltered: function(parentNode)
     {
         var args = {
-            pageTitle: $STR("Warning. All scripts were filtered"),
-            suggestion: $STR("See Script Filter setting on tool bar or \'Show Chrome Sources Option\"")
+            pageTitle: $STR("script.warning.all_scripts_filtered"),
+            suggestion: $STR("script.suggestion.all_scripts_filtered")
         };
         return this.tag.replace(args, parentNode, this);
     },
@@ -3621,9 +3620,8 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
     showNoScript: function(parentNode)
     {
         var args = {
-            pageTitle: $STR("No Javascript on this page"),
-            suggestion: $STR("If <script> tags have a \"type\" attribute it should equal " +
-                "\"text/javascript\" or \"application/javascript\"'")
+            pageTitle: $STR("script.warning.no_javascript"),
+            suggestion: $STR("script.suggestion.no_javascript")
         }
         return this.tag.replace(args, parentNode, this);
     }

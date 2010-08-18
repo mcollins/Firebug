@@ -88,9 +88,11 @@ Firebug.Editor = extend(Firebug.Module,
         this.attachListeners(currentEditor, panel.context);
     },
 
-    saveAndClose: function() {
+    saveAndClose: function()
+    {
         if (!currentTarget)
             return;
+
         dispatch(currentPanel.fbListeners, 'onInlineEditorClose', [currentPanel, currentTarget, !originalValue]);
         this.stopEditing();
     },
@@ -116,6 +118,10 @@ Firebug.Editor = extend(Firebug.Module,
         var value = currentEditor.getValue();
         if (value == defaultValue)
             value = "";
+
+        // Reset the editor's value so it isn't accidentaly reused the next time
+        // the editor instance is reused (see also 3280, 3332).
+        currentEditor.setValue("");
 
         var removeGroup = currentEditor.endEditing(currentTarget, value, cancel);
 
@@ -700,9 +706,9 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
         return this.autoCompleter;
     },
 
-    completeValue: function(amt, offerOnly)
+    completeValue: function(amt)
     {
-        if (this.getAutoCompleter().complete(currentPanel.context, this.input, true, amt < 0, offerOnly))
+        if (this.getAutoCompleter().complete(currentPanel.context, this.input, true, amt < 0))
             Firebug.Editor.update(true);
         else
             this.incrementValue(amt);
@@ -885,7 +891,7 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
 // ************************************************************************************************
 // Autocompletion
 
-Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode, caseSensitive, noCompleteOnBlank, noShowGlobal)
+Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode, caseSensitive, noCompleteOnBlank, noShowGlobal, showCompletionPopup)
 {
     var candidates = null;
     var originalValue = null;
@@ -937,7 +943,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         accepted = false;
     };
 
-    this.complete = function(context, textBox, cycle, reverse, offerOnly)
+    this.complete = function(context, textBox, cycle, reverse)
     {
         var value = textBox.value;
         if (!value && noCompleteOnBlank)
@@ -953,7 +959,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         var found =  this.pickCandidates(value, offset, context, cycle, reverse);
 
         if (found)
-            this.showCandidates(textBox, offerOnly);
+            this.showCandidates(textBox);
 
         return found;
     };
@@ -985,7 +991,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
             preExpr = parsed.substr(0, range.start);
             postExpr = parsed.substr(range.end+1);
             exprOffset = parseStart + range.start;
-            FBTrace.sysout("editor.complete cycle "+cycle+" expr: "+expr, {expr: expr, range:range, parseStart: parseStart, offset: offset, values:values});
 
             if (!cycle)
             {
@@ -1198,7 +1203,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         return pick;
     };
 
-    this.showCandidates = function(textBox, offerOnly)
+    this.showCandidates = function(textBox)
     {
         textBox.value = currentLine;
 
@@ -1207,7 +1212,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         else
             textBox.setSelectionRange(completionEnd, completionEnd);
 
-        if (offerOnly && candidates.length && candidates.length > 1)
+        if (showCompletionPopup && candidates.length && candidates.length > 1)
         {
             this.popupCandidates(candidates, textBox);
             return false;
@@ -1221,6 +1226,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
     this.popupCandidates = function(candidates, textBox)
     {
+        // This method should not operation on the textBox or candidates list
         FBL.eraseNode(completionPopup);
 
         var vbox = completionPopup.ownerDocument.createElement("vbox");
@@ -1444,7 +1450,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
     this.focusHack = function(event)
     {
         if (this.linuxFocusHack)
-            this.linuxFocusHack.focus();
+            this.linuxFocusHack.focus();  // XXXjjb This does not work, but my experience with focus is that it usually does not work.
         delete this.linuxFocusHack;
     };
 
