@@ -7,6 +7,12 @@ function runTest()
     FBTest.sysout("html.breakpoints.CB; START");
     FBTest.setPref("service.filterSystemURLs", false);
 
+    var doNotFilter = FBTest.getPref("service.filterSystemURLs");
+
+    FBTest.compare(false, doNotFilter, "Pref service.filterSystemURLs must not be set true");
+    FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
+
+
     FBTestFirebug.openNewTab(basePath + "html/breakpoints/breakOnElement.html", function(win)
     {
         FBTestFirebug.openFirebug();
