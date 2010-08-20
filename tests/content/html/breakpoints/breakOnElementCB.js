@@ -15,19 +15,23 @@ function runTest()
 
     FBTestFirebug.openNewTab(basePath + "html/breakpoints/breakOnElement.html", function(win)
     {
+        var filter = FBTest.getPref("service.filterSystemURLs");
+        FBTest.compare(false, filter, "Pref service.filterSystemURLs must not be set true");
+        FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
+
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableAllPanels();
 
         // A suite of asynchronous tests.
         var testSuite = [];
         testSuite.push(function(callback) {
-            breakOnMutation(win, BP_BREAKONATTRCHANGE, "breakOnAttrModified", 2, callback);
+            breakOnMutation(win, BP_BREAKONATTRCHANGE, "breakOnAttrModified", 42, callback);
         });
         testSuite.push(function(callback) {
-            breakOnMutation(win, BP_BREAKONCHILDCHANGE, "breakOnNodeInserted", 2, callback);
+            breakOnMutation(win, BP_BREAKONCHILDCHANGE, "breakOnNodeInserted", 47, callback);
         });
         testSuite.push(function(callback) {
-            breakOnMutation(win, BP_BREAKONREMOVE, "breakOnNodeRemoved", 2, callback);
+            breakOnMutation(win, BP_BREAKONREMOVE, "breakOnNodeRemoved", 53, callback);
         });
 
         // Reload window to activate debugger and run all tests.
