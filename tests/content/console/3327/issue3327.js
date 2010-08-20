@@ -24,7 +24,6 @@ function runTest()
             });
 
             var iframe = win.document.getElementById("iframe");
-            FBTrace.sysout("doc", iframe.contentWindow.location.reload());
         });
     });
 }
