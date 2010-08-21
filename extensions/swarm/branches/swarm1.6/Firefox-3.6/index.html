@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>Basic Firebug Swarm from the Firebug Team</title>
+<meta http-equiv="content-type"
+        content="text/html;charset=utf-8" />
+<link rel="stylesheet" href="swarmExtensionStatus.css" type="text/css"/>
+<link rel="stylesheet" href="swarm.css" type="text/css"/>
+<script>
+
+if (!window.console)
+{
+    window.console = { log: function(){}, error: function(){} };
+}
+
+var swarmCommands =
+{
+    installAll: function(event)
+    {
+        this.selectAll();
+        this.installSelected();
+    },
+    
+    selectAll: function()
+    {
+        eachSwarm(function selectSwarm(swarm) 
+        {
+           var input = getInput(swarm);
+           input.checked = true;
+        });
+        doSwarmSelect();
+    },
+    
+    installSelected: function()
+    {
+        var selected = getSelectedExtensions();
+        var installInfo = {};
+        for (var i = 0; i < selected.length; i++)
+        {
+            installInfo[selected[i].id] = 
+            {
+                URL: selected[i].href,
+                IconURL: "http://getfirebug.com/img/firebug-tiny.png", // should be 32x32 not 24x24
+                hash: selected[i].hash,
+            }
+            
+        }
+	   try 
+        {
+           InstallTrigger.install(installInfo);
+        }
+        catch(exc)
+        {
+           console.log("InstallTrigger FAILS "+exc, exc, installInfo);
+        }
+    },
+    
+
+};
+
+function doSwarmCommand(event)
+{
+    console.log('doSwarmCommand', event.target);
+    var command = event.target.getAttribute('id');
+    if ( swarmCommands.hasOwnProperty(command) )
+        swarmCommands[command].call(swarmCommands,event);
+    else
+        console.error("no swarm command "+command, swarmCommands);
+}
+
+function getSelectedExtensions()
+{
+    var inputs = document.getElementsByClassName("installThisOne");
+    var selectedForInstall = []
+    for (var i = 0; i < inputs.length; i++)
+    {
+        if (inputs[i].checked)
+        {
+            var a = inputs[i].parentNode.getElementsByClassName('extensionURL')[0];
+            selectedForInstall.push(a);
+        }
+    } 
+    return selectedForInstall;
+}
+
+function updateTotal(totalSelected)
+{
+    var theTotal = document.getElementById("extensionsSelected");
+    theTotal.innerHTML = totalSelected +" extension"+(totalSelected>1?"s":"")+" selected";
+}
+
+function doUpdateTotal(event)
+{
+    updateTotal(getSelectedExtensions().length);
+}
+
+function hookSwarmButtons()
+{
+    var swarmButtons = document.getElementsByClassName("swarmCommand");
+    for (var i = 0; i < swarmButtons.length; i++)
+    {
+        swarmButtons[i].addEventListener('click', doSwarmCommand, true);
+    }
+
+    var swarmSelectors = document.getElementsByClassName("swarmSelector");
+    for (var i = 0; i < swarmSelectors.length; i++)
+    {
+        swarmSelectors[i].addEventListener('click', doSwarmSelect, true);
+        var input = swarmSelectors[i].getElementsByTagName('input')[0];
+  
+    }
+
+    var extensionButtons = document.getElementsByClassName("installThisOne");
+    for (var i = 0; i < extensionButtons.length; i++)
+    {
+        extensionButtons[i].addEventListener('click', doUpdateTotal, true);
+    }
+}
+
+// **************************************************
+
+function doSwarmShowHide(event) 
+{
+    var selectedNames = "";
+
+    eachExtInSwarm(event, function colorize(inSwarm)
+    {
+        if (event.type === "mouseover")
+	    inSwarm.classList.add("inSwarm");   
+        else if (event.type === "mouseout")
+	    inSwarm.classList.remove("inSwarm");   
+
+	selectedNames += inSwarm.getElementsByTagName('a')[0].textContent +" ";
+    });
+
+    if (event.type === "mouseover")
+	event.target.classList.add('inSwarm');
+    else if (event.type === 'mouseout')
+	event.target.classList.remove('inSwarm');
+
+    event.target.title = selectedNames;     
+}
+
+function doSwarmSelect()
+{
+    var selectedSwarms = [];
+    eachSwarm(function getSelectedSwarmNames(swarm)
+    {
+        var input = getInput(swarm);
+        if (input.checked) 
+          selectedSwarms.push(input.value+"Swarm");
+    });
+
+    eachExt(function selectIfASwarmSelected(ext)
+    {
+        var extInput = getInput(ext);
+        extInput.checked = false;
+        for (var i = 0; i < selectedSwarms.length; i++)
+        {
+            if (ext.classList.contains(selectedSwarms[i]))
+                extInput.checked = true;
+            console.log("Checking selectedSwarm "+selectedSwarms[i], ext);
+        }
+    });
+    doUpdateTotal();
+}
+
+function eachExt(fnOfExtDiv)
+{
+    var exts = document.getElementsByClassName("extension");
+    for(var i = 0; i < exts.length; i++)
+        fnOfExtDiv(exts[i]);
+}
+
+function eachSwarm(fnOfSwarmDiv)
+{
+    var swarms = document.getElementsByClassName("swarmSelector");
+    for(var i = 0; i < swarms.length; i++)
+       fnOfSwarmDiv(swarms[i]);
+}
+
+function eachExtInSwarm(event, fnOfExtensionDiv)
+{
+    if (!event.target.tagName === "div")
+	return;
+
+    var inputElement = getInput(event.target);
+    if (!inputElement)
+       return;
+
+    var swarmName = inputElement.getAttribute("value");
+    var swarmClassName = swarmName+"Swarm";
+
+    var selectedNames = "";
+    var inSwarm = document.getElementsByClassName(swarmClassName);
+    for (var i = 0; i < inSwarm.length; i++)
+        fnOfExtensionDiv(inSwarm[i]);
+}
+
+function getInput(targetDiv)
+{
+    if (targetDiv.tagName === 'INPUT')
+	return targetDiv;
+
+    var inputElement = targetDiv.getElementsByTagName('input')[0];
+    return inputElement;
+}
+
+function addMouseOvers()
+{
+    var swarmButtons = document.getElementsByClassName("swarmSelector");
+    for (var i = 0; i < swarmButtons.length; i++)
+    {
+        swarmButtons[i].addEventListener('mouseover', doSwarmShowHide, true);
+        swarmButtons[i].addEventListener('mouseout', doSwarmShowHide, true);
+    }    
+}
+
+// **************************************************
+function doCommands()
+{
+   var href = window.location.toString();
+   var parts = href.split('?');
+   if (parts[1])
+   {
+      var params = parts[1].split('&');
+      console.log("doCommands params: ", params);
+      for (var i = 0; i < params.length; i++)
+      {
+         var nv = params[i].split('=');
+         if (nv[0] === 'installAll')
+           swarmCommands.installAll();
+         else if (nv[0] === 'swarms')
+         {
+           eachSwarm(function selectSwarm(swarm) 
+           {
+              var input = getInput(swarm);
+              if (input.value === nv[1])
+                 input.checked = true;
+           });
+         }
+      } 
+   }
+}
+// **************************************************
+
+function onload()
+{
+    if (!this.youDidTheLoadSilly)
+    {
+        hookSwarmButtons();
+        addMouseOvers();
+        doCommands();
+        doSwarmSelect();
+        doUpdateTotal();
+        this.youDidTheLoadSilly = true;
+     }
+}
+window.addEventListener('load', onload, false);
+
+</script>
+</head>
+<body>
+  <table id="header">
+  <tbody>
+  <tr>
+  <td>
+  <form id="swarmSelector">
+  <div class="swarmSelector">
+    <input type="checkbox" name="swarms" value="basic" checked="true"/>Basic Extensions, includes Firebug
+  </div>
+  <div class="swarmSelector">
+    <input type="checkbox" name="swarms" value="designer" />Designer Extensions
+  </div>
+  <div class="swarmSelector">
+    <input type="checkbox" name="swarms" value="developer" />Developer Extensions
+  </div>
+  <div class="swarmSelector">
+    <input type="checkbox" name="swarms" value="performance" />Network Performance Extensions
+  </div>
+  <button class="swarmCommand" id="installSelected">Install The Swarm!</button><span id="extensionsSelected"></span>
+  </form>
+  </td>
+  <td>
+  <img  src="http://getfirebug.com/img/firebug-logo.png"/>
+  </td>
+  <td>
+  <a href="http://getfirebug.com/contribute" target="_blank"><div id="contribute">
+    Support Firebug<br>
+    <span>Buy A Fiery-Firebug T-Shirt or</span><br>
+    <span>Become a Corporate Sponsor</span>
+    </div>
+ </a>
+  </td>
+  </tr>
+  </tbody>
+  </table>
+ <div class="swarmSpecification">
+ 
+ <div class="theSwarm"> <!-- One item for every extension in the Swarm -->
+<form id="extensionSelector"> 
+  <div class="extension basicSwarm developerSwarm designerSwarm performanceSwarm">
+  <input type="checkbox" class="installThisOne" name="extension" value="tbd" />
+   <a class="extensionURL"
+        href="https://getfirebug.com/releases/firebug/1.6X/firebug-1.6X.0a11.xpi"
+        id="firebug@software.joehewitt.com"
+        >Firebug</a>
+  <span class="extensionAuthor">The Firebug Working Group</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+
+  <p>  The Firebug Web Page Debugger, Firefox version
+  <a class="extensionMoreInfo" target="_blank" href="http://getfirebug.com">more info</a>
+  </p>
+  </div>
+  </div>
+<!-- next ext -->
+  <div class="extension developerSwarm">
+ <input type="checkbox" class="installThisOne" name="extension" value="tbd" />
+  <a class="extensionURL"
+        href="https://getfirebug.com/releases/eventbug/1.5/eventbug-0.1b4.xpi"
+        id="eventbug@getfirebug.com"
+        >Eventbug</a>
+  <span class="extensionAuthor">Jan 'Honza' Odvarko and John J. Barton</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>This extension brings a new <b>Events</b> panel that lists all of the event handlers
+   on the page grouped by event type. The panel also nicely integrates with other Firebug
+   panels and allows to quickly find out,
+  which HTML element is associated with specific event listener or see the Javascript source code.
+  <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/firebug/eventbug-alpha-released/">more info</a>
+  </p>
+  </div>
+  </div>
+<!-- next ext -->
+  <div class="extension designerSwarm">
+<input type="checkbox" class="installThisOne" name="extension" value="tbd" />
+  <a class="extensionURL"
+        href="http://www.incaseofstairs.com/download/firediff/firediff1.0.xpi"
+        hash="sha1:00860600198e7a12eae019f507f8037da961888d"
+        id="firediff@johnjbarton.com"
+        >Firediff</a>
+  <span class="extensionAuthor">Kevin Decker</a>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>Firediff is a Firebug extension that tracks changes to a pages DOM and CSS.
+
+  <a class="extensionMoreInfo" target="_blank" href="http://www.incaseofstairs.com/firediff/">more info</a>
+  </p>
+  </div>
+  </div>
+<!-- next ext -->
+  <div class="extension performanceSwarm">
+<input type="checkbox" class="installThisOne" name="extension" value="tbd" />
+  <a class="extensionURL"
+        href="https://getfirebug.com/releases/netexport/netExport-0.7.xpi"
+        hash="md5:7e118eaa0cd0691b7b8eee97dbffc83d"
+        id="netexport@getfirebug.com"
+        >NetExport</a>
+  <span class="extensionAuthor">Jan 'Honza' Odvarko</span>
+  <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>Allows exporting data from the Net panel.
+
+  <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/netexport/">more info</a>
+  </p>
+  </div>
+  </div>
+
+<!-- next ext -->
+<div class="extension developerSwarm">
+<input type="checkbox" class="installThisOne" name="extension" value="tbd" />
+ <a class="extensionURL"
+       href="https://addons.mozilla.org/en-US/firefox/downloads/file/74625/firecookie-1.0.2-fx.xpi"
+       id="firecookie@janodvarko.cz"
+       >FireCookie</a>
+         <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>View and manage cookies in your browser
+
+  <a class="extensionMoreInfo" target="_blank" href="http://www.janodvarko.cz/firecookie">more info</a>
+  </p>
+</div>
+</div>
+<!-- next ext -->
+<div class="extension basicSwarm">
+<input type="checkbox" class="installThisOne" name="extension" value="tbd" />
+ <a class="extensionURL"
+       href="https://getfirebug.com/releases/firestarter/1.5/fireStarter-0.1.a5.xpi"
+       id="firestarter@janodvarko.cz"
+       >FireStarter</a>
+         <span class="extensionStatus"></span>
+  <div class="extensionInfo">
+  <p>extends Firebug's activation model with advanced features.
+
+  <!-- <a class="extensionMoreInfo" target="_blank" href="http://www.softwareishard.com/blog/netexport/">more info</a>  -->
+  </p>
+</div>
+</div>
+<!-- next ext -->
+</form>
+</div> <!-- theSwarm -->
+
+<h2><img src="http://getfirebug.com/images/firebug3.jpg"><span class="date"><i>Tested with Firebug </i></span></h2>
+</div> <!-- swarmSpecification -->
+
+</body>
+</html>

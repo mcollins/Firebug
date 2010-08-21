@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<title>The Firebug Swarm: Index Page</title>
+<script type="text/javascript">
+function geckoVersion()
+{
+    if (navigator.product != 'Gecko')
+        return false;
+ 
+    var ua = navigator.userAgent.toLowerCase();
+    var reVersion = /rv:(\d*)\.(\d*)\.(\d*)/;
+    var m = ua.match(reVersion);
+    if (window.console) console.log("User Agent ", ua, m);
+    if(m)
+        return m.slice(1,4).join('.');
+}
+function getFirefoxVersionByGeckoVersion(geckoVersion)
+{
+    if (window.console) console.log("Gecko Version", geckoVersion);
+
+    if (!geckoVersion)
+        return null;
+
+    var map = 
+    {
+         '1.9.2': '3.6',
+    };
+    return map[geckoVersion];
+}
+
+function redirect()
+{
+   var FF = getFirefoxVersionByGeckoVersion(geckoVersion());
+   if (window.console)console.log("Firefox Version", FF);
+
+   if (FF)
+       window.location = "http://getfirebug.com/releases/swarms/Firefox-"+FF+"/";
+}
+window.addEventListener('load', redirect, true);
+</script>
+<body>
+<h1>The Firebug Swarm Index Page</h1>
+<p>The Firebug Swarm is a collection of Firebug extensions tested together. This co-testing and co-distribution helps users know that these extensions will work and that they have the correct versions.</p>
+<p>If you reach this page with a version Firebug Swarm supported browser, then you should be redirected to the Swarm page appropriate for your browser.</p>
+<h2>The supported browsers:</h2>
+<ul>
+<li><a href="Firefox-3.6">Firefox 3.6</a></li>
+</ul>
+</body>
+</html>
