@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
+
+<?xml-stylesheet href="chrome://selectbug/skin/selectbug.css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <script src="chrome://selectbug/content/selectbug.js" type="application/x-javascript"/>
+    <script src="chrome://selectbug/content/sizzle/sizzle.js" type="application/x-javascript"/>
+
+</overlay>

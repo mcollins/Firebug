@@ -1,0 +1,26 @@
+/* Rules for selectbug's Selector panel elements */
+.cssSelectionTable {
+    padding: 2px 0 0 1ex;
+}
+
+.selectbugWarning {
+    font-size: 11px;
+    color: gray;
+    padding: 2px 0 0 1ex;
+}
+
+.selectionErrorText  {
+    color: black;
+    padding: 1em;
+    background-color: #FFEBEB;
+    }
+/* Rules for selectbug's effect on CSS stylesheet panel */
+.selectedSelectorRule {
+    border-color: Highlight !important;
+    background-color: #c4f4ff !important;
+    color: #000000 !important;
+}
+.lockedSelectorRule {
+    background-color: Highlight;
+    color: HighlightText !important;
+}
