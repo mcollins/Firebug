@@ -145,11 +145,12 @@ SelectorPanel.prototype = extend(Firebug.Panel,
      */
     getSelectedElements: function(rule)
     {
-        var selections = Sizzle( rule.selectorText, Firebug.currentContext.window.document.documentElement );
-        if (selections instanceof Array)
+
+        var selections = Firebug.currentContext.window.document.querySelectorAll(rule.selectorText);
+        if (selections instanceof NodeList)
             return selections;
         else
-            throw new Error("Selection Failed: "+e);
+            throw new Error("Selection Failed: "+selections);
     },
 
     /**
@@ -171,7 +172,7 @@ SelectorPanel.prototype = extend(Firebug.Panel,
             }
             catch(e)
             {
-                WarningTemplate.sizzleErrorTag.replace({object: e}, this.panelNode);
+                WarningTemplate.selectErrorTag.replace({object: e}, this.panelNode);
                 return;
             }
         }
@@ -235,8 +236,8 @@ var WarningTemplate = domplate(Firebug.Rep,
             SPAN($STR("selectbug.noSelection"))
             ),
 
-    sizzleErrorTag: DIV({"class":"selectbugWarning"},
-            DIV($STR("selectbug.sizzleError")),
+    selectErrorTag: DIV({"class":"selectbugWarning"},
+            DIV($STR("selectbug.selectorError")),
             DIV({"class":"selectionErrorText"}, SPAN("$object"))
             ),
 });
