@@ -107,7 +107,7 @@ pref("extensions.chromebug.netSearchHeaders", false);
 pref("extensions.chromebug.netSearchParameters", false);
 pref("extensions.chromebug.netSearchResponseBody", false);
 
-
+pref("extensions.chromebug.events-script.enableSites", true);
 // External Editors
 pref("extensions.chromebug.externalEditors", "");
 

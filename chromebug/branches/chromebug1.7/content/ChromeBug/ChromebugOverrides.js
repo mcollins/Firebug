@@ -127,7 +127,7 @@ var ChromebugOverrides = {
         catch (exc)
         {
             if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("supportsGlobal FAILS:"+exc, exc);
+                FBTrace.sysout("supportsGlobal FAILS for "+safeGetWindowLocation(global)+" because: "+exc, exc);
         }
 
     },
@@ -157,7 +157,10 @@ var ChromebugOverrides = {
 
                 context = Firebug.Chromebug.getOrCreateContext(global, frame.script.fileName);
             }
-
+        }
+        else
+        {
+            throw new Error("no frame isValid");
         }
         if (context)
         {

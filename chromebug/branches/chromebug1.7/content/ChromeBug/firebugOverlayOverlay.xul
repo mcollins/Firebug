@@ -11,9 +11,9 @@
     <script type="application/x-javascript" src="chrome://chromebug/content/scandocuments.js"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_toggleInspecting" oncommand="Chromebug.DocumentScanner.toggleScanningDocuments(FirebugContext)" />
-        <command id="cmd_clearTrace" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(FirebugContext)" />
-        <command id="cmd_refreshFirebugCache" oncommand="Firebug.Chromebug.FBCacheModule.refresh(FirebugContext)"/>
+        <command id="cmd_toggleInspecting" oncommand="Chromebug.DocumentScanner.toggleScanningDocuments(Firebug.currentContext)" />
+        <command id="cmd_clearTrace" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(Firebug.currentContext)" />
+        <command id="cmd_refreshFirebugCache" oncommand="Firebug.Chromebug.FBCacheModule.refresh(Firebug.currentContext)"/>
         <command id="cmd_addNewExtensionLink" oncommand="Chromebug.ExtensionsPanel.prototype.addNewExtensionLink(event);"/>
     </commandset>
 
