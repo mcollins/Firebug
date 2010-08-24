@@ -202,7 +202,7 @@ Firebug.Chromebug.FBCacheModule.Message = domplate(Firebug.Rep,
 
     onRefresh: function()
     {
-        Module.refresh(FirebugContext);
+        Module.refresh(Firebug.currentContext);
     },
 
     render: function(parentNode, message)

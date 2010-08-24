@@ -364,7 +364,7 @@ function overrideFirebugFunctions()
             if (object instanceof Ci.jsdIStackFrame)
             {
                 context = ChromebugOverrides.getContextByFrame(object);
-                if (context != FirebugContext)
+                if (context != Firebug.currentContext)
                     Firebug.Chromebug.selectContext(context);
             }
             Firebug.Chromebug.chromeSelect.apply(Firebug.chrome,[object, panelName, sidePanelName, forceUpdate])
