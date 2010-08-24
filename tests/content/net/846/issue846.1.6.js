@@ -14,7 +14,7 @@ function runTest()
             var options = {
                 tagName: "tr",
                 classes: "netRow category-xhr hasHeaders loaded",
-                counter: 4
+                counter: 5
             };
 
             FBTest.waitForDisplayedElement("net", options, function(row)
