@@ -1,6 +1,7 @@
 /* Rules for selectbug's Selector panel elements */
 .cssSelectionTable {
     padding: 2px 0 0 1ex;
+    width: 100%;
 }
 
 .selectbugWarning {

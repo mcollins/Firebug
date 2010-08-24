@@ -29,6 +29,7 @@ SelectorPanel.prototype = extend(Firebug.Panel,
     name: 'selection',
     parentPanel: 'stylesheet',
     title: $STR("selectbug.Selection"),
+    editable: true,
 
     initialize: function(context, doc)
     {
@@ -143,10 +144,10 @@ SelectorPanel.prototype = extend(Firebug.Panel,
     /*
      * returns an array of Elements matched from selector
      */
-    getSelectedElements: function(rule)
+    getSelectedElements: function(selectorText)
     {
 
-        var selections = Firebug.currentContext.window.document.querySelectorAll(rule.selectorText);
+        var selections = Firebug.currentContext.window.document.querySelectorAll(selectorText);
         if (selections instanceof NodeList)
             return selections;
         else
@@ -163,7 +164,12 @@ SelectorPanel.prototype = extend(Firebug.Panel,
         {
             try
             {
-                var elements = this.getSelectedElements(this.selection);
+                if (this.selection instanceof CSSStyleRule)
+                    var selectorText = this.selection.selectorText;
+                else
+                    var selectorText = this.selection;
+
+                var elements = this.getSelectedElements(selectorText);
                 if (elements && elements.length)
                 {
                     SelectorTemplate.tag.replace({object: elements}, this.panelNode);
@@ -190,6 +196,28 @@ SelectorPanel.prototype = extend(Firebug.Panel,
     {
         return 0;
     },
+    //********************************************************
+    tryASelector:function(element)
+    {
+        if (!this.trialSelector)
+            this.trialSelector = this.selection ? this.selection.selectorText : "";
+
+        this.editProperty(element, this.trialSelector);
+    },
+
+    editProperty: function(row, editValue)
+    {
+        Firebug.Editor.startEditing(row, editValue);
+    },
+
+    getEditor: function(target, value)
+    {
+        if (!this.editor)
+            this.editor = new SelectorEditor(this);
+
+        return this.editor;
+    }
+
 });
 
 // ************************************************************************************************
@@ -209,6 +237,18 @@ var BaseRep = domplate(Firebug.Rep,
 
 // ************************************************************************************************
 
+
+var TrialRow =
+        TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
+            TD({"class": "watchEditCell", colspan: 3},
+                    DIV({"class": "watchEditBox a11yFocusNoTab", role: "button", 'tabindex' : '0',
+                        'aria-label' : $STR('a11y.labels.press enter to add new selector')},
+                        $STR("selectbug.TryASelector"),
+                    DIV({"class": "trialSelector", collapsed: "true"}, "")
+                    )
+                )
+            );
+
 /**
  * @domplate: Template for basic layout of the {@link SelectorPanel} panel.
  */
@@ -218,6 +258,7 @@ var SelectorTemplate = domplate(BaseRep,
     tag:
         TABLE({"class": "cssSelectionTable", cellpadding: 0, cellspacing: 0},
             TBODY({"class": "cssSelectionTBody"},
+                TrialRow,
                 FOR("element", "$object",
                     TR({"class": "elementRow", _repObject:"$element"},
                         TD({"class": "selectionElement"},
@@ -228,7 +269,49 @@ var SelectorTemplate = domplate(BaseRep,
             )
         ),
 
+    onClickEditor: function(event)
+    {
+        var tr = event.currentTarget;
+        var panel = Firebug.currentContext.getPanel("selection", true);
+        panel.tryASelector(tr);
+    },
+
 });
+
+function SelectorEditor(panel)
+{
+    var doc = panel.document;
+    this.panel = panel;
+    this.box = this.tag.replace({}, doc, this);
+    this.input = this.box;
+
+    this.tabNavigation = false;
+    this.tabCompletion = true;
+    this.completeAsYouType = false;
+    this.fixedWidth = true;
+
+    this.autoCompleter = Firebug.CommandLine.autoCompleter;
+}
+
+SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+{
+    tag:
+        INPUT({"class": "fixedWidthEditor a11yFocusNoTab",
+            type: "text", title:$STR("Selector"),
+            oninput: "$onInput", onkeypress: "$onKeyPress"}),
+
+    endEditing: function(target, value, cancel)
+    {
+        if (cancel || value == "")
+            return;
+        var trialSelector = target.getElementsByClassName('trialSelector')[0];
+        trialSelector.textContent = value;
+        collapse(trialSelector, false);
+        this.panel.selection = value;
+        this.panel.rebuild();
+    }
+});
+
 
 var WarningTemplate = domplate(Firebug.Rep,
 {
