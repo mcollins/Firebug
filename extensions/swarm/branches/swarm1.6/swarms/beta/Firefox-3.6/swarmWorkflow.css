@@ -1,0 +1,37 @@
+/* blank anything but the smartFlow option for now */
+.swarmWorkflowSelection {
+     display: none;
+     }
+
+tr#smartFlow.swarmCreator {
+    display: block;
+}
+
+#selectWorkflow {
+    display: none;
+    }
+
+.swarmTaskDataNotNeeded {
+    display: none;
+}
+.swarmTaskHidePicker {
+    display: none;
+}
+.swarmStepBlocked {
+    color: red;
+}
+
+.swarmWorkflowEnd {
+    margin-right: 20px;
+}
+
+#progressTable {
+    border-collapse:collapse;
+}
+#progressTable td {
+    border: 1px solid #BEBEBE;
+    margin-left: 2px;
+}
+#progressTable .extensionStatus {
+    float: none;
+    }
