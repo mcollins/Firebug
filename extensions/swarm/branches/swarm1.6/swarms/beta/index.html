@@ -33,8 +33,18 @@ function redirect()
    var FF = getFirefoxVersionByGeckoVersion(geckoVersion());
    if (window.console)console.log("Firefox Version", FF);
 
+    var branch = "";
+    var parts = window.location.toString().split('/');
+    for (var i = 0; i < parts.length; i++)
+    {
+    console.log(i, parts[i], branch);
+       if (parts[i] == "swarms")
+           branch = parts[i+1]+'/';
+    }
+    
+    
    if (FF)
-       window.location = "http://getfirebug.com/releases/swarms/Firefox-"+FF+"/";
+       window.location = "http://getfirebug.com/releases/swarms/"+branch+"Firefox-"+FF+"/";
 }
 window.addEventListener('load', redirect, true);
 </script>
