@@ -173,17 +173,24 @@ SelectorPanel.prototype = extend(Firebug.Panel,
                 if (elements && elements.length)
                 {
                     SelectorTemplate.tag.replace({object: elements}, this.panelNode);
+                    this.showTrialSelector(this.trialSelector);
                     return;
                 }
             }
             catch(e)
             {
-                WarningTemplate.selectErrorTag.replace({object: e}, this.panelNode);
+                var table = SelectorTemplate.tag.replace({object: []}, this.panelNode);
+                var tbody = table.lastChild;
+                WarningTemplate.selectErrorTag.insertRows({object: e}, tbody.lastChild);
+                WarningTemplate.selectErrorTextTag.insertRows({object: e}, tbody.lastChild);
+                this.showTrialSelector(this.trialSelector);
                 return;
             }
         }
-
-        WarningTemplate.noSelectionTag.replace({object: this.selection}, this.panelNode);
+        var table = SelectorTemplate.tag.replace({object: []}, this.panelNode);
+        var tbody = table.lastChild;
+        WarningTemplate.noSelectionTag.insertRows({object: this.selection}, tbody.lastChild);
+        this.showTrialSelector(this.trialSelector);
     },
 
     getObjectPath: function(object)
@@ -216,7 +223,16 @@ SelectorPanel.prototype = extend(Firebug.Panel,
             this.editor = new SelectorEditor(this);
 
         return this.editor;
-    }
+    },
+
+    showTrialSelector: function(trialSelector)
+    {
+        var show = trialSelector ? true : false;
+        collapse($('trialHint', this.document), show);
+        var trialSelectorDiv = $('trialSelector', this.document);
+        trialSelectorDiv.textContent = trialSelector;
+        collapse(trialSelectorDiv, !show);
+    },
 
 });
 
@@ -241,11 +257,11 @@ var BaseRep = domplate(Firebug.Rep,
 var TrialRow =
         TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
             TD({"class": "watchEditCell", colspan: 3},
-                    DIV({"class": "watchEditBox a11yFocusNoTab", role: "button", 'tabindex' : '0',
+                    DIV({"class": "watchEditBox a11yFocusNoTab", "id":"trialHint", role: "button", 'tabindex' : '0',
                         'aria-label' : $STR('a11y.labels.press enter to add new selector')},
-                        $STR("selectbug.TryASelector"),
-                    DIV({"class": "trialSelector", collapsed: "true"}, "")
-                    )
+                        $STR("selectbug.TryASelector")
+                    ),
+                    DIV({"class": "trialSelector", "id":"trialSelector"}, "")
                 )
             );
 
@@ -260,7 +276,7 @@ var SelectorTemplate = domplate(BaseRep,
             TBODY({"class": "cssSelectionTBody"},
                 TrialRow,
                 FOR("element", "$object",
-                    TR({"class": "elementRow", _repObject:"$element"},
+                    TR({"class": "selectionElementRow", _repObject:"$element"},
                         TD({"class": "selectionElement"},
                             TAG( "$element|getNaturalTag", {object: "$element"})
                         )
@@ -296,7 +312,7 @@ function SelectorEditor(panel)
 SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 {
     tag:
-        INPUT({"class": "fixedWidthEditor a11yFocusNoTab",
+        INPUT({"class": "fixedWidthEditor selectionElement a11yFocusNoTab",
             type: "text", title:$STR("Selector"),
             oninput: "$onInput", onkeypress: "$onKeyPress"}),
 
@@ -304,10 +320,8 @@ SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
     {
         if (cancel || value == "")
             return;
-        var trialSelector = target.getElementsByClassName('trialSelector')[0];
-        trialSelector.textContent = value;
-        collapse(trialSelector, false);
-        this.panel.selection = value;
+        this.panel.trialSelector = value;
+        this.panel.selection = this.panel.trialSelector;
         this.panel.rebuild();
     }
 });
@@ -315,14 +329,17 @@ SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 
 var WarningTemplate = domplate(Firebug.Rep,
 {
-    noSelectionTag: DIV({"class":"selectbugWarning "},
-            SPAN($STR("selectbug.noSelection"))
-            ),
+    noSelectionTag: TR({"class":"selectbugWarning "},
+                        TD({"class": "selectionElement"}, $STR("selectbug.noSelection"))
+                    ),
 
-    selectErrorTag: DIV({"class":"selectbugWarning"},
-            DIV($STR("selectbug.selectorError")),
-            DIV({"class":"selectionErrorText"}, SPAN("$object"))
-            ),
+    selectErrorTag: TR({"class":"selectbugWarning"},
+                        TD({"class": "selectionElement"}, $STR("selectbug.selectorError"))
+                    ),
+    selectErrorTextTag:
+                    TR({"class":"selectbugWarning"},
+                        TD({"class":"selectionErrorText selectionElement"}, SPAN("$object"))
+                    ),
 });
 
 // ************************************************************************************************
