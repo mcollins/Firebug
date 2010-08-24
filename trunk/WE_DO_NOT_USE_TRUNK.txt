@@ -1,0 +1,2 @@
+Please read the readme or wiki.
+http://getfirebug.com/wiki/index.php/Source
