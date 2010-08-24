@@ -96,7 +96,7 @@ this.initialize = function()
 // ************************************************************************************************
 // Basics
 
-this.bind = function()  // fn, thisObject, args => thisObject.fn(args, arguments);
+this.bind = function()  // fn, thisObject, args => thisObject.fn(arguments, args);
 {
    var args = cloneArray(arguments), fn = args.shift(), object = args.shift();
    return function bind() { return fn.apply(object, arrayInsert(cloneArray(args), 0, arguments)); }
@@ -175,7 +175,7 @@ this.values = function(map)
         {
             try
             {
-                values.push(map[name]);
+                values.push(map[name]);  
             }
             catch (exc)
             {
@@ -378,6 +378,17 @@ this.addStyleSheet = function(doc, style)
     else
         doc.documentElement.appendChild(style);
 };
+
+this.appendStylesheet = function(doc, uri)
+{
+    // Make sure the stylesheet is not appended twice.
+    if (this.$(uri, doc))
+        return;
+
+    var styleSheet = this.createStyleSheet(doc, uri);
+    styleSheet.setAttribute("id", uri);
+    this.addStyleSheet(doc, styleSheet);
+},
 
 this.addScript = function(doc, id, src)
 {

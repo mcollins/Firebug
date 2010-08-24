@@ -176,7 +176,7 @@ Firebug.CommandLine = extend(Firebug.Module,
         var win = targetWindow ? targetWindow : (context.baseWindow ? context.baseWindow : context.window);
 
         if (!context.commandLineAPI)
-            context.commandLineAPI = new FirebugCommandLineAPI(context, (win.wrappedJSObject?win.wrappedJSObject:win));  // TODO should be baseWindow
+            context.commandLineAPI = new FirebugCommandLineAPI(context);
 
         var htmlPanel = context.getPanel("html", true);
         var scope = {
@@ -257,9 +257,8 @@ Firebug.CommandLine = extend(Firebug.Module,
 
     evaluateInWebPage: function(expr, context, targetWindow)
     {
-        var win = targetWindow ? targetWindow : context.window;
-        var doc = (win.wrappedJSObject ? win.wrappedJSObject.document : win.document);
-        var element = addScript(doc, "_firebugInWebPage", expr);
+        var win = targetWindow || context.window;
+        var element = addScript(win.document, "_firebugInWebPage", expr);
         element.parentNode.removeChild(element);  // we don't need the script element, result is in DOM object
         return "true";
     },
@@ -405,6 +404,8 @@ Firebug.CommandLine = extend(Firebug.Module,
 
     focus: function(context)
     {
+        var wasMinimized = Firebug.isMinimized();
+
         if (Firebug.isDetached())
             Firebug.chrome.focus();
         else
@@ -424,8 +425,9 @@ Firebug.CommandLine = extend(Firebug.Module,
         else
         {
             // We are already on the console, if the command line has also
-            // the focus, toggle back.
-            if (commandLine.getAttribute("focused") == "true")
+            // the focus, toggle back. But only if the UI has been already
+            // opened.
+            if (commandLine.getAttribute("focused") == "true" && !wasMinimized)
                 Firebug.chrome.unswitchToPanel(context, "console", true);
             else
                 setTimeout(function() { commandLine.select(); });
@@ -472,7 +474,7 @@ Firebug.CommandLine = extend(Firebug.Module,
 
     setMultiLine: function(multiLine, chrome, saveMultiLine)
     {
-        if (FirebugContext && FirebugContext.panelName != "console")
+        if (Firebug.currentContext && Firebug.currentContext.panelName != "console")
             return;
 
         collapse(chrome.$("fbCommandBox"), multiLine);
@@ -693,7 +695,7 @@ Firebug.CommandLine = extend(Firebug.Module,
                 Firebug.CommandLine.injector.attachCommandLine(context, context.windows[i]);
         }
 
-        if (!context.window.wrappedJSObject)
+        if (!context.window.wrappedJSObject)  // we need to test for the wrappedJSObject because _FirebugCommandLine is evaluated into the page
         {
             FBTrace.sysout("context.window with no wrappedJSObject!", context.window);
             return false;
@@ -708,25 +710,25 @@ Firebug.CommandLine = extend(Firebug.Module,
 
     onCommandLineKeyUp: function(event)
     {
-        var commandLine = getCommandLine(FirebugContext);
-        this.autoCompleter.handledKeyUp(event, FirebugContext, commandLine)
+        var commandLine = getCommandLine(Firebug.currentContext);
+        this.autoCompleter.handledKeyUp(event, Firebug.currentContext, commandLine)
     },
 
     onCommandLineKeyDown: function(event)
     {
-        var commandLine = getCommandLine(FirebugContext);
-        this.autoCompleter.handledKeyDown(event, FirebugContext, commandLine)
+        var commandLine = getCommandLine(Firebug.currentContext);
+        this.autoCompleter.handledKeyDown(event, Firebug.currentContext, commandLine)
     },
 
     onCommandLineKeyPress: function(event)
     {
-        var commandLine = getCommandLine(FirebugContext);
-        this.autoCompleter.handledKeyPress(event, FirebugContext, commandLine)
+        var commandLine = getCommandLine(Firebug.currentContext);
+        this.autoCompleter.handledKeyPress(event, Firebug.currentContext, commandLine)
     },
 
     onCommandLineInput: function(event)
     {
-        var commandLine = getCommandLine(FirebugContext);
+        var commandLine = getCommandLine(Firebug.currentContext);
 
         if (!this.autoCompleter.getVerifiedText(commandLine)) // don't complete on empty command line
         {
@@ -735,8 +737,8 @@ Firebug.CommandLine = extend(Firebug.Module,
             return;
         }
 
-        this.autoCompleter.complete(FirebugContext, commandLine, true, false, true);
-        FirebugContext.commandLineText = this.autoCompleter.getVerifiedText(commandLine);
+        this.autoCompleter.complete(Firebug.currentContext, commandLine, true, false, true);
+        Firebug.currentContext.commandLineText = this.autoCompleter.getVerifiedText(commandLine);
     },
 
     onCommandLineBlur: function(event)
@@ -762,9 +764,9 @@ Firebug.CommandLine = extend(Firebug.Module,
             Firebug.migrations.commandLineTab = true;
         }
 
-        if (!Firebug.CommandLine.isAttached(FirebugContext))
+        if (!Firebug.CommandLine.isAttached(Firebug.currentContext))
         {
-            return Firebug.CommandLine.isReadyElsePreparing(FirebugContext);
+            return Firebug.CommandLine.isReadyElsePreparing(Firebug.currentContext);
         }
         else
         {
@@ -772,8 +774,8 @@ Firebug.CommandLine = extend(Firebug.Module,
             {
                 try
                 {
-                    var cmdLine = FirebugContext.window.wrappedJSObject._FirebugCommandLine
-                    FBTrace.sysout("commandLine.onCommandLineFocus, attachCommandLine ", cmdLine);
+                    var cmdLine = Firebug.CommandLine.isAttached(Firebug.currentContext);
+                    FBTrace.sysout("commandLine.onCommandLineFocus, attachCommandLine "+cmdLine, cmdLine);
                 }
                 catch (e)
                 {
@@ -786,43 +788,44 @@ Firebug.CommandLine = extend(Firebug.Module,
 
     isAttached: function(context)
     {
-        return context && context.window && context.window.wrappedJSObject &&
-            context.window.wrappedJSObject._FirebugCommandLine;
+        // _FirebugCommandLine is evaluated into the page
+        return ( context && context.window && context.window.wrappedJSObject ) ?
+            context.window.wrappedJSObject._FirebugCommandLine : false;
     },
 
     attachConsoleOnFocus: function()
     {
-        if (!FirebugContext)
+        if (!Firebug.currentContext)
         {
             if (FBTrace.DBG_ERRORS || FBTrace.DBG_COMMANDLINE)
-                FBTrace.sysout("commandLine.attachConsoleOnFocus no FirebugContext");
+                FBTrace.sysout("commandLine.attachConsoleOnFocus no Firebug.currentContext");
             return;
         }
 
         if (FBTrace.DBG_COMMANDLINE)
-            FBTrace.sysout("commandLine.attachConsoleOnFocus: FirebugContext is "+FirebugContext.getName() +
+            FBTrace.sysout("commandLine.attachConsoleOnFocus: Firebug.currentContext is "+Firebug.currentContext.getName() +
                 " in window "+window.location);
 
         // User has decided to use the command line, but the web page may not have the console
         // if the page has no javascript
-        if (Firebug.Console.isReadyElsePreparing(FirebugContext))
+        if (Firebug.Console.isReadyElsePreparing(Firebug.currentContext))
         {
             // the page had _firebug so we know that consoleInjected.js compiled and ran.
             if (FBTrace.DBG_COMMANDLINE)
             {
-                if (FirebugContext)
-                    FBTrace.sysout("commandLine.attachConsoleOnFocus: "+FirebugContext.getName());
+                if (Firebug.currentContext)
+                    FBTrace.sysout("commandLine.attachConsoleOnFocus: "+Firebug.currentContext.getName());
                 else
-                    FBTrace.sysout("commandLine.attachConsoleOnFocus: No FirebugContext\n");
+                    FBTrace.sysout("commandLine.attachConsoleOnFocus: No Firebug.currentContext\n");
             }
         }
         else
         {
-            Firebug.Console.injector.forceConsoleCompilationInPage(FirebugContext, FirebugContext.window);
+            Firebug.Console.injector.forceConsoleCompilationInPage(Firebug.currentContext, Firebug.currentContext.window);
 
             if (FBTrace.DBG_COMMANDLINE)
                 FBTrace.sysout("commandLine.attachConsoleOnFocus, attachConsole "+
-                    FirebugContext.window.location);
+                    Firebug.currentContext.window.location);
         }
     },
 
@@ -870,6 +873,7 @@ Firebug.CommandLine.CommandHandler = extend(Object,
         var element = event.target;
         var methodName = win.document.getUserData("firebug-methodName");
 
+        // We create this array in the page using JS, so we need to look on the wrappedJSObject for it.
         var hosed_userObjects = (win.wrappedJSObject?win.wrappedJSObject:win)._firebug.userObjects;
 
         var userObjects = hosed_userObjects ? cloneArray(hosed_userObjects) : [];
@@ -877,7 +881,6 @@ Firebug.CommandLine.CommandHandler = extend(Object,
         if (FBTrace.DBG_COMMANDLINE)
         {
             FBTrace.sysout("commandLine.CommandHandler: method "+methodName+" userObjects:",  userObjects);
-            FBTrace.sysout("commandLine.CommandHandler: "+(win.wrappedJSObject?"win.wrappedJSObject._firebug":"win._firebug"), (win.wrappedJSObject?win.wrappedJSObject._firebug:win._firebug));
             if (!userObjects)
                 debugger;
         }
@@ -964,7 +967,9 @@ function autoCompleteEval(preExpr, expr, postExpr, context)
                     if (FBTrace.DBG_COMMANDLINE)
                         FBTrace.sysout("commandLine.autoCompleteEval \'"+preExpr+"\' found result", result);
 
-                    if (typeof result === 'string' || FirebugReps.Arr.isArray(result))
+                    if (typeof result === 'string')
+                        self.complete = [];
+                    else if (FirebugReps.Arr.isArray(result))
                         self.complete = nonNumericKeys(result).sort();
                     else
                         self.complete = keys(result).sort();
@@ -1055,26 +1060,31 @@ function cleanIndentation(text)
 
 // ************************************************************************************************
 // Command line APIs definition
+//
+// These functions will be called in the extension like this:
+//   subHandler.apply(api, userObjects);
+// where subHandler is one of the entries below, api is this object and userObjects are entries in
+// an array we created in the web page.
 
-function FirebugCommandLineAPI(context, baseWindow)
+function FirebugCommandLineAPI(context)
 {
-    this.$ = function(id)
+    this.$ = function(id)  // uses only DOM calls
     {
-        var doc = baseWindow.document;
-        return baseWindow.document.getElementById(id);
+        var doc = context.baseWindow.document;
+        return context.baseWindow.document.getElementById(id);
     };
 
-    this.$$ = function(selector)
+    this.$$ = function(selector) // uses only DOM calls
     {
-        return FBL.getElementsBySelector(baseWindow.document, selector);
+        return context.baseWindow.document.querySelectorAll(selector);
     };
 
-    this.$x = function(xpath)
+    this.$x = function(xpath) // uses only DOM calls
     {
-        return FBL.getElementsByXPath(baseWindow.document, xpath);
+        return FBL.getElementsByXPath(context.baseWindow.document, xpath);
     };
 
-    this.$n = function(index)
+    this.$n = function(index) // values from the extension space
     {
         var htmlPanel = context.getPanel("html", true);
         if (!htmlPanel)
@@ -1087,7 +1097,7 @@ function FirebugCommandLineAPI(context, baseWindow)
         if (!node)
             return node;
 
-        return node.wrappedJSObject;
+        return node;
     };
 
     this.cd = function(object)
@@ -1105,29 +1115,29 @@ function FirebugCommandLineAPI(context, baseWindow)
         // the same window (from tabWatcher) that uses uses XPCNativeWrapper (operator "==" works).
         var entry = Firebug.Console.injector.getConsoleHandlerEntry(context, object);
         if (entry)
-            baseWindow = entry.win;
+            context.baseWindow = entry.win;
 
         Firebug.Console.log(["Current window:", context.baseWindow], context, "info");
     };
 
-    this.clear = function()
+    this.clear = function()  // no web page interaction
     {
         Firebug.Console.clear(context);
     };
 
-    this.inspect = function(obj, panelName)
+    this.inspect = function(obj, panelName)  // no web page interaction
     {
         Firebug.chrome.select(obj, panelName);
     };
 
     this.keys = function(o)
     {
-        return FBL.keys(o);
+        return FBL.keys(o);  // the object is from the page, unwrapped
     };
 
     this.values = function(o)
     {
-        return FBL.values(o);
+        return FBL.values(o); // the object is from the page, unwrapped
     };
 
     this.debug = function(fn)
@@ -1152,22 +1162,22 @@ function FirebugCommandLineAPI(context, baseWindow)
 
     this.traceAll = function()
     {
-        Firebug.Debugger.traceAll(FirebugContext);
+        Firebug.Debugger.traceAll(Firebug.currentContext);
     };
 
     this.untraceAll = function()
     {
-        Firebug.Debugger.untraceAll(FirebugContext);
+        Firebug.Debugger.untraceAll(Firebug.currentContext);
     };
 
     this.traceCalls = function(fn)
     {
-        Firebug.Debugger.traceCalls(FirebugContext, fn);
+        Firebug.Debugger.traceCalls(Firebug.currentContext, fn);
     };
 
     this.untraceCalls = function(fn)
     {
-        Firebug.Debugger.untraceCalls(FirebugContext, fn);
+        Firebug.Debugger.untraceCalls(Firebug.currentContext, fn);
     };
 
     this.monitorEvents = function(object, types)
@@ -1255,18 +1265,12 @@ Firebug.CommandLine.injector = {
 
     addCommandLineListener: function(context, win)
     {
-        if (win.wrappedJSObject)
-            win = win.wrappedJSObject;
-
         // Register listener for command-line execution events.
         var handler = new CommandLineHandler(context, win);
 
-        if (!context.activeCommandLineHandlers)
-            context.activeCommandLineHandlers = {};
-
         var boundHandler = bind(handler.handleEvent, handler);
 
-        context.activeCommandLineHandlers[win] = boundHandler;
+        this.setCommandLineListener(context, win, boundHandler);
 
         win.document.addEventListener("firebugExecuteCommand", boundHandler, true);
         win.document.setUserData("firebug-CommandLineListener", "true", null);
@@ -1275,11 +1279,30 @@ Firebug.CommandLine.injector = {
             FBTrace.sysout("commandLine.addCommandLineListener to document in window"+win.location+" with console ", win.console);
     },
 
+    getCommandLineListener: function(context, win)
+    {
+        if (context.activeCommandLineHandlers)
+        {
+            var consoleHandler = Firebug.Console.injector.getConsoleHandler(context, win);
+            if (consoleHandler)
+                return context.activeCommandLineHandlers[consoleHandler.token];
+
+            if (FBTrace.DBG_CONSOLE)
+                FBTrace.sysout("getCommandLineListener no consoleHandler for "+context.getName()+" win "+safeGetWindowLocation(win));
+        }
+    },
+
+    setCommandLineListener: function(context, win, boundHandler)
+    {
+        if (!context.activeCommandLineHandlers)
+            context.activeCommandLineHandlers = {};
+
+        var consoleHandler = Firebug.Console.injector.getConsoleHandler(context, win);
+        context.activeCommandLineHandlers[consoleHandler.token] = boundHandler;
+    },
+
     detachCommandLine: function(context, win)
     {
-        if (win.wrappedJSObject)
-            win = win.wrappedJSObject;
-
         if (win.document.getUserData("firebug-CommandLineListener") === "true")
         {
             if (FBTrace.DBG_ERRORS)
@@ -1290,12 +1313,10 @@ Firebug.CommandLine.injector = {
                 }
             }
             Firebug.CommandLine.evaluate("window._FirebugCommandLine.detachCommandLine()", context, null, win, null, failureCallback );
-            if (context.activeCommandLineHandlers)
-            {
-                var boundHandler = context.activeCommandLineHandlers[win];
-                if (boundHandler)
-                    win.document.removeEventListener("firebugExecuteCommand", boundHandler, true);
-            }
+
+            var boundHandler = this.getCommandLineListener(context, win);
+            if (boundHandler)
+                win.document.removeEventListener("firebugExecuteCommand", boundHandler, true);
 
             win.document.setUserData("firebug-CommandLineListener", null, null);
             if (FBTrace.DBG_COMMANDLINE)
@@ -1308,23 +1329,24 @@ function CommandLineHandler(context, win)
 {
     this.handleEvent = function(event)  // win is the window the handler is bound into
     {
-        var baseWindow = context.baseWindow? context.baseWindow : context.window;
-        this.api = new FirebugCommandLineAPI(context,  baseWindow.wrappedJSObject);
+        context.baseWindow = context.baseWindow || context.window;
+        this.api = new FirebugCommandLineAPI(context);
 
         if (FBTrace.DBG_COMMANDLINE)
-            FBTrace.sysout("commandLine.handleEvent('firebugExecuteCommand') event in baseWindow "+
-                baseWindow.location, event);
+            FBTrace.sysout("commandLine.handleEvent('firebugExecuteCommand') event in context.baseWindow "+
+                context.baseWindow.location, event);
 
         // Appends variables into the api.
         var htmlPanel = context.getPanel("html", true);
-        var vars = htmlPanel?htmlPanel.getInspectorVars():null;
+        var vars = htmlPanel ? htmlPanel.getInspectorVars():null;
+
         for (var prop in vars)
         {
             function createHandler(p) {
                 return function() {
                     if (FBTrace.DBG_COMMANDLINE)
                         FBTrace.sysout("commandLine.getInspectorHistory: " + p, vars);
-                    return vars[p] ? vars[p].wrappedJSObject : null;
+                    return vars[p];
                 }
             }
             this.api[prop] = createHandler(prop);  // XXXjjb should these be removed?

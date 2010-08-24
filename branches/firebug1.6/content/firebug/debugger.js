@@ -169,7 +169,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
         Firebug.Debugger.halt(function haltAnalysis(frame)
         {
             if (FBTrace.DBG_UI_LOOP)
-                FBTrace.sysout("debugger.breakNow: frame "+frame.script.fileName+" context "+context.getName(), frame);
+                FBTrace.sysout("debugger.breakNow: frame "+frame.script.fileName+" context "+context.getName(), getJSDStackDump(frame) );
 
             for (; frame && frame.isValid; frame = frame.callingFrame)
             {
@@ -573,15 +573,15 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     {
         if (typeof(fn) == "function" || fn instanceof Function)
         {
-            var script = findScriptForFunctionInContext(FirebugContext, fn);
+            var script = findScriptForFunctionInContext(Firebug.currentContext, fn);
             if (script)
                 this.monitorScript(fn, script, mode);
             else
-                Firebug.Console.logFormatted(["Firebug unable to locate jsdIScript for function", fn], FirebugContext, "info");
+                Firebug.Console.logFormatted(["Firebug unable to locate jsdIScript for function", fn], Firebug.currentContext, "info");
         }
         else
         {
-            Firebug.Console.logFormatted(["Firebug.Debugger.monitorFunction requires a function", fn], FirebugContext, "info");
+            Firebug.Console.logFormatted(["Firebug.Debugger.monitorFunction requires a function", fn], Firebug.currentContext, "info");
         }
     },
 
@@ -589,7 +589,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     {
         if (typeof(fn) == "function" || fn instanceof Function)
         {
-            var script = findScriptForFunctionInContext(FirebugContext, fn);
+            var script = findScriptForFunctionInContext(Firebug.currentContext, fn);
             if (script)
                 this.unmonitorScript(fn, script, mode);
         }
@@ -597,7 +597,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
 
     monitorScript: function(fn, script, mode)
     {
-        var scriptInfo = Firebug.SourceFile.getSourceFileAndLineByScript(FirebugContext, script);
+        var scriptInfo = Firebug.SourceFile.getSourceFileAndLineByScript(Firebug.currentContext, script);
         if (scriptInfo)
         {
             if (mode == "debug")
@@ -609,7 +609,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
 
     unmonitorScript: function(fn, script, mode)
     {
-        var scriptInfo = Firebug.SourceFile.getSourceFileAndLineByScript(FirebugContext, script);
+        var scriptInfo = Firebug.SourceFile.getSourceFileAndLineByScript(Firebug.currentContext, script);
         if (scriptInfo)
         {
             if (mode == "debug")
@@ -689,8 +689,8 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             if (currentBreakable == "false") // then we are armed but we broke
                 Firebug.chrome.setGlobalAttribute("cmd_breakOnNext", "breakable", "true");
 
-            if (context != FirebugContext || Firebug.isDetached())
-                Firebug.selectContext(context);  // Make FirebugContext = context and sync the UI
+            if (context != Firebug.currentContext || Firebug.isDetached())
+                Firebug.selectContext(context);  // Make Firebug.currentContext = context and sync the UI
 
             if (Firebug.isMinimized()) // then open the UI to show we are stopped
                 Firebug.unMinimize();
@@ -752,6 +752,11 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
                     panel.highlight(false);
 
                 chrome.syncSidePanels();  // after main panel is all updated.
+            }
+            else
+            {
+                if (FBTrace.DBG_UI_LOOP)
+                    FBTrace.sysout("debugger.stopDebugging else "+context.getName()+" "+context.window.location);
             }
         }
         catch (exc)
@@ -2160,7 +2165,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     {
         this.registerDebugger();
 
-        if (FirebugContext && !fbs.isJSDActive())
+        if (Firebug.currentContext && !fbs.isJSDActive())
             fbs.unPause();
 
         if (FBTrace.DBG_PANELS || FBTrace.DBG_ACTIVATION)
@@ -2179,9 +2184,9 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
                     var name = this.dependents[0].dispatchName;
 
                     // Log message into the console to inform the user
-                    if (FirebugContext)
+                    if (Firebug.currentContext)
                         Firebug.Console.log("Cannot disable the script panel, " + name +
-                            " panel requires it", FirebugContext);
+                            " panel requires it", Firebug.currentContext);
 
                     if (FBTrace.DBG_PANELS)
                         FBTrace.sysout("debugger.onPanelDisable rejected: " + name +
@@ -2207,8 +2212,8 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             if (!this.isAlwaysEnabled()) // then we need to enable
             {
                 this.activateDebugger();
-                if (FirebugContext)
-                    Firebug.Console.log("enabling javascript debugger to support "+dependentAddedOrRemoved.dispatchName, FirebugContext);
+                if (Firebug.currentContext)
+                    Firebug.Console.log("enabling javascript debugger to support "+dependentAddedOrRemoved.dispatchName, Firebug.currentContext);
             }
         }
 

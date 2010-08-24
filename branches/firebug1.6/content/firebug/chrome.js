@@ -1,9 +1,8 @@
 /* See license.txt for terms of usage */
 
 var Firebug = null;
-var FirebugContext = null;
 
-/* The 'context' in this file is always 'FirebugContext' */
+/* The 'context' in this file is always 'Firebug.currentContext' */
 
 (function() {
 
@@ -102,8 +101,7 @@ top.FirebugChrome =
             // we've been opened in a new window by an already initialized Firebug
             top.FBL = detachArgs.FBL;
             Firebug = detachArgs.Firebug;
-            FirebugContext = detachArgs.FirebugContext;
-            Firebug.currentContext = FirebugContext;
+            Firebug.currentContext = detachArgs.Firebug.currentContext;
         }
         else
         {
@@ -211,9 +209,9 @@ top.FirebugChrome =
             // Append all registered styleesheets into Firebug UI.
             for (var uri in Firebug.stylesheets)
             {
-                this.appendStylesheet(doc1, Firebug.stylesheets[uri]);
-                this.appendStylesheet(doc2, Firebug.stylesheets[uri]);
-                this.appendStylesheet(doc3, Firebug.stylesheets[uri]);
+                FBL.appendStylesheet(doc1, Firebug.stylesheets[uri]);
+                FBL.appendStylesheet(doc2, Firebug.stylesheets[uri]);
+                FBL.appendStylesheet(doc3, Firebug.stylesheets[uri]);
             }
 
             FirstRunPage.initializeUI();
@@ -222,17 +220,6 @@ top.FirebugChrome =
         {
             FBTrace.sysout("chrome.initializeUI fails "+exc, exc);
         }
-    },
-
-    appendStylesheet: function(doc, uri)
-    {
-        // Make sure the stylesheet is not appended twice.
-        if ($(uri, doc))
-            return;
-
-        var styleSheet = FBL.createStyleSheet(doc, uri);
-        styleSheet.setAttribute("id", uri);
-        FBL.addStyleSheet(doc, styleSheet);
     },
 
     shutdown: function()
@@ -543,6 +530,14 @@ top.FirebugChrome =
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Panels
 
+    /*
+     * Set this.location on the current panel or one given by name.
+     * The location object should be known to the caller to be of the correct type for the panel,
+     * eg SourceFile for Script panel
+     * @param object the location object, null selects default location
+     * @param panelName the .name field for the desired panel, null means current panel
+     * @param sidePanelName I don't know how this affects the outcome
+     */
     navigate: function(object, panelName, sidePanelName)
     {
         var panel;
@@ -555,6 +550,13 @@ top.FirebugChrome =
             panel.navigate(object);
     },
 
+    /*
+     *  Set this.selection by object type analysis, passing the object to all panels to find the best match
+     *  @param object the new this.selection object
+     *  @param panelName matching panel.name will be used if its supportsObject returns true value
+     *  @param sidePanelName default side panel name, used if its supportObject returns true value
+     *  @param forceUpdate if true, then (object === this.selection) is ignored and updateSelection is called
+     */
     select: function(object, panelName, sidePanelName, forceUpdate)
     {
         if (FBTrace.DBG_PANELS)
@@ -668,13 +670,13 @@ top.FirebugChrome =
 
     setFirebugContext: function(context)
     {
-         // This sets the global value of FirebugContext in the window that this chrome is compiled into.
-         // Note that for firebug.xul, the Firebug object is shared across windows, but not FirebugChrome and FirebugContext
+         // This sets the global value of Firebug.currentContext in the window that this chrome is compiled into.
+         // Note that for firebug.xul, the Firebug object is shared across windows, but not FirebugChrome and Firebug.currentContext
          FirebugContext = context;
          Firebug.currentContext = context;
 
          if (FBTrace.DBG_WINDOWS || FBTrace.DBG_DISPATCH)
-             FBTrace.sysout("setFirebugContext "+(Firebug.currentContext?Firebug.currentContext.getName():" **> NULL <** ") + " in "+window.location+" has wrapped: "+(Firebug.currentContext?Firebug.currentContext.wrappedJSObject:"no"));
+             FBTrace.sysout("setFirebugContext "+(Firebug.currentContext?Firebug.currentContext.getName():" **> NULL <** ") + " in "+window.location);
     },
 
     hidePanel: function()
@@ -1198,7 +1200,7 @@ top.FirebugChrome =
         var items = [];
 
         // Domplate (+ support for context menus) can be used even in separate
-        // windows when FirebugContext doesn't have to be defined.
+        // windows when Firebug.currentContext doesn't have to be defined.
         if (!Firebug.currentContext)
             return items;
 
