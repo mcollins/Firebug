@@ -24,11 +24,13 @@ function runTest()
                 var node = stylePanel.panelNode.querySelector(".cssSelector");
                 FBTest.executeContextMenuCommand(node, "fbCopyStyleDeclaration", function()
                 {
-                    var cssDecl = FBTest.getClipboardText();
-                    var expected = "background-color: LightYellow;\ncolor: red;\nfont-weight: bold;";
-                    FBTest.compare(expected, cssDecl,
-                        "CSS declaration must be properly copied into the clipboard");
-                    FBTest.testDone("issue2976.DONE");
+                    setTimeout(function() {
+                        var cssDecl = FBTest.getClipboardText();
+                        var expected = "background-color: LightYellow;\ncolor: red;\nfont-weight: bold;";
+                        FBTest.compare(expected, cssDecl,
+                            "CSS declaration must be properly copied into the clipboard");
+                        FBTest.testDone("issue2976.DONE");
+                    }, 1000);
                 });
             })
         });

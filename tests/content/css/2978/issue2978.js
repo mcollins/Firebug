@@ -21,10 +21,12 @@ function runTest()
                 FBTest.clearClipboard();
                 FBTest.executeContextMenuCommand(nodeTag, "fbCopyCSSPath", function()
                 {
-                    var cssPath = FBTest.getClipboardText();
-                    FBTest.compare("html body div.myClass span#myElement", cssPath,
-                        "CSS path must be properly copied into the clipboard");
-                    FBTest.testDone("issue2978.DONE");
+                    setTimeout(function() {
+                        var cssPath = FBTest.getClipboardText();
+                        FBTest.compare("html body div.myClass span#myElement", cssPath,
+                            "CSS path must be properly copied into the clipboard");
+                        FBTest.testDone("issue2978.DONE");
+                    }, 1000);
                 });
             })
         });
