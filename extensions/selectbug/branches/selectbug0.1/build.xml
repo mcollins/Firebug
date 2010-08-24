@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 
-<!-- In order to build eventbug extension run: $ant build
-    The final xpi file should be located in release directory -->
+<!-- In order to build selectbug extension run: $ant build
+    The final xpi file should be located in release directory
+    GETFIREBUG in ant.properties assumes you have fbug and getfirebug.com directories at the same level -->
 <project name="selectbug" basedir="." default="build">
 
     <!-- Directories -->
     <property name="build.dir" value="../../build"/>
-	<property name="release.dir" value="../../releases"/>
-
+	 
     <!-- Properties -->
     <property file="ant.properties"/>
 
@@ -33,7 +33,7 @@
         <copy file="chrome.manifest" todir="${build.dir}"/>
         <copy file="install.rdf" todir="${build.dir}"/>
     	<copy file="license.txt" todir="${build.dir}"/>
-        <copy file="update.rdf" todir="${release.dir}"/>
+        <copy file="update.rdf" todir="${GETFIREBUG}"/>
 
         <!-- Update release version from ant.properties file -->
         <replace file="${build.dir}/install.rdf" propertyFile="ant.properties">
@@ -42,11 +42,11 @@
         </replace>
 
         <!-- Create final selectbug.xpi file -->
-        <zip destfile="${release.dir}/selectbug-${VERSION}${RELEASE}.xpi"
+        <zip destfile="${GETFIREBUG}/selectbug-${VERSION}${RELEASE}.xpi"
             basedir="${build.dir}" update="true" />
 
         <!-- Generate update.rdf file -->
-        <replace file="${release.dir}/update.rdf" propertyFile="ant.properties">
+        <replace file="${GETFIREBUG}/update.rdf" propertyFile="ant.properties">
             <replacefilter token="@VERSION@" property="VERSION"/>
             <replacefilter token="@RELEASE@" property="RELEASE"/>
         </replace>
@@ -54,7 +54,7 @@
     	<delete dir="${build.dir}"/>
     	
         <!-- Final version message -->
-        <echo message="SelectBug version: ${VERSION}${RELEASE} in ${release.dir}"/>
+        <echo message="SelectBug version: ${VERSION}${RELEASE} in ${GETFIREBUG}"/>
     </target>
 
 </project>
