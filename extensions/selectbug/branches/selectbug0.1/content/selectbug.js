@@ -189,7 +189,11 @@ SelectorPanel.prototype = extend(Firebug.Panel,
         }
         var table = SelectorTemplate.tag.replace({object: []}, this.panelNode);
         var tbody = table.lastChild;
-        WarningTemplate.noSelectionTag.insertRows({object: this.selection}, tbody.lastChild);
+        if (this.trialSelector)
+            WarningTemplate.noSelectionResultsTag.insertRows({object: this.selection}, tbody.lastChild)
+        else
+            WarningTemplate.noSelectionTag.insertRows({object: this.selection}, tbody.lastChild);
+
         this.showTrialSelector(this.trialSelector);
     },
 
@@ -343,6 +347,10 @@ var WarningTemplate = domplate(Firebug.Rep,
     noSelectionTag: TR({"class":"selectbugWarning "},
                         TD({"class": "selectionElement"}, $STR("selectbug.noSelection"))
                     ),
+
+    noSelectionResultsTag: TR({"class":"selectbugWarning "},
+                            TD({"class": "selectionElement"}, $STR("selectbug.noSelectionResults"))
+                        ),
 
     selectErrorTag: TR({"class":"selectbugWarning"},
                         TD({"class": "selectionElement"}, $STR("selectbug.selectorError"))
