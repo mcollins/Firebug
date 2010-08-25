@@ -700,7 +700,7 @@ FBL.ns(function() { with(FBL) {
         window.openDialog("chrome://crossfire/content/connect-dialog.xul", "crossfire-connect","chrome,modal,dialog", params);
 
         if (params.host && params.port) {
-            CrossfireModule.connect(params.host, parseInt(params.port));
+            CrossfireModule.connectClient(params.host, parseInt(params.port));
         }
     };
 
