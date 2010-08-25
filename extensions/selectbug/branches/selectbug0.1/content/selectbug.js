@@ -225,6 +225,18 @@ SelectorPanel.prototype = extend(Firebug.Panel,
         return this.editor;
     },
 
+    setTrialSelector: function(target, value)
+    {
+        if (this.lockedElement)
+            this.lockedElement.classList.remove("lockedSelectorRule");
+
+        this.trialSelector = value;
+        this.selection = this.trialSelector;
+        this.lockedElement = target;
+        this.lockedSelection = this.selection;
+        this.rebuild();
+    },
+
     showTrialSelector: function(trialSelector)
     {
         var show = trialSelector ? true : false;
@@ -320,10 +332,9 @@ SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
     {
         if (cancel || value == "")
             return;
-        this.panel.trialSelector = value;
-        this.panel.selection = this.panel.trialSelector;
-        this.panel.rebuild();
-    }
+        this.panel.setTrialSelector(target, value);
+    },
+
 });
 
 
