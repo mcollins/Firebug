@@ -161,6 +161,7 @@
 
     <!-- Status bar info -->
     <statusbar id="statusBar" context="statusBarContextMenu">
+        <label id="testCount" tooltiptext="fbtest.tooltip.TestCount"/>
         <label id="passingTests" tooltiptext="fbtest.tooltip.Passing"/>
         <label id="failingTests" tooltiptext="fbtest.tooltip.Failing"/>
         <label id="todoTests" tooltip="todoTestsTooltip"/>

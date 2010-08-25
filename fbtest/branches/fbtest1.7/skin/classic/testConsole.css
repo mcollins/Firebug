@@ -69,6 +69,10 @@ body {
 /************************************************************************************************/
 /* Statusbar */
 
+#testCount {
+    padding-top: 3px;
+}
+
 #passingTests {
     color: green;
     padding-top: 3px;
