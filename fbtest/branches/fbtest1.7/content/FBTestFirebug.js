@@ -1161,6 +1161,23 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
     });
 }
 
+this.removeBreakpoint = function(chrome, url, lineNo, callback)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var panel = FBTestFirebug.getPanel("script");
+    if (!url)
+        url = panel.location.href;
+
+    FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
+    {
+        if (row.getAttribute("breakpoint") == "true")
+            panel.toggleBreakpoint(lineNo);
+        callback(row);
+    });
+}
+
 // ************************************************************************************************
 // Error handling
 
