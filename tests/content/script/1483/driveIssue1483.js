@@ -18,7 +18,6 @@ function runTest()
         FBTestFirebug.clearCache();
         FBTestFirebug.selectPanel("script");
         FBTestFirebug.enableScriptPanel(function (testWindow) {
-            win = testWindow;
             selectFile();
         });
     });
@@ -59,9 +58,13 @@ function secondReload(chrome)
     FBTestFirebug.waitForBreakInDebugger(chrome, lineNo, true, function wereDone()
     {
         FBTest.progress("Remove breakpoint");
-        var panel = chrome.getSelectedPanel();
 
+        var panel = chrome.getSelectedPanel();
+        FBTest.Firebug.selectSourceLine(panel.location.href, lineNo, "js");
+
+        FBTrace.sysout("issue1483: before toggle");
         panel.toggleBreakpoint(lineNo);
+        FBTrace.sysout("issue1483: after toggle");
 
         var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
         if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+lineNo+" should NOT have a breakpoint set"))
