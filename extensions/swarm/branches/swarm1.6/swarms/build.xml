@@ -18,7 +18,11 @@
     	<mkdir dir="${build.dir}/profile"/>
 	</target>
 	
-	<target name="install">
+	<target name="alreadyInstalled">
+		<available property="annotations.exist" file="${build.dir}/profile/firebug/annotations.json" />
+	</target>
+	
+	<target name="install" depends="alreadyInstalled"  unless="annotations.exist">
 		<!-- pre-install some preferences to avoid popup stuff during install run -->
 		 <copy file="user.js" todir="${build.dir}/profile"/>
 		<exec executable="${firefox}">
