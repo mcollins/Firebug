@@ -33,7 +33,7 @@ this.ok = function(pass, msg)
     if (!pass)
         this.onFailure(msg);
     else
-        FBTestApp.TestRunner.setTestTimeout();
+        FBTestApp.TestRunner.setTestTimeout(window);
 
     return pass;
 };
@@ -66,7 +66,7 @@ this.compare = function(expected, actual, msg)
         result, msg, expected, actual));
 
     if (result)
-        FBTestApp.TestRunner.setTestTimeout();
+        FBTestApp.TestRunner.setTestTimeout(window);
     else
         FBTest.onFailure(msg);
 
@@ -92,7 +92,7 @@ this.progress = function(msg)
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
     FBTestApp.TestSummary.setMessage(msg);
     FBTest.sysout("FBTest progress: ------------- "+msg+" -------------");
-    FBTestApp.TestRunner.setTestTimeout();
+    FBTestApp.TestRunner.setTestTimeout(window);
 };
 
 /**
