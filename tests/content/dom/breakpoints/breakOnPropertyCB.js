@@ -28,17 +28,17 @@ function runTest()
                     var testSuite = [];
                     testSuite.push(function(callback) {
                         FBTest.progress("4 " + win);
-                        breakOnMutation(win, "changeProperty", 45, callback);
+                        breakOnMutation(win, "changeProperty", 43, callback);
                     });
                     testSuite.push(function(callback) {
                         FBTest.click(win.document.getElementById("removeProperty"));
                         callback();
                     });
                     testSuite.push(function(callback) {
-                        breakOnMutation(win, "addProperty", 40, callback);
+                        breakOnMutation(win, "addProperty", 38, callback);
                     });
                     testSuite.push(function(callback) {
-                        breakOnMutation(win, "changeProperty", 45, callback);
+                        breakOnMutation(win, "changeProperty", 43, callback);
                     });
 
                     FBTestFirebug.runTestSuite(testSuite, function() {
