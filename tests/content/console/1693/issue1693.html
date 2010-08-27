@@ -26,19 +26,17 @@
 <button id="testButton" onclick="executeRequest()">Execute XHR</button>
 
 <script type="text/javascript">
-function executeRequest(callback)
+function executeRequest()
 {
     var request = new XMLHttpRequest();
     request.open("POST", "issue1693.php", true);
     request.onreadystatechange = function()
     {
-        if (request.readyState == 4 && request.status == 200)
+        if (request.status == 200 && request.readyState == 3)
         {
-            if (callback) {
-                setTimeout(function() {
-                    callback(request);
-                }, 300);
-            }
+            var event = document.createEvent("Events");
+            event.initEvent("data-received", true, false);
+            document.dispatchEvent(event)
         }
     }
     request.send(null);

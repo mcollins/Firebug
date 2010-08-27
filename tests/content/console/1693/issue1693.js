@@ -1,5 +1,3 @@
-window.FBTestTimeout = 17000; // override the default test timeout [ms].
-
 function runTest()
 {
     FBTest.sysout("issue1693.START");
@@ -10,6 +8,13 @@ function runTest()
         {
             FBTest.progress("issue1693.Select the Console panel and execute large request.");
             FBTestFirebug.selectPanel("console").panelNode;
+
+            // In case of slow connetion to the server, the download can take a time
+            // make sure the timeout is reset every time we receive something.
+            win.document.addEventListener("data-received", function() {
+                // xxxHonza: use API from FBTest 1.6a21 (as soon as it's there)
+                FBTestApp.TestRunner.setTestTimeout(window);
+            }, true);
 
             onRequestDisplayed(function(row)
             {
