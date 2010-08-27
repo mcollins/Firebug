@@ -5,12 +5,16 @@ function runTest()
     FBTest.openNewTab(basePath + "console/3292/issue3292.html", function(win)
     {
         FBTest.openFirebug();
+
         FBTest.enableConsolePanel(function(win)
         {
-            var panelNode = FW.FirebugChrome.selectPanel("console").panelNode;
+            var config = {
+                tagName: "div",
+                classes: "logRow logRow-log",
+                counter: 4
+            }
 
-            var textNodes = panelNode.querySelectorAll(".logRow-log .objectBox.objectBox-text");
-            if (FBTest.compare(textNodes.length, 4, "There must be 4 logs."))
+            waitForDisplayedElement("console", config, function(textNodes)
             {
                 // Verify the log content
                 FBTest.compare(textNodes[0].textContent, "parent log",
@@ -24,9 +28,34 @@ function runTest()
 
                 FBTest.compare(textNodes[3].textContent, "iframe log",
                     "iframe log must be displayed");
-            }
 
-            FBTest.testDone("issue3292.DONE");
+                FBTest.testDone("issue3292.DONE");
+            });
         });
     });
+}
+
+// The elements might be displayed already or in the future.
+// xxxHonza: if sucessfull, let's put it into FBTestFirebug
+function waitForDisplayedElement(panelName, config, callback)
+{
+    var panelNode = FBTest.selectPanel(panelName).panelNode;
+    var nodes = panelNode.getElementsByClassName(config.classes);
+    if (nodes.length >= config.counter)
+    {
+        FBTest.compare(config.counter, nodes.length, "Expected number of elements");
+
+        // Callback is executed after timeout so, this fucntion can finish.
+        // The callback usually ends the test.
+        setTimeout(function() {
+            callback(nodes);
+        });
+    }
+    else
+    {
+        FBTest.waitForDisplayedElement(panelName, config, function()
+        {
+            waitForDisplayedElement(panelName, config, callback);
+        });
+    }
 }
