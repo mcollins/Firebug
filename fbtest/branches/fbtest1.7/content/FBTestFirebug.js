@@ -33,7 +33,7 @@ this.ok = function(pass, msg)
     if (!pass)
         this.onFailure(msg);
     else
-        FBTestApp.TestRunner.setTestTimeout(window);
+        FBTest.resetTimeout();
 
     return pass;
 };
@@ -66,7 +66,7 @@ this.compare = function(expected, actual, msg)
         result, msg, expected, actual));
 
     if (result)
-        FBTestApp.TestRunner.setTestTimeout(window);
+        FBTest.resetTimeout();
     else
         FBTest.onFailure(msg);
 
@@ -92,7 +92,7 @@ this.progress = function(msg)
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
     FBTestApp.TestSummary.setMessage(msg);
     FBTest.sysout("FBTest progress: ------------- "+msg+" -------------");
-    FBTestApp.TestRunner.setTestTimeout(window);
+    FBTest.resetTimeout();
 };
 
 /**
@@ -139,6 +139,18 @@ this.sysout = function(text, obj)
     if (FBTrace.DBG_TESTCASE)
         FBTrace.sysout(text, obj);
 };
+
+/**
+ * In some cases the test can take longer time to execute than it's expected (e.g. due to a slow
+ * test server connection).
+ * Instead of changing the default timeout to another (bigger) - but still fixed value, the test
+ * can regularly reset the timeout.
+ * This way the runner knows that the test is not frozen and is still doing something.
+ */
+this.resetTimeout = function()
+{
+    FBTestApp.TestRunner.setTestTimeout(window);
+}
 
 // ************************************************************************************************
 // APIs used by test harness (direct access to FBTestApp)
