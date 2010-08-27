@@ -26,7 +26,7 @@ function runTest()
                 {
                     setTimeout(function() {
                         var cssDecl = FBTest.getClipboardText();
-                        var expected = "background-color: LightYellow;\ncolor: red;\nfont-weight: bold;";
+                        var expected = /background-color: LightYellow;\s*color: red;\s*font-weight: bold;/;
                         FBTest.compare(expected, cssDecl,
                             "CSS declaration must be properly copied into the clipboard");
                         FBTest.testDone("issue2976.DONE");
