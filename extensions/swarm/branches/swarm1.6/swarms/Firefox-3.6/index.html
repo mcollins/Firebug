@@ -22,32 +22,32 @@ var swarmCommands =
         this.selectAll();
         this.installSelected();
     },
-    
+
     selectAll: function()
     {
-        eachSwarm(function selectSwarm(swarm) 
+        eachSwarm(function selectSwarm(swarm)
         {
            var input = getInput(swarm);
            input.checked = true;
         });
         doSwarmSelect();
     },
-    
+
     installSelected: function()
     {
         var selected = getSelectedExtensions();
         var installInfo = {};
         for (var i = 0; i < selected.length; i++)
         {
-            installInfo[selected[i].id] = 
+            installInfo[selected[i].id] =
             {
                 URL: selected[i].href,
                 IconURL: "http://getfirebug.com/img/firebug-tiny.png", // should be 32x32 not 24x24
                 hash: selected[i].hash,
             }
-            
+
         }
-	   try 
+       try
         {
            InstallTrigger.install(installInfo);
         }
@@ -56,7 +56,7 @@ var swarmCommands =
            console.log("InstallTrigger FAILS "+exc, exc, installInfo);
         }
     },
-    
+
 
 };
 
@@ -81,7 +81,7 @@ function getSelectedExtensions()
             var a = inputs[i].parentNode.getElementsByClassName('extensionURL')[0];
             selectedForInstall.push(a);
         }
-    } 
+    }
     return selectedForInstall;
 }
 
@@ -109,7 +109,7 @@ function hookSwarmButtons()
     {
         swarmSelectors[i].addEventListener('click', doSwarmSelect, true);
         var input = swarmSelectors[i].getElementsByTagName('input')[0];
-  
+
     }
 
     var extensionButtons = document.getElementsByClassName("installThisOne");
@@ -121,26 +121,26 @@ function hookSwarmButtons()
 
 // **************************************************
 
-function doSwarmShowHide(event) 
+function doSwarmShowHide(event)
 {
     var selectedNames = "";
 
     eachExtInSwarm(event, function colorize(inSwarm)
     {
         if (event.type === "mouseover")
-	    inSwarm.classList.add("inSwarm");   
+        inSwarm.classList.add("inSwarm");
         else if (event.type === "mouseout")
-	    inSwarm.classList.remove("inSwarm");   
+        inSwarm.classList.remove("inSwarm");
 
-	selectedNames += inSwarm.getElementsByTagName('a')[0].textContent +" ";
+    selectedNames += inSwarm.getElementsByTagName('a')[0].textContent +" ";
     });
 
     if (event.type === "mouseover")
-	event.target.classList.add('inSwarm');
+    event.target.classList.add('inSwarm');
     else if (event.type === 'mouseout')
-	event.target.classList.remove('inSwarm');
+    event.target.classList.remove('inSwarm');
 
-    event.target.title = selectedNames;     
+    event.target.title = selectedNames;
 }
 
 function doSwarmSelect()
@@ -149,7 +149,7 @@ function doSwarmSelect()
     eachSwarm(function getSelectedSwarmNames(swarm)
     {
         var input = getInput(swarm);
-        if (input.checked) 
+        if (input.checked)
           selectedSwarms.push(input.value+"Swarm");
     });
 
@@ -184,7 +184,7 @@ function eachSwarm(fnOfSwarmDiv)
 function eachExtInSwarm(event, fnOfExtensionDiv)
 {
     if (!event.target.tagName === "div")
-	return;
+    return;
 
     var inputElement = getInput(event.target);
     if (!inputElement)
@@ -202,7 +202,7 @@ function eachExtInSwarm(event, fnOfExtensionDiv)
 function getInput(targetDiv)
 {
     if (targetDiv.tagName === 'INPUT')
-	return targetDiv;
+    return targetDiv;
 
     var inputElement = targetDiv.getElementsByTagName('input')[0];
     return inputElement;
@@ -215,7 +215,7 @@ function addMouseOvers()
     {
         swarmButtons[i].addEventListener('mouseover', doSwarmShowHide, true);
         swarmButtons[i].addEventListener('mouseout', doSwarmShowHide, true);
-    }    
+    }
 }
 
 // **************************************************
@@ -234,14 +234,14 @@ function doCommands()
            swarmCommands.installAll();
          else if (nv[0] === 'swarms')
          {
-           eachSwarm(function selectSwarm(swarm) 
+           eachSwarm(function selectSwarm(swarm)
            {
               var input = getInput(swarm);
               if (input.value === nv[1])
                  input.checked = true;
            });
          }
-      } 
+      }
    }
 }
 // **************************************************
@@ -301,9 +301,9 @@ window.addEventListener('load', onload, false);
   </tbody>
   </table>
  <div class="swarmSpecification">
- 
+
  <div class="theSwarm"> <!-- One item for every extension in the Swarm -->
-<form id="extensionSelector"> 
+<form id="extensionSelector">
   <div class="extension basicSwarm developerSwarm designerSwarm performanceSwarm">
   <input type="checkbox" class="installThisOne" name="extension" value="tbd" />
    <a class="extensionURL"
@@ -360,7 +360,7 @@ window.addEventListener('load', onload, false);
  <a class="extensionURL"
        href="http://getfirebug.com/releases/selectbug/selectbug-0.1a2.xpi"
        id="getfirebug@getfirebug.com"
-       >FBTest</a>
+       >SelectBug</a>
          <span class="extensionStatus"></span>
   <div class="extensionInfo">
   <p>List elements for each CSS selector, trial CSS selectors by typing them in.
