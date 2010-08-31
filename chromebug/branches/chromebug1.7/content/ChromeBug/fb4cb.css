@@ -231,7 +231,7 @@ panelTab[selected="true"]:hover > panelTabMenu .menuTarget {
     border:1px solid threedshadow;
     background-color:white;
     opacity:0.9;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     font-size: 11px;
     padding-bottom: 5px;
     cursor: move;
