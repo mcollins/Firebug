@@ -8,6 +8,8 @@ function runTest()
 
         FBTest.enableConsolePanel(function(win)
         {
+            FBTest.progress("Console panel enabled");
+
             var config = {
                 tagName: "div",
                 classes: "logRow logRow-log",
@@ -41,6 +43,8 @@ function waitForDisplayedElement(panelName, config, callback)
 {
     var panelNode = FBTest.selectPanel(panelName).panelNode;
     var nodes = panelNode.getElementsByClassName(config.classes);
+    FBTest.progress("Number of logs " + nodes.length);
+
     if (nodes.length >= config.counter)
     {
         FBTest.compare(config.counter, nodes.length, "Expected number of elements");
