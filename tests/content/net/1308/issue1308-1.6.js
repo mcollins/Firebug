@@ -17,8 +17,15 @@ function runTest()
             // Asynchronously wait for the request beeing displayed.
             FBTest.waitForDisplayedElement("net", options, function(netRow)
             {
-                checkCopyLocationWithParametersAction(netRow);
-                FBTestFirebug.testDone("issue1308.DONE");
+                var panel = FBTest.getPanel("net");
+
+                // Test the "Copy Location With Parameters action" available in the context menu
+                // for specific Net panel entry.
+                panel.copyParams(netRow.repObject);
+
+                checkCopyLocationWithParametersAction(netRow, function() {
+                    FBTestFirebug.testDone("issue1308.DONE");
+                });
             });
 
             FBTest.click(win.document.getElementById("testButton"));
@@ -26,30 +33,28 @@ function runTest()
     });
 }
 
-function checkCopyLocationWithParametersAction(netRow)
+function checkCopyLocationWithParametersAction(netRow, callback)
 {
-    var panel = FBTest.getPanel("net");
+    setTimeout(function()
+    {
+        // Get data from the clipboard.
+        var clipboard = FW.FBL.CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
+        var trans = FW.FBL.CCIN("@mozilla.org/widget/transferable;1", "nsITransferable");
+        trans.addDataFlavor("text/unicode");
+        clipboard.getData(trans, Ci.nsIClipboard.kGlobalClipboard);
 
-    // Test the "Copy Location With Parameters action" available in the context menu
-    // for specific Net panel entry.
-    panel.copyParams(netRow.repObject);
+        var str = new Object();
+        var strLength = new Object();
+        trans.getTransferData("text/unicode", str, strLength);
+        str = str.value.QueryInterface(Ci.nsISupportsString);
+        var actual = str.data.substring(0, strLength.value / 2);
 
-    // Get data from the clipboard.
-    var clipboard = FW.FBL.CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
-    var trans = FW.FBL.CCIN("@mozilla.org/widget/transferable;1", "nsITransferable");
-    trans.addDataFlavor("text/unicode");
-    clipboard.getData(trans, Ci.nsIClipboard.kGlobalClipboard);
+        // Complete expected result.
+        var requestUri = FBTest.getHTTPURLBase() + "net/1308/issue1308.txt";
+        var expected = requestUri + "?param1=1%20%2B%202";
 
-    var str = new Object();
-    var strLength = new Object();
-    trans.getTransferData("text/unicode", str, strLength);
-    str = str.value.QueryInterface(Ci.nsISupportsString);
-    var actual = str.data.substring(0, strLength.value / 2);
-
-    // Complete expected result.
-    var requestUri = FBTest.getHTTPURLBase() + "net/1308/issue1308.txt";
-    var expected = requestUri + "?param1=1%20%2B%202";
-
-    // Verification.
-    FBTest.compare(expected, actual, "Verify that the copied URL is properly encoded.");
+        // Verification.
+        FBTest.compare(expected, actual, "Verify that the copied URL is properly encoded.");
+        callback();
+    }, 1000);
 }
