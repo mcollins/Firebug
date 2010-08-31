@@ -1,0 +1,131 @@
+
+ol {
+    padding-right: 40px;
+}
+
+body {
+	font-family:"trebuchet ms",helvetica,sans-serif;
+}
+
+
+#contribute {
+   text-align: center;
+}
+
+#contribute span {
+   font-size: small;
+}
+
+#header {
+    width: 100%;
+    padding: 5px;
+}
+
+#logo
+{
+    float: right;
+    margin-right: 50px;
+}
+
+.extension {
+   padding: 5px;
+   border-style: solid;
+   border-color: gray;
+   border-width: 3px;
+   margin: -3px; /* causes the borders to overlay one another */
+}
+
+#extensionsSelected {
+   margin: 5px;
+}
+.inSwarm {
+/*   border-color:  #FF9933; */
+   background-color:  #FF9933; 
+}
+
+.extensionAuthor:before {
+   content: "by ";
+}
+.extensionURL {
+   font-weight: bold;
+}
+.extensionHash {
+   display: none;
+}
+.extensionInfo {
+	font-size: small;
+}
+.extensionMoreInfo {
+   float: right;
+}
+.certificationTests {
+   padding-left: 40px;
+}
+/* status */
+.extensionStatus {
+   float: right;
+   font-weight: bold;
+   color: #FF9933;
+}
+.extensionStatus:before {
+    content: "Version "
+}
+.installedVersion-None:after {
+    content: " not installed";
+}
+.installedVersion-Same:after {
+    content: ", already installed";
+    color: green;
+}
+.installedVersion-Older:after {
+    content: " older version installed";
+}
+.installedVersion-Newer:after {
+    content: " newer version installed";
+}
+.installing-download_start:after {
+    content: " download started";
+}
+.installing-download_start:after {
+    content: " download complete";
+    color: blue;
+}
+.installing-download_done:after {
+    content: " download complete";
+    color: green;
+}
+.installing-install_start:after {
+    content: " install started";
+    color: blue;
+}
+.installing-install_done:after {
+    content: " install complete";
+    color: green;
+}
+.install-failed {
+    color: red;
+}
+.installNotAllowed {
+    color: red;
+}
+.installNotAllowed:after {
+    color: red;
+    content: " install blocked";
+}
+.buildableExtension:after {
+    color: red;
+    content: " buildable";
+}
+
+.swarmInstall {
+    display: none;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: bold;
+    color: #FF9933;
+}
+
+/* Overall toggle */
+button.swarmInactive:after {
+    content: "Show Swarm";
+}
