@@ -44,7 +44,8 @@ FBTestApp.TestWindowLoader =
         var buttons = ["runAll", "stopTest", "haltOnFailedTest","noTestTimeout", "refreshList",
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
             "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox",
-            "passingTests", "failingTests", "menu_hidePassingTests", "menu_uploadTestResults"];
+            "passingTests", "failingTests", "menu_hidePassingTests", "menu_uploadTestResults",
+            "testCount"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -241,6 +242,11 @@ FBTestApp.TestConsole =
         urlBar.testURL = this.driverBaseURI;
     },
 
+    updateTestCount: function(count)
+    {
+        $("testCount").value = count;
+    },
+
     setAndLoadTestList: function()
     {
         this.updatePaths();
@@ -379,7 +385,9 @@ FBTestApp.TestConsole =
         // (tests) since they come from untrusted content.
         var map = [];
         this.groups = [];
-        for (var i=0; i<win.testList.length; i++)
+
+        var testCount = win.testList.length;
+        for (var i=0; i<testCount; i++)
         {
             var test = win.testList[i];
 
@@ -411,6 +419,7 @@ FBTestApp.TestConsole =
         this.appendToHistory(this.testListPath, this.testCasePath, this.driverBaseURI);
 
         this.updateURLBars();
+        this.updateTestCount(testCount);
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
@@ -592,12 +601,17 @@ FBTestApp.TestConsole =
             if (FBTestApp.defaultTest)
             {
                 var test = FBTestApp.TestConsole.getTest(FBTestApp.defaultTest);
-                if (FBTrace.DBG_FBTEST && !test)
-                    FBTrace.sysout("fbtest.autoRun; Test from command line doesn't exist: " +
-                        FBTestApp.defaultTest);
 
                 if (test)
-                    FBTestApp.TestRunner.runTests([test], goQuitApplication);
+                {
+                    FBTestApp.TestRunner.runTests([test]);
+                }
+                else
+                {
+                    throw new Error("fbtest.autoRun; Test from command line doesn't exist: " +
+                            FBTestApp.defaultTest);
+                }
+
             }
             else
             {

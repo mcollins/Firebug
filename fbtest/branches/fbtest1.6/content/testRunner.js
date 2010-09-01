@@ -662,7 +662,7 @@ FBTestApp.Preferences =
             return;
 
         for (var prefName in this.values)
-            Firebug.setPref(Firebug.prefDomain, prefName, this.values[prefName]);
+            Firebug.setPref(Firebug.prefDomain, prefName, this.values[prefName], typeof(this.values[prefName]));
 
         this.values = [];
     }

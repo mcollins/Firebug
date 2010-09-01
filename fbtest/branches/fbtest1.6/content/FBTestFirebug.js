@@ -33,7 +33,7 @@ this.ok = function(pass, msg)
     if (!pass)
         this.onFailure(msg);
     else
-        FBTestApp.TestRunner.setTestTimeout();
+        FBTest.resetTimeout();
 
     return pass;
 };
@@ -66,7 +66,7 @@ this.compare = function(expected, actual, msg)
         result, msg, expected, actual));
 
     if (result)
-        FBTestApp.TestRunner.setTestTimeout();
+        FBTest.resetTimeout();
     else
         FBTest.onFailure(msg);
 
@@ -92,7 +92,7 @@ this.progress = function(msg)
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window, true, "progress: "+msg));
     FBTestApp.TestSummary.setMessage(msg);
     FBTest.sysout("FBTest progress: ------------- "+msg+" -------------");
-    FBTestApp.TestRunner.setTestTimeout();
+    FBTest.resetTimeout();
 };
 
 /**
@@ -139,6 +139,18 @@ this.sysout = function(text, obj)
     if (FBTrace.DBG_TESTCASE)
         FBTrace.sysout(text, obj);
 };
+
+/**
+ * In some cases the test can take longer time to execute than it's expected (e.g. due to a slow
+ * test server connection).
+ * Instead of changing the default timeout to another (bigger) - but still fixed value, the test
+ * can regularly reset the timeout.
+ * This way the runner knows that the test is not frozen and is still doing something.
+ */
+this.resetTimeout = function()
+{
+    FBTestApp.TestRunner.setTestTimeout(window);
+}
 
 // ************************************************************************************************
 // APIs used by test harness (direct access to FBTestApp)
@@ -1161,6 +1173,23 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
     });
 }
 
+this.removeBreakpoint = function(chrome, url, lineNo, callback)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var panel = FBTestFirebug.getPanel("script");
+    if (!url)
+        url = panel.location.href;
+
+    FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
+    {
+        if (row.getAttribute("breakpoint") == "true")
+            panel.toggleBreakpoint(lineNo);
+        callback(row);
+    });
+}
+
 // ************************************************************************************************
 // Error handling
 
@@ -1428,7 +1457,13 @@ this.executeContextMenuCommand = function(target, menuId, callback)
     }
 
     // Wait till the menu is displayed.
-    contextMenu.addEventListener("popupshown", onPopupShown, false);
+    contextMenu.addEventListener("popupshown", function(event)
+    {
+        // Fire the event handler asynchronously so items have a chance to be appended.
+        setTimeout(function() {
+            onPopupShown(event);
+        }, 10);
+    }, false);
 
     // Right click on the target element.
     var eventDetails = {type : "contextmenu", button : 2};
