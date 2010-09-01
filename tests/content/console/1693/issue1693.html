@@ -24,19 +24,25 @@
 <i>The response text should be limited at the end since it's too big to display.</i>
 <br/><br/>
 <button id="testButton" onclick="executeRequest()">Execute XHR</button>
+<span id="progress"></span>
 
 <script type="text/javascript">
 function executeRequest()
 {
+    var responseSize = 468890;
     var request = new XMLHttpRequest();
     request.open("POST", "issue1693.php", true);
     request.onreadystatechange = function()
     {
-        if (request.status == 200 && request.readyState == 3)
+        if (request.readyState >= 3)
         {
             var event = document.createEvent("Events");
             event.initEvent("data-received", true, false);
-            document.dispatchEvent(event)
+            document.dispatchEvent(event);
+
+            var progress = document.getElementById("progress");
+            var size = request.responseText.length;
+            progress.innerHTML = Math.round((size / responseSize) * 100) + "% (" + size + "B)";
         }
     }
     request.send(null);
