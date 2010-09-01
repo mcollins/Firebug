@@ -28,7 +28,7 @@ function runTest()
                 {
                     hit = true;
                     FBTest.progress("issue1483.break on the breakpoint");
-                    removeBreakpoint(chrome, fileName, lineNo, function()
+                    FBTest.removeBreakpoint(chrome, fileName, lineNo, function()
                     {
                         FBTest.clickContinueButton(chrome);
                         FBTest.progress("issue1483.the continue button is pused");
@@ -51,25 +51,5 @@ function runTest()
                 });
             });
         });
-    });
-}
-
-// ************************************************************************************************
-
-// xxxHonza: the one from FBTest 1.6a21 should be used.
-function removeBreakpoint(chrome, url, lineNo, callback)
-{
-    if (!chrome)
-        chrome = FW.Firebug.chrome;
-
-    var panel = FBTestFirebug.getPanel("script");
-    if (!url)
-        url = panel.location.href;
-
-    FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
-    {
-        if (row.getAttribute("breakpoint") == "true")
-            panel.toggleBreakpoint(lineNo);
-        callback(row);
     });
 }

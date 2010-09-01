@@ -10,8 +10,7 @@ function runTest()
             // In case of slow connetion to the server, the download can take a time
             // make sure the timeout is reset every time we receive something.
             win.document.addEventListener("data-received", function() {
-                // xxxHonza: use API "FBTest.setTestTimeout" from 1.6a21 (as soon as it's there)
-                FBTestApp.TestRunner.setTestTimeout(win);
+                FBTest.resetTimeout(win);
             }, true);
 
             var config = {
