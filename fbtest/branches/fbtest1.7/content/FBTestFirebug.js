@@ -1457,7 +1457,13 @@ this.executeContextMenuCommand = function(target, menuId, callback)
     }
 
     // Wait till the menu is displayed.
-    contextMenu.addEventListener("popupshown", onPopupShown, false);
+    contextMenu.addEventListener("popupshown", function(event)
+    {
+        // Fire the event handler asynchronously so items have a chance to be appended.
+        setTimeout(function() {
+            onPopupShown(event);
+        }, 10);
+    }, false);
 
     // Right click on the target element.
     var eventDetails = {type : "contextmenu", button : 2};
