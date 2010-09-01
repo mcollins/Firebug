@@ -4,8 +4,9 @@ function runTest()
 
     FBTest.openNewTab(basePath + "console/3292/issue3292.html", function(win)
     {
-        FBTest.openFirebug();
+        FBTest.progress("Test page opened");
 
+        FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
             FBTest.progress("Console panel enabled");
