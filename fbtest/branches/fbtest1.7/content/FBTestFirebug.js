@@ -1588,6 +1588,31 @@ this.getClipboardText = function()
 }
 
 // ************************************************************************************************
+// Firefox Version
+
+/**
+ * Compare expected Firefox version with the current Firefox installed.
+ * @param {Object} expectedVersion Expected version of Firefox.
+ * @returns
+ * -1 the current version is smaller 
+ *  0 the current version is the same
+ *  1 the current version is bigger
+ *  
+ *  @example:
+ *  if (compareFirefoxVersion("3.6") >= 0)
+ *  {
+ *      // execute code for Firebug 3.6+
+ *  }
+ */
+this.compareFirefoxVersion = function(expectedVersion)
+{
+    var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].
+        getService(Ci.nsIVersionComparator);
+    var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+    return versionChecker.compare(appInfo.version, expectedVersion);
+}
+
+// ************************************************************************************************
 // Support for asynchronous test suites (within a FBTest).
 
 /**
