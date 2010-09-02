@@ -51,8 +51,8 @@ this.compare = function(expected, actual, msg)
     var result;
     if (expected instanceof RegExp)
     {
-        result = actual.match(expected);
-        expected = expected.toString();
+        result = actual ? actual.match(expected) : null;
+        expected = expected ? expected.toString() : null;
     }
     else
     {
@@ -827,6 +827,12 @@ this.getPanelDocument = function()
     return panelBar1.browser.contentDocument;
 }
 
+this.getSidePanelDocument = function()
+{
+    var panelBar1 = FW.document.getElementById("fbPanelBar2");
+    return panelBar1.browser.contentDocument;
+}
+
 /* user sees panel tab disabled? */
 this.isPanelTabDisabled = function(name)
 {
@@ -1109,6 +1115,9 @@ this.getSourceLineNode = function(lineNo, chrome)
  */
 this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
 {
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
     FBTest.progress("fbTestFirebug.waitForBreakInDebugger in chrome.window" + chrome.window.location);
 
     // Get document of Firebug's panel.html
@@ -1161,7 +1170,7 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
     if (!chrome)
         chrome = FW.Firebug.chrome;
 
-    var panel = FBTestFirebug.getPanel("script");
+    var panel = FBTestFirebug.selectPanel("script");
     if (!url)
         url = panel.location.href;
 
@@ -1178,7 +1187,7 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
     if (!chrome)
         chrome = FW.Firebug.chrome;
 
-    var panel = FBTestFirebug.getPanel("script");
+    var panel = FBTestFirebug.selectPanel("script");
     if (!url)
         url = panel.location.href;
 
@@ -1188,6 +1197,54 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
             panel.toggleBreakpoint(lineNo);
         callback(row);
     });
+}
+
+// ************************************************************************************************
+// Watch Panel
+
+/**
+ * Appends a new expression into the Watch panel (the side panel for the Script panel). 
+ * @param {Object} chrome The current Firebug's chrome (can be null).
+ * @param {Object} expression The expression to be evaluated.
+ * @param {Object} callback Called after the result is displayed.
+ */
+this.addWatchExpression = function(chrome, expression, callback)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var watchPanel = FBTest.getPanel("watches", true);
+    FBTest.ok(watchPanel, "The watch panel must be there");
+
+    // Create new watch expression (should be done by events).
+    var panelNode = watchPanel.panelNode;
+    var watchNewRow = panelNode.querySelector(".watchEditBox");
+    FBTest.ok(watchNewRow, "The watch edit box must be there");
+
+    // Click to open a text editor.
+    FBTest.mouseDown(watchNewRow);
+
+    var editor = panelNode.querySelector(".fixedWidthEditor");
+    FBTest.ok(editor, "The editor must be there");
+
+    // Wait till the result is evaluated and displayed.
+    var doc = FBTest.getSidePanelDocument();
+    var recognizer = new MutationRecognizer(doc.defaultView, "td",
+        {"class": "memberValueCell"});
+
+    recognizer.onRecognizeAsync(function(memberValueColumn)
+    {
+        // xxxHonza, XXXjjb: why the parameter isn't directly "memberValueCell" <td>
+        // as was specified in the constructor, but rather the parent <table> element?
+        var td = memberValueColumn.querySelector(".memberValueCell");
+        callback(td);
+    });
+
+    FBTest.focus(editor);
+
+    // Set expression and press enter.
+    FBTest.sendString(expression, editor);
+    FBTest.pressKey(13, editor);
 }
 
 // ************************************************************************************************
@@ -1203,7 +1260,6 @@ window.onerror = function(errType, errURL, errLineNum)
     FBTestFirebug.testDone();
     return false;
 }
-
 
 // ************************************************************************************************
 // Panel Navigation
