@@ -3,7 +3,9 @@
 <head>
   <title>Test Case for Issue #3397</title>
   <script type="text/javascript">
-  var FBL = {};
+  var FBL = {
+      escapeForSourceLine: function(str) { return str; }
+  };
   var FBTrace = {};
   </script>
   <script type="text/javascript" src="domplate.js" ></script>
@@ -33,11 +35,15 @@ var template = domplate(
 {
   table:
       TABLE({border: "1"},
-          TBODY(
+        TBODY(
+          FOR("row", "$data.rows",
               TR(
-                TD({onclick: "$onClick"}, "click here")
+                  FOR("value", "$row.values",
+                      TD({onclick: "$onClick"}, "$value")
+                  )
               )
           )
+        )
       ),
 
   onClick: function(event)
@@ -47,8 +53,16 @@ var template = domplate(
 });
 }
 
+var tableData = {
+  rows: [
+    {values: [1,2,3,4]},
+    {values: [11,22,33,44]},
+    {values: [111,222,333,444]},
+  ]
+};
+
 var parentNode = document.getElementById("content");
-template.table.replace({}, parentNode, template);
+template.table.replace({data: tableData}, parentNode, template);
 </script>
 
 </body>
