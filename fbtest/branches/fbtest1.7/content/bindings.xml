@@ -51,7 +51,7 @@
                 command: function() { FBTestApp.TestConsole.resetHistoryList(self); }
             });
             items.push({
-                label: "Load Registered Test Lists",
+                label: "Load Registered Tests",
                 nol10n: true,
                 command: function() { FBTestApp.TestConsole.loadTestList("fbtest:all"); }
             });
