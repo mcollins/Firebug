@@ -117,6 +117,7 @@ this.testDone = function(message)
  */
 this.getHTTPURLBase = function()
 {
+    // xxxHonza: should be set as a global in this scope.
     return FBTestApp.TestConsole.getHTTPURLBase();
 };
 
@@ -125,7 +126,8 @@ this.getHTTPURLBase = function()
  */
 this.getLocalURLBase = function()
 {
-    return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
+    // xxxHonza: should be set as a global in this scope.
+    return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestRunner.currentTest.driverBaseURI, true);
 };
 
 /**

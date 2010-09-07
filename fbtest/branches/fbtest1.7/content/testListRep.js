@@ -18,21 +18,32 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
 {
     tableTag:
         TABLE({"class": "groupTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
-            TBODY(
-                FOR("group", "$groups",
-                    TR({"class": "testGroupRow", _repObject: "$group"},
-                        TD({"class": "groupName testGroupCol"},
-                            SPAN({"class": "testGroupName"},
-                                "$group|getGroupName"
-                            ),
-                            SPAN({"class": "testGroupCount"},
-                                "$group|getGroupCount"
-                            ),
-                            SPAN({"class": "groupAction testLink", onclick: "$onGroupClick"},
-                                SPAN("Run")
-                            )
-                        )
-                    )
+            TBODY()
+        ),
+
+    groupRowTag:
+        TR({"class": "testGroupRow", _repObject: "$group"},
+            TD({"class": "groupName testGroupCol"},
+                SPAN({"class": "testGroupName"},
+                    "$group|getGroupName"
+                ),
+                SPAN({"class": "testGroupCount"},
+                    "$group|getGroupCount"
+                ),
+                SPAN({"class": "groupAction testLink", onclick: "$onGroupClick"},
+                    SPAN("Run")
+                )
+            )
+        ),
+
+    groupSeparatorTag:
+        TR({"class": "testGroupSeparator"},
+            TD(
+                SPAN({"class": "extension"},
+                    "$group.extension"
+                ),
+                SPAN({"class": "location"},
+                    "$group.testListPath"
                 )
             )
         ),

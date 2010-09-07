@@ -91,6 +91,31 @@
 
 /************************************************************************************************/
 
+.testGroupSeparator {
+    background: rgb(232, 242, 254);
+}
+
+.testGroupSeparator > TD {
+    height: 20px;
+    border-bottom: 1px solid #9C9C9C;
+    background-color: #BBBBBB;
+    border-top: 1px solid #999999;
+    border-bottom: 2px solid;
+    -moz-border-bottom-colors: #EFEFEF #999999;
+}
+
+.testGroupSeparator > TD > .extension {
+    font-weight: bold;
+    padding-left: 10px;
+}
+
+.testGroupSeparator > TD > .location {
+    color: gray;
+    padding-left: 10px;
+}
+
+/************************************************************************************************/
+
 .testListCol.testIcon {
     min-width: 60px;
     color: gray;

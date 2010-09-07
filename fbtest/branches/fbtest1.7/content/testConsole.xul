@@ -92,7 +92,7 @@
     </toolbox>
 
     <toolbox id="testDriverToolbox">
-        <toolbar id="testDriverToolbar" align="center" context="consoleToolbarContextMenu">
+        <toolbar id="testDriverToolbar" align="center"> <!--  context="consoleToolbarContextMenu" -->
 
             <toolbarbutton id="runAll"
                 label="fbtest.cmd.Run All" class="toolbar-image-button"
@@ -129,7 +129,7 @@
         </toolbar>
     </toolbox>
 
-    <menupopup id="consoleToolbarContextMenu"
+    <!--<menupopup id="consoleToolbarContextMenu"
         onpopupshowing="FBTestApp.TestConsole.onViewToolbarsPopupShowing(event);">
         <menuitem id="menu_showTestListURLBar" type="checkbox" checked="true"
             label="fbtest.urlbar.name.Test List URL Bar" toolbar="testListUrlBar"
@@ -140,7 +140,7 @@
         <menuitem id="menu_showTestDriverURLBar" type="checkbox" checked="false"
             label="fbtest.urlbar.name.Test Drivers URL Bar" toolbar="testDriverUrlBar"
             oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
-    </menupopup>
+    </menupopup>-->
 
     <popupset id="mainPopupSet">
         <menupopup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
