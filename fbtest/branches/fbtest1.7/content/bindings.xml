@@ -53,7 +53,7 @@
             items.push({
                 label: "Get Available Test Lists",
                 nol10n: true,
-                command: function() { FBTestApp.TestConsole.getAvailableTestLists(self); }
+                command: function() { FBTestApp.TestConsole.loadTestList("fbtest:all"); }
             });
 
             for (var i = 0; i < items.length; ++i)

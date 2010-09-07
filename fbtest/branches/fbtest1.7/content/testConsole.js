@@ -283,62 +283,18 @@ FBTestApp.TestConsole =
             Firebug.clearPref(FBTestApp.prefDomain, "testDriverHistory");
     },
 
-    getAvailableTestLists: function(urlBar)
-    {
-        var testLists = [];
-        dispatch([Firebug], "onGetTestList", [testLists]);
-        dispatch(Firebug.modules, "onGetTestList", [testLists]);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.getAvailableTestLists; ", testLists);
-    },
-
     loadTestList: function(testListPath, testCasePath)
     {
         this.testListPath = testListPath;
         if (testCasePath)
             this.testCasePath = testCasePath;
 
-        var taskBrowser = $("taskBrowser");
-        taskBrowser.addEventListener("DOMContentLoaded", FBTestApp.TestConsole.onTaskWindowDOMLoaded, true);
-
-        // Load test-list file into the content frame.
-        taskBrowser.setAttribute("src", testListPath);
+        if (testListPath == "fbtest:all")
+            FBTestApp.TestListLoader.loadAllRegisteredTests();
+        else
+            FBTestApp.TestListLoader.loadTestList(testListPath);
 
         this.updateURLBars();
-    },
-
-    onTaskWindowDOMLoaded: function(event)
-    {
-        var taskBrowser = $("taskBrowser");
-        var fbTestFrame = event.target.getElementById("FBTest");
-        if (fbTestFrame)
-            fbTestFrame.contentDocument.addEventListener("load", FBTestApp.TestConsole.onTaskFrameLoaded, true);
-        else
-            taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
-    },
-
-    onTaskFrameLoaded: function(event)
-    {
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("onTaskFrameLoaded "+event.target.getAttribute("id"), event.target);
-
-        if (event.target.getAttribute('id') === "FBTest")
-        {
-            FBTestApp.TestConsole.processTestList(event.target.contentDocument);
-            var taskBrowser = $("taskBrowser");
-            taskBrowser.removeEventListener("DOMFrameContentLoaded", FBTestApp.TestConsole.onTaskFrameLoaded, true);
-        }
-    },
-
-    onTaskWindowLoaded: function(event)
-    {
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("onTaskWindowLoaded "+event.target.location, event.target);
-
-        FBTestApp.TestConsole.processTestList(event.target);
-        var taskBrowser = $("taskBrowser");
-        taskBrowser.removeEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
     },
 
     processTestList: function(doc)
@@ -370,16 +326,14 @@ FBTestApp.TestConsole =
         else
             this.testCasePath = "https://getfirebug.com/tests/content/";
 
-        if (win.testIncludes) {
+        if (win.testIncludes)
             this.testIncludes = win.testIncludes;
-        } else {
+        else
             this.testIncludes = [];
-        }
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + this.driverBaseURI +
                 ", serverURI " + this.testCasePath);
-
 
         // Create group list from the provided test list. Also clone all JS objects
         // (tests) since they come from untrusted content.

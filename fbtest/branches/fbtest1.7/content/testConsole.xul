@@ -42,6 +42,7 @@
     <script type="application/x-javascript" src="chrome://fbtest/content/testLogger.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testCouchUploader.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/notify.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testListLoader.js"/>
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="strings_firebug" src="chrome://firebug/locale/firebug.properties"/>
