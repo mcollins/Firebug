@@ -92,6 +92,7 @@
 
     <toolbox id="testDriverToolbox">
         <toolbar id="testDriverToolbar" align="center" context="consoleToolbarContextMenu">
+
             <toolbarbutton id="runAll"
                 label="fbtest.cmd.Run All" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.tip.Run All Tests"
@@ -106,16 +107,25 @@
                 command="cmd_noTestTimeout"/>
 
             <toolbarseparator id="FBTestButtons_end" flex="1"/>
-            <toolbarbutton id="restartFirefox"
-                label="fbtest.cmd.Restart" class="toolbar-image-button"
-                tooltiptext="fbtest.cmd.tip.Restart"
-                command="cmd_restartFirefox"/>
-            <toolbarbutton id="refreshList"
-                label="fbtest.cmd.Refresh" class="toolbar-image-button"
-                tooltiptext="fbtest.cmd.Refresh"
-                command="cmd_refreshTestList"/>
-        </toolbar>
 
+            <toolbarbutton id="testToolsMenu"
+                class="toolbar-text-button"
+                label="fbtest.cmd.Tools"
+                tooltiptext="fbtest.cmd.tip.Tools"
+                type="menu">
+                <menupopup>
+                    <menuitem id="restartFirefox"
+                        label="fbtest.cmd.Restart" class="menuitem-iconic"
+                        tooltiptext="fbtest.cmd.tip.Restart"
+                        command="cmd_restartFirefox"/>
+                    <menuitem id="refreshList"
+                        label="fbtest.cmd.Refresh" class="menuitem-iconic"
+                        tooltiptext="fbtest.cmd.Refresh"
+                        command="cmd_refreshTestList"/>
+                </menupopup>
+            </toolbarbutton>
+
+        </toolbar>
     </toolbox>
 
     <menupopup id="consoleToolbarContextMenu"

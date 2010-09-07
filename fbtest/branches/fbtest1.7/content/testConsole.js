@@ -45,7 +45,7 @@ FBTestApp.TestWindowLoader =
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
             "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox",
             "passingTests", "failingTests", "menu_hidePassingTests", "menu_uploadTestResults",
-            "testCount"];
+            "testCount", "testToolsMenu"];
 
         for (var i=0; i<buttons.length; i++)
         {
