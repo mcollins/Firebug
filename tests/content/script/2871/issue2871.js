@@ -8,15 +8,16 @@ function runTest()
     }
 
     var lineNo = 15;
+    var fileName = basePath + "script/2871/issue2871.html";
 
     FBTest.sysout("issue2871.START");
-    FBTest.openNewTab(basePath + "script/2871/issue2871.html", function(win)
+    FBTest.openNewTab(fileName, function(win)
     {
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
             // Create a new breakpoint
-            FBTest.setBreakpoint(null, "issue2871.html", lineNo, function()
+            FBTest.setBreakpoint(null, fileName, lineNo, function()
             {
                 FBTest.progress("Breakpoint is ready");
             });
