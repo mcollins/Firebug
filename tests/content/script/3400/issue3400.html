@@ -13,15 +13,6 @@
 <i>Jan Odvarko, odvarko@gmail.com</i>
 </p>
 
-<ol>
-<li>Open Firebug and enable the Net panel.</li>
-<li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li></li>
-<li></li>
-</ol>
-
-<button id="testButton" onclick="onExecuteTest(0)">Execute Test</button>
-
 <script type="text/javascript">
 function onExecuteTest(i)
 {
@@ -31,6 +22,19 @@ function onExecuteTest(i)
         onExecuteTest(i+1)
 }
 </script>
-  
+
+<ol>
+<li>Open Firebug and enable the Script panel.</li>
+<li>Click on the <code style="color:green">Execute Test</code> button below.</li>
+<li>The debugger should stop at line <span style="color:green">20</span></li>
+<li>Verify that buttons for debugging (step-into, step-over, step-out) are
+visible on the Script panel toolbar.</li>
+</ol>
+
+<i>Debugger buttons were pushed out of screen in case large stacks.</i>
+<br/><br/>
+
+<button id="testButton" onclick="onExecuteTest(0)">Execute Test</button>
+
 </body>
 </html>
