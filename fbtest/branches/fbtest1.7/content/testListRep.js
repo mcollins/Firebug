@@ -460,8 +460,7 @@ FBTestApp.TestList = domplate(
 
     onOpenTestPage: function(test)
     {
-        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(
-            FBTestApp.TestConsole.getHTTPURLBase() + test.testPage);
+        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(test.testCasePath + test.testPage);
     },
 
     onRunFromHere: function(test)
