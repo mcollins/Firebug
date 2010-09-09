@@ -60,7 +60,7 @@ this.compare = function(expected, actual, msg)
         result = (expected == actual);
     }
 
-    FBTest.sysout("compare "+(result?"passes":"**** FAILS ****")+" "+msg);
+    FBTest.sysout("compare "+(result?"passes":"**** FAILS ****")+" "+msg, {expected: expected, actual: actual});
 
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
         result, msg, expected, actual));
@@ -614,7 +614,7 @@ function waitForWindowLoad(browser, callback)
             // xxxHonza: this is rather a hack, it should be removed if possible.
             //if (!win.wrappedJSObject)
             //    win.wrappedJSObject = win;
-
+            FBTest.sysout("callback <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "+win.location);
             // The window is loaded, execute the callback now.
             callback(win);
         }
@@ -624,7 +624,7 @@ function waitForWindowLoad(browser, callback)
             FBTest.ok(false, "runTest FAILS " + exc);
         }
     }
-
+FBTest.sysout("addinge event listeenr<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     browser.addEventListener("load", waitForEvents, true);
     browser.addEventListener("MozAfterPaint", waitForEvents, true);
 }
@@ -652,6 +652,9 @@ this.cleanUpTestTabs = function()
             removeThese.push(tab);
     }
 
+    if (!tabbrowser._removingTabs)
+    	tabbrowser._removingTabs = [];
+    
     for (var i = 0; i < removeThese.length; i++)
             tabbrowser.removeTab(removeThese[i]);
 }
