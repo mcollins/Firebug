@@ -43,6 +43,13 @@ function executeRequest()
             var progress = document.getElementById("progress");
             var size = request.responseText.length;
             progress.innerHTML = Math.round((size / responseSize) * 100) + "% (" + size + "B)";
+
+            if (size == responseSize)
+            {
+                var event = document.createEvent("Events");
+                event.initEvent("data-complete", true, false);
+                document.dispatchEvent(event);
+            }
         }
     }
     request.send(null);
