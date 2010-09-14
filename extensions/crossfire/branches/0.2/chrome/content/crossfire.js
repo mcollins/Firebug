@@ -656,6 +656,18 @@ FBL.ns(function() { with(FBL) {
             } else {
 
             }
+        },
+
+        // FBTest listener
+        onGetTestList: function(testLists)
+        {
+            if (FBTrace.DBG_CROSSFIRE)
+                FBTrace.sysout("CROSSFIRE onGetTestList");
+
+            testLists.push({
+                extension: "Crossfire",
+                testListURL: "chrome://crossfire/content/fbtest/testList.html"
+            });
         }
 
     });
