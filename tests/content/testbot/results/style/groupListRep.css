@@ -46,6 +46,10 @@
     color: #DD467B;
 }
 
+.crash .testGroupCount {
+    color: red;
+}
+
 .testGroupInfo {
     color: gray;
 }

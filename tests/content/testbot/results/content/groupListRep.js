@@ -11,7 +11,8 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
             TBODY(
                 FOR("group", "$rows",
                     TR({"class": "testGroupRow", _repObject: "$group",
-                        $failures: "$group|hasFailures"},
+                        $failures: "$group|hasFailures",
+                        $crash: "$group|hasCrash"},
                         TD({"class": "groupName testGroupCol"},
                             SPAN({"class": "testGroupName"},
                                 "$group|getGroupName"
@@ -56,18 +57,33 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         return group.value.failures > 0;
     },
 
+    hasCrash: function(group)
+    {
+        var totalTests = parseInt(group.value.doc["Total Tests"]);
+        var testExecuted = group.value.testCount;
+        return totalTests != testExecuted;
+    },
+
     getGroupCount: function(group)
     {
         var doc = group.value.doc;
-        var totalTests = doc['Total Tests'];
+        var totalTests = parseInt(doc["Total Tests"]);
 
-        // If total tests is zero, the entire test suite probably failed.
+        // If total tests is zero, there were no test in the test list.
         // xxxHonza: localization
         if (totalTests == 0)
-            return "No test executed";
+            return "no text executed";
+
+        var count = group.value.failures;
+        var testExecuted = group.value.testCount;
+
+        // If total tests is different from total executed, the test suite probably
+        // didn't run entirely (as probably Firefox crashed?)
+        // xxxHonza: localization
+        if (totalTests != testExecuted)
+            return "CRASH (" + testExecuted + " executed)";
 
         // This is what we want - no failures at all.
-        var count = group.value.failures;
         if (count == 0)
         {
             var label = (totalTests > 1) ? "pass" : "passes";
@@ -77,7 +93,7 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         // Report number of failures.
         // xxxHonza: localization
         var label = (count > 1) ? "failures" : "failure";
-        return "(" + count + " " + label + " of " + totalTests + ")";
+        return count + " " + label + " (" + totalTests + " tests)";
     },
 
     getGroupInfo: function(group)
