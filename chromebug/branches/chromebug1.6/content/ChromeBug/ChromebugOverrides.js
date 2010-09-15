@@ -332,7 +332,7 @@ function overrideFirebugFunctions()
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentURI = bind(Firebug.Chromebug.getCurrentURI, Firebug.Chromebug);
 
-        // Override with added function: set the toolbar to match FirebugContext
+        // Override with added function: set the toolbar to match Firebug.currentContext
         ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
         top.Firebug.chrome.setFirebugContext = function(context)
         {
@@ -361,7 +361,7 @@ function overrideFirebugFunctions()
             if (object instanceof Ci.jsdIStackFrame)
             {
                 context = ChromebugOverrides.getContextByFrame(object);
-                if (context != FirebugContext)
+                if (context != Firebug.currentContext)
                     Firebug.Chromebug.selectContext(context);
             }
             Firebug.Chromebug.chromeSelect.apply(Firebug.chrome,[object, panelName, sidePanelName, forceUpdate])

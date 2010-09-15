@@ -114,10 +114,10 @@ XPCOMExplorer.overlayListLocator = function(xul_element)
 
             getLocationList: function()
             {
-                if (FirebugContext)
+                if (Firebug.currentContext)
                 {
                     // TODO use URI of current context
-                    var win = FirebugContext.window;
+                    var win = Firebug.currentContext.window;
                     var overlays = this.getOverlayList(win.location.toString());
                     return overlays;
                 }
@@ -337,7 +337,7 @@ XPCOMExplorer.pathListLocator = function(xul_element)
             getLocationList: function()
             {
                 if (FBTrace.DBG_CHROMEBUG)
-                    FBTrace.sysout("PathListLocator getLocationLst FirebugContext",FirebugContext.getName());
+                    FBTrace.sysout("PathListLocator getLocationLst Firebug.currentContext",Firebug.currentContext.getName());
 
                 var list = [];
                 for (var i = 0; i < this.strings.length; i++)
