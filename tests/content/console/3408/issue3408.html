@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for Issue #3408</title>
+</head>
+<body>
+
+<h1>Issue #3408</h1>
+
+<p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=3408">Issue #3408</a>
+- <span class="h3">Console panel breaks if Firebug is reactivated.</span>.
+<br/>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+</p>
+
+<ol>
+<li>Open Firebug and enable the Console panel.</li>
+<li>Click on the <code style="color:green">Execute Test</code> button below.
+    There should be a log in the Console panel.</li>
+<li>Deactivate Firebug for the site (click the close button on the FB toolbar).</li>
+<li>Activate Firebug again (click the icon in the Fx status bar).</li>
+<li>Click on the <code style="color:green">Execute Test</code> button -> verify the log
+is there again.</li>
+</ol>
+
+<button id="testButton" onclick="onExecuteTest()">Execute Test</button>
+
+<script type="text/javascript">
+function onExecuteTest()
+{
+    console.log("This is a test log");
+}
+</script>
+  
+</body>
+</html>
