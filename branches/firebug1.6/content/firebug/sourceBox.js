@@ -472,9 +472,6 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
                     FBTrace.sysout("SourceBoxPanel.scrollTimeout, no viewable lines", this.selectedSourceBox);
             }
 
-            if (highlighter)
-                 this.selectedSourceBox.highlighter = highlighter;
-
             if (!skipScrolling)
             {
                 var viewRange = this.getViewRangeFromTargetLine(this.selectedSourceBox, lineNo);
@@ -488,6 +485,8 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
                 this.applyDecorator(this.selectedSourceBox); // may need to highlight even if we don't scroll
 
         }, this));
+
+        this.selectedSourceBox.highlighter = highlighter;  // clears if null
     },
 
     /*

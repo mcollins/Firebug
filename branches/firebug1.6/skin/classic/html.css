@@ -7,7 +7,7 @@
 
 .nodeBox {
     position: relative;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     padding-left: 13px;
     -moz-user-select: -moz-none;
 }
@@ -61,18 +61,16 @@
 }
 
 .docType {
-    position: absolute;
-    top: -16px;
-    font-family: Monaco, monospace;
-    padding-left: 8px;
+    font-family: monospace;
+    padding-left: 5px;
     color: #999;
     white-space: nowrap;
     font-style: italic;
 }
-.htmlNodeBox {
-    top: 16px;
-}
 
+.htmlNodeBox > .nodeLabel > .twisty {
+    top: 13px;
+}
 
 .nodeWhiteSpace {
     border: 1px solid LightGray;
@@ -215,7 +213,7 @@
 .breakpointCode .nodeLabel {
     padding-left: 0px;
     margin-left: 0px;
-    font-family: Monaco, monospace !important;
+    font-family: monospace !important;
 }
 
 .breakpointCode .nodeTag,

@@ -527,7 +527,7 @@
 
 <binding id="panelBarTabList" display="xul:box">
     <content>
-        <xul:toolbarbutton class="tabs-alltabs-button noTabStop" type="menu" xbl:inherits="tooltiptext">
+        <xul:toolbarbutton class="fb-tabs-alltabs-button noTabStop" type="menu" xbl:inherits="tooltiptext">
             <xul:menupopup anonid="popup" />
         </xul:toolbarbutton>
     </content>
@@ -792,7 +792,8 @@
             <body><![CDATA[
                 if (this.firstChild)
                 {
-                    var box = document.createElement("hbox");  // extra box needed to fix alignment issue in Vista theme
+                    // extra box needed to fix alignment issue in Vista theme
+                    var box = document.createElement("hbox");
                     box.setAttribute('role', 'separator');
                     box.setAttribute('align', 'center');
                     var sep = document.createElement("label");

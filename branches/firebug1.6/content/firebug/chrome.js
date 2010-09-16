@@ -14,6 +14,7 @@ const Ci = Components.interfaces;
 const nsIWebNavigation = Ci.nsIWebNavigation;
 
 const observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+const wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
 
 const LOAD_FLAGS_BYPASS_PROXY = nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY;
 const LOAD_FLAGS_BYPASS_CACHE = nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
@@ -31,7 +32,7 @@ const negativeZoomFactors = [1, 0.95, 0.8, 0.7, 0.5, 0.2, 0.1];
 // ************************************************************************************************
 // Globals
 
-var panelBox, panelSplitter, sidePanelDeck, panelBar1, panelBar2, locationList, locationSeparator,
+var panelBox, panelSplitter, sidePanelDeck, panelBar1, panelBar2, locationList, locationButtons,
     panelStatus, panelStatusSeparator, cmdPreview, cmdPreviewBrowser;
 
 var waitingPanelBarCount = 2;
@@ -83,7 +84,7 @@ top.FirebugChrome =
         panelBar1 = $("fbPanelBar1");
         panelBar2 = $("fbPanelBar2");
         locationList = $("fbLocationList");
-        locationSeparator = $("fbLocationSeparator");
+        locationButtons = $("fbLocationButtons");
         panelStatus = $("fbPanelStatus");
         panelStatusSeparator = $("fbStatusSeparator");
 
@@ -422,10 +423,7 @@ top.FirebugChrome =
 
     isFocused: function()
     {
-        var winMediator = Cc["@mozilla.org/appshell/window-mediator;1"].
-            getService(Ci["nsIWindowMediator"]);
-
-        return winMediator.getMostRecentWindow(null) == window;
+        return wm.getMostRecentWindow(null) == window;
     },
 
     focusWatch: function(context)
@@ -777,13 +775,11 @@ top.FirebugChrome =
         if (panel && panel.location)
         {
             locationList.location = panel.location;
-            FBL.collapse(locationSeparator, false);
-            FBL.collapse(locationList, false);
+            FBL.collapse(locationButtons, false);
         }
         else
         {
-            FBL.collapse(locationSeparator, true);
-            FBL.collapse(locationList, true);
+            FBL.collapse(locationButtons, true);
         }
     },
 
@@ -809,7 +805,22 @@ top.FirebugChrome =
             }
             else
             {
-                FBL.hide(panelStatusSeparator, false);
+                // Alright, let's update visibility of the separator. The separator
+                // is displayed only if there are some other buttons on the left side.
+                // Before showing the status separator let's see whethere there are any other
+                // button on the left.
+                var hide = true;
+                var sibling = panelStatusSeparator.parentNode.previousSibling;
+                while (sibling)
+                {
+                    if (!FBL.isCollapsed(sibling))
+                    {
+                        hide = false;
+                        break;
+                    }
+                    sibling = sibling.previousSibling;
+                }
+                FBL.hide(panelStatusSeparator, hide);
 
                 if (panel.name != panelStatus.lastPanelName)
                     panelStatus.clear();
@@ -1284,13 +1295,20 @@ top.FirebugChrome =
 
     openAboutDialog: function()
     {
-        Components.utils.import("resource://gre/modules/AddonManager.jsm");
-
         if (FBTrace.DBG_WINDOWS)
             FBTrace.sysout("Firebug.openAboutDialog");
 
-        // Firefox 4.0 implements new AddonManager.
-        if (AddonManager)
+        try
+        {
+            // Firefox 4.0 implements new AddonManager. In case of Firefox 3.6 the module
+            // is not avaialble and there is an exception.
+            Components.utils.import("resource://gre/modules/AddonManager.jsm");
+        }
+        catch (err)
+        {
+        }
+
+        if (typeof(AddonManager) != "undefined")
         {
             AddonManager.getAddonByID("firebug@software.joehewitt.com", function(addon) {
                 openDialog("chrome://mozapps/content/extensions/about.xul", "",
@@ -1356,14 +1374,24 @@ var FirstRunPage =
         if (topic != "sessionstore-windows-restored")
             return;
 
-        // Don't forget to update the preference so, the page is not
-        // displayed again.
-        var version = Firebug.getVersion();
-        Firebug.setPref(Firebug.prefDomain, "currentVersion", version);
-        version = version.replace('X', '', "g");
+        setTimeout(function()
+        {
+            // Open the page in the top most window so, the user can see it immediately.
+            if (wm.getMostRecentWindow("navigator:browser") != window)
+                return;
 
-        // xxxHonza: put the URL in firebugURLs as soon as it's in chrome.js
-        FBL.openNewTab("http://getfirebug.com/firstrun#Firebug " + version);
+            // Avoid opening of the page in a second browser window.
+            if (FBL.checkFirebugVersion(Firebug.currentVersion) > 0)
+            {
+                // Don't forget to update the preference so, the page is not displayed again
+                var version = Firebug.getVersion();
+                Firebug.setPref(Firebug.prefDomain, "currentVersion", version);
+                version = version.replace('X', '', "g");
+
+                // xxxHonza: put the URL in firebugURLs as soon as it's in chrome.js
+                FBL.openNewTab("http://getfirebug.com/firstrun#Firebug " + version);
+            }
+        }, 500);
     }
 }
 
@@ -1511,15 +1539,18 @@ function onSelectingPanel(event)
     if (panel)
         panel.navigate(panel.location);
 
-    // Synchronize UI around panels.
-    // xxxHonza: The command line should be synced here as well.
-    Firebug.chrome.syncLocationList();
-    Firebug.chrome.syncStatusPath();
-    Firebug.chrome.syncSidePanels();  //xxxjjb unfortunately the callstack side panel depends on the status path (sync after.)
-
     // Calling Firebug.showPanel causes dispatching "showPanel" to all modules.
     var browser = panel ? panel.context.browser : FirebugChrome.getCurrentBrowser();
     Firebug.showPanel(browser, panel);
+
+    // Synchronize UI around panels. Execute the sync after showPanel so the logic
+    // can decide whether to display separators or not.
+    // xxxHonza: The command line should be synced here as well.
+    Firebug.chrome.syncLocationList();
+    Firebug.chrome.syncStatusPath();
+
+    //xxxjjb unfortunately the callstack side panel depends on the status path (sync after.)
+    Firebug.chrome.syncSidePanels();
 }
 
 function onSelectedSidePanel(event)

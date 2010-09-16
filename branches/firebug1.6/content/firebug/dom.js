@@ -1060,7 +1060,8 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
             if (state.propertyPath)
                 this.propertyPath = state.propertyPath;
 
-            var selectObject = defaultObject = this.getDefaultSelection(this.context);
+            var defaultObject = this.getDefaultSelection();
+            var selectObject = defaultObject;
 
             if (state.firstSelection)
             {
@@ -2159,6 +2160,7 @@ DOMBreakpointGroup.prototype = extend(new Firebug.Breakpoint.BreakpointGroup(),
                 // xxxJJB: The Components.utils.evalInSandbox fails from some reason.
                 var expr = "context.window.wrappedJSObject." + bp.objectPath;
                 bp.object = eval(expr);
+                bp.context = context;
                 bp.watchProperty();
 
                 if (FBTrace.DBG_DOM)

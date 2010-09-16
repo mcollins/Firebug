@@ -784,7 +784,14 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     {
         if (isLeftClick(event) && event.detail == 2)
         {
-            this.toggleNode(event);
+            // The doublick (detail == 2) expands an HTML element, but the user must click
+            // on the element itself not on the twisty.
+            // The logic should be as follow:
+            // - click on the twisty expands/collapses the element
+            // - double click on the element name expands/collapses it
+            // - click on the element name selects it
+            if (!hasClass(event.target, "twisty") && !hasClass(event.target, "nodeLabel"))
+                this.toggleNode(event);
         }
         else if (isAltClick(event) && event.detail == 2 && !this.editing)
         {
@@ -796,6 +803,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     {
         if (!isLeftClick(event))
             return;
+
         if (getAncestorByClass(event.target, "nodeTag"))
         {
             var node = Firebug.getRepObject(event.target);
@@ -1081,7 +1089,11 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
         }
         else
         {
-            Firebug.chrome.getSelectedSidePanel().panelNode.scrollTop = 0;
+            // xxxHonza, XXXjjb: the scroll position can't be just reset here,
+            // what if the side panel wants to preserve it?
+            // Is it correct to remove this?
+            //Firebug.chrome.getSelectedSidePanel().panelNode.scrollTop = 0;
+
             this.ioBox.select(object, true, false, this.noScrollIntoView);
             this.inspectorHistory.unshift(object);
             if (this.inspectorHistory.length > 5)
@@ -1428,13 +1440,14 @@ Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox htmlNodeBox containerNodeBox $object|getHidden", _repObject: "$object", role :"presentation"},
-            DIV({"class": "docType $object"},
+        DIV({"class": "nodeBox htmlNodeBox containerNodeBox $object|getHidden",
+            _repObject: "$object", role :"presentation"},
+            DIV({"class": "docType"},
                 "$object|getDocType"
             ),
             DIV({"class": "nodeLabel", role: "presentation"},
                 IMG({"class": "twisty", role: "presentation"}),
-                SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem', 'aria-expanded' : 'false'},
+                SPAN({"class": "nodeLabelBox repTarget", role: 'treeitem', 'aria-expanded': 'false'},
                     "&lt;",
                     SPAN({"class": "nodeTag"}, "$object.nodeName|toLowerCase"),
                     FOR("attr", "$object|attrIterator", AttrTag),
@@ -1450,10 +1463,12 @@ Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
                 )
             )
         ),
+
     getDocType: function(obj)
     {
         var doctype = obj.ownerDocument.doctype;
-        return '<!DOCTYPE ' + doctype.name + (doctype.publicId ? ' PUBLIC "' + doctype.publicId + '"': '') + (doctype.systemId ? ' "' + doctype.systemId + '"' : '') + '>';
+        return '<!DOCTYPE ' + doctype.name + (doctype.publicId ? ' PUBLIC "' + doctype.publicId +
+            '"': '') + (doctype.systemId ? ' "' + doctype.systemId + '"' : '') + '>';
     }
 });
 
@@ -2144,7 +2159,7 @@ Firebug.HTMLModule.BreakpointRep = domplate(Firebug.Rep,
         var panel = context.getPanel("html", true);
         if (panel)
             // xxxsz: Needs a better way to update display of breakpoint than invalidate the whole panel's display
-            panel.context.invalidatePanels("breakpoints"); 
+            panel.context.invalidatePanels("breakpoints");
 
         var bp = getAncestorByClass(checkBox, "breakpointRow").repObject;
         bp.checked = checkBox.checked;

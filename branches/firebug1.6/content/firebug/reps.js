@@ -1570,7 +1570,9 @@ this.ErrorMessage = domplate(Firebug.Rep,
 
             DIV({"class": "errorTitle focusRow subLogRow", role : 'listitem'},
                 SPAN({"class": "errorDuplication"}, "$object.msgId|getDuplication"),
-                "$object.message|getMessage"
+                SPAN({"class": "errorMessage"},
+                    "$object.message|getMessage"
+                )
             ),
             DIV({"class": "errorTrace", role : 'presentation'}),
             TAG("$object|getObjectsTag", {object: "$object.objects"}),

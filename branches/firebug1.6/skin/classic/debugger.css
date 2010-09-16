@@ -2,7 +2,7 @@
 
 .panelNode-script {
     overflow: hidden;
-    font-family: Monaco, monospace;
+    font-family: monospace;
 }
 
 /************************************************************************************************/
@@ -13,7 +13,7 @@
     padding: 2px 3px;
     border: 1px solid #CBE087;
     background: LightYellow;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     color: #000000;
 }
 
@@ -154,7 +154,7 @@
 .conditionInput {
     width: 100%;
     border: 1px solid #0096C0;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     font-size: inherit;
 }
 
@@ -261,6 +261,7 @@
 .breakpointBlockHead > .objectLink-sourceLink {
     top: 4px;
     right: 20px;
+    background-color: #FFFFFF; /* issue 3308 */
 }
 
 .breakpointBlockHead > .closeButton {
@@ -297,7 +298,7 @@
     padding-left: 24px;
     padding-bottom: 2px;
     border-bottom: 1px solid #D7D7D7;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     color: DarkGreen;
 }
 
@@ -306,7 +307,7 @@
     padding-left: 24px;
     padding-bottom: 2px;
     border-bottom: 1px solid #D7D7D7;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     color: Gray;
 }
 

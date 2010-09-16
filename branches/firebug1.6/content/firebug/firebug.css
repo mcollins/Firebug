@@ -26,7 +26,7 @@ window[chromehidden~="toolbar"] #fbToolbar {
 
 .fbCommandLineCompletions {
     cursor: default;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     /* overflow: auto; XXXjjb I can't get the CSS to work
     max-height: 270px; */
 }
@@ -62,59 +62,6 @@ textbox[type="fbSearchBox"] .panelFocusBound {
 panelBar {
     -moz-binding: url("chrome://firebug/content/bindings.xml#panelBar");
     -moz-box-orient: vertical;
-}
-
-/************************************************************************************************/
-/* Scrollable TabBar + TabList */
-
-panelBarArrowscrollbox {
-    -moz-binding: url("chrome://firebug/content/bindings.xml#panelBarArrowscrollbox");
-}
-
-panelBarTabList {
-    -moz-binding: url("chrome://firebug/content/bindings.xml#panelBarTabList");
-}
-
-.panelBarTabListMenuItem {
-    -moz-binding: url("chrome://firebug/content/bindings.xml#panelBarTabListMenuItem");
-}
-
-panelBarArrowscrollbox > .scrollbutton-up,
-panelBarArrowscrollbox > .scrollbutton-down,
-panelBarTabList > .tabs-alltabs-button {
-    margin: 0 !important;
-}
-
-panelBarTabList > .tabs-alltabs-button {
-    border-right: 1px solid ThreeDShadow !important;
-    -moz-border-radius-topright: 2px !important;
-}
-
-#fbPanelBar1-tabBox > panelBarArrowscrollbox > .scrollbutton-up
-{
-    border-left: 1px solid ThreeDShadow !important;
-    -moz-border-radius-topleft: 2px !important;
-}
-
-#fbPanelBar1-tabBox > panelBarArrowscrollbox > .scrollbutton-down
-{
-    border-right: 1px solid ThreeDShadow !important;
-    -moz-border-radius-topright: 2px !important;
-}
-
-#fbPanelBar1-tabBox > panelBarArrowscrollbox {
-    margin-right: 4px;
-}
-
-#fbPanelBar2-tabBox > panelBarArrowscrollbox > .scrollbutton-up,
-#fbPanelBar2-tabBox > panelBarArrowscrollbox > .scrollbutton-down,
-#fbPanelBar2-tabBox > panelBarTabList > .tabs-alltabs-button {
-    border-top: none !important;
-    -moz-border-radius: 0px !important;
-}
-
-#fbPanelBar1-buttons {
-    margin: 0 4px 0 4px;
 }
 
 /************************************************************************************************/
@@ -275,6 +222,11 @@ panelTab[selected="true"]:hover > panelTabMenu .menuTarget {
     list-style-image: url("chrome://firebug/skin/nav-down.png");
 }
 
+/* Evaluated scripts can take a lot of horizontal space on the toolbar so, this is the limit */
+#fbLocationList {
+    max-width: 180px;
+}
+
 /************************************************************************************************/
 /* Quick Info Box */
 
@@ -282,7 +234,7 @@ panelTab[selected="true"]:hover > panelTabMenu .menuTarget {
     border:1px solid threedshadow;
     background-color:white;
     opacity:0.9;
-    font-family: Monaco, monospace;
+    font-family: monospace;
     font-size: 11px;
     padding-bottom: 5px;
     cursor: move;
@@ -327,5 +279,20 @@ panelTab[breakOnNextArmed="true"] > .panelTab-text {
 
 panelTab[aria-disabled='true'] {
     color: graytext !important;
+}
+
+/************************************************************************************************/
+/* Scrollable TabBar + TabList */
+
+panelBarArrowscrollbox {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelBarArrowscrollbox");
+}
+
+panelBarTabList {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelBarTabList");
+}
+
+.panelBarTabListMenuItem {
+    -moz-binding: url("chrome://firebug/content/bindings.xml#panelBarTabListMenuItem");
 }
 

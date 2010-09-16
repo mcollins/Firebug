@@ -890,6 +890,15 @@ top.Firebug =
 
     setPreference: function(prefName, value, type, prefBranch)
     {
+        // xxxHonza, XXXjjb: sometimes I am seeing: extensions.firebugcommandLineShowCompleterPopup
+        // preference that should really be: extensions.firebug.commandLineShowCompleterPopup
+        // Is the better fix for this (this is rather a workaround).
+        //if (prefName.indexOf("extensions.firebug") != 0)
+        //    prefName = "." + prefName;
+        if (prefName.indexOf("bug.") == -1)
+            FBTrace.sysout("WARNING setPreference called without bug.", {prefName: prefName, value: value});
+        // The above lines and comments should be removed once the prefs seem correct
+
         if (type == nsIPrefBranch.PREF_STRING)
             prefBranch.setCharPref(prefName, value);
         else if (type == nsIPrefBranch.PREF_INT)
@@ -944,27 +953,37 @@ top.Firebug =
     updatePref: function(name, value)
     {
         // Prevent infinite recursion due to pref observer
-        if ( optionUpdateMap.hasOwnProperty(name) )
+        if (optionUpdateMap.hasOwnProperty(name))
             return;
 
-        optionUpdateMap[name] = 1;
-        this[name] = value;
+        try
+        {
+            optionUpdateMap[name] = 1;
+            this[name] = value;
 
-        dispatch(modules, "updateOption", [name, value]);
+            dispatch(modules, "updateOption", [name, value]);
 
-        // Update the current chrome...
-        Firebug.chrome.updateOption(name, value);
+            // Update the current chrome...
+            Firebug.chrome.updateOption(name, value);
 
-        // ... as well as the original in-browser chrome (if Firebug is currently detached).
-        // xxxHonza, xxxJJB: John, the Firebug.externalChrome is not longer set, is it correct?
-        // it's still used in FirebugChrome.setGlobalAttribute.
-        if (Firebug.chrome != Firebug.originalChrome)
-            Firebug.originalChrome.updateOption(name, value);
+            // ... as well as the original in-browser chrome (if Firebug is currently detached).
+            // xxxHonza, xxxJJB: John, the Firebug.externalChrome is not longer set, is it correct?
+            // it's still used in FirebugChrome.setGlobalAttribute.
+            if (Firebug.chrome != Firebug.originalChrome)
+                Firebug.originalChrome.updateOption(name, value);
 
-        if (name.substr(0, 15) == "externalEditors")
-            this.loadExternalEditors();
-
-        delete optionUpdateMap[name];
+            if (name.substr(0, 15) == "externalEditors")
+                this.loadExternalEditors();
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_OPTIONS)
+                FBTrace.sysout("firebug.updatePref EXCEPTION:" + err, err);
+        }
+        finally
+        {
+            delete optionUpdateMap[name];
+        }
 
         if (FBTrace.DBG_OPTIONS)
             FBTrace.sysout("firebug.updatePref EXIT: "+name+"="+value+"\n");

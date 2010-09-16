@@ -55,6 +55,11 @@ Firebug.ConsoleBase =
         return this.logRow(appendOpenGroup, objects, context, className, rep, sourceLink, noThrottle);
     },
 
+    openCollapsedGroup: function(objects, context, className, rep, noThrottle, sourceLink, noPush)
+    {
+        return this.logRow(appendCollapsedGroup, objects, context, className, rep, sourceLink, noThrottle);
+    },
+
     closeGroup: function(context, noThrottle)
     {
         return this.logRow(appendCloseGroup, null, context, null, null, null, noThrottle, true);
@@ -192,6 +197,12 @@ Firebug.Console = extend(ActivableConsole,
     {
         for (var url in context.sourceFileMap)
             return;  // if there are any sourceFiles, then do nothing
+
+        // Inject console handler if not injected yet. It's injected only in the case that
+        // the page has JS (and thus may call console) and Firebug has been activated after
+        // the first JS call (and thus we have not already injected).
+        if (!this.injector.isAttached(context, context.window) && !context.jsDebuggerActive)
+            this.isReadyElsePreparing(context);
 
         // else we saw no JS, so the reload warning is not needed.
         this.clearReloadWarning(context);
@@ -562,6 +573,12 @@ Firebug.ConsolePanel.prototype = extend(Firebug.ActivablePanel,
             else
                 this.appendObject(object, row);
         }
+    },
+
+    appendCollapsedGroup: function(objects, row, rep)
+    {
+        this.appendOpenGroup(objects, row, rep);
+        removeClass(row, "opened");
     },
 
     appendOpenGroup: function(objects, row, rep)
@@ -1073,6 +1090,7 @@ function parseFormat(format)
 var appendObject = Firebug.ConsolePanel.prototype.appendObject;
 var appendFormatted = Firebug.ConsolePanel.prototype.appendFormatted;
 var appendOpenGroup = Firebug.ConsolePanel.prototype.appendOpenGroup;
+var appendCollapsedGroup = Firebug.ConsolePanel.prototype.appendCollapsedGroup;
 var appendCloseGroup = Firebug.ConsolePanel.prototype.appendCloseGroup;
 
 // ************************************************************************************************
