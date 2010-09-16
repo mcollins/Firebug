@@ -14,8 +14,8 @@ function runTest()
 
             var doc = FW.FirebugChrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
-            FBTest.compare("locationbar", cmdLine.value,
-                "The autocomplete must produce: locationbar");
+            FBTest.compare(/^location/, cmdLine.value,
+                "The autocomplete must produce: /^location/");
 
             FBTest.testDone("issue3394.DONE");
         });
