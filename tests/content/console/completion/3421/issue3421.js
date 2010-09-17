@@ -9,7 +9,6 @@ function runTest()
             var panel = FW.FirebugChrome.selectPanel("console");
 
             var tasks = new FBTest.TaskList();
-            tasks.push(testExpression, "a={}.");
             tasks.push(testExpression, "1+do");
             tasks.push(testExpression, "{}do");
 
