@@ -9,22 +9,38 @@ function runTest()
             var panel = FW.FirebugChrome.selectPanel("console");
 
             var tasks = new FBTest.TaskList();
-            tasks.push(testExpression, "1+do");
-            tasks.push(testExpression, "{}do");
+            tasks.push(testExpression, "a={}.", false);
+            tasks.push(testExpression, "1+do", true);
+            tasks.push(testExpression, "{}do", true);
+            tasks.push(testExpression, "if(false)document.", true);
 
-            tasks.run(function() {
+            tasks.run(function()
+            {
+                FBTest.ok(typeof(window.a) == "undefined",
+                    "There must not be a new global");
+
                 FBTest.testDone("issue3421.DONE");
             });
         });
     });
 }
 
-function testExpression(callback, expr)
+function testExpression(callback, expr, popupOpened)
 {
     typeCommand(expr);
-    FBTest.ok(isCompletionPopupOpen(),
-        "The completion popup must be available for: " + expr);
-    callback();
+
+    setTimeout(function()
+    {
+        FBTest.compare(popupOpened, isCompletionPopupOpen(),
+            "The completion popup should " + (popupOpened ? "" : "not ") +
+            "be there for: " + expr);
+
+        var doc = FW.FirebugChrome.window.document;
+        var cmdLine = doc.getElementById("fbCommandLine");
+        cmdLine.value = "";
+
+        callback();
+    });
 }
 
 // ************************************************************************************************
