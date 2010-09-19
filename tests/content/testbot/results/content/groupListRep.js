@@ -60,6 +60,9 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
     hasCrash: function(group)
     {
         var totalTests = parseInt(group.value.doc["Total Tests"]);
+        if (typeof(totalTests) != "undefined")
+            return false;
+
         var testExecuted = group.value.testCount;
         return totalTests != testExecuted;
     },
@@ -80,7 +83,8 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         // If total tests is different from total executed, the test suite probably
         // didn't run entirely (as probably Firefox crashed?)
         // xxxHonza: localization
-        if (totalTests != testExecuted)
+        if ((typeof(testExecuted) != "undefined") &&
+            (totalTests != testExecuted))
             return "CRASH (" + testExecuted + " executed)";
 
         // This is what we want - no failures at all.
