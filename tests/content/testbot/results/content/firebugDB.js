@@ -34,10 +34,22 @@ CDB.FirebugDB = extend(CDB.Module,
             group_level: 1,
             descending: true,
             group: true,
-            success: function(data) {
-                callback(data);
+            success: function(data)
+            {
+                // xxxHonza: filter out wrong results.
+                // we need to find out why the value.doc field is set to 0.
+                var temp = [];
+                for (var i=0; i<data.length; i++)
+                {
+                    if (data[i].value.doc)
+                        temp.push(data[i]);
+                    else
+                        log("DB Error: the doc is 0 ", data[i]);
+                }
+                callback(temp);
             },
-            error: function(status, statusText, error, reason) {
+            error: function(status, statusText, error, reason)
+            {
                 log("Ajax Error: ", status, statusText, error, reason);
             }
         };
