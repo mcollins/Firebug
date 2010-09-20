@@ -16,13 +16,28 @@
 <ol>
 <li>Open Firebug and enable the Console panel.</li>
 <li>Step by step type following expressions in the the command line
-and verify that the autocompletion popup window appears.</li>
+and verify that the autocompletion popup window<br/> appears for:</li>
 <ul>
     <li><code style="color:green">a={}.</code></li>
     <li><code style="color:green">1+do</code></li>
     <li><code style="color:green">{}do</code></li>
+    <li><code style="color:green">if(false)document.</code></li>
+    <li><code style="color:green">my_var.</code></li>
 </ul>
+
+and doesn't appear for:
+<ul>
+    <li><code style="color:green">a={}.</code></li>
+</ul>
+
 </ol>
+
+<script type="text/javascript">
+var my_var = {
+  prop1: function() {},
+  prop2: function() {}
+}
+</script>
 
 </body>
 </html>

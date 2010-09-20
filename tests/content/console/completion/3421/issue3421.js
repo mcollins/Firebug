@@ -13,6 +13,7 @@ function runTest()
             tasks.push(testExpression, "1+do", true);
             tasks.push(testExpression, "{}do", true);
             tasks.push(testExpression, "if(false)document.", true);
+            tasks.push(testExpression, "my_var.", true);
 
             tasks.run(function()
             {
