@@ -122,5 +122,8 @@ CommandLineHandler.prototype =
 if (XPCOMUtils.generateNSGetFactory) {
     var NSGetFactory = XPCOMUtils.generateNSGetFactory([CommandLineHandler])
 } else {
-    var NSGetModule = XPCOMUtils.generateModule([CommandLineHandler]);
+    //mcollins: FF3 complains if NSGetModule is not a function
+    function NSGetModule() {
+        return XPCOMUtils.generateModule([CommandLineHandler]);
+    }
 }
