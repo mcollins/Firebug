@@ -14,6 +14,7 @@ function runTest()
             tasks.push(testExpression, "{}do", true);
             tasks.push(testExpression, "if(false)document.", true);
             tasks.push(testExpression, "my_var.", true);
+            tasks.push(testExpression, "0<i", true);
 
             tasks.run(function()
             {
