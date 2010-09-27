@@ -37,6 +37,9 @@ function runTest()
             tasks.push(executeAndVerify, "values(b)", "[7, \"a\"]",
                 "span", "objectBox objectBox-array");
 
+            tasks.push(executeAndVerify, "table(a)", "Object Properties10",
+                "div", "logRow logRow-table");
+
             tasks.run(function() {
                 FBTest.testDone("commandline.api.DONE");
             });
