@@ -29,7 +29,7 @@ function runTest()
 
 function testExpression(callback, expr, popupOpened)
 {
-    typeCommand(expr);
+    FBTest.typeCommand(expr);
 
     setTimeout(function()
     {
@@ -53,19 +53,4 @@ function isCompletionPopupOpen()
     var doc = FW.FirebugChrome.window.document;
     var popup = doc.getElementById("fbCommandLineCompletionList");
     return popup.state == "open";
-}
-
-function typeCommand(string)
-{
-    var doc = FW.FirebugChrome.window.document;
-    var cmdLine = doc.getElementById("fbCommandLine");
-    var panelBar1 = doc.getElementById("fbPanelBar1");
-    var win = panelBar1.browser.contentWindow;
-
-    FW.FirebugChrome.window.focus();
-    panelBar1.browser.contentWindow.focus();
-    FBTest.focus(cmdLine);
-
-    for (var i=0; i<string.length; ++i)
-        FBTest.synthesizeKey(string.charAt(i), win);
 }
