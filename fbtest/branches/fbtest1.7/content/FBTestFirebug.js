@@ -950,6 +950,21 @@ this.executeCommand = function(expr, chrome)
     FBTest.pressKey(13, "fbCommandLine");
 }
 
+this.typeCommand = function(string)
+{
+    var doc = FW.FirebugChrome.window.document;
+    var cmdLine = doc.getElementById("fbCommandLine");
+    var panelBar1 = doc.getElementById("fbPanelBar1");
+    var win = panelBar1.browser.contentWindow;
+
+    FW.FirebugChrome.window.focus();
+    panelBar1.browser.contentWindow.focus();
+    FBTest.focus(cmdLine);
+
+    for (var i=0; i<string.length; ++i)
+        FBTest.synthesizeKey(string.charAt(i), win);
+}
+
 // ************************************************************************************************
 // Toolbar buttons
 
