@@ -24,6 +24,18 @@ FBTestApp.TestRunner = extend(new Firebug.Listener(),
 
     runTests: function(tests, onFinishCallback)
     {
+        // Filter out disabled tests
+        var temp = [];
+        for (var i=0; i<tests.length; i++) {
+            if (!tests[i].disabled)
+                temp.push(tests[i]);
+        }
+        tests = temp;
+
+        // Bail out if there is nothing to run.
+        if (!tests.length)
+            return;
+
         // Get current URLs from the UI. The user could change it after
         // the test has been loaded.
         FBTestApp.TestConsole.updatePaths();

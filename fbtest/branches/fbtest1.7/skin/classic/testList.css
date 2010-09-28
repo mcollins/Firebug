@@ -62,6 +62,10 @@
     color: gray !important;
 }
 
+.testListRow.disabled .testLink {
+    text-decoration: line-through;
+}
+
 .testUri {
     overflow: hidden;
     min-width: 70px;
