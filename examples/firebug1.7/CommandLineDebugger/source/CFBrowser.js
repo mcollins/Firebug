@@ -170,7 +170,13 @@ CFBrowser.prototype.disconnect = function() {
  * @function
  */
 CFBrowser.prototype.version = function() {
-	this._sendRequest({"command":"version"}, null, null);
+	var handler = function(response) {
+		var version = response["body"]["version"];
+		if (version) {
+			print("Version: " + version);
+		}
+	};
+	this._sendRequest({"command":"version"}, this, handler);
 };
 
 /**

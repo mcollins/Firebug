@@ -40,6 +40,14 @@
  * <li>connect [host] [port] - attaches to the specified Crossfire server</li>
  * <li>contexts - lists all known browser contexts</li>
  * <li>disconnect - disconnects from the Crossfire server</li>
+ * <li>scripts - lists all scripts in the active context</li>
+ * <li>source [N] - displays source for the Nth (0-based) script in the active context</li>
+ * <li>break [line] [script] - sets a breakpoint on the line number in the specified script
+ *    of the active context (script is a 0-based number to identify the script)</li>
+ * <li>breakpoints - list all breakpoints in the active context</li>
+ * <li>clear [line] [script] - clears any breakpoint set on the line number in the specified
+ *    script of the active context (script is a 0-based number to identify the script)</li>
+ * <li>version - displays the version of the Crossfire server</li>
  * </ul>
  * </p>
  * @constructor
