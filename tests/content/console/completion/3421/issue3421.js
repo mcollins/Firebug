@@ -16,6 +16,7 @@ function runTest()
             tasks.push(testExpression, "my_var.", true);
             tasks.push(testExpression, "0<i", true);
             tasks.push(testExpression, "$myvar.", true);
+            tasks.push(testExpression, "myvar2.", false);
 
             tasks.run(function()
             {
