@@ -463,7 +463,18 @@ FBTestApp.TestConsole =
     autoRun: function()
     {
         if (!cmdLineHandler.wrappedJSObject.runFBTests)
+        {
+            // Check pref if the auto logger should be registered. Useful for
+            // knowing, which test caused crash.
+            var enableTestLogger = Firebug.getPref(FBTestApp.prefDomain, "enableTestLogger");
+            if (enableTestLogger)
+            {
+                var listener = new FBTestApp.TestLogger.ProgressListener(new Date());
+                FBTestApp.TestRunner.addListener(listener);
+            }
+
             return;
+        }
 
         // The auto run is done just the first time the test-console is opened.
         cmdLineHandler.wrappedJSObject.runFBTests = false;
