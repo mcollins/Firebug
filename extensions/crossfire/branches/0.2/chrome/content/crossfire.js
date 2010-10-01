@@ -275,7 +275,17 @@ FBL.ns(function() { with(FBL) {
          * @description send context change event
          */
         showContext: function(browser, context) {
-            this.handleEvent(this.currentContext, "onContextChanged", context);
+            if (this.currentContext == null || !this.currentContext.Crossfire) // no previous context
+            {
+                if (context)
+                    this.handleEvent(context, "onContextChanged", context);
+                // else nothing to show
+            }
+            else
+            {
+                // NB the context may be null meaning "we are not looking at anything now
+                this.handleEvent(this.currentContext,"onContextChanged", context);
+            }
             this.currentContext = context;
         },
 
