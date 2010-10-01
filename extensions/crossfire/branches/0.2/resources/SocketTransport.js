@@ -94,11 +94,11 @@ CrossfireSocketTransport.prototype =
      * @param listener An object which contains a method named "handleRequest".
      */
     addListener: function( listener) {
-    	// don't push the listener again if it is already there
-    	// http://code.google.com/p/fbug/issues/detail?id=3452
-    	if(this.listeners.indexOf(listener) < 0) {
-    		this.listeners.push(listener);
-    	}
+        // don't push the listener again if it is already there
+        // http://code.google.com/p/fbug/issues/detail?id=3452
+        if(this.listeners.indexOf(listener) < 0) {
+            this.listeners.push(listener);
+        }
     },
 
     /**
@@ -373,8 +373,8 @@ CrossfireSocketTransport.prototype =
         if (FBTrace.DBG_CROSSFIRE_TRANSPORT)
             FBTrace.sysout("_sendPacket " + packet);
         if (this._outputStreamCallback) {
-			this._outputStreamCallback.addPacket(packet);
-		}
+            this._outputStreamCallback.addPacket(packet);
+        }
         if (this.connected && this._outputStream) {
             this._outputStream.asyncWait(this._outputStreamCallback,0,0,null);
         }
@@ -386,8 +386,8 @@ CrossfireSocketTransport.prototype =
     /** @ignore */
     _waitOnPacket: function() {
         var avail, response;
-		if (!this.connected || !this._inputStream)
-			return;
+        if (!this.connected || !this._inputStream)
+            return;
         try {
             avail = this._inputStream.available();
         } catch (e) {
@@ -405,7 +405,7 @@ CrossfireSocketTransport.prototype =
 
             if (response) {
                 this._buffer += response;
-                
+
                 while(this._parseBuffer()){
                     // until nothing more is recognized
                 };
@@ -424,11 +424,11 @@ CrossfireSocketTransport.prototype =
          */
         var block, packet,
             lengthIndexBegin = this._buffer.indexOf("Content-Length:"),
-            lengthIndexEnd   = this._buffer.indexOf("\r\n"),
+            lengthIndexEnd   = this._buffer.indexOf("\r\n",lengthIndexBegin),
             length = Number(this._buffer.substring(lengthIndexBegin + "Content-Length:".length, lengthIndexEnd));
         if (lengthIndexBegin===0 && FBTrace.DBG_CROSSFIRE_TRANSPORT)
             FBTrace.sysout("_parseBuffer had extra stuff in the buffer, being ignored: " + this._buffer.substring(0,lengthIndexBegin)); // have yet to see this happen
-            
+
         if (lengthIndexBegin != -1 && lengthIndexEnd != -1 && this._buffer.length >= lengthIndexEnd + 2 + length) {
             block = this._buffer.substr(lengthIndexEnd+2, length);
             this._buffer = this._buffer.slice(lengthIndexEnd + 2 + length);
