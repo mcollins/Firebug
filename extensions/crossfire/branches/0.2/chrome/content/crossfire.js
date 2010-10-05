@@ -158,8 +158,16 @@ FBL.ns(function() { with(FBL) {
                     var context = this.contexts[i];
                     if (contextId == context.Crossfire.crossfire_id) {
                         commandAdaptor = context.Crossfire.commandAdaptor;
-                        break;
+                        if (commandAdaptor) break;
+                        if (FBTrace.DBG_CROSSFIRE)
+                            FBTrace.sysout("CROSSFIRE FAILS no commandAdaptor in context "+context.getName());
+                        return;
                     }
+                }
+                if (!commandAdaptor) {
+                    if (FBTrace.DBG_CROSSFIRE)
+                        FBTrace.sysout("CROSSFIRE FAILS no context matches id "+contextId+" checked "+this.contexts.length, this.contexts);
+                    return;
                 }
                 try {
                     response = commandAdaptor[command].apply(commandAdaptor, [ request.arguments ]);
@@ -243,7 +251,7 @@ FBL.ns(function() { with(FBL) {
          */
         initContext: function( context) {
             if (FBTrace.DBG_CROSSFIRE)
-                FBTrace.sysout("CROSSFIRE:  initContext");
+                FBTrace.sysout("CROSSFIRE:  initContext "+context.getName());
 
             context.Crossfire = { "crossfire_id" : generateId() };
 
@@ -284,7 +292,7 @@ FBL.ns(function() { with(FBL) {
             else
             {
                 // NB the context may be null meaning "we are not looking at anything now
-                this.handleEvent(this.currentContext,"onContextChanged", context);
+                this.handleEvent(this.currentContext, "onContextChanged", context);
             }
             this.currentContext = context;
         },
