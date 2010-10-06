@@ -51,3 +51,19 @@ function CFExecutionContext(browserContext) {
 
 CFExecutionContext.prototype = subclass(JavaScriptContext.prototype);
 
+/**
+ * Overrides resume from superclass to provide Crossfire implementation.
+ * 
+ *  @function
+ */
+CFExecutionContext.prototype.resume = function() {
+	if (this.isSuspended()) {
+		var handler = function(response) {
+			if (response["success"]) {
+				this._resumed();
+			}
+		};
+		this.getBrowserContext().getBrowser()._sendRequest({"command":"continue", "context_id":this.getBrowserContext().getId()}, this, handler);	
+	}
+};
+
