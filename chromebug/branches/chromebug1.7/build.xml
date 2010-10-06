@@ -118,7 +118,7 @@
 
     <!-- Support for generating docs from Chromebug source code using js-doc-toolkit
         See the output in $svn/jsdoc/out directory -->
-    <target name="jsdoc" depends="" description="Generate documentation">
+    <target name="jsdoc" depends="build" description="Generate documentation">
 
         <property name="jsdoc.dir" value="../../../jsdoc/"/>
         <property name="jsdoc-toolkit.dir" value="${jsdoc.dir}/jsdoc-toolkit-2.3.0/"/>
