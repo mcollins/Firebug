@@ -160,6 +160,8 @@
             outputdir="${jsdoc-output.dir}"
             inputdir="${jsdoc-temp.dir}" />
 
+        <delete dir="${jsdoc-temp.dir}"/>
+
         <!-- Deploy -->
         <antcall target="deploy-jsdoc" />
     </target>
