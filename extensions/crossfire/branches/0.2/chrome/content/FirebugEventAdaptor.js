@@ -46,7 +46,7 @@ FBL.ns(function() { with(FBL) {
                 * @return <code>context_id</code> of the loaded context.
                 */
               "onContextLoaded": function() {
-            	  if (FBTrace.DBG_CROSSFIRE)
+                  if (FBTrace.DBG_CROSSFIRE)
                       FBTrace.sysout("CROSSFIRE EventAdaptor onContextLoaded");
 
                   var href;
@@ -64,14 +64,11 @@ FBL.ns(function() { with(FBL) {
                * @return <code>old_context_id</code> and <code>new_context_id</code>
                */
               "onContextChanged": function( newContext) {
-            	  if (FBTrace.DBG_CROSSFIRE)
-                      FBTrace.sysout("CROSSFIRE EventAdaptor onContextChanged");
+                  if (FBTrace.DBG_CROSSFIRE)
+                      FBTrace.sysout("CROSSFIRE EventAdaptor onContextChanged to "+(newContext?newContext.getName():"null"));
 
 
                   var newContextId, newHref, href;
-
-                  newContextId = newContext.Crossfire.crossfire_id;
-
 
                   try {
                       href = this.context.window.location.href;
@@ -79,12 +76,15 @@ FBL.ns(function() { with(FBL) {
                       href = "";
                   }
 
-                  try {
-                      newHref = newContext.window.location.href;
-                  } catch(e) {
-                      newHref = "";
+                  newHref = "";
+                  if (newContext) {
+                      try {
+                          newContextId = newContext.Crossfire.crossfire_id;
+                          newHref = newContext.window.location.href;
+                      } catch(e) {
+                          newHref = "";
+                      }
                   }
-
 
                   return { "context_id": this.contextId, "new_context_id": newContextId, "data": { "href": href, "new_href": newHref } };
 
