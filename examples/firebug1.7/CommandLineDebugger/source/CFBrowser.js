@@ -84,11 +84,15 @@ CFBrowser.prototype.connect= function() {
 		var localThis = this;
 		// start a runnable to read packets
 		var obj = { run: function() {
-			var data = localThis.readPackets(); 
-			while (data) {
-				data = localThis.readPackets();
+			try {
+				var data = localThis.readPackets(); 
+				while (data) {
+					data = localThis.readPackets();
+				}
+			} catch (ex) {
+				// IO exception
 			}
-			print("socket closed"); //TODO disconnect
+			print("socket closed");
 		}};
 		var eventReader = new java.lang.Runnable(obj);
 		var eventThread = new java.lang.Thread(eventReader);
@@ -102,8 +106,6 @@ CFBrowser.prototype.connect= function() {
 
 /**
  * Called by the thread reading packets.
- * 
- * TODO: needs to try/catch IO exceptions
  * 
  * @function
  * @returns the line read from the socket or <code>null</code> if closed
@@ -154,7 +156,7 @@ CFBrowser.prototype.readLine = function(length) {
 /**
  * Disconnects by closing the socket.
  * 
- * TODO: Is there a better way or command to do this?
+ * TODO: Is there a better way or Crossfire command to do this?
  * 
  * @function
  */
