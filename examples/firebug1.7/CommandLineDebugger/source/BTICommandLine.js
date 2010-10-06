@@ -35,20 +35,7 @@
  * An example command line debugger implementation for the browser tools interface that
  * connects to a Crossfire server.
  * <p>
- * Supported commands:
- * <ul>
- * <li>connect [host] [port] - attaches to the specified Crossfire server</li>
- * <li>contexts - lists all known browser contexts</li>
- * <li>disconnect - disconnects from the Crossfire server</li>
- * <li>scripts - lists all scripts in the active context</li>
- * <li>source [N] - displays source for the Nth (0-based) script in the active context</li>
- * <li>break [line] [script] - sets a breakpoint on the line number in the specified script
- *    of the active context (script is a 0-based number to identify the script)</li>
- * <li>breakpoints - list all breakpoints in the active context</li>
- * <li>clear [line] [script] - clears any breakpoint set on the line number in the specified
- *    script of the active context (script is a 0-based number to identify the script)</li>
- * <li>version - displays the version of the Crossfire server</li>
- * </ul>
+ * Use 'help' to get a list of supported commands.
  * </p>
  * @constructor
  * @type BTICommandLine
@@ -65,27 +52,12 @@ function BTICommandLine() {
 	while(command){
 		if (command) {
 			var pieces = (new String(command)).split(" ");
-			if (pieces[0] == "connect" && pieces.length == 3) {
-				this.connect(pieces[1], pieces[2]);
-			} else if (pieces[0] == "disconnect") {
-				this.disconnect();
-			} else if (pieces[0] == "contexts") {
-				this.listcontexts();
-			} else if (pieces[0] == "version") {
-				this.version();
-			} else if (pieces[0] == "scripts") {
-				this.scripts();
-			} else if (pieces[0] == "source") {
-				// source N (where N is the 0-based script number to display source for)
-				this.source(pieces[1]);
-			} else if (pieces[0] == "break") {
-				// break <line number> <script number> - sets a breakpoint
-				this.setBreakpoint(pieces[1], pieces[2]);
-			} else if (pieces[0] == "breakpoints") {
-				this.listBreakpoints();
-			} else if (pieces[0] == "clear") {
-				// clear <line number> <script number> - clears a breakpoint
-				this.clearBreakpoint(pieces[1], pieces[2]);
+			var handler = this[pieces[0]];
+			if (handler) {
+				// call the function associated with the command
+				handler.apply(this, pieces.slice(1));
+			} else {
+				print("Unknown command");
 			}
 		}
 		command = stdin.readLine();
@@ -118,6 +90,13 @@ BTICommandLine.prototype.scripts = function() {
 	print("No active context");
 };
 
+/**
+ * Connects to a remote browser at the specified host and port.
+ * 
+ * @function
+ * @param host
+ * @param port
+ */
 BTICommandLine.prototype.connect = function(host, port) {
 	if (this.browser) {
 		this.disconnect();
@@ -127,12 +106,22 @@ BTICommandLine.prototype.connect = function(host, port) {
 	print("Connected to " + host + ":" + port);
 };
 
+/**
+ * Disconnects from the remote browser.
+ * 
+ * @function
+ */
 BTICommandLine.prototype.disconnect = function() {
 	if (this.browser) {
 		this.browser.disconnect();
 	}
 };
 
+/**
+ * Displays the Crossfire version.
+ * 
+ * @function
+ */
 BTICommandLine.prototype.version = function() {
 	if (this.browser) {
 		this.browser.version();
@@ -152,7 +141,12 @@ BTICommandLine.prototype.getFocusContext = function() {
 	return null;
 };
 
-BTICommandLine.prototype.listcontexts = function() {
+/**
+ * Lists known contexts.
+ * 
+ * @function
+ */
+BTICommandLine.prototype.contexts = function() {
 	var active = this.getFocusContext(); 
 	if (active) {
 		var contexts = this.browser.getBrowserContexts();
@@ -201,7 +195,7 @@ BTICommandLine.prototype.source = function(scriptNumber) {
  * @param scriptNumber
  * @function
  */
-BTICommandLine.prototype.setBreakpoint = function(lineNumber, scriptNumber) {
+BTICommandLine.prototype.breakpoint = function(lineNumber, scriptNumber) {
 	var bc = this.getFocusContext();
 	if (bc) {
 		bc.getCompilationUnits(function(cus){
@@ -223,7 +217,7 @@ BTICommandLine.prototype.setBreakpoint = function(lineNumber, scriptNumber) {
  * @param scriptNumber
  * @function
  */
-BTICommandLine.prototype.clearBreakpoint = function(lineNumber, scriptNumber) {
+BTICommandLine.prototype.clear = function(lineNumber, scriptNumber) {
 	var bc = this.getFocusContext();
 	if (bc) {
 		bc.getCompilationUnits(function(cus){
@@ -251,7 +245,7 @@ BTICommandLine.prototype.clearBreakpoint = function(lineNumber, scriptNumber) {
  * 
  * @function
  */
-BTICommandLine.prototype.listBreakpoints = function() {
+BTICommandLine.prototype.breakpoints = function() {
 	var bc = this.getFocusContext();
 	if (bc) {
 		bc.getCompilationUnits(function(cus){
@@ -273,6 +267,23 @@ BTICommandLine.prototype.listBreakpoints = function() {
 	} else {
 		print("No active context");
 	}
+};
+
+/**
+ * Lists known commands.
+ * 
+ * @function
+ */
+BTICommandLine.prototype.help = function() {
+	print("connect [host] [port]");
+	print("disconnect");
+	print("contexts");
+	print("version");
+	print("scripts");
+	print("source [0-based script number]");
+	print("breakpoint [1-based line number] [0-based script number]");
+	print("breakpoints");
+	print("clear [1-based line number] [0-based script number]");
 };
 
 new BTICommandLine();
