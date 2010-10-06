@@ -44,6 +44,7 @@
  */
 function BTICommandLine() {
 	this.browser = null;
+	this.activeContext = null;
 	importPackage(java.io);
 	var stdin = new java.io.BufferedReader(new java.io.InputStreamReader(java.lang.System['in']));
 
@@ -64,6 +65,26 @@ function BTICommandLine() {
 	}
 	print("done");
 }
+
+/** 
+ * Sets the active context via the 0-based index.
+ * 
+ * @function
+ * @param index 0-based index into list of contexts.
+ */
+BTICommandLine.prototype.context = function(index) {
+	if (this.browser) {
+		var contexts = this.browser.getBrowserContexts();
+		if (index > 0 && index <= contexts.length) {
+			this.activeContext = contexts[index - 1];
+			print("Active Context: " + this.activeContext.getURL());
+		} else {
+			print("Context number out of range");
+		}
+	} else {
+		print("Not connected to a browser");
+	}
+};
 
 /**
  * Lists compilation units in the active context.
@@ -129,14 +150,14 @@ BTICommandLine.prototype.version = function() {
 };
 
 /**
- * Returns the browser context that currently has focus or <code>null</code>
+ * Returns the browser context that commands are directed at or <code>null</code>
  * if none.
  * 
- * @returns the focus browser context or <code>null</code> if none
+ * @returns the active browser context or <code>null</code> if none
  */
-BTICommandLine.prototype.getFocusContext = function() {
+BTICommandLine.prototype.getActiveContext = function() {
 	if (this.browser) {
-		return this.browser.getFocusBrowserContext();
+		return this.activeContext;
 	}
 	return null;
 };
@@ -147,7 +168,7 @@ BTICommandLine.prototype.getFocusContext = function() {
  * @function
  */
 BTICommandLine.prototype.contexts = function() {
-	var active = this.getFocusContext(); 
+	var active = this.getActiveContext(); 
 	var contexts = this.browser.getBrowserContexts();
 	for ( var i = 0; i < contexts.length; i++) {
 		var prefix = "";
@@ -166,7 +187,7 @@ BTICommandLine.prototype.contexts = function() {
  * @param scriptNumber
  */
 BTICommandLine.prototype.source = function(scriptNumber) {
-	var curr = this.getFocusContext();
+	var curr = this.getActiveContext();
 	if (curr) {
 		var units = curr.getCompilationUnits(function(units){
 			if (units.length == 0) {
@@ -194,7 +215,7 @@ BTICommandLine.prototype.source = function(scriptNumber) {
  * @function
  */
 BTICommandLine.prototype.breakpoint = function(lineNumber, scriptNumber) {
-	var bc = this.getFocusContext();
+	var bc = this.getActiveContext();
 	if (bc) {
 		bc.getCompilationUnits(function(cus){
 			if (scriptNumber < cus.length) {
@@ -216,7 +237,7 @@ BTICommandLine.prototype.breakpoint = function(lineNumber, scriptNumber) {
  * @function
  */
 BTICommandLine.prototype.clear = function(lineNumber, scriptNumber) {
-	var bc = this.getFocusContext();
+	var bc = this.getActiveContext();
 	if (bc) {
 		bc.getCompilationUnits(function(cus){
 			if (scriptNumber < cus.length) {
@@ -244,7 +265,7 @@ BTICommandLine.prototype.clear = function(lineNumber, scriptNumber) {
  * @function
  */
 BTICommandLine.prototype.breakpoints = function() {
-	var bc = this.getFocusContext();
+	var bc = this.getActiveContext();
 	if (bc) {
 		bc.getCompilationUnits(function(cus){
 			for ( var i = 0; i < cus.length; i++) {
@@ -273,7 +294,7 @@ BTICommandLine.prototype.breakpoints = function() {
  * @function
  */
 BTICommandLine.prototype.resume = function() {
-	var context = this.getFocusContext();
+	var context = this.getActiveContext();
 	if (context) {
 		var js = context.getJavaScriptContext();
 		if (js) {
@@ -301,6 +322,7 @@ BTICommandLine.prototype.help = function() {
 	print("breakpoints");
 	print("clear [1-based line number] [0-based script number]");
 	print("connect [host] [port]");
+	print("context [1-based context number]");
 	print("contexts");
 	print("disconnect");
 	print("resume");
