@@ -84,13 +84,9 @@ CFBrowser.prototype.connect= function() {
 		var localThis = this;
 		// start a runnable to read packets
 		var obj = { run: function() {
-			try {
-				var data = localThis.readPackets(); 
-				while (data) {
-					data = localThis.readPackets();
-				}
-			} catch (ex) {
-				// IO exception
+			var data = localThis.readPackets(); 
+			while (data) {
+				data = localThis.readPackets();
 			}
 			print("socket closed");
 		}};
@@ -253,27 +249,123 @@ CFBrowser.prototype.dispatchEvent = function(packet) {
 		}
 		var event = object["event"];
 		if (event) {
-			if (event == "onContextCreated") {
-				var context = new CFBrowserContext(object["context_id"], object["data"]["href"], this);
-				this._contextCreated(context);
-			} else if (event == "onContextChanged") {
-				var id = object["new_context_id"];
-				var curr = this.getBrowserContext(id);
-				this._setFocusContext(curr);
-			} else if (event == "onContextDestroyed") {
-				this._contextDestroyed(object["context_id"]);
-			} else if (event == "onScript") {
-				var context = this.getBrowserContext(object["context_id"]);
-				if (context) {
-					context._scriptCompiled(object["data"]["href"]);
-				} else {
-					print("Context associated with script did not exist!");
-				}
-			} else if (event == "closed") {
-				this._setConnected(false);
+			var handler = this[event];
+			if (handler) {
+				handler.apply(this, [object]);
+			} else {
+				print("Unhandled event: " + event);
 			}
 		}
 	}
+};
+
+/**
+ * Called when an 'onContextCreated' event is received.
+ * Creates a new context from the packet.
+ * 
+ * @param packet the event packet
+ */
+CFBrowser.prototype.onContextCreated = function(packet) {
+	var context = new CFBrowserContext(packet["context_id"], packet["data"]["href"], this);
+	this._contextCreated(context);
+};
+
+/**
+ * Called when an 'onContextChanged' event is received.
+ * Sets the new focus context.
+ * 
+ * @param packet the event packet
+ */
+CFBrowser.prototype.onContextChanged = function(packet) {
+	var id = packet["new_context_id"];
+	var curr = this.getBrowserContext(id);
+	this._setFocusContext(curr);
+};
+
+/**
+ * Called when an 'onContextDestroyed' event is received.
+ * Disposes the associated context
+ * 
+ * @param packet the event packet
+ */
+CFBrowser.prototype.onContextDestroyed = function(packet) {
+	this._contextDestroyed(packet["context_id"]);
+};
+
+/**
+ * Called when an 'onScript' event is received.
+ * Creates a new script object in the associated context.
+ * 
+ * @param packet the event packet
+ */
+CFBrowser.prototype.onScript = function(packet) {
+	var context = this.getBrowserContext(packet["context_id"]);
+	if (context) {
+		context._scriptCompiled(packet["data"]["href"]);
+	} else {
+		print("Context associated with script did not exist!");
+	}
+};
+
+/**
+ * Called when an 'onBreak' event is received.
+ * Notifies the associated execution context that it has suspended.
+ * 
+ * @param packet event packet
+ */
+CFBrowser.prototype.onBreak = function(packet) {
+	var context = this.getBrowserContext(packet["context_id"]);
+	if (context) {
+		var js = context.getJavaScriptContext();
+		if (js) {
+			var url = packet["data"]["url"];
+			var line = packet["data"]["line"];
+			context.getCompilationUnits(function(units){
+				for ( var i = 0; i < units.length; i++) {
+					var unit = units[i];
+					if (unit.getURL() == url) {
+						js._suspended(unit, line);
+						return;
+					}
+				}
+				print("No compilation unit associated with break event!");
+			});
+		} else {
+			print("No JavaScript context associated with break event!");
+		}
+	} else {
+		print("No context associated with break event!");
+	}
+};
+
+/**
+ * Called when an 'onResume' event is received.
+ * Notifies the associated execution context that it has resumed.
+ * 
+ * @param packet event packet
+ */
+CFBrowser.prototype.onResume = function(packet) {
+	var context = this.getBrowserContext(packet["context_id"]);
+	if (context) {
+		var js = context.getJavaScriptContext();
+		if (js) {
+			js._resumed();
+		} else {
+			print("No JavaScript context associated with resume event!");
+		}
+	} else {
+		print("No context associated with resume event!");
+	}
+};
+
+/**
+ * Called when a 'closed' event is received.
+ * Disconnects from the remote browser.
+ * 
+ * @param packet the event packet
+ */
+CFBrowser.prototype.closed = function(packet) {
+	this._setConnected(false);
 };
 
 /**
