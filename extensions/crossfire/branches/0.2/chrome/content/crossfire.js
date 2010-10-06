@@ -24,7 +24,6 @@ FBL.ns(function() { with(FBL) {
      * appropriate events to the remote host.
      */
     top.CrossfireModule = extend(Firebug.Module, /**@lends CrossfireModule */ {
-        contexts: [],
         dispatchName: "Crossfire",
 
         /** extends Firebug.Module */
@@ -125,6 +124,17 @@ FBL.ns(function() { with(FBL) {
             }
         },
 
+        // --
+        findContextById: function(context_id) {
+            return TabWatcher.iterateContexts(function(context) {
+                if (context.Crossfire) {
+                    if (context_id == context.Crossfire.crossfire_id) {
+                        return context;
+                    }
+                }
+            });
+        },
+
         // ----- Crossfire transport listener -----
 
         /**
@@ -152,21 +162,12 @@ FBL.ns(function() { with(FBL) {
             } else if (command == "version") {
                 response =  { "version": CROSSFIRE_VERSION };
             } else {
-                var commandAdaptor;
-                var contextId = request.context_id;
-                for (var i = 0; i < this.contexts.length; i++) {
-                    var context = this.contexts[i];
-                    if (contextId == context.Crossfire.crossfire_id) {
-                        commandAdaptor = context.Crossfire.commandAdaptor;
-                        if (commandAdaptor) break;
-                        if (FBTrace.DBG_CROSSFIRE)
-                            FBTrace.sysout("CROSSFIRE FAILS no commandAdaptor in context "+context.getName());
-                        return;
-                    }
-                }
+                var context = CrossfireModule.findContextById(request.context_id);
+                if (context) var commandAdaptor = context.Crossfire.commandAdaptor;
+
                 if (!commandAdaptor) {
                     if (FBTrace.DBG_CROSSFIRE)
-                        FBTrace.sysout("CROSSFIRE FAILS no context matches id "+contextId+" checked "+this.contexts.length, this.contexts);
+                        FBTrace.sysout("CROSSFIRE FAILS no context matches id "+request.context_id);
                     return;
                 }
                 try {
@@ -258,10 +259,7 @@ FBL.ns(function() { with(FBL) {
             context.Crossfire["commandAdaptor"] = new Crossfire.FirebugCommandAdaptor(context);
             context.Crossfire["eventAdaptor"] = new Crossfire.FirebugEventAdaptor(context);
 
-            this.contexts.push(context);
-
             this.handleEvent(context, "onContextCreated");
-
         },
 
         /**
@@ -298,22 +296,16 @@ FBL.ns(function() { with(FBL) {
         },
 
         /**
-         *  @description Remove the context from our list of contexts.
+         *  @description Tell remote side about destruction.
          *  @param context
          */
         destroyContext: function(context) {
+
             if (FBTrace.DBG_CROSSFIRE)
-                FBTrace.sysout("CROSSFIRE: destroyContext");
-            var contextId = context.Crossfire.crossfire_id;
-            for (var i = 0; i < this.contexts.length; i++) {
-                if (this.contexts[i].Crossfire.crossfire_id == contextId) {
-                    delete this.contexts[i].Crossfire.currentFrame;
+                FBTrace.sysout("CROSSFIRE: destroyContext "+context.getName());
 
-                    this.handleEvent(this.contexts[i], "onContextDestroyed");
-
-                    this.contexts.splice(i, 1);
-                    break;
-                }
+            if (context.Crossfire) {
+                this.handleEvent(context, "onContextDestroyed");
             }
         },
 
@@ -328,19 +320,19 @@ FBL.ns(function() { with(FBL) {
          * not specific to one context.
          */
         listContexts: function() {
-            if (FBTrace.DBG_CROSSFIRE)
-                FBTrace.sysout("CROSSFIRE listing " + this.contexts.length + " contexts...");
+
             var contexts = [];
-            var context, href;
-            for (var i = 0; i < this.contexts.length; i++) {
-                context = this.contexts[i];
-                href = "";
-                if (context.window && !context.window.closed) {
-                    href = context.window.location.href;
+            TabWatcher.iterateContexts(function convertForNetwork(context) {
+                if (context.Crossfire) {
+                    var href = safeGetWindowLocation(win);  // maybe we want context.getName()???
+                    contexts.push( { "crossfire_id" : context.Crossfire.crossfire_id,
+                        "href": href });
                 }
-                contexts.push( { "crossfire_id" : context.Crossfire.crossfire_id,
-                                   "href": href });
-            }
+            });
+
+            if (FBTrace.DBG_CROSSFIRE)
+                FBTrace.sysout("CROSSFIRE listContexts" + contexts.length + " contexts.", contexts);
+
             return { "contexts": contexts };
         },
 
@@ -482,7 +474,7 @@ FBL.ns(function() { with(FBL) {
                     lineno = analyzer.getSourceLineFromFrame(context, frame);
             }
             var href = sourceFile.href.toString();
-            var contextId = context.Crossfire.crossfire_id;
+            var context_id = context.Crossfire.crossfire_id;
 
             if (FBTrace.DBG_CROSSFIRE)
                 FBTrace.sysout("CROSSFIRE:  onStartDebugging href => " + href);
@@ -593,8 +585,8 @@ FBL.ns(function() { with(FBL) {
             if (FBTrace.DBG_CROSSFIRE)
                 FBTrace.sysout("CROSSFIRE onStopInspecting");
 
-            var contextId = context.Crossfire.crossfire_id;
-            this.transport.sendEvent("onStopInspecting", { "context_id": contextId });
+            var context_id = context.Crossfire.crossfire_id;
+            this.transport.sendEvent("onStopInspecting", { "context_id": context_id });
         }
         */
 
@@ -769,7 +761,7 @@ FBL.ns(function() { with(FBL) {
         return { "host": null, "port": null, "title": title, "cli_host": host, "cli_port": port };
     }
 
-    // generate a unique id for newly created contexts.
+    // generate a unique id for newly created context.
     function generateId() {
         return "xf"+CROSSFIRE_VERSION + "::" + (++CONTEXT_ID_SEED);
     }
