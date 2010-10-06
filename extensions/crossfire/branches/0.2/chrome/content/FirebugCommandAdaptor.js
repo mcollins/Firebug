@@ -532,7 +532,7 @@ FBL.ns(function() { with(FBL) {
                 "compilationType": sourceFile.compilation_unit_type,
             };
             if (incSrc) {
-                script["source"] = lines.join('\n');
+                script["source"] = lines.join(' ');
             }
 
             return { "context_id": this.contextId, "script": script };
