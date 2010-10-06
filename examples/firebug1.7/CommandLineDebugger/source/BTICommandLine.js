@@ -93,7 +93,7 @@ BTICommandLine.prototype.context = function(index) {
  */
 BTICommandLine.prototype.scripts = function() {
 	if (this.browser) {
-		var curr = this.browser.getFocusBrowserContext();
+		var curr = this.getActiveContext();
 		if (curr) {
 			var units = curr.getCompilationUnits(function(units){
 				if (units.length == 0) {
