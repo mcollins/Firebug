@@ -148,15 +148,13 @@ BTICommandLine.prototype.getFocusContext = function() {
  */
 BTICommandLine.prototype.contexts = function() {
 	var active = this.getFocusContext(); 
-	if (active) {
-		var contexts = this.browser.getBrowserContexts();
-		for ( var i = 0; i < contexts.length; i++) {
-			var prefix = "";
-			if (contexts[i] == active) {
-				prefix = "*";
-			}
-			print(prefix + "{" + (i + 1) + "} [" + contexts[i].getId() + "] " + contexts[i].getURL());
+	var contexts = this.browser.getBrowserContexts();
+	for ( var i = 0; i < contexts.length; i++) {
+		var prefix = "";
+		if (contexts[i] == active) {
+			prefix = "*";
 		}
+		print(prefix + "{" + (i + 1) + "} [" + contexts[i].getId() + "] " + contexts[i].getURL());
 	}
 };
 
@@ -270,20 +268,45 @@ BTICommandLine.prototype.breakpoints = function() {
 };
 
 /**
+ * Sends the 'continue' Crossfire command to resume execution.
+ * 
+ * @function
+ */
+BTICommandLine.prototype.resume = function() {
+	var context = this.getFocusContext();
+	if (context) {
+		var js = context.getJavaScriptContext();
+		if (js) {
+			if (js.isSuspended()) {
+				js.resume();
+			} else {
+				print("JavaScript context is already running");
+			}
+		} else {
+			print("No JavaScript context available");
+		}
+		
+	} else {
+		print("No active context");
+	}
+};
+
+/**
  * Lists known commands.
  * 
  * @function
  */
 BTICommandLine.prototype.help = function() {
-	print("connect [host] [port]");
-	print("disconnect");
-	print("contexts");
-	print("version");
-	print("scripts");
-	print("source [0-based script number]");
 	print("breakpoint [1-based line number] [0-based script number]");
 	print("breakpoints");
 	print("clear [1-based line number] [0-based script number]");
+	print("connect [host] [port]");
+	print("contexts");
+	print("disconnect");
+	print("resume");
+	print("scripts");
+	print("source [0-based script number]");
+	print("version");
 };
 
 new BTICommandLine();
