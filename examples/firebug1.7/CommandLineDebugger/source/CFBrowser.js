@@ -196,7 +196,7 @@ CFBrowser.prototype._sendRequest = function(request, receiver, method) {
 	if (method) {
 		this.handlers[this.sequence] = {"receiver": receiver, "method": method};
 	}
-	print(packet);
+	print("[SENT]" + packet);
 	this.output.write(this._toUTF8(packet));
 	this.output.flush();
 };
@@ -230,7 +230,7 @@ CFBrowser.prototype._initializeContexts = function() {
  * @param packet a string (line) of text read from the socket
  */
 CFBrowser.prototype.dispatchEvent = function(packet) {
-	print(packet);
+	print("[RECEIVED]" + packet);
 	if (packet == "CrossfireHandshake\r\n") {
 		this._setConnected(true);
 		this._initializeContexts();
@@ -261,7 +261,7 @@ CFBrowser.prototype.dispatchEvent = function(packet) {
 
 /**
  * Called when an 'onContextCreated' event is received.
- * Creates a new context from the packet.
+ * Creates a new context from the packet and notifies listeners.
  * 
  * @param packet the event packet
  */
@@ -272,7 +272,7 @@ CFBrowser.prototype.onContextCreated = function(packet) {
 
 /**
  * Called when an 'onContextChanged' event is received.
- * Sets the new focus context.
+ * Sets the new focus context and notifies listeners.
  * 
  * @param packet the event packet
  */
@@ -284,12 +284,22 @@ CFBrowser.prototype.onContextChanged = function(packet) {
 
 /**
  * Called when an 'onContextDestroyed' event is received.
- * Disposes the associated context
+ * Disposes the associated context and notifies listeners.
  * 
  * @param packet the event packet
  */
 CFBrowser.prototype.onContextDestroyed = function(packet) {
 	this._contextDestroyed(packet["context_id"]);
+};
+
+/**
+ * Called when an 'onContextLoaded' event is received.
+ * Marks the associated context as loaded and notifies listeners.
+ * 
+ * @param packet the event packet
+ */
+CFBrowser.prototype.onContextLoaded = function(packet) {
+	this._contextLoaded(packet["context_id"]);
 };
 
 /**
@@ -319,17 +329,13 @@ CFBrowser.prototype.onBreak = function(packet) {
 		var js = context.getJavaScriptContext();
 		if (js) {
 			var url = packet["data"]["url"];
-			var line = packet["data"]["line"];
-			context.getCompilationUnits(function(units){
-				for ( var i = 0; i < units.length; i++) {
-					var unit = units[i];
-					if (unit.getURL() == url) {
-						js._suspended(unit, line);
-						return;
-					}
-				}
+			var cu = context.getCompilationUnit(url);
+			if (cu) {
+				var line = packet["data"]["line"];
+				js._suspended(cu, line);
+			} else {
 				print("No compilation unit associated with break event!");
-			});
+			}
 		} else {
 			print("No JavaScript context associated with break event!");
 		}
