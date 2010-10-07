@@ -313,6 +313,17 @@ BTICommandLine.prototype.resume = function() {
 };
 
 /**
+ * Sets the verbose mode of the debugger - to echo packet send/receives.
+ * 
+ * @param off on or off
+ */
+BTICommandLine.prototype.verbose = function(off) {
+	if (this.browser) {
+		this.browser.setVerbose(!off);
+	}
+};
+
+/**
  * Lists known commands.
  * 
  * @function
@@ -328,6 +339,7 @@ BTICommandLine.prototype.help = function() {
 	print("resume");
 	print("scripts");
 	print("source [0-based script number]");
+	print("verbose {off}");
 	print("version");
 };
 

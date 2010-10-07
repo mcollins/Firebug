@@ -50,6 +50,7 @@ function CFBrowser(host, port) {
 	this.input = null;
 	this.sequence = 0;
 	this.initialized = false;
+	this.verbose = false;
 	this.handlers = []; // maps sequence numbers to handler objects
 	importPackage(java.net);
 	importPackage(java.io);
@@ -196,7 +197,9 @@ CFBrowser.prototype._sendRequest = function(request, receiver, method) {
 	if (method) {
 		this.handlers[this.sequence] = {"receiver": receiver, "method": method};
 	}
-	print("[SENT]" + packet);
+	if (this.verbose) {
+		print("[SENT]" + packet);
+	}
 	this.output.write(this._toUTF8(packet));
 	this.output.flush();
 };
@@ -230,7 +233,9 @@ CFBrowser.prototype._initializeContexts = function() {
  * @param packet a string (line) of text read from the socket
  */
 CFBrowser.prototype.dispatchEvent = function(packet) {
-	print("[RECEIVED]" + packet);
+	if (this.verbose) {
+		print("[RECEIVED]" + packet);
+	}
 	if (packet == "CrossfireHandshake\r\n") {
 		this._setConnected(true);
 		this._initializeContexts();
@@ -362,6 +367,16 @@ CFBrowser.prototype.onResume = function(packet) {
 	} else {
 		print("No context associated with resume event!");
 	}
+};
+
+/**
+ * Sets verbose mode - i.e. whether to echo packet send/receives.
+ * 
+ * @function
+ * @param verbose whether in verbose mode
+ */
+CFBrowser.prototype.setVerbose = function(verbose) {
+	this.verbose = verbose;
 };
 
 /**
