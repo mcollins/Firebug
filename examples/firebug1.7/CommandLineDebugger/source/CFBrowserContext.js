@@ -45,7 +45,6 @@
 function CFBrowserContext(id, url, browser) {
 	BrowserContext.call(this, id, url, browser);
 	this.initialized = false;
-	this.scripts = []; // scripts objects indexed by URL
 	this.executionContext = new CFExecutionContext(this);
 }
 
@@ -61,7 +60,7 @@ CFBrowserContext.prototype = subclass(BrowserContext.prototype);
 CFBrowserContext.prototype.getCompilationUnits = function(listener) {
 	if (this.initialized) {
 		// no need to retrieve scripts
-		listener.call(null, this._getScripts());
+		listener.call(null, this._getCompilationUnits());
 		return;
 	}
 	// not initialized - retrieve scripts
@@ -69,42 +68,14 @@ CFBrowserContext.prototype.getCompilationUnits = function(listener) {
 		var scripts = response["body"]["scripts"];
 		if (scripts) {
 			for ( var i = 0; i < scripts.length; i++) {
-				this._addScript(scripts[i]["script"]);
+				var cu = new CFCompilationUnit(scripts[i]["script"]["id"], this);
+				this._addCompilationUnit(cu);
 			}
 		}
 		this.initialized = true;
-		listener.call(null, this._getScripts());
+		listener.call(null, this._getCompilationUnits());
 	};
-	this.getBrowser()._sendRequest({"command":"scripts", "context_id":this.getId(), "includeSource": false, "arguments":{}}, this, handler);
-};
-
-/**
- * Adds the given script object to the collection of compilation units in this execution context.
- * 
- * @function
- * @param script a script object as returned by crossfire
- */
-CFBrowserContext.prototype._addScript = function(script) {
-	var url = script["id"];
-	if (!this.scripts[url]) {
-		var obj = new CFCompilationUnit(url, this);
-		this.scripts[url] = obj;
-		this.getBrowser()._dispatch("onScript", [obj]);
-	}
-};
-
-/**
- * Returns a copy of the scripts known to this execution context in an array
- * 
- * @function
- * @returns array of {@link CompilationUnit}
- */
-CFBrowserContext.prototype._getScripts = function() {
-	var copyScripts = [];
-	for (var url in this.scripts) {
-		copyScripts.push(this.scripts[url]);
-	}
-	return copyScripts;
+	this.getBrowser()._sendRequest({"command":"scripts", "context_id":this.getId(), "arguments":{"includeSource": false}}, this, handler);
 };
 
 /**
@@ -114,17 +85,8 @@ CFBrowserContext.prototype._getScripts = function() {
  * @param cu the URL of the script as a {@link String} 
  */
 CFBrowserContext.prototype._scriptCompiled = function(url) {
-	var script = this.scripts[url];
-	if (script) { // already have the data
-		return;
-	}
-	var handler = function(response) {
-		var script = response["body"]["script"];
-		if (script) {
-			this._addScript(["script"]);
-		}
-	};
-	this.getBrowser()._sendRequest({"command":"script", "context_id": this.getId(), "url":url}, this, handler);
+	var cu = new CFCompilationUnit(url, this);
+	this._addCompilationUnit(cu);
 };
 
 /**
