@@ -20,7 +20,7 @@
       </r:li>
     </r:Seq>
   </updates>
-  <version>@VERSION@@RELEASE@</version>"chromebug/branches/chromebug1.7/release/update.rdf"
+  <version>@VERSION@@RELEASE@</version>
   <updateLink>https://getfirebug.com/releases/chromebug/chromebug-@VERSION@@RELEASE@.xpi</updateLink>
 </r:Description>
 </r:RDF>
