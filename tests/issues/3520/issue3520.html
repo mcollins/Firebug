@@ -29,7 +29,7 @@ function MyFunc4(a, b, c, d, e, f)
 }
 function MyFunc5(a, b, c, d, e, f)
 {
-    var a = 1000; // put the breakpoint here.
+    debugger; // break here
 }
 </script>
 
@@ -43,9 +43,8 @@ function MyFunc5(a, b, c, d, e, f)
 
 <ol>
 <li>Open Firebug and enable the Script panel.</li>
-<li>Create breakponint on line <span style="color:green">32</span>.</li>
 <li>Click on the <code style="color:green">Execute Test</code> button below.</li>
-<li>Breakpoint hits, select the <i>Stack</i> side panel.</li>
+<li>Debugger halts, select the <i>Stack</i> side panel.</li>
 <li>Check if the stack frame is nicely displayed (properly exandable, etc.)</li>
 </ol>
 
