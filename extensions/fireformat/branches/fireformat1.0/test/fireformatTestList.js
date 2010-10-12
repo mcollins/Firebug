@@ -1,4 +1,6 @@
-﻿var testList = testList || [];
+﻿testIncludes.push("FBTestFireformat.js");
+
+var testList = testList || [];
 
 testList.push.apply(testList, [
                 {group: "formatter",    uri: "formatter/wrapTokensTest.js",                         desc: "Formatter: Wrap Tokens Test" },

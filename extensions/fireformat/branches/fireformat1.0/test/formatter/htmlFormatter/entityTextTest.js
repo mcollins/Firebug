@@ -1,7 +1,5 @@
 /* See license.txt for terms of usage */
 function runTest() {
-  FBTest.loadScript("FBTestFireformat.js", this);
-
   var formatter = Format.Formatters.getFormatter("com.incaseofstairs.fireformatHTMLFormatter"),
       input = "\u0022\u0026\u0027\u003E\u00FF\u0152\u0153\u0160",
       output = "&quot;&amp;&apos;&gt;&yuml;&OElig;&oelig;&Scaron;"

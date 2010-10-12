@@ -2,8 +2,7 @@ function runTest() {
   var urlBase = FBTest.getHTTPURLBase();
   var Formatter = FBTest.FirebugWindow.FireDiff.formatter,
       FBTrace = FBTest.FirebugWindow.FBTrace;
-  
-  //FBTest.loadScript("FBTestFireDiff.js", this);
+
   FBTestFirebug.openNewTab(urlBase + "formatter/htmlFormatter/html_index.html", function(win) {
     var Format = {};
     Components.utils.import("resource://fireformat/formatters.jsm", Format);

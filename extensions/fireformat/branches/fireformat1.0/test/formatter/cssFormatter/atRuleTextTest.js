@@ -1,6 +1,5 @@
 /* See license.txt for terms of usage */
 function runTest() {
-  FBTest.loadScript("FBTestFireformat.js", this);
   var prefs = new FBTestFireformat.PrefHandler([
        "fireformatCssFormatter.wrapSize",
        "fireformatCssFormatter.atRule.tokensPerLine",
