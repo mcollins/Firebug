@@ -402,6 +402,7 @@ Firebug.ConsolePanel.prototype = extend(Firebug.ActivablePanel,
     lastLogTime: 0,
     groups: null,
     limit: null,
+    order: 10,
 
     append: function(appender, objects, className, rep, sourceLink, noRow)
     {
@@ -750,7 +751,6 @@ Firebug.ConsolePanel.prototype = extend(Firebug.ActivablePanel,
         if (state)
             state.wasScrolledToBottom = this.wasScrolledToBottom;
 
-        this.showToolbarButtons("fbConsoleButtons", false);
         this.showCommandLine(false);
 
         if (FBTrace.DBG_CONSOLE)

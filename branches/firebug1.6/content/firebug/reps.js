@@ -168,18 +168,18 @@ this.Func = domplate(Firebug.Rep,
 
     summarizeFunction: function(fn)
     {
-        var fnRegex = /function ([^(]+\([^)]*\)) \{/;
         var fnText = safeToString(fn);
-
-        var m = fnRegex.exec(fnText);
-        return m ? m[1] : "function()";
+        var namedFn = /^function ([^(]+\([^)]*\)) \{/.exec(fnText);
+        var anonFn  = /^function \(/.test(fnText);
+        return namedFn ? namedFn[1] : (anonFn ? "function()" : fnText);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     copySource: function(fn)
     {
-        copyToClipboard(safeToString(fn));
+        if (fn && typeof (fn['toSource']) == 'function')
+            copyToClipboard(fn.toSource());
     },
 
     monitor: function(fn, script, monitored)
@@ -344,7 +344,15 @@ this.Obj = domplate(Firebug.Rep,
         ),
 
     titleTag:
-        SPAN({"class": "objectTitle"}, "$object|getTitle"),
+        SPAN({"class": "objectTitle"}, "$object|getTitleTag"),
+
+    getTitleTag: function(object)
+    {
+        var title = this.getTitle(object);
+        if (title == "Object")
+            title = "{...}";
+        return title;
+    },
 
     longPropIterator: function (object)
     {
@@ -522,7 +530,7 @@ this.Arr = domplate(Firebug.Rep,
 
     hasSpecialProperties: function(array)
     {
-        // Don't use __count__ property, this is beeing removed from Fx 3.7
+        // Don't use __count__ property, this is being removed from Fx 3.7
         var n = 0;
         for (var p in array)
             n += Object.prototype.hasOwnProperty.call(array, p);
@@ -638,20 +646,17 @@ this.NetFile = domplate(this.Obj,
 
 // ************************************************************************************************
 
-this.Except = domplate(Firebug.Rep,
+function instanceOf(object, Klass)
 {
-    tag:
-        OBJECTBOX({_repObject: "$object"}, "$object.message"),
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-    className: "exception",
-
-    supportsObject: function(object, type)
+    while (object != null) 
     {
-        return object instanceof ErrorCopy;
+        if (object == Klass.prototype)
+           return true;
+        object = object.__proto__;
     }
-});
+    return false;
+}
+
 
 
 // ************************************************************************************************
@@ -1766,6 +1771,74 @@ this.ErrorMessage = domplate(Firebug.Rep,
         }
 
         return items;
+    }
+});
+
+// ************************************************************************************************
+
+this.Except = domplate(Firebug.Rep,
+{
+    tag:
+        TAG(this.ErrorMessage.tag, {object: "$object|getErrorMessage"}),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    className: "exception",
+
+    getTitle: function(object)
+    {
+        if (object.name)
+            return object.name + (object.message ? ": " + object.message : "");
+         if (object.message)
+            return object.message;
+        return "Exception";
+    },
+
+    getErrorMessage: function(object)
+    {
+        var win = Firebug.currentContext.window, 
+            trace, 
+            url, 
+            lineNo, 
+            errorObject,
+            message,
+            isCommandLine = false;
+
+        url = object.fileName ? object.fileName : (win ? win.location.href : "");
+        lineNo = object.lineNumber ? object.lineNumber : 0;
+        message = this.getTitle(object);
+
+        if (object.stack)
+        {
+            trace = FBL.parseToStackTrace(object.stack);
+            if (trace){
+                trace.frames.pop();
+                while (trace.frames.length && /^_[fF]irebug/.test(trace.frames[trace.frames.length - 1].fn))
+                {
+                    isCommandLine = true;
+                    trace.frames.pop();
+                }
+                if(trace.frames.length == 0)
+                    trace = undefined;
+            }
+            if (!trace)
+                lineNo = 0;
+        }
+        errorObject = new FBL.ErrorMessage(message, url, lineNo, '', 'js', 
+            Firebug.currentContext, trace);
+        
+        if (trace && trace.frames && trace.frames[0]) 
+            errorObject.correctWithStackTrace(trace);
+        errorObject.resetSource();
+        
+        return errorObject;
+    },
+
+    supportsObject: function(object, type, context)
+    {
+        var win = context && context.window && context.window.wrappedJSObject;
+        var found = (win && instanceOf(object,win.Error)) || (object instanceof ErrorCopy);
+        return found;
     }
 });
 

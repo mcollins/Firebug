@@ -26,8 +26,6 @@ this.jsd = this.CCSV("@mozilla.org/js/jsd/debugger-service;1", "jsdIDebuggerServ
 const finder = this.finder = this.CCIN("@mozilla.org/embedcomp/rangefind;1", "nsIFind");
 const wm = this.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 const ioService = this.CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
-const consoleService = Components.classes["@mozilla.org/consoleservice;1"].
-    getService(Components.interfaces["nsIConsoleService"]);
 const versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -175,7 +173,7 @@ this.values = function(map)
         {
             try
             {
-                values.push(map[name]);  
+                values.push(map[name]);
             }
             catch (exc)
             {
@@ -1293,7 +1291,6 @@ this.insertTextIntoElement = function(element, text)
     controller.doCommandWithParams(command, params);
 };
 
-
 // ************************************************************************************************
 // XPath
 
@@ -1312,16 +1309,21 @@ this.getElementTreeXPath = function(element)
 {
     var paths = [];
 
+    // Use nodeName (instead of localName) so namespace prefix is included (if any).
     for (; element && element.nodeType == 1; element = element.parentNode)
     {
         var index = 0;
         for (var sibling = element.previousSibling; sibling; sibling = sibling.previousSibling)
         {
-            if (sibling.localName == element.localName)
+            // Ignore document type declaration.
+            if (sibling.nodeType == Node.DOCUMENT_TYPE_NODE)
+                continue;
+
+            if (sibling.nodeName == element.nodeName)
                 ++index;
         }
 
-        var tagName = element.localName.toLowerCase();
+        var tagName = element.nodeName.toLowerCase();
         var pathIndex = (index ? "[" + (index+1) + "]" : "");
         paths.splice(0, 0, tagName + pathIndex);
     }
@@ -1818,6 +1820,9 @@ this.getBoxFromStyles = function(style, element)
 
 this.getElementCSSSelector = function(element)
 {
+    if (!element || !element.localName)
+        return "null";
+
     var label = element.localName.toLowerCase();
     if (element.id)
         label += "#" + element.id;
@@ -2464,6 +2469,34 @@ this.insertWrappedText = function(text, textBox, noEscapeHTML)
 }
 
 // ************************************************************************************************
+// Indent
+
+const reIndent = /^(\s+)/;
+
+function getIndent(line)
+{
+    var m = reIndent.exec(line);
+    return m ? m[0].length : 0;
+}
+
+this.cleanIndentation = function(text)
+{
+    var lines = this.splitLines(text);
+
+    var minIndent = -1;
+    for (var i = 0; i < lines.length; ++i)
+    {
+        var line = lines[i];
+        var indent = getIndent(line);
+        if (minIndent == -1 && line && !this.isWhitespace(line))
+            minIndent = indent;
+        if (indent >= minIndent)
+            lines[i] = line.substr(minIndent);
+    }
+    return lines.join("");
+}
+
+// ************************************************************************************************
 // Menus
 
 this.createMenu = function(popup, label)
@@ -2537,6 +2570,9 @@ this.setItemIntoElement = function(element, item)
 
     if (item.className)
         FBL.setClass(element, item.className);
+
+    if (item.acceltext)
+        element.setAttribute("acceltext", item.acceltext);
 
     return element;
 }
@@ -3266,6 +3302,19 @@ this.iterateBrowserTabs = function(browserWindow, callback)
     return false;
 }
 
+/**
+ * Returns <browser> element for specified content window.
+ * @param {Object} win - Content window
+ */
+this.getBrowserForWindow = function(win)
+{
+    var tabBrowser = document.getElementById("content");
+    if (tabBrowser && win.document)
+        return tabBrowser.getBrowserForDocument(win.document);
+};
+
+// ************************************************************************************************
+
 this.safeGetWindowLocation = function(window)
 {
     try
@@ -3626,7 +3675,11 @@ const eventTypes =
         "close",
         "command",
         "broadcast",
-        "commandupdate" ]
+        "commandupdate" ],
+    clipboard: [
+        "cut",
+        "copy",
+        "paste" ],
 };
 
 this.getEventFamily = function(eventType)
@@ -4362,17 +4415,6 @@ this.suspendShowStackTrace = function()
 this.resumeShowStackTrace = function()
 {
     Firebug.showStackTrace = saveShowStackTrace;
-};
-
-/**
- * Returns <browser> element for specified content window.
- * @param {Object} win - Content window
- */
-this.getBrowserForWindow = function(win)
-{
-    var tabBrowser = document.getElementById("content");
-    if (tabBrowser && win.document)
-        return tabBrowser.getBrowserForDocument(win.document);
 };
 
 // ************************************************************************************************
@@ -5865,6 +5907,15 @@ domMemberMap.Event =
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+this.isDOMConstant = function(name)
+{
+    // The constant map has also its own prototype, but it isn't considered to be a constant.
+    if (name == "__proto__")
+        return false;
+
+    return (name in this.domConstantMap);
+}
+
 this.domConstantMap =
 {
     "ELEMENT_NODE": 1,
@@ -6059,6 +6110,9 @@ this.domConstantMap =
     "SVG_ZOOMANDPAN_MAGNIFY": 1,
     "SVG_ZOOMANDPAN_UNKNOWN": 1
 };
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 this.cssInfo = {};
 this.cssInfo.html =
 {
@@ -7276,7 +7330,9 @@ this.ERROR = ERROR;
 
 function ddd(text)
 {
-    consoleService.logStringMessage(text + "");
+    var consoleService = Cc["@mozilla.org/consoleservice;1"].getService(Ci["nsIConsoleService"]);
+    if (consoleService)
+        consoleService.logStringMessage(text + "");
 }
 this.ddd = ddd;
 

@@ -422,29 +422,33 @@ var fbs =
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
     forceGarbageCollection: function()
     {
         jsd.GC(); // Force the engine to perform garbage collection.
     },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     enterNestedEventLoop: function(callback)
     {
         dispatch(netDebuggers, "suspendActivity");
+        this.activitySuspended = true;
+
         fbs.nestedEventLoopDepth = jsd.enterNestedEventLoop({
             onNest: function()
             {
-                dispatch(netDebuggers, "resumeActivity");
                 callback.onNest();
             }
         });
+
         dispatch(netDebuggers, "resumeActivity");
+        this.activitySuspended = false;
         return fbs.nestedEventLoopDepth;
     },
 
     exitNestedEventLoop: function()
     {
-        dispatch(netDebuggers, "suspendActivity");
         try
         {
             return jsd.exitNestedEventLoop();
@@ -452,7 +456,7 @@ var fbs =
         catch (exc)
         {
             if (FBTrace.DBG_FBS_ERRORS)
-                FBTrace.sysout("fbs: jsd.exitNestedEventLoop FAILS "+exc);
+                FBTrace.sysout("fbs: jsd.exitNestedEventLoop FAILS "+exc, exc);
         }
     },
 

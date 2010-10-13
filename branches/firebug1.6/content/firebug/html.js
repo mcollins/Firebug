@@ -229,6 +229,11 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
         Firebug.HTMLModule.deleteNode(node, this.context);
     },
 
+    expandAll: function(node)
+    {
+        this.ioBox.expandObject(node, true);
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     getElementSourceText: function(node)
@@ -784,7 +789,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     {
         if (isLeftClick(event) && event.detail == 2)
         {
-            // The doublick (detail == 2) expands an HTML element, but the user must click
+            // The double-click (detail == 2) expands an HTML element, but the user must click
             // on the element itself not on the twisty.
             // The logic should be as follow:
             // - click on the twisty expands/collapses the element
@@ -827,12 +832,27 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
 
     onKeyPress: function(event)
     {
-        if (this.editing || isControl(event) || isShift(event))
+        if (this.editing)
             return;
 
         var node = this.selection;
         if (!node)
             return;
+
+        // * expands the node with all its children
+        // + expands the node
+        // - collapses the node
+        var ch = String.fromCharCode(event.charCode);
+        if (ch == "*")
+            this.ioBox.toggleObject(node, true, event);
+        else if (ch == "+")
+            this.ioBox.expandObject(node);
+        else if (ch == "-")
+            this.ioBox.contractObject(node);
+
+        if (isControl(event) || isShift(event))
+            return;
+
         if (event.keyCode == KeyEvent.DOM_VK_UP)
             this.selectNodeBy("up");
         else if (event.keyCode == KeyEvent.DOM_VK_DOWN)
@@ -860,6 +880,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     dependents: ["css", "computed", "layout", "dom", "domSide", "watch"],
     inspectorHistory: new Array(5),
     enableA11y: true,
+    order: 20,
 
     initialize: function()
     {
@@ -909,6 +930,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     show: function(state)
     {
         this.showToolbarButtons("fbHTMLButtons", true);
+        this.showToolbarButtons("fbStatusButtons", true);
 
         this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
 
@@ -934,7 +956,6 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
 
     hide: function()
     {
-        this.showToolbarButtons("fbHTMLButtons", false);
         delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
         this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
     },
@@ -1236,9 +1257,20 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
                 else if (isElementSVG(node))
                     EditElement = "EditSVGElement";
 
-                items.push("-", { label: EditElement, command: bindFixed(this.editNode, this, node)},
-                            { label: "DeleteElement", command: bindFixed(this.deleteNode, this, node), disabled:(node.localName in innerEditableTags)}
-                           );
+                items.push("-",
+                    {label: EditElement, command: bindFixed(this.editNode, this, node)},
+                    {label: "DeleteElement", command: bindFixed(this.deleteNode, this, node),
+                        disabled:(node.localName in innerEditableTags)}
+                );
+            }
+
+            var objectBox = getAncestorByClass(target, "nodeBox");
+            var nodeChildBox = this.ioBox.getChildObjectBox(objectBox);
+            if (nodeChildBox)
+            {
+                items.push("-",
+                    {label: "html.label.Expand All", acceltext: "*",
+                        command: bindFixed(this.expandAll, this, node)});
             }
         }
         else

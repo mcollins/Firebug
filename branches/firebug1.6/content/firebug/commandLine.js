@@ -296,6 +296,7 @@ Firebug.CommandLine = extend(Firebug.Module,
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
     acceptCompletionOrReturnIt: function(context)
     {
         var commandLine = getCommandLine(context);
@@ -314,7 +315,7 @@ Firebug.CommandLine = extend(Firebug.Module,
         var mozJSEnabled = Firebug.getPref("javascript", "enabled");
         if (mozJSEnabled)
         {
-            if (!Firebug.largeCommandLine)
+            if (!Firebug.largeCommandLine || context.panelName != "console")
             {
                 this.clear(context);
                 this.appendToHistory(expr);
@@ -885,6 +886,16 @@ Firebug.CommandLine.CommandHandler = extend(Object,
                 debugger;
         }
 
+        // Don't displaye undefined in cases where command line APIs don't
+        // return any value (like e.g. dir, table, etc.)
+        if (methodName == "evaluated")
+        {
+            if (userObjects && userObjects.length == 1 &&
+                typeof(userObjects[0]) == "undefined") {
+                return true;
+            }
+        }
+
         var subHandler = api[methodName];
         if (!subHandler)
             return false;
@@ -920,12 +931,10 @@ function getExpressionOffset(command, offset)
 
     var bracketCount = 0;
 
-    var start = command.length-1;
-    for (; start >= 0; --start)
+    var start = command.length;
+    while (start --> 0)
     {
         var c = command[start];
-        if ((c == "," || c == ";" || c == " ") && !bracketCount)
-            break;
         if (reOpenBracket.test(c))
         {
             if (bracketCount)
@@ -934,7 +943,17 @@ function getExpressionOffset(command, offset)
                 break;
         }
         else if (reCloseBracket.test(c))
-            ++bracketCount;
+        {
+            if (bracketCount == 0 && command[start + 1] != '.')
+                break;
+            else
+                ++bracketCount;
+        }
+        else if (bracketCount == 0)
+        {
+            if (/[a-zA-Z0-9$_.]/.test(c));
+            else break;
+        }
     }
 
     return start + 1;
@@ -1028,34 +1047,14 @@ function injectScript(script, win)
 
 function getCommandLine(context)
 {
+    // Command line on other panels is never multiline.
+    var visible = Firebug.CommandLine.Preview.isVisible();
+    if (visible && context.panelName != "console")
+        return Firebug.chrome.$("fbCommandLine");
+
     return Firebug.largeCommandLine
         ? Firebug.chrome.$("fbLargeCommandLine")
         : Firebug.chrome.$("fbCommandLine");
-}
-
-const reIndent = /^(\s+)/;
-
-function getIndent(line)
-{
-    var m = reIndent.exec(line);
-    return m ? m[0].length : 0;
-}
-
-function cleanIndentation(text)
-{
-    var lines = splitLines(text);
-
-    var minIndent = -1;
-    for (var i = 0; i < lines.length; ++i)
-    {
-        var line = lines[i];
-        var indent = getIndent(line);
-        if (minIndent == -1 && line && !isWhitespace(line))
-            minIndent = indent;
-        if (indent >= minIndent)
-            lines[i] = line.substr(minIndent);
-    }
-    return lines.join("");
 }
 
 // ************************************************************************************************

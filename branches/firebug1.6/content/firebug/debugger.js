@@ -104,7 +104,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     },
 
     /*
-     * private to Debugger
+     * private to Debugger, returns list of strings
      */
     getFrameKeys: function(frame, names)  // TODO backend
     {
@@ -701,7 +701,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             // Update Break on Next lightning.
             var panel = context.getPanel("script", true);
             Firebug.Breakpoint.updatePanelTab(panel, false);
-
+            Firebug.chrome.syncPanel("script");  // issue 3463
             Firebug.chrome.select(context.stoppedFrame, "script", null, true);
             Firebug.chrome.focus();
         }
@@ -756,7 +756,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             else
             {
                 if (FBTrace.DBG_UI_LOOP)
-                    FBTrace.sysout("debugger.stopDebugging else "+context.getName()+" "+context.window.location);
+                    FBTrace.sysout("debugger.stopDebugging else "+context.getName()+" "+safeGetWindowLocation(context.window));
             }
         }
         catch (exc)
@@ -1136,6 +1136,12 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             if (Firebug.breakOnErrors)
             {
                 var sourceFile = Firebug.SourceFile.getSourceFileByScript(context, frame.script);
+                if (!sourceFile)
+                {
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("debugger.breakon Errors no sourceFile for "+frame.script.tag+"@"+frame.script.fileName);
+                    return;
+                }
                 var analyzer = sourceFile.getScriptAnalyzer(frame.script);
                 var lineNo = analyzer.getSourceLineFromFrame(context, frame);
 
@@ -2899,7 +2905,14 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
         // Fill the panel node with a warning if needed
         var aLocation = this.getDefaultLocation();
         var jsEnabled = Firebug.getPref("javascript", "enabled");
-        if (!jsEnabled)
+        if (FBL.fbs.activitySuspended && !this.context.stopped)
+        {
+            // Make sure that the content of the panel is restored as soon as
+            // the debugger is resumed.
+            this.restored = false;
+            this.activeWarningTag = WarningRep.showActivitySuspended(this.panelNode);
+        }
+        else if (!jsEnabled)
             this.activeWarningTag = WarningRep.showNotEnabled(this.panelNode);
         else if (this.context.allScriptsWereFiltered)
             this.activeWarningTag = WarningRep.showFiltered(this.panelNode);
@@ -2964,6 +2977,7 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
         this.showToolbarButtons("fbDebuggerButtons", active);
         this.showToolbarButtons("fbLocationButtons", active);
         this.showToolbarButtons("fbScriptButtons", active);
+        this.showToolbarButtons("fbStatusButtons", active);
 
         // Additional debugger panels are visible only if debugger
         // is active.
@@ -2973,12 +2987,8 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
 
     hide: function(state)
     {
-        this.showToolbarButtons("fbDebuggerButtons", false);
-
         this.highlight(this.context.stopped);
 
-        this.showToolbarButtons("fbScriptButtons", false);
-        this.showToolbarButtons("fbLocationButtons", false);
         var panelStatus = Firebug.chrome.getPanelStatusElements();
         FBL.hide(panelStatus, false);
 
@@ -3588,9 +3598,16 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
         ),
 
     enableScriptTag:
-        DIV({"class": "objectLink", onclick: "$onEnableScript", style: "color: blue"},
-            SPAN($STR("script.button.enable_javascript"))
+        SPAN({"class": "objectLink", onclick: "$onEnableScript", style: "color: blue"},
+            $STR("script.button.enable_javascript")
         ),
+
+    focusDebuggerTag:
+        SPAN({"class": "objectLink", onclick: "$onFocusDebugger", style: "color: blue"},
+            $STR("script.button.Go to that page")
+        ),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     onEnableScript: function(event)
     {
@@ -3598,6 +3615,21 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
 
         var panel = Firebug.getElementPanel(event.target);
         panel.context.window.location.reload();
+    },
+
+    onFocusDebugger: function(event)
+    {
+        iterateBrowserWindows("navigator:browser", function(win)
+        {
+            return win.TabWatcher.iterateContexts(function(context)
+            {
+                if (context.stopped)
+                {
+                     win.Firebug.focusBrowserTab(context.window);
+                     return true;
+                }
+            });
+        });
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3640,6 +3672,19 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
             suggestion: $STR("script.suggestion.no_javascript")
         }
         return this.tag.replace(args, parentNode, this);
+    },
+
+    showActivitySuspended: function(parentNode)
+    {
+        var args = {
+            pageTitle: $STR("script.warning.debugger_active"),
+            suggestion: $STR("script.suggestion.debugger_active")
+        }
+
+        var box = this.tag.replace(args, parentNode, this);
+        this.focusDebuggerTag.append({}, box, this);
+
+        return box;
     }
 });
 

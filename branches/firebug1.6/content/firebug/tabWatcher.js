@@ -236,7 +236,7 @@ top.TabWatcher = extend(new Firebug.Listener(),
                  FBTrace.sysout("-> shouldCreateContext with user: "+userCommands+ " one listener says yes to "+ url, this.fbListeners);
             return true;
         }
-            
+
 
         if (FBTrace.DBG_ACTIVATION)
             FBTrace.sysout("-> shouldCreateContext with user: "+userCommands+ " no opinion for: "+ url);
@@ -666,6 +666,9 @@ var TabProgressListener = extend(BaseProgressListener,
                     (uri?uri.spec:"null location")+
                     (requestFromFirebuggedWindow?" from firebugged window":" no firebug"));
             }
+
+            if (uri && uri.spec === "about:blank") // the onStateChange will deal with this troublesome case
+                return;
 
             if (uri && uri.scheme === "wyciwyg")  // document.open() was called, the document was cleared.
                 evictTopWindow(progress.DOMWindow, uri);

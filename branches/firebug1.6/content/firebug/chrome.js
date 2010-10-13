@@ -686,7 +686,7 @@ top.FirebugChrome =
             panelBar2.hideSelectedPanel()
     },
 
-    syncPanel: function()
+    syncPanel: function(panelName)
     {
         var context = Firebug.currentContext;
 
@@ -698,7 +698,8 @@ top.FirebugChrome =
 
         if (context)
         {
-            var panelName = context.panelName? context.panelName : Firebug.defaultPanelName;
+            if (!panelName)
+                panelName = context.panelName? context.panelName : Firebug.defaultPanelName;
 
             // Make HTML panel the default panel, which is displayed
             // to the user the very first time.
@@ -725,6 +726,8 @@ top.FirebugChrome =
 
     syncSidePanels: function()
     {
+        if(FBTrace.DBG_PANELS)
+            FBTrace.sysout("syncSidePanels "+panelBar1.selectedPanel);
         if (!panelBar1.selectedPanel)
             return;
 
@@ -848,6 +851,8 @@ top.FirebugChrome =
                     }
 
                     panelStatus.selectObject(panel.selection);
+                    if (FBTrace.DBG_PANELS)
+	                    FBTrace.sysout("syncStatusPath "+path.length+" items ", path);
                 }
             }
         }
@@ -1284,7 +1289,7 @@ top.FirebugChrome =
         else
             FBL.removeClass(tooltip, 'noteInToolTip');
 
-        if (target.hasAttribute("title"))
+        if (target && target.hasAttribute("title"))
         {
             tooltip.setAttribute("label", target.getAttribute("title"));
             return true;
@@ -1538,6 +1543,18 @@ function onSelectingPanel(event)
 
     if (panel)
         panel.navigate(panel.location);
+
+    // Hide all toolbars now. It's a responsibility of the new selected panel to show
+    // those toolbars that are necessary. This avoids the situation when naughty panel
+    // doesn't clean up its toolbars. This must be done before showPanel where visibility
+    // of the BON buttons is managed.
+    var toolbar = $("fbToolbarInner");
+    var child = toolbar.firstChild;
+    while (child)
+    {
+        FBL.collapse(child, true);
+        child = child.nextSibling;
+    }
 
     // Calling Firebug.showPanel causes dispatching "showPanel" to all modules.
     var browser = panel ? panel.context.browser : FirebugChrome.getCurrentBrowser();

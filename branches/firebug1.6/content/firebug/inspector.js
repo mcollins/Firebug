@@ -16,7 +16,6 @@ const highlightCSS = "chrome://firebug/content/highlighter.css";
 
 var boxModelHighlighter = null,
     frameHighlighter = null,
-    popupHighlighter = null,
     mx, my;
 
 // ************************************************************************************************
@@ -378,7 +377,8 @@ Firebug.Inspector = extend(Firebug.Module,
     showPanel: function(browser, panel)
     {
         // The panel can be null (if disabled) so use the global context.
-        var disabled = !Firebug.currentContext.loaded;
+        var context = Firebug.currentContext;
+        var disabled = (context && context.loaded) ? false : true;
         Firebug.chrome.setGlobalAttribute("cmd_toggleInspecting", "disabled", disabled);
     },
 
@@ -469,13 +469,6 @@ function getHighlighter(type)
             frameHighlighter = new Firebug.Inspector.FrameHighlighter();
 
         return frameHighlighter;
-    }
-    else if (type == "popup")
-    {
-        if (!popupHighlighter)
-            popupHighlighter = new PopupHighlighter();
-
-        return popupHighlighter;
     }
 }
 
@@ -979,38 +972,14 @@ Firebug.Inspector.FrameHighlighter.prototype =
         return context.frameHighlighter;
     }
 };
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-function PopupHighlighter()
-{
-}
-
-PopupHighlighter.prototype =
-{
-    highlight: function(context, element)
-    {
-        var doc = context.window.document;
-        var popup = doc.getElementById("inspectorPopup");
-        popup.style.width = "200px";
-        popup.style.height = "100px";
-        popup.showPopup(element, element.boxObject.screenX,
-            element.boxObject.screenY, "popup", "none", "none");
-        if (FBTrace.DBG_INSPECT)
-        {
-            FBTrace.sysout("PopupHighlighter for "+element.tagName, " at ("+element.boxObject.screenX+","+element.boxObject.screenY+")");
-            FBTrace.sysout("PopupHighlighter popup=", popup);
-        }
-    },
-
-    unhighlight: function(context)
-    {
-    },
-};
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 function BoxModelHighlighter()
 {
 }
+
+Firebug.Inspector.BoxModelHighlighter = BoxModelHighlighter;
 
 BoxModelHighlighter.prototype =
 {

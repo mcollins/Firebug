@@ -1119,7 +1119,18 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
                 candidates = [];
                 for (var i = 0; i < values.length; ++i)
                 {
-                    if (values[i].substr)
+                    var value = values[i];
+
+                    // Use only string props
+                    if (typeof(value) != "string")
+                        continue;
+
+                    // Use only those props that don't contain unsafe charactes and so need
+                    // quotation (e.g. object["my prop"] notice the space character).
+                    // Following expression checks that the name starts with a letter or $_,
+                    // and there are only letters, numbers or $_ character in the string (no spaces).
+                    var re = /^[A-Za-z_$][A-Za-z_$0-9]*/;
+                    if (value.match(re) == value)
                         candidates.push(values[i]);
                 }
                 lastIndex = -2;
@@ -1268,10 +1279,10 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         {
             var hbox = completionPopup.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml","div");
             pre = completionPopup.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml","span");
-            pre.innerHTML = prefix;
+            pre.innerHTML = escapeForTextNode(prefix);
             var post = completionPopup.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml","span");
             var completion = candidates[i].substr(preCompletion.length);
-            post.innerHTML = completion;
+            post.innerHTML = escapeForTextNode(completion);
             if (i === lastIndex)
                 post.setAttribute('selected', 'true');
 
@@ -1394,8 +1405,8 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
     this.handledKeyPress = function(event, context, textBox)
     {
-        var char = String.fromCharCode(event.charCode);
-        switch (char)
+        var ch = String.fromCharCode(event.charCode);
+        switch (ch)
         {
             case '.':
             case '(':
@@ -1452,8 +1463,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
             this.linuxFocusHack.focus();  // XXXjjb This does not work, but my experience with focus is that it usually does not work.
         delete this.linuxFocusHack;
     };
-
-    this.onPopupShown = bind(this.onPopupShown, this);
 
     completionPopup.addEventListener("mouseover", this.setCompletionOnEvent, true);
     completionPopup.addEventListener("click", this.acceptCompletion, true);

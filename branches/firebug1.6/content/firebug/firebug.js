@@ -732,6 +732,20 @@ top.Firebug =
                 FBTrace.sysout("registerPanel "+arguments[i].prototype.name+"\n");
     },
 
+    unregisterPanel: function(panelType)
+    {
+        for (var i = 0; i < panelTypes.length; ++i)
+        {
+            if (panelTypes[i] == panelType)
+            {
+                panelTypes.splice(i, 1);
+                break;
+            }
+        }
+
+        delete panelTypeMap[panelType.prototype.name];
+    },
+
     registerRep: function()
     {
         reps.push.apply(reps, arguments);
@@ -1574,11 +1588,6 @@ top.Firebug =
             }
         }
 
-        resultTypes.sort(function(a, b)
-        {
-            return a.prototype.order < b.prototype.order ? -1 : 1;
-        });
-
         return resultTypes;
     },
 
@@ -2086,6 +2095,7 @@ top.Firebug =
     },
 
     //*********************************************************************************************
+
     /*
      * This method syncs the UI to a context
      * @param context to become the active and visible context
@@ -2094,6 +2104,7 @@ top.Firebug =
     {
         this.showContext(context.browser, context);
     },
+
     //*********************************************************************************************
 
     getTabForWindow: function(aWindow)  // TODO move to FBL, only used by getTabIdForWindow
@@ -2123,6 +2134,12 @@ top.Firebug =
     {
         var tab = this.getTabForWindow(win);
         return tab ? tab.linkedPanel : null;
+    },
+
+    focusBrowserTab: function(win)    // TODO move to FBL
+    {
+        this.tabBrowser.selectedTab = this.getTabForWindow(win);
+        this.chrome.focus();
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

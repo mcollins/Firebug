@@ -97,11 +97,23 @@ InsideOutBox.prototype =
         return objectBox;
     },
 
-    expandObject: function(object)
+    toggleObject: function(object, all, event)
+    {
+        var objectBox = this.createObjectBox(object);
+        if (!objectBox)
+            return;
+
+        if (hasClass(objectBox, "open"))
+            this.contractObjectBox(objectBox, all);
+        else
+            this.expandObjectBox(objectBox, all, event);
+    },
+
+    expandObject: function(object, expandAll)
     {
         var objectBox = this.createObjectBox(object);
         if (objectBox)
-            this.expandObjectBox(objectBox);
+            this.expandObjectBox(objectBox, expandAll);
     },
 
     contractObject: function(object)
@@ -176,7 +188,7 @@ InsideOutBox.prototype =
         }
     },
 
-    expandObjectBox: function(objectBox)
+    expandObjectBox: function(objectBox, expandAll, event)
     {
         var nodeChildBox = this.getChildObjectBox(objectBox);
         if (!nodeChildBox)
@@ -187,19 +199,56 @@ InsideOutBox.prototype =
             var firstChild = this.view.getChildObject(objectBox.repObject, 0);
             this.populateChildBox(firstChild, nodeChildBox);
         }
+
         var labelBox = objectBox.getElementsByClassName('nodeLabelBox').item(0);
         if (labelBox)
             labelBox.setAttribute('aria-expanded', 'true');
         setClass(objectBox, "open");
+
+        // Recursively expand all child boxes.
+        if (expandAll)
+        {
+            for (var child = nodeChildBox.firstChild; child; child = child.nextSibling)
+            {
+                if (event)
+                {
+                    var localName = child.repObject.localName;
+                    var localName = localName ? localName.toLowerCase() : "";
+
+                    // Avoid expanding SCRIPT and LINK tags. Their content is not
+                    // event part of the DOM and it isn't usually what the user
+                    // wants to see when exploring HTML in the HTML panel.
+                    // The user can force expanding by pressing SHIFT key.
+                    // xxxHonza: I believe this entire logic belongs int html.js
+                    //    Refactor when implementing the breakpoint column.
+                    if ((localName == "script" || localName == "link") && !isShift(event))
+                        continue;
+                }
+
+                if (hasClass(child, "containerNodeBox"))
+                    this.expandObjectBox(child, expandAll);
+            }
+        }
     },
 
-    contractObjectBox: function(objectBox)
+    contractObjectBox: function(objectBox, contractAll)
     {
         removeClass(objectBox, "open");
+
         var nodeLabel = objectBox.getElementsByClassName("nodeLabel").item(0);
         var labelBox = nodeLabel.getElementsByClassName('nodeLabelBox').item(0);
         if (labelBox)
             labelBox.setAttribute('aria-expanded', 'false');
+
+        // Recursively (one level) contract all child boxes.
+        if (contractAll)
+        {
+            for (var child = nodeChildBox.firstChild; child; child = child.nextSibling)
+            {
+                if (hasClass(child, "containerNodeBox"))
+                    this.contractObjectBox(childBoxes[i], contractAll);
+            }
+        }
     },
 
     toggleObjectBox: function(objectBox, forceOpen)
@@ -209,9 +258,9 @@ InsideOutBox.prototype =
         var labelBox = nodeLabel.getElementsByClassName('nodeLabelBox').item(0);
         if (labelBox)
             labelBox.setAttribute('aria-expanded', isOpen);
+
         if (!forceOpen && isOpen)
             this.contractObjectBox(objectBox);
-
         else if (!isOpen)
             this.expandObjectBox(objectBox);
     },

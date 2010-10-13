@@ -345,6 +345,7 @@ Firebug.DOMBasePanel.ToolboxPlate = ToolboxPlate;
 Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
 {
     tag: DirTablePlate.tableTag,
+    dirTablePlate: DirTablePlate,
 
     getRealObject: function(object)
     {
@@ -371,7 +372,7 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
             level = 0;
 
         var ordinals = [], userProps = [], userClasses = [], userFuncs = [],
-            domProps = [], domFuncs = [], domConstants = [];
+            domProps = [], domFuncs = [], domConstants = [], proto = [];
 
         try
         {
@@ -382,14 +383,6 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
             var insecureObject = unwrapObject(object);
 
             var properties = [];
-            if (insecureObject.hasOwnProperty('prototype'))
-                properties.push('prototype');
-
-            if (insecureObject.hasOwnProperty('constructor'))
-                properties.push('constructor');
-
-            if (insecureObject.hasOwnProperty('__proto__'))
-                properties.push('__proto__');
 
             for (var name in insecureObject)  // enumeration is safe
             {
@@ -402,6 +395,15 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
                 }
                 properties.push(name);
             }
+
+            if (insecureObject.hasOwnProperty('constructor') && properties.indexOf('constructor') == -1)
+                properties.push('constructor');
+
+            if (insecureObject.hasOwnProperty('prototype') && properties.indexOf('prototype') == -1)
+                properties.push('prototype');
+
+            if (insecureObject.__proto__ && hasProperties(insecureObject.__proto__))  // XXXjjb I think it is always true ?
+                properties.push('__proto__');
 
             var domMembers = getDOMMembers(object);
             for (var i = 0; i < properties.length; i++)
@@ -435,9 +437,11 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
                 }
                 else
                 {
-                    if (isDOMMember(object, name))
+                    if (isPrototype(name))
+                        this.addMember(object, "proto", proto, name, val, level, 0, context);
+                    else if (isDOMMember(object, name))
                         this.addMember(object, "dom", domProps, name, val, level, domMembers[name], context);
-                    else if (name in domConstantMap)
+                    else if (isDOMConstant(name))
                         this.addMember(object, "dom", domConstants, name, val, level, 0, context);
                     else
                         this.addMember(object, "user", userProps, name, val, level, 0, context);
@@ -454,7 +458,6 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
         }
 
         function sortName(a, b) { return a.name > b.name ? 1 : -1; }
-        function sortOrder(a, b) { return a.order > b.order ? 1 : -1; }
 
         var members = [];
 
@@ -489,6 +492,9 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
 
         if (Firebug.showDOMConstants)
             members.push.apply(members, domConstants);
+
+        // The prototype is always displayed at the end.
+        members.push.apply(members, proto);
 
         return members;
     },
@@ -639,7 +645,7 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
 
         var table = this.tag.replace({domPanel: this, toggles: this.toggles}, dest);
         var tbody = table.lastChild;
-        var rowTag = DirTablePlate.rowTag;
+        var rowTag = this.dirTablePlate.rowTag;
 
         // Insert the first slice immediately
         var setSize = members.length;
@@ -738,7 +744,7 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
         if (!object)
             return;
 
-        // Get the value with try-catch statement. This method is used also wihin
+        // Get the value with try-catch statement. This method is used also within
         // getContextMenuItems where the exception would break the context menu.
         // 1) The Firebug.Debugger.evaluate can throw
         // 2) object[propName] can also throws in case of e.g. non existing "abc.abc" prop name.
@@ -1046,6 +1052,8 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
 
     show: function(state)
     {
+        this.showToolbarButtons("fbStatusButtons", true);
+
         if (!this.selection)
         {
             if (!state)
@@ -1080,7 +1088,7 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
             if (this.propertyPath.length > 1)
                 selectObject = this.resetPaths(selectObject);
             else
-                this.propertyPath.push(null);   // Sync with objectPath always containing a defalt object.
+                this.propertyPath.push(null);   // Sync with objectPath always containing a default object.
 
             var selection = state.pathIndex < this.objectPath.length
                 ? this.getPathObject(state.pathIndex)
@@ -1221,7 +1229,7 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
             {
                 this.toggles = new ToggleBranch();
 
-                var win = unwrapObject(this.context.getGlobalScope());
+                var win = this.getDefaultSelection();
                 if (object == win)
                 {
                     this.pathIndex = 0;
@@ -1427,6 +1435,7 @@ DOMMainPanel.prototype = extend(Firebug.DOMBasePanel.prototype,
     enableA11y: true,
     deriveA11yFrom: "console",
     searchType : "dom",
+    order: 50,
 
     initialize: function()
     {
@@ -1726,7 +1735,10 @@ Firebug.WatchPanel.prototype = extend(Firebug.DOMBasePanel.prototype,
                     scope = frame.scope;
 
                 this.addMember(scope, "watch", members, expr, value, 0);
-                FBTrace.sysout("watch.updateSelection "+expr+" = "+value, {expr: expr, value: value, members: members})
+
+                if (FBTrace.DBG_DOM)
+                    FBTrace.sysout("watch.updateSelection "+expr+" = "+value,
+                        {expr: expr, value: value, members: members})
             }
         }
 
@@ -1857,6 +1869,10 @@ function isArguments(obj)
     return false;
 }
 
+function isPrototype(name)
+{
+    return (name == "prototype" || name == "__proto__");
+}
 
 function getWatchRowIndex(row)
 {

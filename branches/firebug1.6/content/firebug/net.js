@@ -407,6 +407,7 @@ NetPanel.prototype = extend(Firebug.ActivablePanel,
     editable: true,
     breakable: true,
     enableA11y: true,
+    order: 60,
 
     initialize: function(context, doc)
     {
@@ -528,8 +529,6 @@ NetPanel.prototype = extend(Firebug.ActivablePanel,
     {
         if (FBTrace.DBG_NET)
             FBTrace.sysout("net.netPanel.hide; " + this.context.getName());
-
-        this.showToolbarButtons("fbNetButtons", false);
 
         Firebug.Debugger.syncCommands(this.context);
 
