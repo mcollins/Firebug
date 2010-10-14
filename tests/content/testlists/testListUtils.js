@@ -64,8 +64,15 @@ window.addEventListener("load", function showPage()
 
 function getDriverBaseURI()
 {
-    var parts = window.location.toString().split('/');
+    var loc = window.location.toString();
+
+    // Remove anchor
+    var index = loc.indexOf("#");
+    if (index >= 0)
+        loc = loc.substring(0, index);
+
+    var parts = loc.split("/");
     parts.pop(); // remove file name
     parts.pop(); // remove /testLists/
-    return parts.join('/') + "/";
+    return parts.join("/") + "/";
 }
