@@ -39,9 +39,6 @@ function runTest()
                 }
 
                 checkWatchPanel();
-                FBTest.clickContinueButton(chrome);
-                FBTest.progress("The continue button is pushed");
-
             });
 
             FBTest.progress("Breakpoint Listener set, run the function");
@@ -53,17 +50,20 @@ function runTest()
 
 function checkWatchPanel()
 {
-    var panel = FBTest.getPanel("watches");
+    var chrome = FW.FirebugChrome;
+    var panel = chrome.selectSidePanel("watches");
     var panelNode = panel.panelNode;
     var watchNewRow = FW.FBL.getElementByClass(panelNode, "watchEditBox");
 
     FBTest.progress("now click on the box "+watchNewRow.innerHTML);
+
     // Click on the "New watch expression..." edit box to start editing.
     FBTest.mouseDown(watchNewRow);
 
     setTimeout(function checkEditing()
     {
         FBTest.ok(panel.editing, "The Watch panel must be in an 'editing' mode now.");
+        FBTest.clickContinueButton(chrome);
         FBTest.testDone("issue1575.DONE");
     }, 100);
 }
