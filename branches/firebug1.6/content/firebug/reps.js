@@ -168,18 +168,18 @@ this.Func = domplate(Firebug.Rep,
 
     summarizeFunction: function(fn)
     {
+        var fnRegex = /function ([^(]+\([^)]*\)) \{/;
         var fnText = safeToString(fn);
-        var namedFn = /^function ([^(]+\([^)]*\)) \{/.exec(fnText);
-        var anonFn  = /^function \(/.test(fnText);
-        return namedFn ? namedFn[1] : (anonFn ? "function()" : fnText);
+
+        var m = fnRegex.exec(fnText);
+        return m ? m[1] : "function()";
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     copySource: function(fn)
     {
-        if (fn && typeof (fn['toSource']) == 'function')
-            copyToClipboard(fn.toSource());
+        copyToClipboard(safeToString(fn));
     },
 
     monitor: function(fn, script, monitored)
@@ -646,17 +646,20 @@ this.NetFile = domplate(this.Obj,
 
 // ************************************************************************************************
 
-function instanceOf(object, Klass)
+this.Except = domplate(Firebug.Rep,
 {
-    while (object != null) 
-    {
-        if (object == Klass.prototype)
-           return true;
-        object = object.__proto__;
-    }
-    return false;
-}
+    tag:
+        OBJECTBOX({_repObject: "$object"}, "$object.message"),
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    className: "exception",
+
+    supportsObject: function(object, type)
+    {
+        return object instanceof ErrorCopy;
+    }
+});
 
 
 // ************************************************************************************************
@@ -1771,74 +1774,6 @@ this.ErrorMessage = domplate(Firebug.Rep,
         }
 
         return items;
-    }
-});
-
-// ************************************************************************************************
-
-this.Except = domplate(Firebug.Rep,
-{
-    tag:
-        TAG(this.ErrorMessage.tag, {object: "$object|getErrorMessage"}),
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-    className: "exception",
-
-    getTitle: function(object)
-    {
-        if (object.name)
-            return object.name + (object.message ? ": " + object.message : "");
-         if (object.message)
-            return object.message;
-        return "Exception";
-    },
-
-    getErrorMessage: function(object)
-    {
-        var win = Firebug.currentContext.window, 
-            trace, 
-            url, 
-            lineNo, 
-            errorObject,
-            message,
-            isCommandLine = false;
-
-        url = object.fileName ? object.fileName : (win ? win.location.href : "");
-        lineNo = object.lineNumber ? object.lineNumber : 0;
-        message = this.getTitle(object);
-
-        if (object.stack)
-        {
-            trace = FBL.parseToStackTrace(object.stack);
-            if (trace){
-                trace.frames.pop();
-                while (trace.frames.length && /^_[fF]irebug/.test(trace.frames[trace.frames.length - 1].fn))
-                {
-                    isCommandLine = true;
-                    trace.frames.pop();
-                }
-                if(trace.frames.length == 0)
-                    trace = undefined;
-            }
-            if (!trace)
-                lineNo = 0;
-        }
-        errorObject = new FBL.ErrorMessage(message, url, lineNo, '', 'js', 
-            Firebug.currentContext, trace);
-        
-        if (trace && trace.frames && trace.frames[0]) 
-            errorObject.correctWithStackTrace(trace);
-        errorObject.resetSource();
-        
-        return errorObject;
-    },
-
-    supportsObject: function(object, type, context)
-    {
-        var win = context && context.window && context.window.wrappedJSObject;
-        var found = (win && instanceOf(object,win.Error)) || (object instanceof ErrorCopy);
-        return found;
     }
 });
 
