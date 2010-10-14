@@ -1,8 +1,19 @@
-h1, h3 {
+h1 {
     margin-bottom: 0;
 }
 
 #driverURI,
 #testcaseURI {
     color: gray;
+}
+
+.noTestCasePage {
+    padding-left: 10px;
+    color:gray;
+}
+
+h3 {
+    border-bottom: solid 1px lightgray;
+    margin-bottom: 10px;
+    color:black;
 }
