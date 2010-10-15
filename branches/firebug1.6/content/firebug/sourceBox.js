@@ -338,6 +338,11 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
         return sourceBox;
     },
 
+    getSourceFileBySourceBox: function(sourceBox)
+    {
+        return sourceBox.repObject;
+    },
+
     initializeSourceBox: function(sourceFile)
     {
         var sourceBox = this.document.createElement("div");

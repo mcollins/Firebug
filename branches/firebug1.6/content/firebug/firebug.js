@@ -2514,7 +2514,7 @@ Firebug.Panel = extend(new Firebug.Listener(),
         if (FBTrace.DBG_PANELS)
             FBTrace.sysout("navigate "+this.name+" to "+object+" when this.location="+this.location+"\n");
         if (!object)
-            object = this.getDefaultLocation(this.context);
+            object = this.getDefaultLocation();
         if (!object)
             object = null;  // not undefined.
 
@@ -2530,8 +2530,94 @@ Firebug.Panel = extend(new Firebug.Listener(),
         }
     },
 
-    updateLocation: function(object)  // if the module can return null from getDefaultLocation, then it must handle it here.
+    /*
+     * The location object has been changed, the panel should update it view
+     * @param object a location, must be one of getLocationList() returns
+     *  if  getDefaultLocation() can return null, then updateLocation must handle it here.
+     */
+    updateLocation: function(object)
     {
+    },
+
+    select: function(object, forceUpdate)
+    {
+        if (!object)
+            object = this.getDefaultSelection();
+
+        if(FBTrace.DBG_PANELS)
+            FBTrace.sysout("firebug.select "+this.name+" forceUpdate: "+forceUpdate+" "+object+((object==this.selection)?"==":"!=")+this.selection);
+
+        if (forceUpdate || object != this.selection)
+        {
+            this.selection = object;
+            this.updateSelection(object);
+
+            dispatch(Firebug.uiListeners, "onObjectSelected", [object, this]);
+        }
+    },
+
+    /*
+     * Firebug wants to show an object to the user and this panel has the best supportsObject() result for the object.
+     * If the panel displays a container for objects of this type, it should set this.selectedObject = object
+     */
+    updateSelection: function(object)
+    {
+    },
+
+    /*
+     * Redisplay the panel based on the current location and selection
+     */
+    refresh: function()
+    {
+        if (this.location)
+            this.updateLocation(this.location);
+        else if (this.selection)
+            this.updateSelection(this.selection);
+    },
+
+    markChange: function(skipSelf)
+    {
+        if (this.dependents)
+        {
+            if (skipSelf)
+            {
+                for (var i = 0; i < this.dependents.length; ++i)
+                {
+                    var panelName = this.dependents[i];
+                    if (panelName != this.name)
+                        this.context.invalidatePanels(panelName);
+                }
+            }
+            else
+                this.context.invalidatePanels.apply(this.context, this.dependents);
+        }
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    startInspecting: function()
+    {
+    },
+
+    stopInspecting: function(object, cancelled)
+    {
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    search: function(text, reverse)
+    {
+    },
+
+    /**
+     * Retrieves the search options that this modules supports.
+     * This is used by the search UI to present the proper options.
+     */
+    getSearchOptionsMenuItems: function()
+    {
+        return [
+            Firebug.Search.searchOptionMenu("search.Case Sensitive", "searchCaseSensitive")
+        ];
     },
 
     /**
@@ -2582,84 +2668,6 @@ Firebug.Panel = extend(new Firebug.Listener(),
         }
     },
 
-    select: function(object, forceUpdate)
-    {
-        if (!object)
-            object = this.getDefaultSelection(this.context);
-
-        if(FBTrace.DBG_PANELS)
-            FBTrace.sysout("firebug.select "+this.name+" forceUpdate: "+forceUpdate+" "+object+((object==this.selection)?"==":"!=")+this.selection);
-
-        if (forceUpdate || object != this.selection)
-        {
-            this.selection = object;
-            this.updateSelection(object);
-
-            dispatch(Firebug.uiListeners, "onObjectSelected", [object, this]);
-        }
-    },
-
-    /*
-     * Firebug wants to show an object to the user and this panel has the best supportsObject() result for the object.
-     * If the panel displays a container for objects of this type, it should set this.selectedObject = object
-     */
-    updateSelection: function(object)
-    {
-    },
-
-    /*
-     * Redisplay the panel based on the current location and selection
-     */
-    refresh: function()
-    {
-
-    },
-
-    markChange: function(skipSelf)
-    {
-        if (this.dependents)
-        {
-            if (skipSelf)
-            {
-                for (var i = 0; i < this.dependents.length; ++i)
-                {
-                    var panelName = this.dependents[i];
-                    if (panelName != this.name)
-                        this.context.invalidatePanels(panelName);
-                }
-            }
-            else
-                this.context.invalidatePanels.apply(this.context, this.dependents);
-        }
-    },
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-    startInspecting: function()
-    {
-    },
-
-    stopInspecting: function(object, cancelled)
-    {
-    },
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-    search: function(text, reverse)
-    {
-    },
-
-    /**
-     * Retrieves the search options that this modules supports.
-     * This is used by the search UI to present the proper options.
-     */
-    getSearchOptionsMenuItems: function()
-    {
-        return [
-            Firebug.Search.searchOptionMenu("search.Case Sensitive", "searchCaseSensitive")
-        ];
-    },
-
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     // Called when "Options" clicked. Return array of
@@ -2693,7 +2701,7 @@ Firebug.Panel = extend(new Firebug.Listener(),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    getDefaultSelection: function(context)
+    getDefaultSelection: function()
     {
         return null;
     },
@@ -2730,7 +2738,7 @@ Firebug.Panel = extend(new Firebug.Listener(),
         return null;
     },
 
-    getDefaultLocation: function(context)
+    getDefaultLocation: function()
     {
         return null;
     },
