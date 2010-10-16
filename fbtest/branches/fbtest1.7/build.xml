@@ -4,11 +4,20 @@
     The final xpi file should be located in a release directory -->
 <project name="netExport" basedir="." default="build">
 
-    <!-- Directories -->
-    <property name="build.dir" value="release"/>
-
     <!-- Properties -->
     <property file="content/fbtest.properties"/>
+
+    <!-- Directories -->
+    <property name="build.dir" value="release"/>
+    <property name="deploy-xpi.dir" value="${GETFIREBUG}/releases/fbtest/${VERSION}"/>
+
+    <available file="${GETFIREBUG}" property="deploy.dir.available"/>
+
+    <!-- echo -->
+    <target name="echo">
+        <echo message="Build directory: ${build.dir}"/>
+        <echo message="Deploy directory ${GETFIREBUG} available: ${deploy.dir.available}"/>
+    </target>
 
     <!-- Clean -->
     <target name="clean">
@@ -83,6 +92,18 @@
 
         <!-- Final version message -->
         <echo message="FBTest version: ${VERSION}${RELEASE}"/>
+
+        <!-- Deploy -->
+        <antcall target="deploy" />
+    </target>
+
+    <!-- Deploy if target available -->
+    <target name="deploy" if="deploy.dir.available">
+
+        <!-- Deploy xpi & update.rdf files -->
+        <copy file="${build.dir}/update.rdf" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <copy file="${build.dir}/fbTest-${VERSION}${RELEASE}.xpi" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <echo message="XPI deployed to: ${VERSION}${RELEASE} to ${deploy-xpi.dir}"/>
     </target>
 
     <!-- Support for generating docs from source code comments using js-doc-toolkit -->
