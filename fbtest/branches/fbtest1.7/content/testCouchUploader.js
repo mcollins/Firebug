@@ -232,6 +232,7 @@ var CouchDB =
         this.ajax({
             type: "POST",
             url: this.uri + "_bulk_docs",
+            contentType: "application/json",
             data: toJSON(docs),
             complete: function(req)
             {
