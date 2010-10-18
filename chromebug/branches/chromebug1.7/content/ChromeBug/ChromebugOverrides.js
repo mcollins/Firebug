@@ -5,7 +5,7 @@ FBL.ns(function chromebug() { with (FBL) {
 
 const Ci = Components.interfaces;
 const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
-
+const inIDOMUtils = CCSV("@mozilla.org/inspector/dom-utils;1", "inIDOMUtils");
 
 var ChromebugOverrides = {
 
@@ -57,29 +57,34 @@ var ChromebugOverrides = {
 */
 
     // Override Firebug.HTMLPanel.prototype
-
-    getFirstChild: function(node)
+    getTreeWalker: function(node)
     {
-        if (!this.treeWalker)
+        if (!this.treeWalker || this.treeWalker.currentNode !== node)
         {
+            // Apparently you cannot reset the currentNode on this treeWalker
             //http://mxr.mozilla.org/comm-central/source/mozilla/extensions/inspector/resources/content/viewers/dom/dom.js#819
             this.treeWalker = CCIN("@mozilla.org/inspector/deep-tree-walker;1", "inIDeepTreeWalker");
             this.treeWalker.showAnonymousContent = true;
             this.treeWalker.showSubDocuments = true; // does not matter, we don't visit children, only siblings
-        }
 
-        try
-        {
-            this.treeWalker.init(node, Components.interfaces.nsIDOMNodeFilter.SHOW_ALL);
-            return this.treeWalker.firstChild();
+            try
+            {
+                this.treeWalker.init(node, Components.interfaces.nsIDOMNodeFilter.SHOW_ALL);
+            }
+            catch(exc)
+            {
+                FBTrace.sysout("Falling back to DOM Tree walker, inIDeepTreeWalker in chromebug requires FF 3.6 or higher "+exc, exc);
+                this.treeWalker = node.ownerDocument.createTreeWalker(
+                        node, NodeFilter.SHOW_ALL, null, false);
+            }
         }
-        catch(exc)
-        {
-            FBTrace.sysout("Falling back to DOM Tree walker, inIDeepTreeWalker in chromebug requires FF 3.6 or higher "+exc, exc);
-            this.treeWalker = node.ownerDocument.createTreeWalker(
-                    node, NodeFilter.SHOW_ALL, null, false);
-            return this.treeWalker.firstChild();
-        }
+        FBTrace.sysout("getTreeWalker "+getElementCSSSelector(node));
+        return this.treeWalker;
+    },
+
+    getParentNode: function(node)
+    {
+        return inIDOMUtils.getParentForNode(node, true);
     },
 
     // Override debugger
@@ -384,7 +389,8 @@ function overrideFirebugFunctions()
              return false;
         };
 
-        top.Firebug.HTMLPanel.prototype.getFirstChild = ChromebugOverrides.getFirstChild;
+        top.Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker = ChromebugOverrides.getTreeWalker;
+        top.Firebug.HTMLLib.ElementWalkerFunctions.getParentNode = ChromebugOverrides.getParentNode;
 
         top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
