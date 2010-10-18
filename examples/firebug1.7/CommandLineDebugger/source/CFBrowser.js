@@ -50,7 +50,7 @@ function CFBrowser(host, port) {
 	this.input = null;
 	this.sequence = 0;
 	this.initialized = false;
-	this.verbose = false;
+	this.verbose = true;
 	this.handlers = []; // maps sequence numbers to handler objects
 	importPackage(java.net);
 	importPackage(java.io);
