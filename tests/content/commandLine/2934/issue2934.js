@@ -14,13 +14,13 @@ function runTest()
             FBTest.focus(cmdLine);
 
             // Set command line expression and press Tab key.
-            cmdLine.value = "document";
-             
+            cmdLine.value = "doc";
+
+            FBTest.pressKey(9, "fbCommandLine");
+            FBTest.compare("document", cmdLine.value,"The command line must display 'document' after tab key completion.");
+
             FBTest.sendChar('.', "fbCommandLine");
-            //FBTest.pressKey(13, "fbCommandLine");
- 
-            FBTest.compare("document", cmdLine.value,
-                "The command line must display 'document' after auto completion.");
+            FBTest.compare("document.", cmdLine.value,"The command line must display 'document.' after dot it typed.");
 
             FBTest.testDone("issue2934.DONE");
         });
