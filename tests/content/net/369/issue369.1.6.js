@@ -7,15 +7,17 @@ function runTest()
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableNetPanel(function(win)
         {
+            var numberOfRequests = 5;
+
             var options = {
                 tagName: "tr",
                 classes: "netRow category-xhr hasHeaders loaded",
-                counter: 4
+                counter: numberOfRequests
             };
 
             FBTest.waitForDisplayedElement("net", options, function(row)
             {
-                verifyContent();
+                verifyContent(numberOfRequests);
                 FBTestFirebug.testDone("issue369.jsonViewer.DONE");
             });
 
@@ -26,20 +28,23 @@ function runTest()
             // xxxHonza: Not implemented yet.
             //FBTest.click(win.document.getElementById("testButton5"));
             //FBTest.click(win.document.getElementById("testButton6"));
+            FBTest.click(win.document.getElementById("testButton7"));
         });
     });
 }
 
-function verifyContent()
+function verifyContent(numberOfRequests)
 {
     var panelNode = FBTestFirebug.getPanel("net").panelNode;
     var rows = FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr");
     var tabs = FBTestFirebug.expandElements(panelNode, "netInfoJSONTab");
 
-    FBTest.ok(rows.length == 4, "There must be 4 requests in the Net panel.");
-    FBTest.ok(tabs.length == 4, "There must be 4 JSON tabs in the net panel."); 
+    FBTest.ok(rows.length == numberOfRequests, "There must be " +
+        numberOfRequests + " requests in the Net panel.");
+    FBTest.ok(tabs.length == numberOfRequests, "There must be " +
+        numberOfRequests + " JSON tabs in the net panel."); 
 
-    if (rows.length != 4 || tabs.length != 4)
+    if (rows.length != numberOfRequests || tabs.length != numberOfRequests)
         return FBTestFirebug.testDone();
 
     for (var i=0; i<rows.length; i++)

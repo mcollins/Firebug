@@ -25,6 +25,7 @@
 <button id="testButton4" onclick="makeRequest4();">JSON in a loop</button>
 <button id="testButton5" onclick="makeRequest5();">Break in Script</button>
 <button id="testButton6" onclick="makeRequest6();">JSON in a funtion 2</button>
+<button id="testButton7" onclick="makeRequest7();">Secure JSON (with new lines)</button>
 
 <br/><br/>
 
@@ -57,6 +58,11 @@ function makeRequest5(callback)
 function makeRequest6(callback)
 {
     makeRequest("issue369-6.txt", callback);
+}
+
+function makeRequest7(callback)
+{
+    makeRequest("issue369-7.txt", callback);
 }
 
 function makeRequest(url, callback) 
