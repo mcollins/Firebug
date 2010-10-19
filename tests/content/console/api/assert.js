@@ -49,7 +49,7 @@ function verifyConsoleUI(config)
         return;
 
     // Verify the first assert message.
-    var reExpectedLog1 = /negative\s*console.assert\(false,\s*\"negative\"\);\\r\\nassert.html\s*\(line\s*42\)/
+    var reExpectedLog1 = /negative\s*console.assert\(false,\s*\"negative\"\);\s*assert.html\s*\(line\s*42\)/
     if (!FBTest.compare(reExpectedLog1, rows[0].textContent,
         "The log must be something like as follows: " +
         "negative    console.assert(false, \"negative\");\r\nassert.html (line 42)"))

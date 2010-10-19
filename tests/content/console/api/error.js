@@ -10,7 +10,7 @@ function runTest()
             FBTest.waitForDisplayedElement("console", config, function(row)
             {
                 // Verify displayed text.
-                var reTextContent = /This is a test error\s*console.error\(\"This is a test error\"\);\\r\\nerror\.html\s*\(line 31\)/;
+                var reTextContent = /This is a test error\s*console.error\(\"This is a test error\"\);\s*error\.html\s*\(line 31\)/;
                 FBTest.compare(reTextContent, row.textContent, "Text content must match.");
 
                 // Show stack trace.
