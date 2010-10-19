@@ -49,6 +49,12 @@ var testList = [
     {group: "browser",  uri: "bti/browser/onDisconnect.js",			desc: "Verify onDisconnect call back", testPage: "bti/browser/testGetContexts.html" },
     {group: "browser",  uri: "bti/browser/onScriptEmbedded.js",		desc: "Verify onScript call back for an embedded script", testPage: "bti/browser/testGetContexts.html" },
     {group: "browser",  uri: "bti/browser/onScriptExternal.js",		desc: "Verify onScript call back for an external script", testPage: "bti/browser/testExternalScript.html" },
+    
+    {group: "BrowserContext",  uri: "bti/browsercontext/exists.js",					desc: "Verify context exists/does not exist after disconnect", testPage: "bti/browsercontext/testScripts.html" },
+    {group: "BrowserContext",  uri: "bti/browsercontext/getBrowser.js",				desc: "Verify context refers to its owning browser", testPage: "bti/browsercontext/testScripts.html" },
+    {group: "BrowserContext",  uri: "bti/browsercontext/getCompilationUnits.js",	desc: "Verify compilation units can be retrieved", testPage: "bti/browsercontext/testScripts.html" },
+    {group: "BrowserContext",  uri: "bti/browsercontext/getJavaScriptContext.js",	desc: "Verify JavaScript context can be retrieved", testPage: "bti/browsercontext/testScripts.html" },
+    {group: "BrowserContext",  uri: "bti/browsercontext/isLoaded.js",				desc: "Verify context loaded boolean attribute", testPage: "bti/browsercontext/testScripts.html" },
 ];
 </script>
 <body>
