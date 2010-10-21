@@ -1,0 +1,21 @@
+{
+    "tests": [
+        "tests"
+    ], 
+    "name": "firebug", 
+    "license": "New BSD Licence", 
+    "author": "Jan Odvarko (http://www.janodvarko.cz/)", 
+    "dependencies": [
+        "jetpack-core"
+    ], 
+    "version": "0.1", 
+    "lib": [
+        "lib"
+    ], 
+    "keywords": [
+        "firebug"
+    ], 
+    "main": "main", 
+    "id": "jid0-wzTa7TJosUCXOZQs35mi5GuGB3g", 
+    "description": "The Firebug library for Jetpack extensions."
+}
