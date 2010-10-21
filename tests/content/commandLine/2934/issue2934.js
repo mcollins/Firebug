@@ -18,9 +18,6 @@ function runTest()
             FBTest.synthesizeKey("VK_TAB", win);
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after tab key completion.");
 
-            FBTest.typeCommand(".");
-            FBTest.compare(/document.\s*/, cmdLine.value, "The command line must display 'document.*' after dot it typed.");
-
             FBTest.testDone("issue2934.DONE");
         });
     });
