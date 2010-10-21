@@ -7,22 +7,30 @@
     <property name="build.dir" value="../../build"/>
 
     <!-- Properties -->
-    <!-- local.properties must provide property |firefox| value the full .exe name -->
-    <property file="local.properties"/>
+    <!-- swarm.properties must provide property |firefox| value the full .exe name -->
+    <property file="${firefoxVersion}/swarm.properties"/>
     <property file="ant.properties"/>
     <!-- If the local.properties does not give a server, then default wins -->
     <property name="testListServer" value="https://getfirebug.com"/>
     <property name="swarmServer" value="https://getfirebug.com/releases"/>
+
     <target name="clean">
         <delete dir="${build.dir}/profile"/>
         <mkdir dir="${build.dir}/profile"/>
     </target>
 
-    <target name="alreadyInstalled">
+    <target name="allFirefoxDirs">
+        <!-- Ant is extremely lame as far as I can tell -->
+            <antcall target="test">
+                <param name="firefoxVersion" value="./Firefox-3.6"/>
+            </antcall>
+    </target>
+
+    <target name="alreadyInstalledSwarm">
         <available property="annotations.exist" file="${build.dir}/profile/firebug/annotations.json" />
     </target>
 
-    <target name="install" depends="alreadyInstalled"  unless="annotations.exist">
+    <target name="installSwarm" depends="alreadyInstalledSwarm"  unless="annotations.exist">
         <!-- pre-install some preferences to avoid popup stuff during install run -->
          <copy file="user.js" todir="${build.dir}/profile"/>
         <exec executable="${firefox}">
@@ -33,7 +41,7 @@
         </exec>
     </target>
 
-    <target name="test" depends="install">
+    <target name="test" depends="installSwarm">
         <!-- first wait for the install to begin -->
         <waitfor maxwait="10" maxwaitunit="minute">
             <available file="${build.dir}/profile/extensions/firebug@software.joehewitt.com"/>
@@ -52,4 +60,5 @@
             <arg value="${testListServer}/${testlist}"/>
         </exec>
     </target>
+
 </project>
