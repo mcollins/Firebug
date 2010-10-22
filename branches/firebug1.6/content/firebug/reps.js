@@ -168,18 +168,18 @@ this.Func = domplate(Firebug.Rep,
 
     summarizeFunction: function(fn)
     {
-        var fnRegex = /function ([^(]+\([^)]*\)) \{/;
         var fnText = safeToString(fn);
-
-        var m = fnRegex.exec(fnText);
-        return m ? m[1] : "function()";
+        var namedFn = /^function ([^(]+\([^)]*\)) \{/.exec(fnText);
+        var anonFn  = /^function \(/.test(fnText);
+        return namedFn ? namedFn[1] : (anonFn ? "function()" : fnText);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
     copySource: function(fn)
     {
-        copyToClipboard(safeToString(fn));
+        if (fn && typeof (fn['toSource']) == 'function')
+            copyToClipboard(fn.toSource());
     },
 
     monitor: function(fn, script, monitored)
@@ -646,20 +646,17 @@ this.NetFile = domplate(this.Obj,
 
 // ************************************************************************************************
 
-this.Except = domplate(Firebug.Rep,
+function instanceOf(object, Klass)
 {
-    tag:
-        OBJECTBOX({_repObject: "$object"}, "$object.message"),
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-    className: "exception",
-
-    supportsObject: function(object, type)
+    while (object != null) 
     {
-        return object instanceof ErrorCopy;
+        if (object == Klass.prototype)
+           return true;
+        object = object.__proto__;
     }
-});
+    return false;
+}
+
 
 
 // ************************************************************************************************
@@ -1407,21 +1404,44 @@ this.SourceFile = domplate(this.SourceLink,
 this.StackFrame = domplate(Firebug.Rep,  // XXXjjb Since the repObject is fn the stack does not have correct line numbers
 {
     tag:
-        OBJECTBLOCK(
+        OBJECTBLOCK({$hasTwisty: "$object|hasArguments", _repObject: "$object",
+            onclick: "$onToggleArguments"},
+            SPAN({"class":"stackFrameMarker"}, ""),
             A({"class": "objectLink a11yFocus", _repObject: "$object"}, "$object|getCallName"),
             SPAN("("),
-            FOR("arg", "$object|argIterator",
-                SPAN({"class": "argName"}, "$arg.name"),
-                SPAN("="),
-                TAG("$arg.tag", {object: "$arg.value"}),
-                SPAN({"class": "arrayComma"}, "$arg.delim")
+            SPAN({"class": "arguments"},
+                FOR("arg", "$object|argIterator",
+                    SPAN({"class": "argName"}, "$arg.name"),
+                    SPAN("="),
+                    TAG("$arg.tag", {object: "$arg.value"}),
+                    SPAN({"class": "arrayComma"}, "$arg.delim")
+                )
             ),
             SPAN(")"),
             SPAN({"class": "objectLink-sourceLink objectLink a11yFocus",
                 _repObject: "$object|getSourceLink",
                 role: "link"},
-                "$object|getSourceLinkTitle")
+                "$object|getSourceLinkTitle"),
+            DIV({"class": "argList"})
         ),
+
+    argList:
+        DIV({"class": "argListBox", onclick: "$onSelectFrame"},
+            FOR("arg", "$object|argIterator",
+                DIV({"class": "argBox"},
+                    SPAN({"class": "argName"}, "$arg.name"),
+                    SPAN("&nbsp;=&nbsp;"),
+                    TAG("$arg.tag", {object: "$arg.value"})
+                )
+            )
+        ),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+    hasArguments: function(frame)
+    {
+        return frame.args.length;
+    },
 
     getCallName: function(frame)
     {
@@ -1477,7 +1497,68 @@ this.StackFrame = domplate(Firebug.Rep,  // XXXjjb Since the repObject is fn the
         return items;
     },
 
+    getSourceLink: function(stackFrame)
+    {
+        var sourceLink = new SourceLink(stackFrame.href, stackFrame.line, "js");
+        return sourceLink;
+    },
+
+    onToggleArguments: function(event)
+    {
+        this.toggleArguments(event.originalTarget);
+    },
+
+    toggleArguments: function(target)
+    {
+        if (hasClass(target, "objectBox-stackFrame"))
+        {
+            if (hasClass(target, "opened"))
+                this.collapseArguments(target);
+            else
+                this.expandArguments(target);
+        }
+    },
+
+    collapseArguments: function(target)
+    {
+        if (!hasClass(target, "opened"))
+            return;
+
+        toggleClass(target, "opened");
+
+        var argList = target.getElementsByClassName("argList").item(0);
+        clearNode(argList);
+    },
+
+    expandArguments: function(target)
+    {
+        if (hasClass(target, "opened"))
+            return;
+
+        var frame = target.repObject;
+        if (!this.hasArguments(frame))
+            return;
+
+        toggleClass(target, "opened");
+
+        var argList = target.getElementsByClassName("argList").item(0);
+        this.argList.replace({object: frame}, argList);
+    },
+
+    onSelectFrame: function(event)
+    {
+        var target = event.currentTarget;
+        if (hasClass(target, "argListBox"))
+        {
+            var stackFrame = getAncestorByClass(target, "objectBox-stackFrame");
+            var panel = Firebug.getElementPanel(target);
+            this.inspectObject(stackFrame.repObject, panel.context);
+            cancelEvent(event);
+        }
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Rep
 
     className: "stackFrame",
 
@@ -1497,13 +1578,7 @@ this.StackFrame = domplate(Firebug.Rep,  // XXXjjb Since the repObject is fn the
     getTooltip: function(stackFrame, context)
     {
         return $STRF("Line", [stackFrame.href, stackFrame.line]);
-    },
-
-    getSourceLink: function(stackFrame)
-    {
-        var sourceLink = new SourceLink(stackFrame.href, stackFrame.line, "js");
-        return sourceLink;
-    },
+    }
 });
 
 // ************************************************************************************************
@@ -1529,6 +1604,7 @@ this.StackTrace = domplate(Firebug.Rep,
 
 // ************************************************************************************************
 // Mozilla
+
 this.jsdStackFrame = domplate(Firebug.Rep,
 {
     inspectable: false,
@@ -1638,7 +1714,7 @@ this.ErrorMessage = domplate(Firebug.Rep,
     getSource: function(error)
     {
         if (error.source)
-            return cropMultipleLines(error.source, 80);
+            return cropString(error.source, 80);
         if (error.category == "js" && error.href && error.href.indexOf("XPCSafeJSObjectWrapper") != -1)
             return "";
         var source = error.getSourceLine();
@@ -1743,7 +1819,7 @@ this.ErrorMessage = domplate(Firebug.Rep,
     className: "errorMessage",
     inspectable: false,
 
-    supportsObject: function(object, type)
+    supportsObject: function(object, type, context)
     {
         return object instanceof ErrorMessage;
     },
@@ -1774,6 +1850,74 @@ this.ErrorMessage = domplate(Firebug.Rep,
         }
 
         return items;
+    }
+});
+
+// ************************************************************************************************
+
+this.Except = domplate(Firebug.Rep,
+{
+    tag:
+        TAG(this.ErrorMessage.tag, {object: "$object|getErrorMessage"}),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    className: "exception",
+
+    getTitle: function(object)
+    {
+        if (object.name)
+            return object.name + (object.message ? ": " + object.message : "");
+         if (object.message)
+            return object.message;
+        return "Exception";
+    },
+
+    getErrorMessage: function(object)
+    {
+        var win = Firebug.currentContext.window, 
+            trace, 
+            url, 
+            lineNo, 
+            errorObject,
+            message,
+            isCommandLine = false;
+
+        url = object.fileName ? object.fileName : (win ? win.location.href : "");
+        lineNo = object.lineNumber ? object.lineNumber : 0;
+        message = this.getTitle(object);
+
+        if (object.stack)
+        {
+            trace = FBL.parseToStackTrace(object.stack);
+            if (trace){
+                trace.frames.pop();
+                while (trace.frames.length && /^_[fF]irebug/.test(trace.frames[trace.frames.length - 1].fn))
+                {
+                    isCommandLine = true;
+                    trace.frames.pop();
+                }
+                if(trace.frames.length == 0)
+                    trace = undefined;
+            }
+            if (!trace)
+                lineNo = 0;
+        }
+        errorObject = new FBL.ErrorMessage(message, url, lineNo, '', 'js', 
+            Firebug.currentContext, trace);
+        
+        if (trace && trace.frames && trace.frames[0]) 
+            errorObject.correctWithStackTrace(trace);
+        errorObject.resetSource();
+        
+        return errorObject;
+    },
+
+    supportsObject: function(object, type, context)
+    {
+        var win = context && context.window && context.window.wrappedJSObject;
+        var found = (win && instanceOf(object,win.Error)) || (object instanceof ErrorCopy);
+        return found;
     }
 });
 

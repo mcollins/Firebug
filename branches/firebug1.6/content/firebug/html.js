@@ -72,7 +72,9 @@ Firebug.HTMLModule = extend(Firebug.Module,
 
 Firebug.HTMLPanel = function() {};
 
-Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
+var WalkingPanel = extend(Firebug.Panel, HTMLLib.ElementWalkerFunctions);
+
+Firebug.HTMLPanel.prototype = extend(WalkingPanel,
 {
     toggleEditing: function()
     {
@@ -549,7 +551,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-    // SourceBox proxy
+    // InsideOutBoxView implementation
 
     createObjectBox: function(object, isRoot)
     {
@@ -564,20 +566,23 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
         if (node instanceof SourceText)
             return node.owner;
 
-        var parentNode = node ? node.parentNode : null;
+        var parentNode = this.getParentNode(node);
 
-        if (FBTrace.DBG_HTML)
-            FBTrace.sysout("html.getParentObject for "+node.nodeName+" parentNode:"+(parentNode?parentNode.nodeName:"null-or-false")+"\n");
+        // for chromebug to avoid climbing out to browser.xul
+        if (node.nodeName == "#document")
+            return null;
+
+        //if (FBTrace.DBG_HTML)
+        //    FBTrace.sysout("html.getParentObject for "+node.nodeName+" parentNode:"+getElementCSSSelector(parentNode));
 
         if (parentNode)
         {
-
             if (parentNode.nodeType == 9) // then parentNode is Document element
             {
                 if (parentNode.defaultView)
                 {
-                    if (parentNode.defaultView == this.context.window) // for chromebug to avoid climbing put to browser.xul
-                        return null;
+                    if (parentNode.defaultView == this.context.window)
+                        return parentNode;
 
                     if (FBTrace.DBG_HTML)
                         FBTrace.sysout("getParentObject parentNode.nodeType 9, frameElement:"+parentNode.defaultView.frameElement+"\n");                  /*@explore*/
@@ -591,8 +596,11 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
                     if (skipParent)
                         return skipParent;
                 }
-                else // parent is document element, but no window at defaultView.
-                    return null;
+                else
+                {
+                     // parent is document element, but no window at defaultView.
+                     return null;
+                }
             }
             else if (!parentNode.localName)
             {
@@ -611,7 +619,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
                 {
                     var embeddingFrame = node.defaultView.frameElement;
                     if (embeddingFrame)
-                        return embeddingFrame.parentNode;
+                        return embeddingFrame.contentDocument;
                 }
                 else // a Document object without a parentNode or window
                     return null;  // top level has no parent
@@ -627,7 +635,7 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
             return;
         }
         if (FBTrace.DBG_HTML)
-            FBTrace.sysout("getChildObject "+node.tagName+" index "+index+" previousSibling: "+previousSibling, {node: node, previousSibling:previousSibling});
+            FBTrace.sysout("getChildObject "+node.tagName+" index "+index+" previousSibling: "+(previousSibling?getElementCSSSelector(previousSibling):"null"), {node: node, previousSibling:previousSibling});
 
         if (this.isSourceElement(node))
         {
@@ -636,19 +644,30 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
             else
                 return null;  // no siblings of source elements
         }
+        else if (node instanceof Document)
+        {
+            if (previousSibling)
+                return previousSibling.nextSibling;
+            return node.firstChild;
+        }
         else if (node.contentDocument)  // then the node is a frame
         {
             if (index == 0)
             {
                 if (!this.embeddedBrowserParents)
                     this.embeddedBrowserParents = {};
-                var skipChild = node.contentDocument.documentElement; // unwrap
+
+                // First child of a document is doc-type.
+                var skipChild = node.contentDocument.firstChild; // unwrap
                 this.embeddedBrowserParents[skipChild] = node;
 
                 return skipChild;  // (the node's).(type 9 document).(HTMLElement)
             }
-            else
-                return null;
+            else if (previousSibling)
+            {
+                // Next child of a document (after doc-type) is <html>.
+                return previousSibling.nextSibling;
+            }
         }
         else if (node.getSVGDocument && node.getSVGDocument())  // then the node is a frame
         {
@@ -686,28 +705,6 @@ Firebug.HTMLPanel.prototype = extend(Firebug.Panel,
     isWhitespaceText: function(node)
     {
         return HTMLLib.isWhitespaceText(node);
-    },
-
-    getFirstChild: function(node)
-    {
-        this.treeWalker = node.ownerDocument.createTreeWalker(
-                 node, NodeFilter.SHOW_ALL, null, false);
-        return this.treeWalker.firstChild();
-    },
-
-    getNextSibling: function(node)
-    {
-        if (FBTrace.DBG_HTML || FBTrace.DBG_ERRORS)
-        {
-            if (node != this.treeWalker.currentNode)
-                FBTrace.sysout("getNextSibling FAILS treeWalker "+this.treeWalker.currentNode+" out of sync with node "+node, this.treeWalker);
-        }
-        var next = this.treeWalker.nextSibling();
-
-        if (!next)
-            delete this.treeWalker;
-
-        return next;
     },
 
     findNextSibling: function (node)
@@ -1414,7 +1411,9 @@ Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
         else
         {
             var nodes = [];
-            for (var child = node.firstChild; child; child = child.nextSibling)
+            var walker = new Firebug.HTMLLib.ElementWalker();
+
+            for (var child = walker.getFirstChild(node); child; child = walker.getNextSibling(child))
             {
                 if (child.nodeType != Node.TEXT_NODE || !HTMLLib.isWhitespaceText(child))
                     nodes.push(child);
@@ -1469,14 +1468,37 @@ Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
     )
 });
 
+Firebug.HTMLPanel.HTMLDocument = domplate(FirebugReps.Element,
+{
+    tag:
+        DIV({"class": "nodeBox documentNodeBox containerNodeBox",
+            _repObject: "$object", role: "presentation"},
+            DIV({"class": "nodeChildBox", role: "group"})
+        )
+});
+
+Firebug.HTMLPanel.HTMLDocType = domplate(FirebugReps.Element,
+{
+    tag:
+        DIV({"class": "nodeBox docTypeNodeBox containerNodeBox",
+            _repObject: "$object", role: "presentation"},
+            DIV({"class": "docType"},
+                "$object|getDocType"
+            )
+        ),
+
+    getDocType: function(doctype)
+    {
+        return '<!DOCTYPE ' + doctype.name + (doctype.publicId ? ' PUBLIC "' + doctype.publicId +
+            '"': '') + (doctype.systemId ? ' "' + doctype.systemId + '"' : '') + '>';
+    }
+});
+
 Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
 {
     tag:
         DIV({"class": "nodeBox htmlNodeBox containerNodeBox $object|getHidden",
             _repObject: "$object", role :"presentation"},
-            DIV({"class": "docType"},
-                "$object|getDocType"
-            ),
             DIV({"class": "nodeLabel", role: "presentation"},
                 IMG({"class": "twisty", role: "presentation"}),
                 SPAN({"class": "nodeLabelBox repTarget", role: 'treeitem', 'aria-expanded': 'false'},
@@ -1494,14 +1516,7 @@ Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
                     "&gt;"
                 )
             )
-        ),
-
-    getDocType: function(obj)
-    {
-        var doctype = obj.ownerDocument.doctype;
-        return '<!DOCTYPE ' + doctype.name + (doctype.publicId ? ' PUBLIC "' + doctype.publicId +
-            '"': '') + (doctype.systemId ? ' "' + doctype.systemId + '"' : '') + '>';
-    }
+        )
 });
 
 Firebug.HTMLPanel.TextElement = domplate(FirebugReps.Element,
@@ -1889,6 +1904,10 @@ function getNodeTag(node, expandAll)
         return Firebug.HTMLPanel.CommentNode.tag;
     else if (node instanceof SourceText)
         return FirebugReps.SourceText.tag;
+    else if (node instanceof Document)
+        return Firebug.HTMLPanel.HTMLDocument.tag;
+    else if (node instanceof DocumentType)
+        return Firebug.HTMLPanel.HTMLDocType.tag;
     else
         return FirebugReps.Nada.tag;
 }

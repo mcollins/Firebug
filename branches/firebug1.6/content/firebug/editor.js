@@ -334,7 +334,8 @@ Firebug.Editor = extend(Firebug.Module,
         if (currentEditor.tabNavigation)
         {
             this.listeners.push(
-                chrome.keyCodeListen("RETURN", null, bind(this.saveAndClose, this)),
+                chrome.keyCodeListen("RETURN", null, bind(this.tabNextEditor, this)),
+                chrome.keyCodeListen("RETURN", isShift, bind(this.saveAndClose, this)),
                 chrome.keyCodeListen("RETURN", isControl, bind(this.insertRow, this, null, "after")),
                 chrome.keyCodeListen("TAB", null, bind(this.tabNextEditor, this)),
                 chrome.keyCodeListen("TAB", isShift, bind(this.tabPreviousEditor, this))
@@ -992,6 +993,12 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
             postExpr = parsed.substr(range.end+1);
             exprOffset = parseStart + range.start;
 
+            if (FBTrace.DBG_EDITOR)
+            {
+                var sep = (parsed.indexOf('|') > -1) ? '^' : '|';
+                FBTrace.sysout(preExpr+sep+expr+sep+postExpr+" offset: "+offset+" parseStart:"+parseStart);
+            }
+
             if (!cycle)
             {
                 if (!expr)
@@ -1237,7 +1244,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
     this.popupCandidates = function(candidates, textBox)
     {
-        // This method should not operation on the textBox or candidates list
+        // This method should not operate on the textBox or candidates list
         FBL.eraseNode(completionPopup);
 
         var vbox = completionPopup.ownerDocument.createElement("vbox");
@@ -1354,19 +1361,15 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         }
         else if (event.keyCode === 8) // backspace
         {
-            if (textBox.selectionStart && textBox.seletionStart !== textBox.selectionEnd)
+            if (textBox.selectionStart && textBox.selectionStart !== textBox.selectionEnd)
                 textBox.selectionStart = textBox.selectionStart - 1;
         }
         else if (event.keyCode === 9) // TAB, cycle
         {
-            if (completionPopup.state == "closed")
-                return; // When the list is collapsed, allow (shift) tabbing out of the field
+            if (!textBox.selectionEnd || textBox.selectionStart === textBox.selectionEnd)
+                return; // When there is no completion, allow tabbing out of the field
 
-            if (isShift(event))
-                this.complete(context, textBox, true, true, true);
-            else
-                this.complete(context, textBox, true, false, true);
-
+            this.acceptCompletionInTextBox(textBox);
             cancelEvent(event);
         }
        /* else if (event.keyCode === 13 || event.keyCode === 14)  // RETURN , ENTER
@@ -1381,7 +1384,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         }
         else if (event.keyCode === 38) // UP arrow
         {
-            if (textBox.selectionStart && textBox.seletionStart !== textBox.selectionEnd)
+            if (textBox.selectionEnd && textBox.selectionStart !== textBox.selectionEnd)
             {
                 if (this.cycle(true))
                     this.showCandidates(textBox, true);
@@ -1391,7 +1394,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         }
         else if (event.keyCode === 40) // DOWN arrow, cycle down
         {
-            if (textBox.selectionStart && textBox.seletionStart !== textBox.selectionEnd)
+            if (textBox.selectionEnd && textBox.selectionStart !== textBox.selectionEnd)
             {
                 if (this.cycle(false))
                     this.showCandidates(textBox, true);
@@ -1405,6 +1408,9 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
     this.handledKeyPress = function(event, context, textBox)
     {
+        if (!Firebug.Editor.completeBySyntax)  // there is no such option now, and no UI. So this removes a feature for 1.6
+            return;
+
         var ch = String.fromCharCode(event.charCode);
         switch (ch)
         {
