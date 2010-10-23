@@ -18,6 +18,24 @@ function runTest()
             FBTest.synthesizeKey("VK_TAB", win);
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after tab key completion.");
 
+            FBTest.pressKey(8, "fbCommandLine");
+            FBTest.compare("document", cmdLine.value,"The command line must display 'document' after backspace on 'document.'.");
+
+            FBTest.pressKey(13, "fbCommandLine");  // execute 'document' command
+            FBTest.compare("", cmdLine.value,"The command line must display nothing after enter on 'document'.");
+
+            FBTest.pressKey(38, "fbCommandLine");  // up arrow
+            FBTest.compare("document", cmdLine.value, "The command line must display 'document' after uparrow following 'document' command");
+
+            FBTest.pressKey(40, "fbCommandLine");  // down arrow
+            FBTest.compare("", cmdLine.value, "The command line must display nothing following down arrow");
+
+            FBTest.pressKey(38, "fbCommandLine");  // up arrow
+            FBTest.compare("document", cmdLine.value, "The command line must display 'document' after uparrow following 'document' command");
+
+            FBTest.pressKey(27, "fbCommandLine");  // up arrow
+            FBTest.compare("", cmdLine.value, "The command line must display nothing after escape key");
+
             FBTest.testDone("issue2934.DONE");
         });
     });
