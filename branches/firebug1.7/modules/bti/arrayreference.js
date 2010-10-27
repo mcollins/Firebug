@@ -31,6 +31,17 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// ************************************************************************************************
+// Module
+
+Components.utils.import("resource://firebug/bti/objectreference.js");
+Components.utils.import("resource://firebug/bti/lib.js");
+
+var EXPORTED_SYMBOLS = ["ArrayReference"];
+
+// ************************************************************************************************
+// ArrayReference
+
 /**
  * Describes an instance of an array object in a JavaScript program.
  * 
@@ -42,9 +53,10 @@
  * @return a new {@link ArrayReference}
  * @version 1.0
  */
-function ArrayReference(id, length) {
-	ObjectReference.call(this, "array", id);
-	this.length = length;
+function ArrayReference(id, length)
+{
+    ObjectReference.call(this, "array", id);
+    this.length = length;
 }
 
 /**
@@ -61,8 +73,9 @@ ArrayReference.prototype = subclass(ObjectReference.prototype);
  * @function
  * @returns the length of this array.
  */
-ArrayReference.prototype.getLength = function() {
-	return this.length;
+ArrayReference.prototype.getLength = function()
+{
+    return this.length;
 };
 
 /**
@@ -75,8 +88,9 @@ ArrayReference.prototype.getLength = function() {
  * @param listener a listener (function) that accepts an {@link ObjectReference} or
  *  <code>null</code> (indicates the value at the specified index is <code>null</code>).
  */
-ArrayReference.prototype.getValue = function(index, listener) {
-	// TODO:
+ArrayReference.prototype.getValue = function(index, listener)
+{
+    // TODO:
 };
 
 /**
@@ -90,6 +104,7 @@ ArrayReference.prototype.getValue = function(index, listener) {
  * @param listener a listener (function) that accepts an array of {@link ObjectReference} or
  *  <code>null</code> (indicates the value at the specified index is <code>null</code>).
  */
-ArrayReference.prototype.getValues = function(index, length, listener) {
-	// TODO:
+ArrayReference.prototype.getValues = function(index, length, listener)
+{
+    // TODO:
 };

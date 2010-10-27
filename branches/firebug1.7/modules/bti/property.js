@@ -31,6 +31,14 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// ************************************************************************************************
+// Module
+
+var EXPORTED_SYMBOLS = ["Property"];
+
+// ************************************************************************************************
+// Property
+
 /**
  * Describes a property of an object. A property has a name and a value.
  * 
@@ -40,8 +48,9 @@
  * @return a new {@link Property}
  * @version 1.0
  */
-function Property(name) {
-	this.name = name;
+function Property(name)
+{
+    this.name = name;
 }
 
 /**
@@ -53,8 +62,9 @@ function Property(name) {
  * @function
  * @returns the name of this property as a {@link String}
  */
-Property.prototype.getName = function() {
-	return this.name;
+Property.prototype.getName = function()
+{
+    return this.name;
 };
 
 /**
@@ -66,6 +76,7 @@ Property.prototype.getName = function() {
  * @param listener a listener (function) that accepts an {@link ObjectReference} or
  *  <code>null</code> (indicates the value of this property is <code>null</code>) 
  */
-Property.prototype.getValue = function(listener) {
-	// TODO:
+Property.prototype.getValue = function(listener)
+{
+    // TODO:
 };
