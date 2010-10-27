@@ -6,7 +6,7 @@
 
 function runTest()
 {
-	var browser = new FW.Browser(); // TODO 
+	var browser = new FW.Firebug.BTI.Browser(); // TODO 
     var url = FBTest.getHTTPURLBase()+"bti/compilationunit/testScripts.html";
     var cuURL = FBTest.getHTTPURLBase()+"bti/compilationunit/simpleExternal.js";
     browser.addEventListener("onToggleBreakpoint", function(breakpoint){
