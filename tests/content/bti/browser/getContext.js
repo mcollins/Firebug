@@ -7,7 +7,7 @@
 
 function runTest()
 {
-	var browser = new FW.Browser(); // TODO 
+	var browser = new FW.Firebug.BTI.Browser(); // TODO 
     var url = FBTest.getHTTPURLBase()+"bti/browser/testGetContexts.html";
     FBTest.progress("getContext(id), open test page "+url);
     FBTestFirebug.openNewTab(url, function(win)

@@ -9,7 +9,7 @@
 
 function runTest()
 {
-	var browser = new FW.Browser(); // TODO 
+	var browser = new FW.Firebug.BTI.Browser(); // TODO 
     var url = FBTest.getHTTPURLBase()+"bti/browser/testGetContexts.html";
     browser.addEventListener("onScript", function(compilationUnit){
 		FBTest.compare(compilationUnit.getURL(), url, "URL of newly loaded script should be " +url);

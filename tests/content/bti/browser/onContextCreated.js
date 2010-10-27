@@ -7,7 +7,7 @@
 
 function runTest()
 {
-	var browser = new FW.Browser(); // TODO 
+	var browser = new FW.Firebug.BTI.Browser(); // TODO 
     var url = FBTest.getHTTPURLBase()+"bti/browser/testGetContexts.html";
     browser.addEventListener("onContextCreated", function(context){
 		FBTest.compare(context.getURL(), url, "URL of newly created context should be " +url);

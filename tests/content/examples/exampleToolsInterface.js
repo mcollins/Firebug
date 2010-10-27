@@ -13,7 +13,7 @@ function runTest()
             var panel = FW.FirebugChrome.selectPanel("script");
 
 
-            var browser = new FW.Browser();
+            var browser = new FW.Firebug.BTI.Browser();
             FBTest.ok(browser, "We created a browser");
 
             FBTest.sysout("Browser ", browser);

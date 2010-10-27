@@ -7,7 +7,7 @@
 
 function runTest()
 {
-	var browser = new FW.Browser(); // TODO 
+	var browser = new FW.Firebug.BTI.Browser(); // TODO 
 	if (browser.isConnected()) {
 		browser.disconnect();
 		FBTest.ok(!browser.isConnected(), "browser should be disconnected");

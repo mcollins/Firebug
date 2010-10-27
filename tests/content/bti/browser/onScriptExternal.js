@@ -9,7 +9,7 @@
 
 function runTest()
 {
-	var browser = new FW.Browser(); // TODO 
+	var browser = new FW.Firebug.BTI.Browser(); // TODO 
     var url = FBTest.getHTTPURLBase()+"bti/browser/testExternalScript.html";
     var scriptUrl = FBTest.getHTTPURLBase()+"bti/browser/simpleExternal.js";
     browser.addEventListener("onScript", function(compilationUnit){
