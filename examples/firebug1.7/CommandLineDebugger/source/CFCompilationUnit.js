@@ -69,6 +69,7 @@ CFCompilationUnit.prototype.setBreakpoint = function(lineNumber) {
 	};
 	this._addBreakpoint(breakpoint);
 	this.getBrowserContext().getBrowser()._sendRequest({"command":"setbreakpoint", "context_id":this.getBrowserContext().getId(), "arguments":{"target": this.getURL(), "line": lineNumber}}, this,  handler);
+	return breakpoint;
 };
 
 
