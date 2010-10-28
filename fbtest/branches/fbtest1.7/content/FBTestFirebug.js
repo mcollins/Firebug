@@ -653,8 +653,8 @@ this.cleanUpTestTabs = function()
     }
 
     if (!tabbrowser._removingTabs)
-    	tabbrowser._removingTabs = [];
-    
+        tabbrowser._removingTabs = [];
+
     for (var i = 0; i < removeThese.length; i++)
             tabbrowser.removeTab(removeThese[i]);
 }
@@ -936,17 +936,7 @@ this.getPref = function(pref)
 
 this.executeCommand = function(expr, chrome)
 {
-    if (!chrome)
-        chrome = FW.FirebugChrome;
-
-    var doc = chrome.window.document;
-    var cmdLine = doc.getElementById("fbCommandLine");
-
-    // Make sure the console is focused and command line API loaded.
-    FBTest.focus(cmdLine);
-
-    // Set expression and press enter.
-    cmdLine.value = expr;
+    this.typeCommand(expr);
     FBTest.pressKey(13, "fbCommandLine");
 }
 
@@ -960,6 +950,8 @@ this.typeCommand = function(string)
     FW.FirebugChrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
+
+    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+ " win "+panelBar1.browser.contentWindow);
 
     for (var i=0; i<string.length; ++i)
         FBTest.synthesizeKey(string.charAt(i), win);
@@ -1067,7 +1059,7 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
 // Console preview
 
 /**
- * 
+ *
  */
 this.clickConsolePreviewButton = function(chrome)
 {
@@ -1223,7 +1215,7 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
 // Watch Panel
 
 /**
- * Appends a new expression into the Watch panel (the side panel for the Script panel). 
+ * Appends a new expression into the Watch panel (the side panel for the Script panel).
  * @param {Object} chrome The current Firebug's chrome (can be null).
  * @param {Object} expression The expression to be evaluated.
  * @param {Object} callback Called after the result is displayed.
@@ -1418,6 +1410,26 @@ this.waitForDisplayedText = function(panelName, text, callback)
     rec.onRecognizeAsync(callback);
 }
 
+this.waitForPanel = function(panelName, callback)
+{
+
+    panelBar1 = FW.document.getElementById("fbPanelBar1");
+    panelBar1.addEventListener("selectingPanel",function onSelectingPanel(event)
+    {
+        var panel = panelBar1.selectedPanel;
+        if (panel.name === panelName)
+        {
+            panelBar1.removeEventListener("selectingPanel", onSelectingPanel, false);
+            callback(panel);
+        }
+        else
+        {
+            FBTest.sysout("waitForPanel saw "+panel.name);
+        }
+
+    }, false);
+}
+
 // ************************************************************************************************
 // Console panel
 
@@ -1525,7 +1537,7 @@ this.executeContextMenuCommand = function(target, menuId, callback)
         self.synthesizeMouse(menuItem);
 
         // Since the command is dispatched asynchronously,
-        // execute the callback using timeout. 
+        // execute the callback using timeout.
         setTimeout(function()
         {
             callback();
@@ -1614,10 +1626,10 @@ this.getClipboardText = function()
  * Compare expected Firefox version with the current Firefox installed.
  * @param {Object} expectedVersion Expected version of Firefox.
  * @returns
- * -1 the current version is smaller 
+ * -1 the current version is smaller
  *  0 the current version is the same
  *  1 the current version is bigger
- *  
+ *
  *  @example:
  *  if (compareFirefoxVersion("3.6") >= 0)
  *  {
