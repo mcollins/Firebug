@@ -13,7 +13,7 @@ function runTest()
     	// once the breakpoint is installed, this call back should be triggered
     	var cu = breakpoint.getCompilationUnit();
     	FBTest.compare(cuURL, cu.getURL(), "breakpoint's compilation unit incorrect");
-    	FBTest.ok(breakpoint.isInstalled(), "breakpoint should be installed");
+    	FBTest.ok(FW.Firebug.BTI.Breakpoint.INSTALLED === breakpoint.getState(), "breakpoint should be installed");
     	FBTest.ok(1 == breakpoint.getLineNumber(), "breakpoint should be on line 1");
     	FBTest.testDone("done test #setBreakpoint()");
     });
@@ -27,9 +27,10 @@ function runTest()
 			FBTest.ok(unit, "compilation unit does not exist:" + cuURL);
 			var bps = unit.getBreakpoints();
 			FBTest.compare(0, bps.length, "Should be no breakpoints yet");
-			unit.setBreakpoint(1);
+			var bp = unit.setBreakpoint(1);
 			bps = unit.getBreakpoints();
 			FBTest.compare(1, bps.length, "Should be 1 breakpoint now");
+			FBTest.ok(bp === bps[0], "Breakpoint retrieved should be the one just created");
 		});
 		
 	});
