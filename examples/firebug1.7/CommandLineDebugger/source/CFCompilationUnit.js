@@ -64,7 +64,7 @@ CFCompilationUnit.prototype.setBreakpoint = function(lineNumber) {
 			breakpoint._setHandle(bp["handle"]);
 			breakpoint._installed();
 		} else {
-			// TODO: failed to install
+			breakpoint._failedInstall();
 		}
 	};
 	this._addBreakpoint(breakpoint);

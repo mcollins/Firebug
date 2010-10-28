@@ -274,8 +274,25 @@ BTICommandLine.prototype.breakpoints = function() {
 				for ( var j = 0; j < breakpoints.length; j++) {
 					var bp = breakpoints[j];
 					var text = "";
-					if (bp.isInstalled()) {
-						text += "[installed]";
+					switch (bp.getState()) {
+						case bp.PENDING_INSTALL:
+							text += "[PENDING install]";
+							break;
+						case bp.FAILED_INSTALL:
+							text += "[FAILED install]";
+							break;
+						case bp.INSTALLED:
+							text += "[installed]";
+							break;
+						case bp.PENDING_CLEAR:
+							text += "[PENDING clear]";
+							break;
+						case bp.FAILED_CLEAR:
+							text += "[FAILED clear]";
+							break;
+						case bp.CLEARED:
+							text += "[cleared]";
+							break;
 					}
 					text += "[line: " + bp.getLineNumber() + "] ";
 					text += cu.getURL();

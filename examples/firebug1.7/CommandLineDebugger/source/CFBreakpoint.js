@@ -61,6 +61,8 @@ CFBreakpoint.prototype.clear = function() {
 			if (response["success"]) {
 				this.getCompilationUnit()._removeBreakpoint(this);
 				this._cleared();
+			} else {
+				this._failedClear();
 			}
 		};
 		var bc = this.getCompilationUnit().getBrowserContext();
