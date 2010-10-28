@@ -56,6 +56,7 @@ CFCompilationUnit.prototype = subclass(CompilationUnit.prototype);
  * Override from superclass.
  */
 CFCompilationUnit.prototype.setBreakpoint = function(lineNumber) {
+	lineNumber = parseInt(lineNumber);
 	var breakpoint = new CFBreakpoint(this, lineNumber);
 	var handler = function(response) {
 		var bp = response["body"]["breakpoint"];
