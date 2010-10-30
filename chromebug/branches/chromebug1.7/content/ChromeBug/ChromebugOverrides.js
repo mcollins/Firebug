@@ -78,7 +78,6 @@ var ChromebugOverrides = {
                         node, NodeFilter.SHOW_ALL, null, false);
             }
         }
-        FBTrace.sysout("getTreeWalker "+getElementCSSSelector(node));
         return this.treeWalker;
     },
 
