@@ -34,14 +34,36 @@ function runTest()
             FBTest.pressKey(38, "fbCommandLine");  // up arrow
             FBTest.compare("document", cmdLine.value, "The command line must display 'document' after uparrow following 'document' command");
 
-            FBTest.pressKey(27, "fbCommandLine");  // up arrow
+            FBTest.pressKey(27, "fbCommandLine");  // escape
             FBTest.compare("", cmdLine.value, "The command line must display nothing after escape key");
 
             FBTest.typeCommand("document.id.");
             FBTest.synthesizeKey("VK_TAB", win);
-            FBTest.compare("document", cmdLine.value,"The command line must display 'document.id.' after tab key completion.");
+            FBTest.compare("document.id.", cmdLine.value,"The command line must display 'document.id.' after tab key completion.");
+
+            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+
+            checkUncompleted("[{w", win, cmdLine); // issue 3598
+            checkUncompleted("a = [{w", win, cmdLine);
+            checkUncompleted("a = [{w", win, cmdLine);
+            checkUncompleted('a = "w', win, cmdLine);
+            checkUncompleted('"w', win, cmdLine);
+
+            checkUncompleted('window.alert("w', win, cmdLine);  // issue 3591
+            checkUncompleted('window.alert("whoops").', win, cmdLine);
+
+            checkUncompleted('/hi', win, cmdLine); // issue 3592
+            checkUncompleted('/hi/i', win, cmdLine);
 
             FBTest.testDone("issue2934.DONE");
         });
     });
+}
+
+function checkUncompleted(uncompleted, win, cmdLine)
+{
+    FBTest.typeCommand(uncompleted);
+    FBTest.synthesizeKey("VK_TAB", win);
+    FBTest.compare(uncompleted, cmdLine.value,"The command line must display "+uncompleted+" after tab key completion.");
+    FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
 }
