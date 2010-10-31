@@ -18,6 +18,7 @@ function runTest()
             FBTest.synthesizeKey("VK_TAB", win);
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after tab key completion.");
 
+            FBTest.typeCommand(".");
             FBTest.pressKey(8, "fbCommandLine");
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after backspace on 'document.'.");
 
@@ -35,6 +36,10 @@ function runTest()
 
             FBTest.pressKey(27, "fbCommandLine");  // up arrow
             FBTest.compare("", cmdLine.value, "The command line must display nothing after escape key");
+
+            FBTest.typeCommand("document.id.");
+            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.compare("document", cmdLine.value,"The command line must display 'document.id.' after tab key completion.");
 
             FBTest.testDone("issue2934.DONE");
         });
