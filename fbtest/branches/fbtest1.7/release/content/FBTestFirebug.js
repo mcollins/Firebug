@@ -936,7 +936,17 @@ this.getPref = function(pref)
 
 this.executeCommand = function(expr, chrome)
 {
-    this.typeCommand(expr);
+    if (!chrome)
+        chrome = FW.FirebugChrome;
+
+    var doc = chrome.window.document;
+    var cmdLine = doc.getElementById("fbCommandLine");
+
+    // Make sure the console is focused and command line API loaded.
+    FBTest.focus(cmdLine);
+
+    // Set expression and press enter.
+    cmdLine.value = expr;
     FBTest.pressKey(13, "fbCommandLine");
 }
 
@@ -950,8 +960,6 @@ this.typeCommand = function(string)
     FW.FirebugChrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
-
-    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+ " win "+panelBar1.browser.contentWindow);
 
     for (var i=0; i<string.length; ++i)
         FBTest.synthesizeKey(string.charAt(i), win);
@@ -1068,7 +1076,7 @@ this.clickConsolePreviewButton = function(chrome)
 
 this.isConsolePreviewVisible = function()
 {
-    return FW.Firebug.CommandLine.Popup.isVisible();
+    return FW.Firebug.CommandLine.Preview.isVisible();
 }
 
 // ************************************************************************************************
@@ -1351,6 +1359,7 @@ this.expandElements = function(panelNode, className) // className, className, ..
  */
 this.waitForDisplayedElement = function(panelName, config, callback)
 {
+    FBTest.sysout("waitForDisplayedElement "+panelName, config);
     if (!config)
     {
         // Default configuration for specific panels.

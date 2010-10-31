@@ -108,7 +108,7 @@ MutationRecognizer.prototype.matches = function(elt)
     {
         if (FBTrace.DBG_TESTCASE_MUTATION)
             FBTrace.sysout("MutationRecognizer no match on tagName "+this.tagName+
-                " vs "+elt.tagName.toLowerCase()+" "+FW.FBL.getElementCSSSelector(elt), {element: elt, recogizer: this});
+                " vs "+elt.tagName.toLowerCase(), {element: elt, recogizer: this});
         return false;
     }
 

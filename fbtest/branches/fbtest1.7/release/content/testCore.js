@@ -77,8 +77,8 @@ window.initWithParams = function(args)
     {
         FBTestApp.defaultTestList = testListURI;
     }
-
-    // The FBTest object might exist if an existing window is initializing 
+window.dump("testListURI "+testListURI+" gave "+FBTestApp.defaultTestList+' and '+FBTestApp.defaultTest+"\n");
+    // The FBTest object might exist if an existing window is initializing
     // with new parameters.
     if (FBTestApp.FBTest)
         FBTestApp.FBTest.FirebugWindow = args.firebugWindow;
