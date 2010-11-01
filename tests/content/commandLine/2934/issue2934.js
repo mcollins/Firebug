@@ -55,6 +55,13 @@ function runTest()
             checkUncompleted('/hi', win, cmdLine); // issue 3592
             checkUncompleted('/hi/i', win, cmdLine);
 
+            // Issue 3600
+            FBTest.executeCommand("aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB = 1; aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK = 2; aaaaaaaaaaaaaaaaZZTop = 3;");
+            FBTest.typeCommand('a');
+            FBTest.typeCommand('a');
+            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.compare("aaaaaaaaaaaaaaaaZZTop", cmdLine.value,"The command line must display 'aaaaaaaaaaaaaaaaZZTop' after tab key completion.");
+
             FBTest.testDone("issue2934.DONE");
         });
     });
