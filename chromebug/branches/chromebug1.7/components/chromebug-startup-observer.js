@@ -86,25 +86,27 @@ StartupObserver.prototype =
         if (jsd.asyncOn)
         {
             jsd.asyncOn({
-                onDebuggerActivated: function onDebuggerActivated()
-            {
-                Components.utils.reportError("FYI: Chromebug onDebuggerActivated jsd engine; JIT will be disabled ");
-            }
+                onDebuggerActivated: this.onDebuggerActivated
             });
         }
         else
         {
             jsd.on();
-            Components.utils.reportError("FYI: Chromebug started jsd engine; JIT will be disabled.");
+            this.onDebuggerActivated();
         }
 
-        jsd.flags |= jsdIDebuggerService.DISABLE_OBJECT_TRACE;
-// Not allowed in FF 4.0b2       jsd.initAtStartup = false;
 
+    },
+
+    onDebuggerActivated: function()
+    {
+        jsd.flags |= jsd.DISABLE_OBJECT_TRACE;
+        jsd.initAtStartup = false;
         this.setJSDFilters(jsd);
 
         this.hookJSDContexts(jsd,  this.getJSDState());
 
+        Components.utils.reportError("FYI: Chromebug onDebuggerActivated jsd engine; JIT will be disabled ");
     },
 
    setJSDFilters: function(jsd)
