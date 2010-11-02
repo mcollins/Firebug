@@ -20,6 +20,10 @@ var categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICate
 const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 const trace = false;
 
+const PrefService = Components.classes["@mozilla.org/preferences-service;1"];
+const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
+const prefs = PrefService.getService(nsIPrefBranch2);
+
 // ************************************************************************************************
 // Startup Request Observer implementation
 //Components.utils.reportError("Chromebug startup observer start top level");
@@ -101,10 +105,14 @@ StartupObserver.prototype =
     onDebuggerActivated: function()
     {
         jsd.flags |= jsd.DISABLE_OBJECT_TRACE;
-        jsd.initAtStartup = false;
-        this.setJSDFilters(jsd);
+        if (jsd.initAtStartup)
+            jsd.initAtStartup = false;
 
-        this.hookJSDContexts(jsd,  this.getJSDState());
+        var self = StartupObserver.prototype;
+
+        self.setJSDFilters(jsd);
+
+        self.hookJSDContexts(jsd,  self.getJSDState());
 
         Components.utils.reportError("FYI: Chromebug onDebuggerActivated jsd engine; JIT will be disabled ");
     },
@@ -341,7 +349,19 @@ StartupObserver.prototype =
         //Components.utils.reportError("StartupObserver "+topic);
         if (topic == STARTUP_TOPIC) {
             if (trace) Components.utils.reportError("StartupObserver "+topic);
-            this.initialize();
+            var chromebugLaunch = prefs.getBoolPref("extensions.chromebug.launch");
+            //if (trace)
+
+            if (chromebugLaunch)
+            {
+                Components.utils.reportError("Chromebug "+topic+" extensions.chromebug.launch: "+chromebugLaunch);
+                this.initialize();
+            }
+            else
+            {
+                Components.utils.reportError("Chromebug "+topic+" extensions.chromebug.launch: "+chromebugLaunch);
+            }
+
             return;
         }
         else if (topic == "quit-application") {

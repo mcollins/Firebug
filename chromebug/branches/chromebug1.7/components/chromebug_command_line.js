@@ -118,6 +118,7 @@ chromebugCommandLineHandler.prototype = {
                 var skipChrome = cmdLine.handleFlagWithParam("chromebug", false); // take ourselves out
                 window.dump("Chromebug Command Line Handler removing chrome arguments from command line:"+skipChrome+"\n");
                 var noProfile = cmdLine.handleFlagWithParam("p", false); // remove annoying messages about -p
+                Components.utils.reportError("Chromebug detected that the application is already running.");
             }
             else  // New chromebug that may launch FF
             {
@@ -127,7 +128,14 @@ chromebugCommandLineHandler.prototype = {
                     if (launchChromebug)
                     {
                         prefs.setBoolPref("extensions.firebug.service.filterSystemURLs", false);  // See firebug-service.js
+                        prefs.setBoolPref("extensions.chromebug.launch", true);
+                        Components.utils.reportError("Chromebug command line sees -chromebug");
                         chromebugCommandLineHandler.prototype.openChromebug(window);
+                    }
+                    else
+                    {
+                        prefs.setBoolPref("extensions.chromebug.launch", false);
+                        Components.utils.reportError("Chromebug command no -chromebug");
                     }
                 }
                 catch (e)
@@ -153,7 +161,7 @@ chromebugCommandLineHandler.prototype = {
   //          01234567890123456789001234
     helpInfo :  "  -chromebug              start chromebug then continue as normal\n",
 
-	/* XPCOM voodoo */
+    /* XPCOM voodoo */
     classID: Components.ID("{B5D5631C-4FE1-11DB-8373-B622A1EF5492}"),
     QueryInterface: XPCOMUtils.generateQI([Ci.nsISupports,Ci.nsICommandLineHandler]),
     classDescription: "unique text description",
@@ -163,17 +171,17 @@ chromebugCommandLineHandler.prototype = {
     // category that begins with the letter "m".
 
     _xpcom_categories: [{
-    	 // Each object in the array specifies the parameters to pass to
-    	// nsICategoryManager.addCategoryEntry(). 'true' is passed for
-    	// both aPersist and aReplace params.
-    	category: "command-line-handler",
-    	// optional, defaults to the object's classDescription
-    	entry: "aaa-chromebug",
-    	}],
-	/* end XPCOM voodoo */
+         // Each object in the array specifies the parameters to pass to
+        // nsICategoryManager.addCategoryEntry(). 'true' is passed for
+        // both aPersist and aReplace params.
+        category: "command-line-handler",
+        // optional, defaults to the object's classDescription
+        entry: "aaa-chromebug",
+        }],
+    /* end XPCOM voodoo */
 
 };
-Components.utils.reportError("Chromebug command line top level");
+
 /**
 * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
 * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
