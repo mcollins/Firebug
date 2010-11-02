@@ -776,6 +776,11 @@ this.selectPanel = function(panelName, chrome)
     return chrome?chrome.selectPanel(panelName):FW.FirebugChrome.selectPanel(panelName);
 }
 
+this.selectSidePanel = function(panelName, chrome)
+{
+    return chrome?chrome.selectSidePanel(panelName):FW.FirebugChrome.selectSidePanel(panelName);
+}
+
 /* select a panel tab */
 this.selectPanelTab = function(name, doc)
 {
