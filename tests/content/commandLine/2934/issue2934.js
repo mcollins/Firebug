@@ -62,6 +62,25 @@ function runTest()
             FBTest.synthesizeKey("VK_TAB", win);
             FBTest.compare("aaaaaaaaaaaaaaaaZZTop", cmdLine.value,"The command line must display 'aaaaaaaaaaaaaaaaZZTop' after tab key completion.");
 
+            FBTest.pressKey(27, "fbCommandLine");  // escape
+            FBTest.compare("aa", cmdLine.value, "The command line must display 'aa', the original typing, after escape key");
+            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+
+            FBTest.typeCommand('a');
+            FBTest.typeCommand('a');
+            FBTest.pressKey(38, "fbCommandLine");  // up arrow
+            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.compare("aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK' after up arrow key");
+            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+
+            FBTest.typeCommand('a');
+            FBTest.typeCommand('a');
+            FBTest.pressKey(40, "fbCommandLine");  // down arrow
+            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.compare("aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB' after up arrow key");
+            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+
+
             FBTest.testDone("issue2934.DONE");
         });
     });
