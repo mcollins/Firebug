@@ -81,8 +81,36 @@ var ChromebugOverrides = {
         return this.treeWalker;
     },
 
+    getFirstChild: function(node)
+    {
+        return Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker(node).firstChild();
+    },
+
+    getNextSibling: function(node)
+    {
+        // the Mozilla XBL tree walker cannot be initialized then called for nextSibling.
+        // So we have to go up one, hunt around in the children to find ourselves, then get the next sibling.
+
+        if (this.treeWalker && this.treeWalker.currentNode === node)
+            return this.treeWalker.nextSibling();
+
+        var parent = node.parentNode;
+        if (!parent)  // then we are root,
+            return null; // and root has no siblings
+
+        var walker =Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker(parent);
+
+        var child = walker.firstChild();
+        while (child !== null && child !== node)
+            child = walker.nextSibling();
+
+        return walker.nextSibling();
+    },
+
+
     getParentNode: function(node)
     {
+        // the Mozilla XBL tree walker fails for parentNode
         return inIDOMUtils.getParentForNode(node, true);
     },
 
@@ -389,6 +417,8 @@ function overrideFirebugFunctions()
         };
 
         top.Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker = ChromebugOverrides.getTreeWalker;
+        top.Firebug.HTMLLib.ElementWalkerFunctions.getFirstChild = ChromebugOverrides.getFirstChild;
+        top.Firebug.HTMLLib.ElementWalkerFunctions.getNextSibling = ChromebugOverrides.getNextSibling;
         top.Firebug.HTMLLib.ElementWalkerFunctions.getParentNode = ChromebugOverrides.getParentNode;
 
         top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
