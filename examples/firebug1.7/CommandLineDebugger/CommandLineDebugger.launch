@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.wst.jsdt.debug.rhino.ui.launch.config.type">
+<stringAttribute key="ecmaversion" value="170"/>
+<listAttribute key="includepath">
+<listEntry value="1/CommandLineDebugger/source/BTICommandLine.js"/>
+<listEntry value="1/firebug1.7/modules/bti/browser.js"/>
+<listEntry value="1/firebug1.7/modules/bti/breakpoint.js"/>
+<listEntry value="1/firebug1.7/modules/bti/compilationunit.js"/>
+<listEntry value="1/firebug1.7/modules/bti/browsercontext.js"/>
+<listEntry value="1/firebug1.7/modules/bti/variable.js"/>
+<listEntry value="1/firebug1.7/modules/bti/frame.js"/>
+<listEntry value="1/firebug1.7/modules/bti/executioncontext.js"/>
+<listEntry value="1/CommandLineDebugger/source/CFBrowser.js"/>
+<listEntry value="1/CommandLineDebugger/source/CFExecutionContext.js"/>
+<listEntry value="1/CommandLineDebugger/source/CFBrowserContext.js"/>
+<listEntry value="1/CommandLineDebugger/source/CFCompilationUnit.js"/>
+<listEntry value="1/CommandLineDebugger/source/CFBreakpoint.js"/>
+<listEntry value="1/JSON/json2.js"/>
+</listAttribute>
+<booleanAttribute key="logexceptions" value="true"/>
+<intAttribute key="optlevel" value="-1"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/CommandLineDebugger/source/BTICommandLine.js"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="script" value="/CommandLineDebugger/source/BTICommandLine.js"/>
+<booleanAttribute key="strictmode" value="false"/>
+</launchConfiguration>
