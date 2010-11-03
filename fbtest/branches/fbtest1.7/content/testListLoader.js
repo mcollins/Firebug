@@ -77,11 +77,14 @@ FBTestApp.TestListLoader =
         {
             document.documentElement.removeChild(browser);
 
-            for (var i=0; i<tempGroups.length; i++)
+            if (tempGroups)
             {
-                var group = tempGroups[i];
-                group.extension = testList.extension;
-                groups.push(group);
+                for (var i=0; i<tempGroups.length; i++)
+                {
+                    var group = tempGroups[i];
+                    group.extension = testList.extension;
+                    groups.push(group);
+                }
             }
 
             // Continue with the next list.
