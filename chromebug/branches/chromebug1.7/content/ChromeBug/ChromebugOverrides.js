@@ -83,7 +83,10 @@ var ChromebugOverrides = {
 
     getFirstChild: function(node)
     {
-        return Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker(node).firstChild();
+        var child = this.getTreeWalker(node).firstChild();
+        if (FBTrace.DBG_HTML)
+        	FBTrace.sysout("Chromebug getFirstChild("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(child));
+        return child;
     },
 
     getNextSibling: function(node)
@@ -91,27 +94,53 @@ var ChromebugOverrides = {
         // the Mozilla XBL tree walker cannot be initialized then called for nextSibling.
         // So we have to go up one, hunt around in the children to find ourselves, then get the next sibling.
 
+        if (node === null)
+            return null;
+
+        var nextSibling = null;
         if (this.treeWalker && this.treeWalker.currentNode === node)
-            return this.treeWalker.nextSibling();
+            nextSibling = this.treeWalker.nextSibling();
 
-        var parent = node.parentNode;
-        if (!parent)  // then we are root,
-            return null; // and root has no siblings
+        if (nextSibling === null)
+        {
+            var parent = this.getParentNode(node);
+            if (parent)  // then we are not root,
+            {
+                // look for siblings by first finding ourselves in parent list
+                var walker = this.getTreeWalker(parent);
 
-        var walker =Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker(parent);
+                var child = walker.firstChild();
+                while (child !== null && child !== node)
+                    child = walker.nextSibling();
 
-        var child = walker.firstChild();
-        while (child !== null && child !== node)
-            child = walker.nextSibling();
+                if (child === null)  // then we did not find our selves in our parents children
+                    FBTrace.sysout("Chromebug getNextSibling FAILS "+FBL.getElementCSSSelector(node)+" not a child of parent "+FBL.getElementCSSSelector(parent));
 
-        return walker.nextSibling();
+                nextSibling = walker.nextSibling();
+            }
+            // else we are root and our nextSibling is null
+        }
+        if (FBTrace.DBG_HTML)
+        	FBTrace.sysout("Chromebug getNextSibling("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(nextSibling));
+        return nextSibling;
     },
 
 
     getParentNode: function(node)
     {
         // the Mozilla XBL tree walker fails for parentNode
-        return inIDOMUtils.getParentForNode(node, true);
+        var parent = inIDOMUtils.getParentForNode(node, true);
+        if (FBTrace.DBG_HTML)
+        	FBTrace.sysout("Chromebug getParentNode("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(parent));
+        return parent;
+    },
+
+    onInspectingMouseOver: function(event)
+    {
+        if (FBTrace.DBG_INSPECT)
+           FBTrace.sysout("ChromebugOverride: onInspectingMouseOver event", event);
+        this.inspectNode(event.originalTarget);
+        cancelEvent(event);
     },
 
     // Override debugger
@@ -416,10 +445,19 @@ function overrideFirebugFunctions()
              return false;
         };
 
-        top.Firebug.HTMLLib.ElementWalkerFunctions.getTreeWalker = ChromebugOverrides.getTreeWalker;
-        top.Firebug.HTMLLib.ElementWalkerFunctions.getFirstChild = ChromebugOverrides.getFirstChild;
-        top.Firebug.HTMLLib.ElementWalkerFunctions.getNextSibling = ChromebugOverrides.getNextSibling;
-        top.Firebug.HTMLLib.ElementWalkerFunctions.getParentNode = ChromebugOverrides.getParentNode;
+        top.Firebug.HTMLLib.ElementWalker.prototype.getTreeWalker = ChromebugOverrides.getTreeWalker;
+        top.Firebug.HTMLPanel.prototype.getTreeWalker             = ChromebugOverrides.getTreeWalker;
+
+        top.Firebug.HTMLLib.ElementWalker.prototype.getFirstChild = ChromebugOverrides.getFirstChild;
+        top.Firebug.HTMLPanel.prototype.getFirstChild             = ChromebugOverrides.getFirstChild;
+
+        top.Firebug.HTMLLib.ElementWalker.prototype.getNextSibling = ChromebugOverrides.getNextSibling;
+        top.Firebug.HTMLPanel.prototype.getNextSibling             = ChromebugOverrides.getNextSibling;
+
+        top.Firebug.HTMLLib.ElementWalker.prototype.getParentNode = ChromebugOverrides.getParentNode;
+        top.Firebug.HTMLPanel.prototype.getParentNode             = ChromebugOverrides.getParentNode;
+
+        top.Firebug.Inspector.onInspectingMouseOver = ChromebugOverrides.onInspectingMouseOver;
 
         top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
         top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
