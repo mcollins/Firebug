@@ -19,8 +19,8 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsMouseOver: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onScanningDocuments mouse over", event);
-        if (!this.scanDocuments(event.target))
+           FBTrace.sysout("onScanningDocuments mouse over "+FBL.getElementCSSSelector(event.target)+ " original: "+FBL.getElementCSSSelector(event.originalTarget), event);
+        if (!this.scanDocuments(event.originalTarget))
         {
             cancelEvent(event);
             if (FBTrace.DBG_INSPECT)
