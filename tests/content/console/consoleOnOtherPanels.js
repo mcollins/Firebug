@@ -64,8 +64,8 @@ function disableConsole(callback)
 
 function verifyConsolePreview(shouldBeVisible)
 {
-    var preview = FW.document.getElementById("fbCommandPreview");
-    var splitter = FW.document.getElementById("fbCommandPreviewSplitter");
+    var preview = FW.document.getElementById("fbCommandPopup");
+    var splitter = FW.document.getElementById("fbCommandPopupSplitter");
 
     FBTest.ok(shouldBeVisible ? !splitter.collapsed : splitter.collapsed,
         "Preview splitter must be " + (shouldBeVisible ? "visible" : "hidden"));
