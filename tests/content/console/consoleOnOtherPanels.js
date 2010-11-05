@@ -34,11 +34,11 @@ function enableConsole(callback)
     FBTest.selectPanel("console");
     FBTest.enableConsolePanel(function()
     {
-        verifyConsolePreview(false);
+        verifyConsolePopup(false);
         FBTest.selectPanel("html");
 
         FBTest.clickConsolePreviewButton();
-        verifyConsolePreview(true);
+        verifyConsolePopup(true);
 
         callback();
     });
@@ -49,12 +49,10 @@ function disableConsole(callback)
     FBTest.selectPanel("console");
     FBTest.disableConsolePanel(function()
     {
-        verifyConsolePreview(false);
+        verifyConsolePopup(false);
         FBTest.selectPanel("html");
 
-        FBTest.clickConsolePreviewButton();
-        verifyConsolePreview(false);
-
+        verifyConsolePopup(false);
         callback();
     });
 }
@@ -62,13 +60,17 @@ function disableConsole(callback)
 // ************************************************************************************************
 // Helpers
 
-function verifyConsolePreview(shouldBeVisible)
+function verifyConsolePopup(shouldBeVisible)
 {
     var preview = FW.document.getElementById("fbCommandPopup");
     var splitter = FW.document.getElementById("fbCommandPopupSplitter");
 
-    FBTest.ok(shouldBeVisible ? !splitter.collapsed : splitter.collapsed,
+    var previewCollapsed = preview.getAttribute("collapsed");
+    var splitterCollapsed = splitter.getAttribute("collapsed");
+    var expectedValue = shouldBeVisible ? "false" : "true";
+
+    FBTest.compare(expectedValue, previewCollapsed,
         "Preview splitter must be " + (shouldBeVisible ? "visible" : "hidden"));
-    FBTest.ok(shouldBeVisible ? !preview.collapsed : preview.collapsed,
+    FBTest.compare(expectedValue, splitterCollapsed,
         "Console preview must be " + (shouldBeVisible ? "visible" : "hidden"));
 }
