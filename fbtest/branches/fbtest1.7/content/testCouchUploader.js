@@ -133,7 +133,7 @@ FBTestApp.TestCouchUploader =
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
         header["Total Tests"] = this.getTotalTests().toString();
 
-        if (extInfo)
+        if (extInfo && application.extensions)
         {
             // Put together a list of installed extensions.
             var extensions = [];
