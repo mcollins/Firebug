@@ -80,6 +80,9 @@ function runTest()
             FBTest.compare("aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB' after up arrow key");
             FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
 
+            FBTest.typeCommand('aa');
+            FBTest.pressKey(39, "fbCommandLine"); // right arrow
+            FBTest.compare("aaaaaaaaaaaaaaaaZZTop", cmdLine.value,"The command line must display 'aaaaaaaaaaaaaaaaZZTop' after right arrow completion.");
 
             FBTest.testDone("issue2934.DONE");
         });
