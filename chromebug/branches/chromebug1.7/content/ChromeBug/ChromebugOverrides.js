@@ -85,7 +85,7 @@ var ChromebugOverrides = {
     {
         var child = this.getTreeWalker(node).firstChild();
         if (FBTrace.DBG_HTML)
-        	FBTrace.sysout("Chromebug getFirstChild("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(child));
+            FBTrace.sysout("Chromebug getFirstChild("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(child));
         return child;
     },
 
@@ -113,10 +113,23 @@ var ChromebugOverrides = {
                 while (child !== null && child !== node)
                     child = walker.nextSibling();
 
-                if (child === null)  // then we did not find our selves in our parents children
-                    FBTrace.sysout("Chromebug getNextSibling FAILS "+FBL.getElementCSSSelector(node)+" not a child of parent "+FBL.getElementCSSSelector(parent));
+                if (child === null)   // then we did not find our selves in our parents children
+                {
+                    if (this.embeddedBrowserParents && this.embeddedBrowserParents[node] === parent) // then we are an embedded browser
+                    {
+                         var walker = this.getTreeWalker(parent);
+                         nextSibling = walker.firstChild();  // it's a lie we are repeating here.
+                    }
+                    else
+                    {
+                    	FBTrace.sysout("Chromebug getNextSibling FAILS "+FBL.getElementCSSSelector(node)+" not a child of parent "+FBL.getElementCSSSelector(parent));
+                    }
+                }
+                else
+                {
+                    nextSibling = walker.nextSibling();
+                }
 
-                nextSibling = walker.nextSibling();
             }
             // else we are root and our nextSibling is null
         }
@@ -128,6 +141,8 @@ var ChromebugOverrides = {
 
     getParentNode: function(node)
     {
+        if (this.embeddedBrowserParents && this.embeddedBrowserParents[node])
+            return this.embeddedBrowserParents[node];
         // the Mozilla XBL tree walker fails for parentNode
         var parent = inIDOMUtils.getParentForNode(node, true);
         if (FBTrace.DBG_HTML)
