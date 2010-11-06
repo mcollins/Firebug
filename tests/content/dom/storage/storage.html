@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for DOM Storage</title>
+</head>
+<body>
+
+<h1>DOM Storage</h1>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+
+<ol>
+<li>Open Firebug and select the DOM panel.</li>
+<li>Click on the <code style="color:green">Clear Storage</code> button below.</li>
+<li>Refresh the page (or pick <i>Refresh</i> from DOM panel option menu).</li>
+<li>Verify following property:<br/>
+<code>localStorage</code> should display <code>0 items in Storage</code><br/>
+<code>sessionStorage</code> should display <code>0 items in Storage</code><br/>
+<br/>
+</li>
+<li>Click on the <code style="color:green">Init Storage</code> button below and refresh the page.</li>
+<li>Verify following property:<br/>
+<code>localStorage</code> should display <code>10 items in Storage item6="6", item3="3", more...</code><br/>
+<code>sessionStorage</code> should display <code>2 items in Storage issue="value1", name="item1"</code><br/>
+</li>
+</ol>
+
+<button id="clearStorage" onclick="clearStorage()">Clear Storage</button>
+<button id="initStorage" onclick="initStorage()">Init Storage</button>
+
+<script type="text/javascript">
+function initStorage()
+{
+    for (var i=0; i<10; i++)
+        localStorage.setItem("item"+i, i);
+
+    sessionStorage.name = "item1";
+    sessionStorage.issue = "value1";
+}
+
+function clearStorage()
+{
+    localStorage.clear();
+    sessionStorage.clear();
+}
+
+</script>
+  
+</body>
+</html>
