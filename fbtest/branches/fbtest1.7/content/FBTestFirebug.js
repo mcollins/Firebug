@@ -1529,7 +1529,7 @@ this.executeContextMenuCommand = function(target, menuId, callback)
         contextMenu.removeEventListener("popupshown", onPopupShown, false);
 
         var menuItem = contextMenu.querySelector("#" + menuId);
-        FBTest.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
+        self.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
 
         // If the menu item isn't available close the context menu and bail out.
         if (!menuItem)
