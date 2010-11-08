@@ -1,13 +1,15 @@
 <?xml version="1.0" ?>
 
 <!-- -->
-<project name="swarmTest" basedir="." default="test">
+<project name="swarmTest" basedir="." default="allFirefoxDirs">
 
     <!-- Directories -->
     <property name="build.dir" value="../../build"/>
 
     <!-- Properties -->
-    <!-- swarm.properties must provide property |firefox| value the full .exe name -->
+    <!-- firefox.properties must provide property |firefox| value the full .exe name -->
+    <property file="${firefoxVersion}/firefox.properties"/>
+
     <property file="${firefoxVersion}/swarm.properties"/>
     <property file="ant.properties"/>
     <!-- If the local.properties does not give a server, then default wins -->
@@ -26,11 +28,20 @@
             </antcall>
     </target>
 
-    <target name="alreadyInstalledSwarm">
+    <target name="alreadyInstalledSwarm" if="firefox.exists">
         <available property="annotations.exist" file="${build.dir}/profile/firebug/annotations.json" />
     </target>
 
-    <target name="installSwarm" depends="alreadyInstalledSwarm"  unless="annotations.exist">
+    <target name="alreadyInstalledFirefox">
+        <available property="firefox.exists" file="${firefox}" />
+    </target>
+
+    <target name="firefoxInstall" unless="${firefox.exists}">
+        <echo message="Install Firefox from ${firefoxChannel}"/>
+        <echo message="And set property 'firefox=_exe name_' with forward slashes in ${basedir}/${firefoxVersion}/firefox.properties"/>
+    </target>
+
+    <target name="installSwarm" depends="alreadyInstalledSwarm"  if="firefox.exists" unless="annotations.exist">
         <!-- pre-install some preferences to avoid popup stuff during install run -->
          <copy file="user.js" todir="${build.dir}/profile"/>
         <exec executable="${firefox}">
@@ -41,7 +52,7 @@
         </exec>
     </target>
 
-    <target name="test" depends="installSwarm">
+    <target name="test" depends="alreadyInstalledFirefox, firefoxInstall, installSwarm" if="firefox.exists">
         <!-- first wait for the install to begin -->
         <waitfor maxwait="10" maxwaitunit="minute">
             <available file="${build.dir}/profile/extensions/firebug@software.joehewitt.com"/>
