@@ -19,7 +19,7 @@ function runTest()
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after tab key completion.");
 
             FBTest.typeCommand(".");
-            FBTest.pressKey(8, "fbCommandLine");
+            FBTest.synthesizeKey("VK_BACK_SPACE", win);
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after backspace on 'document.'.");
 
             FBTest.pressKey(13, "fbCommandLine");  // execute 'document' command
