@@ -386,7 +386,8 @@ function __doEventDispatch(aTarget, aCharCode, aKeyCode, aHasShift)
  * actual keypress by the user, typically the focused element.
  *
  * aKey should be either a character or a keycode starting with VK_ such as
- * VK_ENTER.
+ * VK_ENTER. See list of all possible key-codes here:
+ * http://www.w3.org/TR/2000/WD-DOM-Level-3-Events-20000901/events.html
  *
  * aEvent is an object which may contain the properties:
  *   shiftKey, ctrlKey, altKey, metaKey, accessKey, type
