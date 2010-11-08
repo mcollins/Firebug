@@ -1528,35 +1528,33 @@ this.executeContextMenuCommand = function(target, menuId, callback)
     {
         contextMenu.removeEventListener("popupshown", onPopupShown, false);
 
-        var menuItem = contextMenu.querySelector("#" + menuId);
-        self.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
-
-        // If the menu item isn't available close the context menu and bail out.
-        if (!menuItem)
-        {
-            contextMenu.hidePopup();
-            return;
-        }
-
-        // Click on the specified menu item.
-        self.synthesizeMouse(menuItem);
-
-        // Since the command is dispatched asynchronously,
-        // execute the callback using timeout.
+        // Fire the event handler asynchronously so items have a chance to be appended.
         setTimeout(function()
         {
-            callback();
-        });
+            var menuItem = contextMenu.querySelector("#" + menuId);
+            self.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
+
+            // If the menu item isn't available close the context menu and bail out.
+            if (!menuItem)
+            {
+                contextMenu.hidePopup();
+                return;
+            }
+
+            // Click on the specified menu item.
+            self.synthesizeMouse(menuItem);
+
+            // Since the command is dispatched asynchronously,
+            // execute the callback using timeout.
+            setTimeout(function()
+            {
+                callback();
+            }, 10);
+        }, 10);
     }
 
     // Wait till the menu is displayed.
-    contextMenu.addEventListener("popupshown", function(event)
-    {
-        // Fire the event handler asynchronously so items have a chance to be appended.
-        setTimeout(function() {
-            onPopupShown(event);
-        }, 10);
-    }, false);
+    contextMenu.addEventListener("popupshown", onPopupShown, false);
 
     // Right click on the target element.
     var eventDetails = {type : "contextmenu", button : 2};
