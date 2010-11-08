@@ -47,7 +47,7 @@ function runTest()
             FBTest.setPref("ObjectShortIteratorMax", 1);   // Related to R6588
             taskList.push(executeAndVerify, "blah",
                 /\s*ReferenceError: blah is not defined/,
-                "span", "objectBox objectBox-errorMessage");
+                "div", "logRow logRow-errorMessage");
 
             // Assignment
             taskList.push(executeAndVerify, "var blah = 'oink';",
