@@ -28,7 +28,7 @@ function runTest()
         recognizer.onRecognize(function (element)
         {
             // Verify error log in the console.
-            var expectedResult = "document.getElementId is not a function";
+            var expectedResult = /\s*document.getElementId is not a function/;
             var errorTitle = element.getElementsByClassName("errorTitle").item(0);
             FBTest.compare(expectedResult, errorTitle.textContent, "There must be an error log");
 
