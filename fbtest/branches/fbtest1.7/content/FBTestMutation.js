@@ -87,13 +87,13 @@ MutationRecognizer.prototype.matches = function(elt)
         {
             if (FBTrace.DBG_TESTCASE_MUTATION)
                 FBTrace.sysout("MutationRecognizer matches Text character data "+this.characterData);
-            return true;
+            return elt.parentNode;
         }
         else
         {
             if (FBTrace.DBG_TESTCASE_MUTATION)
                 FBTrace.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data,{element: elt, recogizer: this});
-            return false;
+            return null;
         }
     }
 
@@ -101,7 +101,7 @@ MutationRecognizer.prototype.matches = function(elt)
     {
         if (FBTrace.DBG_TESTCASE_MUTATION)
             FBTrace.sysout("MutationRecognizer Node not an Element ", elt);
-        return false;
+        return null;
     }
 
     if (elt.tagName && (elt.tagName.toLowerCase() != this.tagName) )
@@ -109,7 +109,7 @@ MutationRecognizer.prototype.matches = function(elt)
         if (FBTrace.DBG_TESTCASE_MUTATION)
             FBTrace.sysout("MutationRecognizer no match on tagName "+this.tagName+
                 " vs "+elt.tagName.toLowerCase()+" "+FW.FBL.getElementCSSSelector(elt), {element: elt, recogizer: this});
-        return false;
+        return null;
     }
 
     for (var p in this.attributes)
@@ -122,7 +122,7 @@ MutationRecognizer.prototype.matches = function(elt)
                 if (FBTrace.DBG_TESTCASE_MUTATION)
                     FBTrace.sysout("MutationRecognizer no attribute "+p+" in "+
                         FW.FBL.getElementHTML(elt), {element: elt, recogizer: this});
-                return false;
+                return null;
             }
             if (this.attributes[p] != null)
             {
@@ -134,7 +134,7 @@ MutationRecognizer.prototype.matches = function(elt)
                             FBTrace.sysout("MutationRecognizer no match for class " +
                                 this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class') +
                                 " indexOf: "+eltP.indexOf(this.attributes[p]));
-                        return false;
+                        return null;
                     }
                 }
                 else if (eltP != this.attributes[p])
@@ -142,7 +142,7 @@ MutationRecognizer.prototype.matches = function(elt)
                     if (FBTrace.DBG_TESTCASE_MUTATION)
                         FBTrace.sysout("MutationRecognizer no match for attribute "+p+": "+
                             this.attributes[p]+" vs "+eltP,{element: elt, recogizer: this});
-                    return false;
+                    return null;
                 }
             }
         }
@@ -155,13 +155,13 @@ MutationRecognizer.prototype.matches = function(elt)
             if (FBTrace.DBG_TESTCASE_MUTATION)
                 FBTrace.sysout("MutationRecognizer no match for characterData "+this.characterData+
                     " vs "+elt.textContent, {element: elt, recogizer: this});
-            return false;
+            return null;
         }
     }
 
     // tagName and all attributes match
     FBTest.sysout("MutationRecognizer tagName and all attributes match "+elt, elt);
-    return true;
+    return elt;
 }
 
 function MutationEventFilter(recognizer, handler)
@@ -214,8 +214,9 @@ function MutationEventFilter(recognizer, handler)
 
         try
         {
-            if (filter.checkElementDeep(event.target))
-                handler(event.target);
+            var child = filter.checkElementDeep(event.target)
+            if (child)
+                handler(child);
         }
         catch(exc)
         {
@@ -250,28 +251,34 @@ function MutationEventFilter(recognizer, handler)
 
     filter.checkElement = function(elt)
     {
-        if (recognizer.matches(elt))
+        var element = recognizer.matches(elt);
+        if (element)
         {
             filter.unwatchWindow(recognizer.getWindow())
-            return true;
+            return element;
         }
-        return false;
+        return null;
     }
 
     filter.checkElementDeep = function(elt)
     {
-        if (filter.checkElement(elt))
-            return true;
+        var element = filter.checkElement(elt);
+        if (element)
+        {
+            return element;
+        }
         else
         {
             var child = elt.firstChild;
             for (; child; child = child.nextSibling)
             {
-                if (this.checkElementDeep(child))
-                    return true;
+                var element = this.checkElementDeep(child)
+                if (element)
+                    return element;
             }
         }
-        return false;
+
+        return null;
     }
 
     filter.watchWindow(recognizer.win);
