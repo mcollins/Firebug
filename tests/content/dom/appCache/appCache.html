@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html manifest="appCache.manifest">
+<head>
+  <title>Test Case for applicationCache</title>
+  <link type="text/css" rel="stylesheet" href="appCache.css" />
+</head>
+<body>
+
+<h1>window.applicationCache</h1>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+
+<ol>
+<li>Open Firebug and select the DOM panel.</li>
+<li>Check the applicationCache object, there should be 1 item.</li>
+<li></li>
+</ol>
+
+<script type="text/javascript">
+var href = window.location.href;
+var i = href.lastIndexOf(".");
+var itemURL = href.substr(0, i) + ".js";
+
+applicationCache.oncached = function()
+{
+    applicationCache.mozAdd(itemURL);
+}
+</script>
+
+</body>
+</html>

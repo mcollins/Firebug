@@ -1,0 +1,8 @@
+CACHE MANIFEST
+
+# v4
+CACHE:
+appCache.css
+
+NETWORK:
+appCache.html
