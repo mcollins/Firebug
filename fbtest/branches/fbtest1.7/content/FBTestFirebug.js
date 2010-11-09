@@ -1828,4 +1828,32 @@ this.inspectorClear = function()
 }
 
 // ************************************************************************************************
+// DOM
+
+/**
+ * Waits till a specified property is displayed in the DOM panel.
+ * 
+ * @param {Object} propName Name of the property to be displayed
+ * @param {Object} callback Function called after the property is visible.
+ */
+this.waitForDOMProperty = function(propName, callback)
+{
+    var panel = FBTestFirebug.getPanel("dom");
+    var recognizer = new MutationRecognizer(panel.document.defaultView,
+        "Text", {}, propName);
+
+    recognizer.onRecognizeAsync(function(element)
+    {
+        var row = FW.FBL.getAncestorByClass(element, "memberRow");
+        callback(row);
+    });
+}
+
+this.refreshDOMPanel = function()
+{
+    var panel = this.getPanel("dom");
+    panel.rebuild(true);
+}
+
+// ************************************************************************************************
 }).apply(FBTest);
