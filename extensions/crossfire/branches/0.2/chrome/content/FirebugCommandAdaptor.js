@@ -730,7 +730,7 @@ FBL.ns(function() { with(FBL) {
             if (incContext) {
                 ref["context_id"] = this.contextId;
             }
-            for (var i in this.refs) {
+            for (var i = 0; i < this.refs.length; i++) {
                 if (this.refs[i] === obj) {
                     //if (FBTrace.DBG_CROSSFIRE)
                       //  FBTrace.sysout("CROSSFIRE CommandAdaptor getRef ref exists with handle: " + i, obj);
