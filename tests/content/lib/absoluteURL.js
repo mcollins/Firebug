@@ -10,6 +10,7 @@ function runTest()
         {relative: "g:h",  absolute: "g:h"},
         {relative: "g",  absolute: "http://a/b/c/g"},
         {relative: "./g",  absolute: "http://a/b/c/g"},
+        {relative: "1/g",  absolute: "http://a/b/c/1/g"},
         {relative: "g/",  absolute: "http://a/b/c/g/"},
         {relative: "/g",  absolute: "http://a/g"},
         {relative: "//g",  absolute: "http://g"},
