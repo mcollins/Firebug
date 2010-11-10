@@ -8,12 +8,17 @@ function runTest()
         FBTest.enableConsolePanel(function(win)
         {
             var panel = FW.FirebugChrome.selectPanel("console");
-            onTextDisplayed(panel, "myProperty", function(row)
+            onTextDisplayed(panel, "myProperty", function(elt)
             {
-                // Expand the property (the lable must be clicked).
-                var label = row.querySelector(".memberLabel.userLabel");
+                // Expand the property (the label must be clicked).
+
+                var label = FW.FBL.getAncestorByClass(elt, "memberLabel");
+                if (!label)
+                    FBTest.sysout("issue3029: no label "+elt, elt);
+
                 FBTest.click(label);
 
+                var row = FW.FBL.getAncestorByClass(elt, "memberRow");
                 var value = row.querySelector(".memberValueCell");
                 FBTest.compare("\"" + testProp + "\"",
                     value.textContent, "Full value must be displayed now.");
