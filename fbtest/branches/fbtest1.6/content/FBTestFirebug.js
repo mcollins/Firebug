@@ -1066,7 +1066,7 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
  */
 this.clickConsolePreviewButton = function(chrome)
 {
-    this.clickToolbarButton(chrome, "fbCommandPreviewButton");
+    this.clickToolbarButton(chrome, "fbCommandPopupButton");
 }
 
 this.isConsolePreviewVisible = function()
