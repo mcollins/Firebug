@@ -26,7 +26,7 @@ function runTest()
 
 function testEmptySessionStorage(callback, win)
 {
-    onPropertyDisplayed(panel, "sessionStorage", function(row)
+    FBTest.waitForDOMProperty("sessionStorage", function(row)
     {
         FBTest.compare(/\s*0 items in Storage\s*/, row.textContent,
             "The session storage must be empty now");
@@ -41,7 +41,7 @@ function testEmptySessionStorage(callback, win)
 
 function testEmptyLocalStorage(callback, win)
 {
-    onPropertyDisplayed(panel, "localStorage", function(row)
+    FBTest.waitForDOMProperty("localStorage", function(row)
     {
         FBTest.compare(/\s*0 items in Storage\s*/, row.textContent,
             "The locale storage must be empty now");
@@ -56,7 +56,7 @@ function testEmptyLocalStorage(callback, win)
 
 function testSessionStorageData(callback, win)
 {
-    onPropertyDisplayed(panel, "sessionStorage", function(row)
+    FBTest.waitForDOMProperty("sessionStorage", function(row)
     {
         FBTest.compare(
             /2 items in Storage\s*issue="value1",\s*name="item1"\s*/,
@@ -72,7 +72,7 @@ function testSessionStorageData(callback, win)
 
 function testLocalStorageData(callback, win)
 {
-    onPropertyDisplayed(panel, "localStorage", function(row)
+    FBTest.waitForDOMProperty("localStorage", function(row)
     {
         FBTest.compare(
             /\s*10 items in Storage\s*item6="6",\s*item3="3",\s*more...\s*/,
@@ -84,15 +84,4 @@ function testLocalStorageData(callback, win)
     FBTest.click(win.document.getElementById("initStorage"));
     var panel = FBTest.selectPanel("dom");
     panel.rebuild(true);
-}
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-//xxxHonza: should be in FBTestFirebug
-function onPropertyDisplayed(panel, propName, callback)
-{
-    var panel = FBTestFirebug.getPanel("dom");
-    var recognizer = new MutationRecognizer(panel.document.defaultView,
-        "Text", {}, propName);
-    recognizer.onRecognizeAsync(callback);
 }

@@ -10,7 +10,7 @@ function runTest()
 
             // Wait for break in debugger.
             var chrome = FW.Firebug.chrome;
-            FBTest.waitForBreakInDebugger(chrome, 34, false, function(sourceRow)
+            FBTest.waitForBreakInDebugger(chrome, 35, false, function(sourceRow)
             {
                 FW.FirebugChrome.selectSidePanel("watches");
 
