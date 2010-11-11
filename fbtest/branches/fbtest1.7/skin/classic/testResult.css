@@ -129,7 +129,8 @@
 
 /* Custom styles for tabView bodies */
 .tabStackBody,
-.tabCompareBody {
+.tabCompareBody,
+.tabExceptionBody {
     padding: 5px 0 5px 10px;
 }
 

@@ -621,8 +621,8 @@ function waitForWindowLoad(browser, callback)
         }
         catch (exc)
         {
+            FBTest.exception("waitForWindowLoad", exc);
             FBTest.sysout("runTest FAILS " + exc, exc);
-            FBTest.ok(false, "runTest FAILS " + exc);
         }
     }
 FBTest.sysout("addinge event listeenr<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -1167,8 +1167,9 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
         {
             callback(sourceRow);
         }
-        catch(exc)
+        catch (exc)
         {
+            FBTest.exception("waitForBreakInDebugger", exc);
             FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
         }
     });
@@ -1625,6 +1626,7 @@ this.setClipboardText = function(text)
     }
     catch (e)
     {
+        FBTest.exception("setClipboardText", e);
         FBTest.sysout("setClipboardText FAILS " + e, e);
     }
 }
@@ -1649,6 +1651,7 @@ this.getClipboardText = function()
     }
     catch (e)
     {
+        FBTest.exception("getClipboardText", e);
         FBTest.sysout("getClipboardText FAILS " + e, e);
     }
 
@@ -1731,7 +1734,7 @@ this.runTestSuite = function(tests, callback)
         }
         catch (err)
         {
-            FBTest.progress("EXCEPTION " + err);
+            FBTest.exception("runTestSuite", err);
         }
     }, 200);
 }
