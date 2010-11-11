@@ -1,3 +1,6 @@
+// Don't allow FF4.0 to overwrite your file-proxies
+pref("extensions.update.autoUpdateDefault", false);
+
 // Enable the dump() global function. Prints to stdout.
 pref("browser.dom.window.dump.enabled", true);
 
