@@ -1266,8 +1266,7 @@ this.addWatchExpression = function(chrome, expression, callback)
 }
 
 /**
- * Returns the row element <tr> from the 'watches' side-panel for the that corresponds
- * to the specified expression.
+ * Returns the row element <tr> from the 'watches' side-panel for specified expression.
  *
  * @param {Object} chrome The current Firebug's chrome (optional)
  * @param {Object} expression The expression we are looking for.
@@ -1280,16 +1279,20 @@ this.getWatchExpressionRow = function(chrome, expression)
     var watchPanel = FBTest.getPanel("watches", true);
     FBTest.ok(watchPanel, "The watch panel must be there");
 
-    var panelNode = watchPanel.panelNode;
+    return getDOMMemberRow(watchPanel, expression);
+}
+
+function getDOMMemberRow(panel, name)
+{
+    var panelNode = panel.panelNode;
     var rows = panelNode.querySelectorAll(".memberRow");
 
-    // Iterate over all watch rows and pick the one that contains
-    // the specified expression.
+    // Iterate over all rows and pick the one that fits the name.
     for (var i=0; i<rows.length; i++)
     {
         var row = rows[i];
         var labelCell = row.querySelector(".memberLabelCell");
-        if (labelCell.textContent == expression)
+        if (labelCell.textContent == name)
             return row;
     }
 }
@@ -1433,7 +1436,7 @@ this.waitForDisplayedElement = function(panelName, config, callback)
 }
 
 /**
- * Wait till a text is displayed in the specified panel.
+ * Wait till a text is displayed in specified panel.
  * @param {Object} panelName Name of the panel where the text should appear.
  * @param {Object} text Text to wait for.
  * @param {Object} callback Executed as soon as the text is displayed.
@@ -1571,7 +1574,7 @@ this.executeContextMenuCommand = function(target, menuId, callback)
                 return;
             }
 
-            // Click on the specified menu item.
+            // Click on specified menu item.
             self.synthesizeMouse(menuItem);
 
             // Since the command is dispatched asynchronously,
@@ -1862,12 +1865,21 @@ this.inspectorClear = function()
 /**
  * Waits till a specified property is displayed in the DOM panel.
  * 
- * @param {Object} propName Name of the property to be displayed
- * @param {Object} callback Function called after the property is visible.
+ * @param {String} propName Name of the property to be displayed
+ * @param {Function} callback Function called after the property is visible.
+ * @param {Boolean} checkAvailability Execute the callback synchronously if the property
+ *      is already available.
  */
-this.waitForDOMProperty = function(propName, callback)
+this.waitForDOMProperty = function(propName, callback, checkAvailability)
 {
-    var panel = FBTestFirebug.getPanel("dom");
+    var panel = FBTest.getPanel("dom");
+    if (checkAvailability)
+    {
+        var row = getDOMMemberRow(panel, propName);
+        if (row)
+            return callback(row);
+    }
+
     var recognizer = new MutationRecognizer(panel.document.defaultView,
         "Text", {}, propName);
 
@@ -1882,6 +1894,23 @@ this.refreshDOMPanel = function()
 {
     var panel = this.getPanel("dom");
     panel.rebuild(true);
+}
+
+/**
+ * Returns the row element <tr> from the DOM panel for specified member name.
+ *
+ * @param {Object} chrome The current Firebug's chrome (optional)
+ * @param {Object} propName The name of the member displayed in the panel.
+ */
+this.getDOMPropertyRow = function(chrome, propName)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var domPanel = FBTest.getPanel("dom", true);
+    FBTest.ok(domPanel, "The DOM panel must be there");
+
+    return getDOMMemberRow(domPanel, propName);
 }
 
 // ************************************************************************************************
