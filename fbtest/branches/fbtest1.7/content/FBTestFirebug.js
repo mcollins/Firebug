@@ -1265,6 +1265,35 @@ this.addWatchExpression = function(chrome, expression, callback)
     FBTest.pressKey(13, editor);
 }
 
+/**
+ * Returns the row element <tr> from the 'watches' side-panel for the that corresponds
+ * to the specified expression.
+ *
+ * @param {Object} chrome The current Firebug's chrome (optional)
+ * @param {Object} expression The expression we are looking for.
+ */
+this.getWatchExpressionRow = function(chrome, expression)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var watchPanel = FBTest.getPanel("watches", true);
+    FBTest.ok(watchPanel, "The watch panel must be there");
+
+    var panelNode = watchPanel.panelNode;
+    var rows = panelNode.querySelectorAll(".memberRow");
+
+    // Iterate over all watch rows and pick the one that contains
+    // the specified expression.
+    for (var i=0; i<rows.length; i++)
+    {
+        var row = rows[i];
+        var labelCell = row.querySelector(".memberLabelCell");
+        if (labelCell.textContent == expression)
+            return row;
+    }
+}
+
 // ************************************************************************************************
 // Error handling
 
