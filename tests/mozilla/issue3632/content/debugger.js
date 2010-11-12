@@ -106,6 +106,7 @@ SimpleDebugger.BreakpointHook =
     {
         //sysout("onBreakpoint " + frame.script.fileName + ", " + frame.line);
         frame.script.clearBreakpoint(0);
+        return Ci.jsdIExecutionHook.RETURN_CONTINUE;
     }
 };
 
