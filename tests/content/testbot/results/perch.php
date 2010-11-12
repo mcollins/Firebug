@@ -1,6 +1,8 @@
 <!-- http://brasstacks.mozilla.com/couchdb/_utils/script/ -->
 <script src="/tests/content/testbot/results/couchdb/json2.js"></script>
-<script src="/tests/content/testbot/results/couchdb/jquery.js?1.3.1"></script>
+
+<!-- jQuery is already included in every perch page, see: getfirebug.com/includes/header.php
+    <script src="/tests/content/testbot/results/couchdb/jquery.js?1.3.1"></script> -->
 <script src="/tests/content/testbot/results/couchdb/jquery.couch.js?0.9.0"></script>
 
 <!-- Viewer --> 
