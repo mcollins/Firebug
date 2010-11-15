@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
@@ -70,11 +70,12 @@
     <em:translator>Eduard Babayan (hy-AM)</em:translator>
     <em:translator>Helder Magalhães (pt-PT)</em:translator>
     <em:translator>Tomaž Mačus (sl-SI)</em:translator>
-    <em:translator>Stoyan Stefanov (bg-BG)</em:translator>
+    <em:translator>Stoyan Stefanov, Alexander Shopov (bg)</em:translator>
     <em:translator>Kristján Bjarni Guðmundsson (is-IS)</em:translator>
     <em:translator>NGUYỄN Mạnh Hùng (vi-VN)</em:translator>
     <em:translator>Bwah (hr-HR)</em:translator>
     <em:translator>Sonickydon (el-GR)</em:translator>
     <em:translator>David Gonzáles (es)</em:translator>
+    <em:translator>ДакСРБИЈА (sr)</em:translator>
   </Description>
 </RDF>

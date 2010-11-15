@@ -51,6 +51,11 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Debugging
 
+    hasValidStack: function(context)
+    {
+        return context.stopped && context.currentFrame.isValid;
+    },
+
     evaluate: function(js, context, scope)  // TODO remote: move to backend, proxy to front
     {
         var frame = context.currentFrame;
@@ -331,7 +336,6 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
     freeze: function(context)
     {
         var executionContext = context.stoppedFrame.executionContext;
@@ -340,12 +344,40 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             this.suppressEventHandling(context);
             context.isFrozen = true;
 
-            if (FBTrace.DBG_UI_LOOP)
-                FBTrace.sysout("debugger.freeze try to disable scripts "+(context.eventSuppressor?"and events":"but not events")+" in "+context.getName()+" executionContext.tag "+executionContext.tag+".scriptsEnabled: "+executionContext.scriptsEnabled);
+            // https://developer.mozilla.org/en/XUL_Tutorial/Focus_and_Selection#Getting_the_currently_focused_element
+            if (context.window.document.commandDispatcher)
+            {
+                context.saveFocus = context.window.document.commandDispatcher.focusedElement;
+                if (context.saveFocus && !context.discardBlurEvents)
+                {
+                    context.discardBlurEvents = function blurDiscarder(event)
+                    {
+                        if (!context.saveFocus)
+                        {
+                            context.window.removeEventListener('blur', context.discardBlurEvents, true);
+                            delete context.discardBlurEvents;
+                        }
 
-        } catch (exc) {
+                        if (FBTrace.DBG_UI_LOOP)
+                            FBTrace.sysout("debugger.freeze discard blur event "+context.saveFocus+" while focus is "+context.window.document.commandDispatcher.focusedElement, event);
+                        event.preventDefault();
+                        event.stopPropagation();
+                    },
+
+                    context.window.addEventListener('blur', context.discardBlurEvents, true);
+                }
+            }
+
+            if (FBTrace.DBG_UI_LOOP)
+            {
+                FBTrace.sysout("debugger.freeze context.saveFocus "+context.saveFocus, context.saveFocus);
+                FBTrace.sysout("debugger.freeze try to disable scripts "+(context.eventSuppressor?"and events":"but not events")+" in "+context.getName()+" executionContext.tag "+executionContext.tag+".scriptsEnabled: "+executionContext.scriptsEnabled);
+            }
+        }
+        catch (exc)
+        {
             // This attribute is only valid for contexts which implement nsIScriptContext.
-            if (FBTrace.DBG_UI_LOOP) FBTrace.sysout("debugger.freeze, freeze exception in "+context.getName(), exc);
+            if (FBTrace.DBG_UI_LOOP) FBTrace.sysout("debugger.freeze, freeze exception "+exc+" in "+context.getName(), exc);
         }
     },
 
@@ -367,10 +399,25 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
             else
                 return; // bail, we did not freeze this context
 
-            var executionContext = context.stoppedFrame.executionContext;
+                var executionContext = context.stoppedFrame.executionContext;
             if (executionContext.isValid)
             {
                 this.unsuppressEventHandling(context);
+
+                // Before we release JS, put the focus back
+                if (context.saveFocus)
+                {
+                    context.window.focus();
+                    context.saveFocus.focus();
+                    delete context.saveFocus;
+                }
+
+                if (FBTrace.DBG_UI_LOOP)
+                {
+                    var nowFocused = context.window.document.commandDispatcher ? context.window.document.commandDispatcher.focusedElement : null;
+                    FBTrace.sysout("debugger.thaw context.saveFocus "+context.saveFocus+" vs "+nowFocused, context.saveFocus);
+            }
+
                 executionContext.scriptsEnabled = true;
             }
             else

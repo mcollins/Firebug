@@ -85,7 +85,7 @@ InsideOutBox.prototype =
     select: function(object, makeBoxVisible, forceOpen, noScrollIntoView)
     {
         if (FBTrace.DBG_HTML)
-            FBTrace.sysout("insideOutBox.select object:", object);
+            FBTrace.sysout("insideOutBox.select object:"+object, object);
         var objectBox = this.createObjectBox(object);
         this.selectObjectBox(objectBox, forceOpen);
         if (makeBoxVisible)
@@ -151,6 +151,14 @@ InsideOutBox.prototype =
     selectObjectBox: function(objectBox, forceOpen)
     {
         var panel = Firebug.getElementPanel(objectBox);
+
+        if (!panel)
+        {
+            if (FBTrace.DBG_ERRORS || FBTrace.DBG_HTML)
+                FBTrace.sysout("selectObjectBox no panel for "+objectBox, objectBox);
+            return;
+        }
+
 
         var isSelected = this.selectedObjectBox && objectBox == this.selectedObjectBox;
         if (!isSelected)
@@ -291,7 +299,7 @@ InsideOutBox.prototype =
         if (FBTrace.DBG_HTML)
             FBTrace.sysout("----insideOutBox.createObjectBox: createObjectBoxes(object="+formatNode(object)+", rootObject="+formatNode(this.rootObject)+") ="+formatNode(objectBox), objectBox);
 
-        if (!objectBox)
+        if (!objectBox)  // we found an object outside of the navigatible tree
             return null;
         else if (object == this.rootObject)
             return objectBox;
@@ -367,7 +375,13 @@ InsideOutBox.prototype =
                     formatObjectBox(parentObjectBox)+")= childrenBox: "+formatObjectBox(childrenBox));
 
             if (!childrenBox)
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("insideOutBox.createObjectBoxes FAILS for "+formatNode(object)+" getChildObjectBox("+
+                        formatObjectBox(parentObjectBox)+")= childrenBox: "+formatObjectBox(childrenBox));
+                // This is where we could try to create a box for objects we cannot get to by navigation via walker or DOM nodes (native anonymous)
                 return null;
+            }
 
             var childObjectBox = this.findChildObjectBox(childrenBox, object);
 
@@ -608,7 +622,15 @@ function formatNode(object)
 {
     if (object)
     {
-        return getElementCSSSelector(object);
+        if (!object.localName)
+        {
+            var str = object.toString();
+            if (str)
+                return str;
+            else
+                return "(an object with no localName or toString result)";
+        }
+        else  return getElementCSSSelector(object);
     }
     else
         return "(null object)";
@@ -618,6 +640,8 @@ function formatObjectBox(object)
 {
     if (object)
     {
+        if (object.localName)
+            return getElementCSSSelector(object);
         return object.textContent;
     }
     else

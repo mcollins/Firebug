@@ -38,7 +38,50 @@ Firebug.CallstackPanel.prototype = extend(Firebug.Panel,
 
     show: function(state)
     {
-        this.rebuild();
+        this.rebuild();  // hack: should not have to call
+
+        if (FBTrace.DBG_STACK)
+            FBTrace.sysout("callstack.show state: "+state, state);
+
+        if (state)
+        {
+            if (state.callstackToggles)
+            {
+                var frameElts = this.panelNode.getElementsByClassName("objectBox-stackFrame");
+                for (var i = 0; i < frameElts.length; i++)
+                {
+                    if (state.callstackToggles[i])
+                    {
+                        var object = Firebug.getRepObject(frameElts[i]);
+                        if(object)
+                        {
+                             var rep = Firebug.getRep(object, Firebug.currentContext);
+                             rep.expandArguments(frameElts[i]);
+                        }
+                    }
+                }
+            }
+            if (state.selectedCallStackFrameIndex)
+            {
+                this.selectFrame(state.selectedCallStackFrameIndex)
+            }
+        }
+    },
+
+    hide: function(state)
+    {
+        var frameElts = this.panelNode.getElementsByClassName("objectBox-stackFrame");
+        state.callstackToggles = [];
+        for (var i = 0; i < frameElts.length; i++)
+        {
+            var item = frameElts[i];
+            if (item.classList.contains("opened"))
+                state.callstackToggles[i] = true;
+            if (item.getAttribute("selected") == "true")
+                state.selectedCallStackFrameIndex = i;
+        }
+        if (FBTrace.DBG_STACK)
+            FBTrace.sysout("callstack.hide state: "+state, state);
     },
 
     supportsObject: function(object, type)

@@ -709,7 +709,7 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
 
     completeValue: function(amt)
     {
-        if (this.getAutoCompleter().complete(currentPanel.context, this.input, true, amt < 0))
+        if (this.getAutoCompleter().complete(currentPanel.context, this.input, null, true, amt < 0))
             Firebug.Editor.update(true);
         else
             this.incrementValue(amt);
@@ -786,7 +786,7 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
             this.getAutoCompleter().reset();
         }
         else if (this.completeAsYouType)
-            this.getAutoCompleter().complete(currentPanel.context, this.input, false);
+            this.getAutoCompleter().complete(currentPanel.context, this.input, null, false);
         else
             this.getAutoCompleter().reset();
 
@@ -838,7 +838,7 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
             }
 
             var approxTextWidth = this.textSize.width;
-            var maxWidth = (currentPanel.panelNode.scrollWidth - this.targetOffset.x)
+            var maxWidth = (currentPanel.panelNode.clientWidth - this.targetOffset.x)
                 - this.outerMargin;
 
             var wrapped = initial
@@ -907,6 +907,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
     var completionPopup = $("fbCommandLineCompletionList");
     var commandCompletionLineLimit = 40;
     var reJavascriptChar = /[a-zA-Z0-9$_]/;
+    var reJavaScriptGroup = /([\{\"\/\(\'])/;
     // current completion state values
     var completionEnd = 0;
     var value = "";
@@ -944,23 +945,19 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         accepted = false;
     };
 
-    this.complete = function(context, textBox, cycle, reverse)
+    this.complete = function(context, textBox, completionBox, cycle, reverse, showGlobals)
     {
-        var value = textBox.value;
-        if (!value && noCompleteOnBlank)
+        this.clearCandidates(textBox, completionBox);
+
+        if (!this.getVerifiedText(textBox) && !showGlobals) // then no completion is desired
             return false;
 
-        if (!this.getCompletionText(textBox))
-            this.reset();
+        var offset = textBox.selectionStart; // defines the cursor position
 
-        var offset = textBox.selectionStart;
-        //if (!offset)
-        //    offset = value.length;
+        var found =  this.pickCandidates(textBox.value, offset, context, cycle, reverse, showGlobals);
 
-        var found =  this.pickCandidates(value, offset, context, cycle, reverse);
-
-        if (found)
-            this.showCandidates(textBox);
+        if (completionBox && found)
+                this.showCandidates(textBox, completionBox);
 
         return found;
     };
@@ -968,7 +965,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
     /*
      * returns true if candidate list was created
      */
-    this.pickCandidates = function(value, offset, context, cycle, reverse)
+    this.pickCandidates = function(value, offset, context, cycle, reverse, showGlobals)
     {
         if (!selectMode && originalOffset != -1)
             offset = originalOffset;
@@ -1045,102 +1042,41 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
                 }
             }
 
-            if (noShowGlobal && !preExpr && !expr && !postExpr)
+            if (!showGlobals && !preExpr && !expr && !postExpr)
             {
                 // Don't complete globals unless we are forced to do so.
                 this.hide();
                 return false;
             }
 
-            var values = evaluator(preExpr, expr, postExpr, context);
-            if (!values)
+            var m = reJavaScriptGroup.exec(value);
+            if (m) // then we have group operator
             {
-                this.hide();
-                return false;
-            }
-
-            if (expr)
-            {
-                // Filter the list of values to those which begin with expr. We
-                // will then go on to complete the first value in the resulting list
-                candidates = [];
-
-                if (caseSensitive)
-                {
-                    for (var i = 0; i < values.length; ++i)
-                    {
-                        var name = values[i];
-                        if (name.indexOf && name.indexOf(expr) == 0)
-                            candidates.push(name);
-                    }
-                }
-                else
-                {
-                    var lowerExpr = caseSensitive ? expr : expr.toLowerCase();
-                    for (var i = 0; i < values.length; ++i)
-                    {
-                        var name = values[i];
-                        if (name.indexOf && name.toLowerCase().indexOf(lowerExpr) == 0)
-                            candidates.push(name);
-                    }
-                }
-            }
-            else if (searchExpr)
-            {
-                var searchIndex = -1;
-
-                // Find the first instance of searchExpr in the values list. We
-                // will then complete the string that is found
-                if (caseSensitive)
-                {
-                    searchIndex = values.indexOf(expr);
-                }
-                else
-                {
-                    var lowerExpr = searchExpr.toLowerCase();
-                    for (var i = 0; i < values.length; ++i)
-                    {
-                        var name = values[i];
-                        if (name && name.toLowerCase().indexOf(lowerExpr) == 0)
-                        {
-                            searchIndex = i;
-                            break;
-                        }
-                    }
-                }
-
-                // Nothing found, so there's nothing to complete to
-                if (searchIndex == -1)
-                {
-                    this.reset();
-                    return false;
-                }
-
-                expr = searchExpr;
-                candidates = cloneArray(values);
-                lastIndex = searchIndex;
+                return false; // give up, we need at least to balance
             }
             else
             {
-                expr = "";
-                candidates = [];
-                for (var i = 0; i < values.length; ++i)
+                var values = evaluator(preExpr, expr, postExpr, context);
+                if (!values)
                 {
-                    var value = values[i];
-
-                    // Use only string props
-                    if (typeof(value) != "string")
-                        continue;
-
-                    // Use only those props that don't contain unsafe charactes and so need
-                    // quotation (e.g. object["my prop"] notice the space character).
-                    // Following expression checks that the name starts with a letter or $_,
-                    // and there are only letters, numbers or $_ character in the string (no spaces).
-                    var re = /^[A-Za-z_$][A-Za-z_$0-9]*/;
-                    if (value.match(re) == value)
-                        candidates.push(values[i]);
+                    this.hide();
+                    return false;
                 }
-                lastIndex = -2;
+
+                if (expr)
+                {
+                    this.setCandidatesByExpr(expr, values, reverse);
+                }
+                else if (searchExpr)
+                {
+                    if (!this.setCandidatesBySearchExpr(searchExpr, expr, values))
+                        return false;
+                    expr = searchExpr;
+                }
+                else
+                {
+                    this.setCandidatesByValues(values);
+                }
             }
         }
 
@@ -1162,6 +1098,12 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         var line = preParsed + preExpr + preCompletion + postCompletion + postExpr;
         var offsetEnd = preParsed.length + preExpr.length + completion.length;
 
+        /* XXXjjb I think this is needed for inline completion???
+        if (selectMode)
+            textBox.setSelectionRange(offset, offsetEnd);
+        else
+            textBox.setSelectionRange(offsetEnd, offsetEnd);
+*/
         // store current state of completion
         currentLine = line;
         completionStart = offset;
@@ -1170,15 +1112,106 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         return true;
     };
 
+    this.setCandidatesByExpr = function(expr, values, reverse)
+    {
+        // Filter the list of values to those which begin with expr. We
+        // will then go on to complete the first value in the resulting list
+        candidates = [];
+
+        if (caseSensitive)
+        {
+            for (var i = 0; i < values.length; ++i)
+            {
+                var name = values[i];
+                if (name.indexOf && name.indexOf(expr) == 0)
+                    candidates.push(name);
+            }
+        }
+        else
+        {
+            var lowerExpr = caseSensitive ? expr : expr.toLowerCase();
+            for (var i = 0; i < values.length; ++i)
+            {
+                var name = values[i];
+                if (name.indexOf && name.toLowerCase().indexOf(lowerExpr) == 0)
+                    candidates.push(name);
+            }
+        }
+
+        lastIndex = -2;
+    };
+
+    this.setCandidatesBySearchExpr = function(searchExpr, expr, values)
+    {
+        var searchIndex = -1;
+
+        // Find the first instance of searchExpr in the values list. We
+        // will then complete the string that is found
+        if (caseSensitive)
+        {
+            searchIndex = values.indexOf(expr);
+        }
+        else
+        {
+            var lowerExpr = searchExpr.toLowerCase();
+            for (var i = 0; i < values.length; ++i)
+            {
+                var name = values[i];
+                if (name && name.toLowerCase().indexOf(lowerExpr) == 0)
+                {
+                    searchIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Nothing found, so there's nothing to complete to
+        if (searchIndex == -1)
+        {
+            this.reset();
+            return false;
+        }
+
+        candidates = cloneArray(values);
+        lastIndex = searchIndex;
+        return true;
+    };
+
+    this.setCandidatesByValues = function(values)
+    {
+        expr = "";
+        candidates = [];
+        for (var i = 0; i < values.length; ++i)
+        {
+            var value = values[i];
+
+            // Use only string props
+            if (typeof(value) != "string")
+                continue;
+
+            // Use only those props that don't contain unsafe charactes and so need
+            // quotation (e.g. object["my prop"] notice the space character).
+            // Following expression checks that the name starts with a letter or $_,
+            // and there are only letters, numbers or $_ character in the string (no spaces).
+            var re = /^[A-Za-z_$][A-Za-z_$0-9]*/;
+            if (value.match(re) == value)
+                candidates.push(values[i]);
+        }
+        lastIndex = -2;
+    }
+
+
     this.adjustLastIndex = function(cycle, reverse)
     {
-        if (candidates.length === 1)
+        if (!cycle) // we have a valid lastIndex but we are not cycling, so reset it
+            lastIndex = this.pickDefaultCandidate();
+        else if (candidates.length === 1)
             lastIndex = 0;
         else if (lastIndex >= candidates.length)  // use default on first completion, else cycle
             lastIndex = (lastIndex === -2) ? this.pickDefaultCandidate() : 0;
         else if (lastIndex < 0)
             lastIndex = (lastIndex === -2) ? this.pickDefaultCandidate() : (candidates.length - 1);
-        else if (cycle)
+        else // we have cycle == true
         {
             lastIndex += reverse ? -1 : 1;
             if (lastIndex >= candidates.length)
@@ -1193,8 +1226,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         if (lastIndex < 0)
             return false;
 
-        lastIndex += reverse ? -1 : 1;
-        this.adjustLastIndex();
+        this.adjustLastIndex(true, reverse);
 
         var completion = candidates[lastIndex];
         var postCompletion = completion.substr(preCompletion.length);
@@ -1221,28 +1253,29 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         return pick;
     };
 
-    this.showCandidates = function(textBox)
+    this.showCandidates = function(textBox, completionBox)
     {
-        textBox.value = currentLine;
-
-        if (selectMode)
-            textBox.setSelectionRange(completionStart, completionEnd);
-        else
-            textBox.setSelectionRange(completionEnd, completionEnd);
+        completionBox.value = currentLine;
 
         if (showCompletionPopup && candidates.length && candidates.length > 1)
         {
-            this.popupCandidates(candidates, textBox);
+            this.popupCandidates(candidates, textBox, completionBox);
             return false;
         }
         else
         {
-            this.hide();
+            this.hide(candidates.length ? null : completionBox);
         }
         return true;
     };
 
-    this.popupCandidates = function(candidates, textBox)
+    this.clearCandidates = function(textBox, completionBox)
+    {
+        if (completionBox)
+            completionBox.value = "";
+    },
+
+    this.popupCandidates = function(candidates, textBox, completionBox)
     {
         // This method should not operate on the textBox or candidates list
         FBL.eraseNode(completionPopup);
@@ -1300,7 +1333,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
             post.classList.add("completionText");
         }
 
-        completionPopup.currentTextBox = textBox;
+        completionPopup.currentCompletionBox = completionBox;
         var cmdLine = $("fbCommandLine");  // should use something relative to textbox
         var anchor = textBox;
         this.linuxFocusHack = textBox;
@@ -1309,9 +1342,12 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         return;
     };
 
-    this.hide = function()
+    this.hide = function(box)
     {
-        delete completionPopup.currentTextBox;
+        if (box)
+            box.value = ""; // erase the text in the second track
+
+        delete completionPopup.currentCompletionBox;
 
         if (completionPopup.state == "closed")
             return false;
@@ -1320,112 +1356,106 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         return true;
     };
 
-    this.clear = function()
+    this.clear = function(box)
     {
-        var textBox = completionPopup.currentTextBox;
+        var textBox = completionPopup.currentCompletionBox;
         if (textBox)
-        {
-            textBox.value = this.getVerifiedText(textBox);
-            this.hide();
-        }
+            this.hide(box);
+
+        if (box)
+            box.value = ""; // erase the text in the second track
+
         this.reset();
     };
 
     this.getVerifiedText = function(textBox)
     {
-        return textBox.value.substr(0, textBox.selectionStart)+textBox.value.substr(textBox.selectionEnd);
+        return textBox.value;
     };
 
-    this.getCompletionText = function(textBox)
+    this.getCompletionText = function(box)
     {
-        return textBox.value.substr(textBox.selectionStart, textBox.selectionEnd);
+        return box.value;
     };
 
-    this.handledKeyUp = function(event, context, textBox)
+    this.handledKeyUp = function(event, context, textBox, completionBox)
     {
-        if (accepted)
-        {
-            this.hide();
-            this.reset();
-        }
+        return;  // Some of the keyDown maybe should be in keyUp
     };
 
-    this.handledKeyDown = function(event, context, textBox)
+    this.handledKeyDown = function(event, context, textBox, completionBox)
     {
+        var clearedTabWarning = this.clearTabWarning(completionBox);
+
         if (event.altKey || event.metaKey)
             return false;
 
-        if (event.ctrlKey && event.keyCode === 17) // Control space forces completion incl globals
+        if (event.ctrlKey && event.keyCode === 32) // Control space
         {
-            this.complete(context, textBox, true, false, true, true);
+            this.complete(context, textBox, completionBox, false, false, true); // force completion incl globals
+            return true;
         }
-        else if (event.keyCode === 8) // backspace
+        else if (event.keyCode === 9 || // TAB
+            (event.keyCode === 39 && completionBox.value.length && textBox.selectionStart === textBox.value.length)) // right arrow
         {
-            if (textBox.selectionStart && textBox.selectionStart !== textBox.selectionEnd)
-                textBox.selectionStart = textBox.selectionStart - 1;
-        }
-        else if (event.keyCode === 9) // TAB, cycle
-        {
-            if (!textBox.selectionEnd || textBox.selectionStart === textBox.selectionEnd)
-                return; // When there is no completion, allow tabbing out of the field
-
-            this.acceptCompletionInTextBox(textBox);
-            cancelEvent(event);
-        }
-       /* else if (event.keyCode === 13 || event.keyCode === 14)  // RETURN , ENTER
-        {
-            this.acceptCompletionInTextBox(textBox);
-        }*/
-        else if (event.keyCode == 27) // ESC, close the completer
-        {
-            // Stop event bubbling if it was used to close the popup.
-            if (this.hide())
-                cancelEvent(event);
-        }
-        else if (event.keyCode === 38) // UP arrow
-        {
-            if (textBox.selectionEnd && textBox.selectionStart !== textBox.selectionEnd)
+            if (!completionBox.value.length)  // then no completion text,
             {
-                if (this.cycle(true))
-                    this.showCandidates(textBox, true);
+                if (clearedTabWarning) // then you were warned,
+                    return false; //  pass TAB along
+
+                this.setTabWarning(textBox, completionBox);
+                cancelEvent(event);
+                return true;
+            }
+            else  // complete
+            {
+                this.acceptCompletionInTextBox(textBox, completionBox);
                 cancelEvent(event);
                 return true;
             }
         }
-        else if (event.keyCode === 40) // DOWN arrow, cycle down
+        else if (event.keyCode === 27) // ESC, close the completer
         {
-            if (textBox.selectionEnd && textBox.selectionStart !== textBox.selectionEnd)
+            if (this.hide(completionBox))  // then we closed the popup
             {
-                if (this.cycle(false))
-                    this.showCandidates(textBox, true);
-
+                cancelEvent(event); // Stop event bubbling if it was used to close the popup.
+                return true;
+            }
+        }
+        else if (event.keyCode === 38 || event.keyCode === 40) // UP of DOWN arrow
+        {
+            if (this.getCompletionText(completionBox))
+            {
+                if (this.cycle(event.keyCode === 38))
+                    this.showCandidates(textBox, completionBox);
                 cancelEvent(event);
                 return true;
             }
             // else the arrow will fall through to command history
         }
-    },
+    };
 
-    this.handledKeyPress = function(event, context, textBox)
+    this.clearTabWarning = function(completionBox)
     {
-        if (!Firebug.Editor.completeBySyntax)  // there is no such option now, and no UI. So this removes a feature for 1.6
-            return;
-
-        var ch = String.fromCharCode(event.charCode);
-        switch (ch)
+        if (completionBox.tabWarning)
         {
-            case '.':
-            case '(':
-                this.acceptCompletionInTextBox(textBox);
-                break;
-            default:
-                break;
+            completionBox.value = "";
+            delete completionBox.tabWarning;
+            return true;
         }
+        return false;
+    };
+
+    this.setTabWarning = function(textBox, completionBox)
+    {
+        // xxxHonza: localization
+        completionBox.value = textBox.value + "    " + "(no completions)";  // TODO need NLS <<<<<<<<<<<<<<<<
+        completionBox.tabWarning = true;
     };
 
     this.setCompletionOnEvent = function(event)
     {
-        if (completionPopup.currentTextBox)
+        if (completionPopup.currentCompletionBox)
         {
             var selected = event.target;
             while (selected && (selected.localName !== "div") )
@@ -1437,28 +1467,27 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
                 if (!completionText)
                     return;
 
-                var completion = completionText.textContent;
-                var textBox = completionPopup.currentTextBox;
-                var start = textBox.selectionStart;
-                var end = start + completion.length;
-                textBox.value = textBox.value.substr(0, textBox.selectionStart) + completion;
-                textBox.setSelectionRange(start, end);
+                var completion = selected.textContent;
+                var textBox = completionPopup.currentCompletionBox;
+                textBox.value = completion;
+                if (FBTrace.DBG_EDITOR)
+                    FBTrace.sysout("textBox.setCompletionOnEvent "+completion);
             }
         }
     };
 
-    this.acceptCompletionInTextBox = function(textBox)
+    this.acceptCompletionInTextBox = function(textBox, completionBox)
     {
-        accepted = textBox.selectionStart != textBox.selectionEnd;
-        textBox.setSelectionRange(textBox.selectionEnd, textBox.selectionEnd);  // accept completion by deselect
-        this.hide();
-        return accepted;
+        textBox.value = completionBox.value;
+        textBox.setSelectionRange(textBox.value.length, textBox.value.length); // ensure the cursor at EOL
+        this.hide(completionBox);
+        return true;
     };
 
     this.acceptCompletion = function(event)
     {
-        if (completionPopup.currentTextBox)
-            this.acceptCompletionInTextBox(completionPopup.currentTextBox);
+        if (completionPopup.currentCompletionBox)
+            this.acceptCompletionInTextBox(getTextBox(), getCompletionBox());
     };
 
     this.acceptCompletion = bind(this.acceptCompletion, this);
@@ -1477,6 +1506,16 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
 // ************************************************************************************************
 // Local Helpers
+
+function getCompletionBox()  // FIXME XXXjjb I think this should be bound into the completer, dupes commandLine.js code
+{
+    return Firebug.chrome.$("fbCommandLineCompletion");
+}
+function getTextBox()  // FIXME XXXjjb I think this should be bound into the completer, dupes commandLine.js code
+{
+    return Firebug.chrome.$("fbCommandLine");
+}
+
 
 function getDefaultEditor(panel)
 {

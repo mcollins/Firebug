@@ -604,6 +604,9 @@ Firebug.HTMLLib =
         // https://developer.mozilla.org/en/XBL/XBL_1.0_Reference/DOM_Interfaces
         if (element.ownerDocument instanceof Ci.nsIDOMDocumentXBL)
         {
+            if (FBTrace.DBG_HTML)
+                FBTrace.sysout("hasNoElementChildren "+FBL.getElementCSSSelector(element)+" (element.ownerDocument instanceof Ci.nsIDOMDocumentXBL) "+(element.ownerDocument instanceof Ci.nsIDOMDocumentXBL), element);
+
             var walker = new Firebug.HTMLLib.ElementWalker();
             var child = walker.getFirstChild(element);
 
@@ -611,7 +614,7 @@ Firebug.HTMLLib =
             {
                 if (child.nodeType === Node.ELEMENT_NODE)
                     return false;
-                child = walker.getNextSibling(element);
+                child = walker.getNextSibling(child);
             }
         }
         if (FBTrace.DBG_HTML)

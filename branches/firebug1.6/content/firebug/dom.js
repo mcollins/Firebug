@@ -136,7 +136,17 @@ const DirTablePlate = domplate(Firebug.Rep,
 
     memberIterator: function(object, level)
     {
-        return Firebug.DOMBasePanel.prototype.getMembers(object, level, this.context);
+        var members = Firebug.DOMBasePanel.prototype.getMembers(object, level, this.context);
+        if (members.length)
+            return members;
+
+        return [{
+            name: "There are no child objects", //xxxHonza localization
+            type: "string",
+            rowClass: "memberRow-string",
+            tag: Firebug.Rep.tag,
+            prefix: ""
+        }];
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -514,9 +524,13 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
         if (!hasChildren && value) // arguments will never be falsy if the arguments exist
             hasChildren = isArguments(value);
 
-        // Special case for functions with a protoype that has values
-        if (valueType === "function" && value.prototype)
-            hasChildren = hasChildren || hasProperties(value.prototype);
+        if (value)
+        {
+            var proto = getPrototype(value);
+            // Special case for functions with a protoype that has values
+            if (valueType === "function" && proto)
+                hasChildren = hasChildren || hasProperties(proto);
+        }
 
         var member = {
             object: object,
@@ -595,12 +609,17 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
             if (member.level > level)
                 break;
 
-            if ( toggles.get(member.name) )
+            if (toggles.get(member.name))
             {
-                member.open = "opened";  // member.level <= level && member.name in toggles.
-                if (member.type == 'string')
+                // member.level <= level && member.name in toggles.
+                member.open = "opened";
+
+                // Don't expand if the member doesn't have children any more.
+                if (!member.hasChildren)
                     continue;
-                var newMembers = this.getMembers(member.value, level+1, context);  // sets newMembers.level to level+1
+
+                // sets newMembers.level to level+1
+                var newMembers = this.getMembers(member.value, level+1, context);
 
                 var args = [i+1, 0];
                 args.push.apply(args, newMembers);
@@ -609,12 +628,16 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
                 {
                     FBTrace.sysout("expandMembers member.name "+member.name+" member "+member);
                     FBTrace.sysout("expandMembers toggles "+toggles, toggles);
-                    FBTrace.sysout("expandMembers toggles.get(member.name) "+toggles.get(member.name), toggles.get(member.name));
-                    FBTrace.sysout("dom.expandedMembers level: "+level+" member.level "+member.level, member);
+                    FBTrace.sysout("expandMembers toggles.get(member.name) " +
+                        toggles.get(member.name), toggles.get(member.name));
+                    FBTrace.sysout("dom.expandedMembers level: "+level+" member.level " +
+                        member.level, member);
                 }
 
                 expanded += newMembers.length;
-                i += newMembers.length + this.expandMembers(members, toggles.get(member.name), i+1, level+1, context);
+
+                i += newMembers.length + this.expandMembers(members, toggles.get(member.name),
+                    i+1, level+1, context);
             }
         }
 
@@ -659,7 +682,7 @@ Firebug.DOMBasePanel.prototype = extend(Firebug.Panel,
         var delay = 0;
         while (members.length)
         {
-            timeouts.push(this.context.setTimeout(function(slice)
+            timeouts.push(this.context.setTimeout(function addMemberRowSlice(slice)
             {
                 result = rowTag.insertRows({members: slice}, tbody.lastChild);
                 rowCount += insertSliceSize;
@@ -1770,29 +1793,38 @@ Firebug.WatchPanel.prototype = extend(Firebug.DOMBasePanel.prototype,
             // in all cases.
             if (scope.jsClassName == "Call") {
                 var scopeVars = unwrapIValueObject(scope)
-                scopeVars.toString = function() {return "Closure Scope";}
-            } else {
-                scopeVars = unwrapIValue(scope);
+                scopeVars.toString = function() {return $STR("Closure Scope");}
             }
-
-            if (scopeVars && scopeVars.hasOwnProperty)
+            else if (scope.jsClassName == "Block")
             {
-                if (!scopeVars.hasOwnProperty("toString")) {
-                    (function() {
-                        var className = scope.jsClassName;
-                        scopeVars.toString = function() {
-                            return $STR(className + " Scope");
-                        };
-                    })();
-                }
-
-                ret.push(scopeVars);
+                var scopeVars = unwrapIValueObject(scope)
+                scopeVars.toString = function() {return $STR("Block Scope");}
             }
             else
             {
-                if (FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("dom .generateScopeChain: bad scopeVars");
+                scopeVars = unwrapIValue(scope);
+
+                if (scopeVars && scopeVars.hasOwnProperty)
+                {
+                    if (!scopeVars.hasOwnProperty("toString")) {
+                        (function() {
+                            var className = scope.jsClassName;
+                            scopeVars.toString = function() {
+                                return $STR(className + " Scope");
+                            };
+                        })();
+                    }
+                }
+                else
+                {
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("dom .generateScopeChain: bad scopeVars for scope.jsClassName:"+scope.jsClassName, scope );
+                }
             }
+
+            if (scopeVars)
+                ret.push(scopeVars);
+
             scope = scope.jsParent;
         }
 

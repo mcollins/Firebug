@@ -298,6 +298,25 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
         this.showSourceBox(sourceBox);
     },
 
+    /*
+     * Assumes that locations are sourceFiles, TODO lower class
+     */
+    showSourceLink: function(sourceLink)
+    {
+        var sourceFile = getSourceFileByHref(sourceLink.href, this.context);
+        if (sourceFile)
+        {
+            this.navigate(sourceFile);
+            if (sourceLink.line)
+            {
+                this.scrollToLine(sourceLink.href, sourceLink.line, this.jumpHighlightFactory(sourceLink.line, this.context));
+                dispatch(this.fbListeners, "onShowSourceLink", [this, sourceLink.line]);
+            }
+            if (sourceLink == this.selection)  // then clear it so the next link will scroll and highlight.
+                delete this.selection;
+        }
+    },
+
     showSourceBox: function(sourceBox)
     {
         if (this.selectedSourceBox)
@@ -427,7 +446,8 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
      */
     scrollToLine: function(href, lineNo, highlighter)
     {
-        if (FBTrace.DBG_SOURCEFILES) FBTrace.sysout("SourceBoxPanel.scrollToLine: "+lineNo+"@"+href+"\n");
+        if (FBTrace.DBG_SOURCEFILES)
+            FBTrace.sysout("SourceBoxPanel.scrollToLine: "+lineNo+"@"+href+" with highlighter "+highlighter, highlighter);
 
         if (this.context.scrollTimeout)
         {
@@ -741,6 +761,10 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
         viewRange.firstLine = Math.floor(scrollTop / averageLineHeight + 1);
 
         var panelHeight = this.panelNode.clientHeight;
+
+        if (panelHeight === 0)  // then we probably have not inserted the elements yet and the clientHeight is bogus
+            panelHeight = this.panelNode.ownerDocument.documentElement.clientHeight;
+
         var viewableLines = Math.ceil((panelHeight / averageLineHeight) + 1);
         viewRange.lastLine = viewRange.firstLine + viewableLines;
         if (viewRange.lastLine > sourceBox.maximumLineNumber)
@@ -943,7 +967,7 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
             {
                 var sticky = sourceBox.highlighter(sourceBox);
                 if (FBTrace.DBG_SOURCEFILES)
-                    FBTrace.sysout("sourceBoxDecoratorTimeout highlighter sticky:"+sticky,
+                    FBTrace.sysout("asyncHighlighting highlighter sticky:"+sticky,
                         sourceBox.highlighter);
 
                 if (!sticky)

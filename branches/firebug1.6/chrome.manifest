@@ -12,7 +12,7 @@ locale  firebug ca-AD       locale/ca-AD/
 locale  firebug cs          locale/cs/
 locale  firebug da-DK       locale/da-DK/
 locale  firebug de          locale/de/
-locale  firebug el-GR       locale/el-GR/
+locale  firebug el          locale/el/
 locale  firebug en-US       locale/en-US/
 locale  firebug es-AR       locale/es-AR/
 locale  firebug es          locale/es/
@@ -33,6 +33,7 @@ locale  firebug ro-RO       locale/ro-RO/
 locale  firebug ru-RU       locale/ru-RU/
 locale  firebug sk-SK       locale/sk-SK/
 locale  firebug sl-SI       locale/sl-SI/
+locale  firebug sr          locale/sr/
 locale  firebug sv-SE       locale/sv-SE/
 locale  firebug tr-TR       locale/tr-TR/
 locale  firebug uk-UA       locale/uk-UA/

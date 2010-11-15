@@ -157,12 +157,6 @@
     color: #FFFFFF;
 }
 
-.objectBox-exception {
-    padding: 0 2px 0 18px;
-    background: url(chrome://firebug/skin/errorIcon-sm.png) no-repeat 0 0;
-    color: red;
-}
-
 .objectLink-sourceLink {
     position: absolute;
     right: 4px;
@@ -375,6 +369,8 @@
 /************************************************************************************************/
 
 .objectLink-regexp,
+.objectLink-Storage,
+.objectLink-StorageList,
 .objectLink-object {
     font-family: Lucida Grande, sans-serif;
     font-weight: bold;
@@ -386,6 +382,10 @@
     font-weight: normal;
     font-style: italic;
     color: #555555;
+}
+
+.storageTitle {
+    font-weight: normal;
 }
 
 /************************************************************************************************/
@@ -656,7 +656,7 @@
 
 /************************************************************************************************/
 
-/* The panel content is always visible within the command preview on other panels */
-.commandPreview .panelNode-console {
+/* The panel content is always visible within the command popup on other panels */
+.commandPopup .panelNode-console {
     display: block;
 }

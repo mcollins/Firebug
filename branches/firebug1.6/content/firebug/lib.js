@@ -297,6 +297,15 @@ this.hasProperties = function(ob)
     return false;
 };
 
+this.getPrototype = function(ob)
+{
+    try
+    {
+        return ob.prototype;
+    } catch (exc) {}
+    return null;
+};
+
 // ************************************************************************************************
 
 this.convertToUnicode = function(text, charset)
@@ -3955,7 +3964,9 @@ this.getPrettyDomain = function(url)
 
 this.absoluteURL = function(url, baseURL)
 {
-    return this.absoluteURLWithDots(url, baseURL).replace("/./", "/", "g");
+    // Replace "/./" with "/" using regular expressions (don't use string since /./
+    // can be treated as regular expressoin too, see 3551).
+    return this.absoluteURLWithDots(url, baseURL).replace(/\/\.\//, "/", "g");
 };
 
 this.absoluteURLWithDots = function(url, baseURL)
@@ -7569,6 +7580,11 @@ function unwrapObject(object)
     if (typeof(object) === 'undefined' || object == null)
         return object;
 
+    // There is an expception when accessing StorageList.wrappedJSObject (which is
+    // instance of StorageObsolete)
+    if (object instanceof StorageList)
+        return object;
+
     if (object.wrappedJSObject)
         return object.wrappedJSObject;
 
@@ -7581,7 +7597,14 @@ this.unwrapIValue = function(object)
     var unwrapped = object.getWrappedValue();
     try
     {
-        return XPCSafeJSObjectWrapper(unwrapped);  // this should be the only call to getWrappedValue in firebug
+        // XPCSafeJSObjectWrapper is not defined in Firefox 4.0
+        // this should be the only call to getWrappedValue in firebug
+        if (typeof(XPCSafeJSObjectWrapper) != "undefined")
+            return XPCSafeJSObjectWrapper(unwrapped);
+        else if (typeof(unwrapped) == "object")
+            return XPCNativeWrapper.unwrap(unwrapped);
+        else
+            return unwrapped;
     }
     catch (exc)
     {

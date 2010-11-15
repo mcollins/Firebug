@@ -533,7 +533,10 @@ this.Arr = domplate(Firebug.Rep,
         // Don't use __count__ property, this is being removed from Fx 3.7
         var n = 0;
         for (var p in array)
-            n += Object.prototype.hasOwnProperty.call(array, p);
+        {
+            if (array.hasOwnProperty(p))
+                n++;
+        }
 
         return (array.length != n) && hasProperties(array);
     },
@@ -648,7 +651,7 @@ this.NetFile = domplate(this.Obj,
 
 function instanceOf(object, Klass)
 {
-    while (object != null) 
+    while (object != null)
     {
         if (object == Klass.prototype)
            return true;
@@ -1875,10 +1878,10 @@ this.Except = domplate(Firebug.Rep,
 
     getErrorMessage: function(object)
     {
-        var win = Firebug.currentContext.window, 
-            trace, 
-            url, 
-            lineNo, 
+        var win = Firebug.currentContext.window,
+            trace,
+            url,
+            lineNo,
             errorObject,
             message,
             isCommandLine = false;
@@ -1903,13 +1906,13 @@ this.Except = domplate(Firebug.Rep,
             if (!trace)
                 lineNo = 0;
         }
-        errorObject = new FBL.ErrorMessage(message, url, lineNo, '', 'js', 
+        errorObject = new FBL.ErrorMessage(message, url, lineNo, '', 'js',
             Firebug.currentContext, trace);
-        
-        if (trace && trace.frames && trace.frames[0]) 
+
+        if (trace && trace.frames && trace.frames[0])
             errorObject.correctWithStackTrace(trace);
         errorObject.resetSource();
-        
+
         return errorObject;
     },
 
@@ -1999,7 +2002,7 @@ this.SourceText = domplate(Firebug.Rep,
 this.nsIDOMHistory = domplate(Firebug.Rep,
 {
     tag:
-        OBJECTBOX({onclick: "$showHistory"},
+        OBJECTBOX({onclick: "$showHistory", _repObject: "$object"},
             OBJECTLINK("$object|summarizeHistory")
         ),
 
@@ -2018,10 +2021,11 @@ this.nsIDOMHistory = domplate(Firebug.Rep,
         }
     },
 
-    showHistory: function(history)
+    showHistory: function(event)
     {
         try
         {
+            var history = event.currentTarget.repObject;
             var items = history.length;  // if this throws, then unsupported
             Firebug.chrome.select(history);
         }
@@ -2043,25 +2047,18 @@ this.nsIDOMHistory = domplate(Firebug.Rep,
 this.ApplicationCache = domplate(Firebug.Rep,
 {
     tag:
-        OBJECTBOX({onclick: "$showApplicationCache"},
-            OBJECTLINK("$object|summarizeCache")
-        ),
+        OBJECTLINK("$object|summarizeCache"),
 
     summarizeCache: function(applicationCache)
     {
         try
         {
-            return applicationCache.length + " items in offline cache";
+            return applicationCache.mozItems.length + " items in offline cache";
         }
         catch(exc)
         {
             return "https://bugzilla.mozilla.org/show_bug.cgi?id=422264";
         }
-    },
-
-    showApplicationCache: function(event)
-    {
-        openNewTab("https://bugzilla.mozilla.org/show_bug.cgi?id=422264");
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2075,23 +2072,34 @@ this.ApplicationCache = domplate(Firebug.Rep,
     }
 });
 
-//************************************************************************************************
+// ************************************************************************************************
 
 this.Storage = domplate(Firebug.Rep,
 {
     tag:
-        OBJECTBOX({onclick: "$show"},
-            OBJECTLINK("$object|summarize")
+        OBJECTLINK(
+            FOR("prop", "$object|longPropIterator",
+                "$prop.name",
+                SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
+                TAG("$prop.tag", {object: "$prop.object"}),
+                SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
+            )
+        ),
+
+    shortTag:
+        OBJECTLINK(
+            SPAN({"class": "storageTitle"}, "$object|summarize "),
+            FOR("prop", "$object|shortPropIterator",
+                "$prop.name",
+                SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
+                TAG("$prop.tag", {object: "$prop.object"}),
+                SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
+            )
         ),
 
     summarize: function(storage)
     {
-        return storage.length +" items in Storage";
-    },
-
-    show: function(storage)
-    {
-        openNewTab("http://dev.w3.org/html5/webstorage/#storage-0");
+        return storage.length + " items in Storage "; //xxxHonza localization
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2101,7 +2109,103 @@ this.Storage = domplate(Firebug.Rep,
     supportsObject: function(object, type)
     {
         return (object instanceof Storage);
-    }
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Iterator
+
+    longPropIterator: function(object)
+    {
+        return this.propIterator(object, 100);
+    },
+
+    shortPropIterator: function(object)
+    {
+        return this.propIterator(object, Firebug.ObjectShortIteratorMax);
+    },
+
+    propIterator: function(object, max)
+    {
+        return FirebugReps.Obj.propIterator(object, max);
+    },
+});
+
+// ************************************************************************************************
+
+this.StorageList = domplate(Firebug.Rep,
+{
+    tag:
+        OBJECTLINK(
+            FOR("prop", "$object|longPropIterator",
+                "$prop.name",
+                SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
+                TAG("$prop.tag", {object: "$prop.object"}),
+                SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
+            )
+        ),
+
+    shortTag:
+        OBJECTLINK({onclick: "$onClick"},
+            SPAN({"class": "storageTitle"}, "$object|summarize "),
+            FOR("prop", "$object|shortPropIterator",
+                "$prop.name",
+                SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
+                TAG("$prop.tag", {object: "$prop.object"}),
+                SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
+            )
+        ),
+
+    onClick: function(event)
+    {
+        var globalStorage = event.currentTarget.repObject;
+        var context = Firebug.currentContext;
+        var domain = getPrettyDomain(context.window.location.href);
+
+        Firebug.chrome.select(globalStorage.namedItem(domain));
+        cancelEvent(event);
+    },
+
+    summarize: function(globalStorage)
+    {
+        var context = Firebug.currentContext;
+        var domain = getPrettyDomain(context.window.location.href);
+        return globalStorage.namedItem(domain).length + " items in Global Storage "; //xxxHonza localization
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    className: "StorageList",
+
+    supportsObject: function(object, type)
+    {
+        return (object instanceof StorageList);
+    },
+
+    getRealObject: function(object, context)
+    {
+        var domain = getPrettyDomain(context.window.location.href);
+        return globalStorage.namedItem(domain);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // Iterator
+
+    longPropIterator: function(object)
+    {
+        return this.propIterator(object, 100);
+    },
+
+    shortPropIterator: function(object)
+    {
+        return this.propIterator(object, Firebug.ObjectShortIteratorMax);
+    },
+
+    propIterator: function(object, max)
+    {
+        var context = Firebug.currentContext;
+        var domain = getPrettyDomain(context.window.location.href);
+        return FirebugReps.Obj.propIterator(object.namedItem(domain), max);
+    },
 });
 
 // ************************************************************************************************
@@ -2178,7 +2282,9 @@ Firebug.registerRep(
     this.Except,
     this.XML,
     this.Arr,
-    this.XPathResult
+    this.XPathResult,
+    this.Storage,
+    this.StorageList
 );
 
 Firebug.setDefaultReps(this.Func, this.Obj);
