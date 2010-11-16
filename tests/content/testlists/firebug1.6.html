@@ -65,6 +65,7 @@ var testList = [
     {group: "script",  uri: "script/2871/issue2871.js",                desc: "Issue 2871: Bug in watching variables defined in a javascript closure prior to function execution", testPage: "script/2871/issue2871.html"},
     {group: "script",  uri: "script/3400/issue3400.js",                desc: "Issue 3400: Debugger buttons not visible when long stack trace", testPage: "script/3400/issue3400.html"},
     {group: "script",  uri: "script/3402/issue3402.js",                desc: "Issue 3402: Can't create/remove a breakpoint ", testPage: "script/3402/issue3402.html"},
+    {group: "script/callstack",  uri: "script/callstack/3596/issue3596.js", desc: "Issue 3596: Stack trace forgets where it is", testPage: "script/callstack/3596/issue3596.html"},
     {group: "console", uri: "console/panelContentAfterDisable1.6.js",  desc: "If console panel is disabled command line must be hidden." },
     {group: "console", uri: "console/consoleOnOtherPanels.js",         desc: "Console and command line on other panels.", testPage: "console/consoleOnOtherPanels.html"},
     {group: "console", uri: "console/testErrors.js",                   desc: "Various errors must be properly logged into the Console panel.", testPage: "console/testErrors.html" },
@@ -94,7 +95,11 @@ var testList = [
     {group: "dom",     uri: "dom/breakpoints/breakOnPropertyCB.js",    desc: "Break on property change (Chromebug active)", testPage: "dom/breakpoints/breakOnProperty.html" },
     {group: "dom",     uri: "dom/2580/issue2580.js", category:"fails", desc: "Issue 2580: json object 'next' word as object attribute", testPage: "dom/2580/issue2580.html" },
     {group: "dom",     uri: "dom/2558/issue2558.js",                   desc: "Issue 2558: Function arguments not expandable in watch panel even though the object is array-like", testPage: "dom/2558/issue2558.html" },
-    {group: "dom",     uri: "dom/2772/issue2772.js",                   desc: "Issue 2772: DOM panel on reload no longer selects previous selected node. ", testPage: "dom/2772/issue2772.html" },
+    {group: "dom",     uri: "dom/2772/issue2772.js",                   desc: "Issue 2772: DOM panel on reload no longer selects previous selected node.", testPage: "dom/2772/issue2772.html" },
+    {group: "dom",     uri: "dom/3597/issue3597.js",                   desc: "Issue 3597: Objects turned into string have their DOM panel representation messed up", testPage: "dom/3597/issue3597.html" },
+    {group: "dom",     uri: "dom/storage/storage.js",                  desc: "DOM Storage", testPage: "dom/storage/storage.html" },
+    {group: "dom",     uri: "dom/appCache/appCache-driver.js",         desc: "window.applicationCache", testPage: "dom/appCache/appCache.html" },
+    {group: "dom",     uri: "dom/3122/issue3122.js",                   desc: "Issue 3122: Catch variables are not listed in the watch panel on break ('err' expr in the watch panel).", testPage: "dom/3122/issue3122.html" },
     {group: "net",     uri: "net/1256/issue1256.js",                   desc: "Issue 1256: Firebug displays spaces as plus signs in POST fields", testPage: "net/1256/issue1256.html" },
     {group: "net",     uri: "net/1275/issue1275.js",                   desc: "Issue 1275: firebug does not show JSON answers from server", testPage: "net/1275/issue1275.htm" },
     {group: "net",     uri: "net/1461/issue1461.js",                   desc: "Issue 1461: Failed to load source for sourceFile (FF 3.0.6 FireBug 1.3.2)", testPage: "net/1461/issue1461.html" },
@@ -132,6 +137,7 @@ var testList = [
     {group: "css",     uri: "css/2440/issue-2440.js",                  desc: "Duplicate stylesheet refs", testPage: "css/2440/issue-2440.html"},
     {group: "css",     uri: "css/2978/issue2978.js",                   desc: "Enhancement: Copy CSS path from selected element", testPage: "css/2978/issue2978.html"},
     {group: "css",     uri: "css/2976/issue2976.js",                   desc: "Copy Style Declaration context menu option", testPage: "css/2976/issue2976.html"},
+    {group: "css",     uri: "css/3652/issue3652.js",                   desc: "CSS autocomplete is broken", testPage: "css/3652/issue3652.html"},
     {group: "search",  uri: "search/scriptPanelSearch.js",             desc: "Search within the Script panel" },
     {group: "search",  uri: "search/netPanelSearch.js",                desc: "Search within the Net panel", testPage: "search/netVictim.htm" },
     {group: "search",  uri: "search/2886/issue2886.js",                desc: "Java Script search field dosnt find some code", testPage: "search/2886/issue2886.html" },
@@ -183,6 +189,7 @@ var testList = [
     {group: "commandLine", uri: "commandLine/3363/issue3363.js", desc: "Issue 3363: groupCollapsed gets confused", testPage: "commandLine/3363/issue3363.html" },
     {group: "console/completion", uri: "console/completion/3421/issue3421.js", desc: "Issue 3421: Autocompletion expression parsing is wrong", testPage: "console/completion/3421/issue3421.html" },
     {group: "console/completion", uri: "console/completion/3394/issue3394.js", desc: "Issue 3394: TAB Key does not finish an autocomplete keyword in Gnome (Ubuntu)", testPage: "console/completion/3394/issue3394.html" },
+    {group: "console/completion", uri: "console/completion/3466/issue3466.js", desc: "Issue 3466: Can not use dir() command in console's command line", testPage: "console/completion/3466/issue3466.html" },
 ];
 </script>
 
