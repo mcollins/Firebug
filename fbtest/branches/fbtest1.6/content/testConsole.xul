@@ -42,6 +42,7 @@
     <script type="application/x-javascript" src="chrome://fbtest/content/testLogger.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/testCouchUploader.js"/>
     <script type="application/x-javascript" src="chrome://fbtest/content/notify.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/testListLoader.js"/>
 
     <stringbundleset id="stringbundleset">
         <stringbundle id="strings_firebug" src="chrome://firebug/locale/firebug.properties"/>
@@ -91,7 +92,8 @@
     </toolbox>
 
     <toolbox id="testDriverToolbox">
-        <toolbar id="testDriverToolbar" align="center" context="consoleToolbarContextMenu">
+        <toolbar id="testDriverToolbar" align="center"> <!--  context="consoleToolbarContextMenu" -->
+
             <toolbarbutton id="runAll"
                 label="fbtest.cmd.Run All" class="toolbar-image-button"
                 tooltiptext="fbtest.cmd.tip.Run All Tests"
@@ -106,19 +108,28 @@
                 command="cmd_noTestTimeout"/>
 
             <toolbarseparator id="FBTestButtons_end" flex="1"/>
-            <toolbarbutton id="restartFirefox"
-                label="fbtest.cmd.Restart" class="toolbar-image-button"
-                tooltiptext="fbtest.cmd.tip.Restart"
-                command="cmd_restartFirefox"/>
-            <toolbarbutton id="refreshList"
-                label="fbtest.cmd.Refresh" class="toolbar-image-button"
-                tooltiptext="fbtest.cmd.Refresh"
-                command="cmd_refreshTestList"/>
-        </toolbar>
 
+            <toolbarbutton id="testToolsMenu"
+                class="toolbar-text-button"
+                label="fbtest.cmd.Tools"
+                tooltiptext="fbtest.cmd.tip.Tools"
+                type="menu">
+                <menupopup>
+                    <menuitem id="restartFirefox"
+                        label="fbtest.cmd.Restart" class="menuitem-iconic"
+                        tooltiptext="fbtest.cmd.tip.Restart"
+                        command="cmd_restartFirefox"/>
+                    <menuitem id="refreshList"
+                        label="fbtest.cmd.Refresh" class="menuitem-iconic"
+                        tooltiptext="fbtest.cmd.Refresh"
+                        command="cmd_refreshTestList"/>
+                </menupopup>
+            </toolbarbutton>
+
+        </toolbar>
     </toolbox>
 
-    <menupopup id="consoleToolbarContextMenu"
+    <!--<menupopup id="consoleToolbarContextMenu"
         onpopupshowing="FBTestApp.TestConsole.onViewToolbarsPopupShowing(event);">
         <menuitem id="menu_showTestListURLBar" type="checkbox" checked="true"
             label="fbtest.urlbar.name.Test List URL Bar" toolbar="testListUrlBar"
@@ -129,7 +140,7 @@
         <menuitem id="menu_showTestDriverURLBar" type="checkbox" checked="false"
             label="fbtest.urlbar.name.Test Drivers URL Bar" toolbar="testDriverUrlBar"
             oncommand="FBTestApp.TestConsole.showURLBar(event)"/>
-    </menupopup>
+    </menupopup>-->
 
     <popupset id="mainPopupSet">
         <menupopup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />

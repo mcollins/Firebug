@@ -133,7 +133,7 @@ FBTestApp.TestCouchUploader =
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
         header["Total Tests"] = this.getTotalTests().toString();
 
-        if (extInfo)
+        if (extInfo && application.extensions)
         {
             // Put together a list of installed extensions.
             var extensions = [];
@@ -232,6 +232,7 @@ var CouchDB =
         this.ajax({
             type: "POST",
             url: this.uri + "_bulk_docs",
+            contentType: "application/json",
             data: toJSON(docs),
             complete: function(req)
             {

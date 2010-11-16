@@ -51,9 +51,9 @@
                 command: function() { FBTestApp.TestConsole.resetHistoryList(self); }
             });
             items.push({
-                label: "Get Available Test Lists",
+                label: "Load Registered Tests",
                 nol10n: true,
-                command: function() { FBTestApp.TestConsole.getAvailableTestLists(self); }
+                command: function() { FBTestApp.TestConsole.loadTestList("fbtest:all"); }
             });
 
             for (var i = 0; i < items.length; ++i)

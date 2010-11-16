@@ -11,6 +11,7 @@ pref("extensions.fbtest.randomTestSelection", false);
 pref("extensions.fbtest.history", "");
 pref("extensions.fbtest.testCaseHistory", "https://getfirebug.com/tests/content/");
 pref("extensions.fbtest.testDriverHistory", "");
+pref("extensions.fbtest.enableTestLogger", false);
 
 // Support for tracing console
 pref("extensions.firebug.DBG_FBTEST", false);            // Tracing from FBTest internal framework.

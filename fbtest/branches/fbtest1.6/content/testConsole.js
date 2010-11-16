@@ -45,7 +45,7 @@ FBTestApp.TestWindowLoader =
             "menu_showTestCaseURLBar", "menu_showTestDriverURLBar", "menu_showTestListURLBar",
             "testListUrlBar", "testCaseUrlBar", "testDriverUrlBar", "restartFirefox",
             "passingTests", "failingTests", "menu_hidePassingTests", "menu_uploadTestResults",
-            "testCount"];
+            "testCount", "testToolsMenu"];
 
         for (var i=0; i<buttons.length; i++)
         {
@@ -150,7 +150,7 @@ FBTestApp.TestConsole =
 
         // 3) If no list is specified, use the default from currently installed Firebug.
         if (!defaultTestList)
-            defaultTestList = "http://getfirebug.com/tests/content/testlists/firebug1.6.html";
+            defaultTestList = "http://getfirebug.com/tests/content/testlists/firebug1.7.html";
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.TestConsole.getDefaultTestList; " + defaultTestList);
@@ -179,7 +179,7 @@ FBTestApp.TestConsole =
 
     getHTTPURLBase: function()
     {
-        var url = this.testCasePath;
+        var url = FBTestApp.TestRunner.currentTest.testCasePath;
 
         // Make sure the path ends properly.
         if (url && url.charAt(url.length-1) != "/")
@@ -242,8 +242,12 @@ FBTestApp.TestConsole =
         urlBar.testURL = this.driverBaseURI;
     },
 
-    updateTestCount: function(count)
+    updateTestCount: function(groups)
     {
+        var count = 0;
+        for (var i=0; groups && i<groups.length; i++)
+            count += groups[i].tests.length;
+
         $("testCount").value = count;
     },
 
@@ -283,151 +287,46 @@ FBTestApp.TestConsole =
             Firebug.clearPref(FBTestApp.prefDomain, "testDriverHistory");
     },
 
-    getAvailableTestLists: function(urlBar)
-    {
-        var testLists = [];
-        dispatch([Firebug], "onGetTestList", [testLists]);
-        dispatch(Firebug.modules, "onGetTestList", [testLists]);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.getAvailableTestLists; ", testLists);
-    },
-
     loadTestList: function(testListPath, testCasePath)
     {
         this.testListPath = testListPath;
         if (testCasePath)
             this.testCasePath = testCasePath;
 
-        var taskBrowser = $("taskBrowser");
-        taskBrowser.addEventListener("DOMContentLoaded", FBTestApp.TestConsole.onTaskWindowDOMLoaded, true);
+        // Called after tests are loaded from specified URL.
+        var self = this;
+        var finishCallback = function(groups)
+        {
+            self.groups = groups;
 
-        // Load test-list file into the content frame.
-        taskBrowser.setAttribute("src", testListPath);
+            self.notifyObservers(self, "fbtest", "restart")
+
+            // Build new test list UI.
+            self.refreshTestList();
+
+            // Remember successfully loaded test within test history.
+            self.appendToHistory(self.testListPath, self.testCasePath, self.driverBaseURI);
+
+            self.updateURLBars();
+            self.updateTestCount(groups);
+
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
+                    self.testListPath + ", " + self.testCasePath);
+
+            // Finally run all tests if the browser has been launched with
+            // -runFBTests argument on the command line.
+            self.autoRun();
+        };
+
+        var taskBrowser = $("taskBrowser");
+
+        if (testListPath == "fbtest:all")
+            FBTestApp.TestListLoader.loadAllRegisteredTests(taskBrowser, finishCallback);
+        else
+            FBTestApp.TestListLoader.loadTestList(taskBrowser, testListPath, finishCallback);
 
         this.updateURLBars();
-    },
-
-    onTaskWindowDOMLoaded: function(event)
-    {
-        var taskBrowser = $("taskBrowser");
-        var fbTestFrame = event.target.getElementById("FBTest");
-        if (fbTestFrame)
-            fbTestFrame.contentDocument.addEventListener("load", FBTestApp.TestConsole.onTaskFrameLoaded, true);
-        else
-            taskBrowser.addEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
-    },
-
-    onTaskFrameLoaded: function(event)
-    {
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("onTaskFrameLoaded "+event.target.getAttribute("id"), event.target);
-
-        if (event.target.getAttribute('id') === "FBTest")
-        {
-            FBTestApp.TestConsole.processTestList(event.target.contentDocument);
-            var taskBrowser = $("taskBrowser");
-            taskBrowser.removeEventListener("DOMFrameContentLoaded", FBTestApp.TestConsole.onTaskFrameLoaded, true);
-        }
-    },
-
-    onTaskWindowLoaded: function(event)
-    {
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("onTaskWindowLoaded "+event.target.location, event.target);
-
-        FBTestApp.TestConsole.processTestList(event.target);
-        var taskBrowser = $("taskBrowser");
-        taskBrowser.removeEventListener("load", FBTestApp.TestConsole.onTaskWindowLoaded, true);
-    },
-
-    processTestList: function(doc)
-    {
-        var win = unwrapObject(doc.defaultView);
-        if (!win.testList)
-            return;
-
-        this.addStyleSheets(doc);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.loadTestList; processTestList " + win.driverBaseURI +
-                ", serverURI " + win.testCasePath, win);
-
-        if (win.driverBaseURI)
-        {
-            this.driverBaseURI = win.driverBaseURI;
-        }
-        else
-        {
-            // If the driverBaseURI isn't provided use the directory where testList.html
-            // file is located.
-            //testListPath.substr(0, testListPath.lastIndexOf("/") + 1);
-            this.driverBaseURI = "https://getfirebug.com/tests/content/";
-        }
-
-        if (win.serverURI)
-            this.testCasePath = win.serverURI;
-        else
-            this.testCasePath = "https://getfirebug.com/tests/content/";
-
-        if (win.testIncludes) {
-            this.testIncludes = win.testIncludes;
-        } else {
-            this.testIncludes = [];
-        }
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.loadTestList; driverBaseURI " + this.driverBaseURI +
-                ", serverURI " + this.testCasePath);
-
-
-        // Create group list from the provided test list. Also clone all JS objects
-        // (tests) since they come from untrusted content.
-        var map = [];
-        this.groups = [];
-
-        var testCount = win.testList.length;
-        for (var i=0; i<testCount; i++)
-        {
-            var test = win.testList[i];
-
-            // If the test isn't targeted for the current OS, mark it as "fails".
-            if (!this.isTargetOS(test))
-                test.category = "fails";
-
-            var group = map[test.group];
-            if (!group)
-            {
-                this.groups.push(group = map[test.group] =
-                    new FBTestApp.TestGroup(test.group));
-            }
-
-            // Default value for category attribute is "passes".
-            if (!test.category)
-                test.category = "passes";
-
-            group.tests.push(new FBTestApp.Test(group, test.uri,
-                test.desc, test.category, test.testPage));
-        }
-
-        this.notifyObservers(this, "fbtest", "restart")
-
-        // Build new test list UI.
-        this.refreshTestList();
-
-        // Remember successfully loaded test within test history.
-        this.appendToHistory(this.testListPath, this.testCasePath, this.driverBaseURI);
-
-        this.updateURLBars();
-        this.updateTestCount(testCount);
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.onOpenTestSuite; Test list successfully loaded: " +
-                this.testListPath + ", " + this.testCasePath);
-
-        // Finally run all tests if the browser has been launched with
-        // -runFBTests argument on the command line.
-        this.autoRun();
     },
 
     /*
@@ -475,44 +374,6 @@ FBTestApp.TestConsole =
             text += groups[group].getErrors(true);
 
         return text;
-    },
-
-    /**
-     * Returns true if the test is targeted for the current OS; otherwise false.
-     */
-    isTargetOS: function(test)
-    {
-        // If there is no target OS, the test is intended for all.
-        if (!test.os)
-            return true;
-
-        var platform = window.navigator.platform.toLowerCase();
-
-        // Iterate all specified OS and look for match.
-        var list = test.os.toLowerCase().split("|");
-        for (var p in list)
-        {
-            if (platform.indexOf(list[p]) != -1)
-                return true;
-        }
-
-        if (FBTrace.DBG_FBTEST)
-            FBTrace.sysout("fbtest.isTargetOS; Test is not targeted for this OS: " + test.uri);
-
-        return false;
-    },
-
-    addStyleSheets: function(doc)
-    {
-        // Some CSS from Firebug namespace.
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css"));
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/console.css"));
-
-        // Append specific FBTest CSS.
-        var styles = ["testConsole.css", "testList.css", "testResult.css", "tabView.css"];
-        for (var i=0; i<styles.length; i++)
-            addStyleSheet(doc, createStyleSheet(doc, "chrome://fbtest/skin/" + styles[i]));
     },
 
     findTestListWindow: function(doc)
@@ -570,21 +431,50 @@ FBTestApp.TestConsole =
             }
         }
 
-        this.table = FBTestApp.GroupList.tableTag.replace({groups: this.groups}, testListNode);
-        var row = this.table.firstChild.firstChild;
+        eraseNode(testListNode);
 
+        // Generate UI (domplate).
+        var GroupList = FBTestApp.GroupList;
+        this.table = GroupList.tableTag.replace({}, testListNode);
+
+        var tbody = this.table.firstChild;
+        var location = "";
         for (var i=0; i<this.groups.length; i++)
         {
             var group = this.groups[i];
-            group.row = row;
-            row = row.nextSibling;
+
+            if (location != group.testListPath)
+            {
+                location = group.testListPath;
+
+                // Insert group separator. The 'extension' field is only set if the console displays
+                // tests from multiple extensions. So, use it and only display the separator
+                // in such cases.
+                if (group.extension)
+                    GroupList.groupSeparatorTag.insertRows({group: group},
+                        tbody.lastChild ? tbody.lastChild : tbody);
+            }
+
+            group.row = GroupList.groupRowTag.insertRows({group: group},
+                tbody.lastChild ? tbody.lastChild : tbody)[0];
         }
     },
 
     autoRun: function()
     {
         if (!cmdLineHandler.wrappedJSObject.runFBTests)
+        {
+            // Check pref if the auto logger should be registered. Useful for
+            // knowing, which test caused crash.
+            var enableTestLogger = Firebug.getPref(FBTestApp.prefDomain, "enableTestLogger");
+            if (enableTestLogger)
+            {
+                var listener = new FBTestApp.TestLogger.ProgressListener(new Date());
+                FBTestApp.TestRunner.addListener(listener);
+            }
+
             return;
+        }
 
         // The auto run is done just the first time the test-console is opened.
         cmdLineHandler.wrappedJSObject.runFBTests = false;
@@ -601,7 +491,6 @@ FBTestApp.TestConsole =
             if (FBTestApp.defaultTest)
             {
                 var test = FBTestApp.TestConsole.getTest(FBTestApp.defaultTest);
-
                 if (test)
                 {
                     FBTestApp.TestRunner.runTests([test]);
@@ -609,9 +498,8 @@ FBTestApp.TestConsole =
                 else
                 {
                     throw new Error("fbtest.autoRun; Test from command line doesn't exist: " +
-                            FBTestApp.defaultTest);
+                        FBTestApp.defaultTest);
                 }
-
             }
             else
             {

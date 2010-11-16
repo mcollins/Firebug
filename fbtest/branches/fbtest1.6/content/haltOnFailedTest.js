@@ -58,6 +58,7 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest.onFailure ");
+
         FBTestApp.TestRunner.clearTestTimeout();
         Firebug.Debugger.halt(function breakOnFailure(frame)
         {
@@ -84,9 +85,14 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
                     observerService.removeObserver(FBTestApp.TestWindowLoader.HaltOnFailedTest, "fbtest");
 
                 if (data in FBTestApp.TestWindowLoader.HaltOnFailedTest)
+                {
                     FBTestApp.TestWindowLoader.HaltOnFailedTest[data]();
+                }
                 else
-                    FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
+                {
+                    if (FBTrace.DBG_FBTEST)
+                        FBTrace.sysout("FBTestApp.TestWindowLoader.HaltOnFailedTest no method for "+data);
+                }
             }
         }
         catch (e)

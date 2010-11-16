@@ -60,7 +60,7 @@ this.compare = function(expected, actual, msg)
         result = (expected == actual);
     }
 
-    FBTest.sysout("compare "+(result?"passes":"**** FAILS ****")+" "+msg);
+    FBTest.sysout("compare "+(result?"passes":"**** FAILS ****")+" "+msg, {expected: expected, actual: actual});
 
     FBTestApp.TestRunner.appendResult(new FBTestApp.TestResult(window,
         result, msg, expected, actual));
@@ -117,6 +117,7 @@ this.testDone = function(message)
  */
 this.getHTTPURLBase = function()
 {
+    // xxxHonza: should be set as a global in this scope.
     return FBTestApp.TestConsole.getHTTPURLBase();
 };
 
@@ -125,7 +126,8 @@ this.getHTTPURLBase = function()
  */
 this.getLocalURLBase = function()
 {
-    return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestConsole.driverBaseURI, true);
+    // xxxHonza: should be set as a global in this scope.
+    return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestRunner.currentTest.driverBaseURI, true);
 };
 
 /**
@@ -384,7 +386,8 @@ function __doEventDispatch(aTarget, aCharCode, aKeyCode, aHasShift)
  * actual keypress by the user, typically the focused element.
  *
  * aKey should be either a character or a keycode starting with VK_ such as
- * VK_ENTER.
+ * VK_ENTER. See list of all possible key-codes here:
+ * http://www.w3.org/TR/2000/WD-DOM-Level-3-Events-20000901/events.html
  *
  * aEvent is an object which may contain the properties:
  *   shiftKey, ctrlKey, altKey, metaKey, accessKey, type
@@ -612,17 +615,17 @@ function waitForWindowLoad(browser, callback)
             // xxxHonza: this is rather a hack, it should be removed if possible.
             //if (!win.wrappedJSObject)
             //    win.wrappedJSObject = win;
-
+            FBTest.sysout("callback <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "+win.location);
             // The window is loaded, execute the callback now.
             callback(win);
         }
         catch (exc)
         {
+            FBTest.exception("waitForWindowLoad", exc);
             FBTest.sysout("runTest FAILS " + exc, exc);
-            FBTest.ok(false, "runTest FAILS " + exc);
         }
     }
-
+FBTest.sysout("addinge event listeenr<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     browser.addEventListener("load", waitForEvents, true);
     browser.addEventListener("MozAfterPaint", waitForEvents, true);
 }
@@ -649,6 +652,9 @@ this.cleanUpTestTabs = function()
         if (firebugAttr == "test")
             removeThese.push(tab);
     }
+
+    if (!tabbrowser._removingTabs)
+        tabbrowser._removingTabs = [];
 
     for (var i = 0; i < removeThese.length; i++)
             tabbrowser.removeTab(removeThese[i]);
@@ -769,6 +775,11 @@ this.enableAllPanels = function()
 this.selectPanel = function(panelName, chrome)
 {
     return chrome?chrome.selectPanel(panelName):FW.FirebugChrome.selectPanel(panelName);
+}
+
+this.selectSidePanel = function(panelName, chrome)
+{
+    return chrome?chrome.selectSidePanel(panelName):FW.FirebugChrome.selectSidePanel(panelName);
 }
 
 /* select a panel tab */
@@ -931,17 +942,7 @@ this.getPref = function(pref)
 
 this.executeCommand = function(expr, chrome)
 {
-    if (!chrome)
-        chrome = FW.FirebugChrome;
-
-    var doc = chrome.window.document;
-    var cmdLine = doc.getElementById("fbCommandLine");
-
-    // Make sure the console is focused and command line API loaded.
-    FBTest.focus(cmdLine);
-
-    // Set expression and press enter.
-    cmdLine.value = expr;
+    this.typeCommand(expr);
     FBTest.pressKey(13, "fbCommandLine");
 }
 
@@ -955,6 +956,8 @@ this.typeCommand = function(string)
     FW.FirebugChrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
+
+    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+ " win "+panelBar1.browser.contentWindow);
 
     for (var i=0; i<string.length; ++i)
         FBTest.synthesizeKey(string.charAt(i), win);
@@ -1062,7 +1065,7 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
 // Console preview
 
 /**
- * 
+ *
  */
 this.clickConsolePreviewButton = function(chrome)
 {
@@ -1071,7 +1074,7 @@ this.clickConsolePreviewButton = function(chrome)
 
 this.isConsolePreviewVisible = function()
 {
-    return FW.Firebug.CommandLine.Preview.isVisible();
+    return FW.Firebug.CommandLine.Popup.isVisible();
 }
 
 // ************************************************************************************************
@@ -1164,8 +1167,9 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
         {
             callback(sourceRow);
         }
-        catch(exc)
+        catch (exc)
         {
+            FBTest.exception("waitForBreakInDebugger", exc);
             FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
         }
     });
@@ -1218,7 +1222,7 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
 // Watch Panel
 
 /**
- * Appends a new expression into the Watch panel (the side panel for the Script panel). 
+ * Appends a new expression into the Watch panel (the side panel for the Script panel).
  * @param {Object} chrome The current Firebug's chrome (can be null).
  * @param {Object} expression The expression to be evaluated.
  * @param {Object} callback Called after the result is displayed.
@@ -1260,6 +1264,38 @@ this.addWatchExpression = function(chrome, expression, callback)
     // Set expression and press enter.
     FBTest.sendString(expression, editor);
     FBTest.pressKey(13, editor);
+}
+
+/**
+ * Returns the row element <tr> from the 'watches' side-panel for specified expression.
+ *
+ * @param {Object} chrome The current Firebug's chrome (optional)
+ * @param {Object} expression The expression we are looking for.
+ */
+this.getWatchExpressionRow = function(chrome, expression)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var watchPanel = FBTest.getPanel("watches", true);
+    FBTest.ok(watchPanel, "The watch panel must be there");
+
+    return getDOMMemberRow(watchPanel, expression);
+}
+
+function getDOMMemberRow(panel, name)
+{
+    var panelNode = panel.panelNode;
+    var rows = panelNode.querySelectorAll(".memberRow");
+
+    // Iterate over all rows and pick the one that fits the name.
+    for (var i=0; i<rows.length; i++)
+    {
+        var row = rows[i];
+        var labelCell = row.querySelector(".memberLabelCell");
+        if (labelCell.textContent == name)
+            return row;
+    }
 }
 
 // ************************************************************************************************
@@ -1401,7 +1437,7 @@ this.waitForDisplayedElement = function(panelName, config, callback)
 }
 
 /**
- * Wait till a text is displayed in the specified panel.
+ * Wait till a text is displayed in specified panel.
  * @param {Object} panelName Name of the panel where the text should appear.
  * @param {Object} text Text to wait for.
  * @param {Object} callback Executed as soon as the text is displayed.
@@ -1411,6 +1447,26 @@ this.waitForDisplayedText = function(panelName, text, callback)
     var panel = FW.FirebugChrome.selectPanel(panelName);
     var rec = new MutationRecognizer(panel.document.defaultView, "Text", {}, text);
     rec.onRecognizeAsync(callback);
+}
+
+this.waitForPanel = function(panelName, callback)
+{
+
+    panelBar1 = FW.document.getElementById("fbPanelBar1");
+    panelBar1.addEventListener("selectingPanel",function onSelectingPanel(event)
+    {
+        var panel = panelBar1.selectedPanel;
+        if (panel.name === panelName)
+        {
+            panelBar1.removeEventListener("selectingPanel", onSelectingPanel, false);
+            callback(panel);
+        }
+        else
+        {
+            FBTest.sysout("waitForPanel saw "+panel.name);
+        }
+
+    }, false);
 }
 
 // ************************************************************************************************
@@ -1506,35 +1562,33 @@ this.executeContextMenuCommand = function(target, menuId, callback)
     {
         contextMenu.removeEventListener("popupshown", onPopupShown, false);
 
-        var menuItem = contextMenu.querySelector("#" + menuId);
-        FBTest.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
-
-        // If the menu item isn't available close the context menu and bail out.
-        if (!menuItem)
-        {
-            contextMenu.hidePopup();
-            return;
-        }
-
-        // Click on the specified menu item.
-        self.synthesizeMouse(menuItem);
-
-        // Since the command is dispatched asynchronously,
-        // execute the callback using timeout. 
+        // Fire the event handler asynchronously so items have a chance to be appended.
         setTimeout(function()
         {
-            callback();
-        });
+            var menuItem = contextMenu.querySelector("#" + menuId);
+            self.ok(menuItem, "'" + menuId + "' item must be available in the context menu.");
+
+            // If the menu item isn't available close the context menu and bail out.
+            if (!menuItem)
+            {
+                contextMenu.hidePopup();
+                return;
+            }
+
+            // Click on specified menu item.
+            self.synthesizeMouse(menuItem);
+
+            // Since the command is dispatched asynchronously,
+            // execute the callback using timeout.
+            setTimeout(function()
+            {
+                callback();
+            }, 10);
+        }, 10);
     }
 
     // Wait till the menu is displayed.
-    contextMenu.addEventListener("popupshown", function(event)
-    {
-        // Fire the event handler asynchronously so items have a chance to be appended.
-        setTimeout(function() {
-            onPopupShown(event);
-        }, 10);
-    }, false);
+    contextMenu.addEventListener("popupshown", onPopupShown, false);
 
     // Right click on the target element.
     var eventDetails = {type : "contextmenu", button : 2};
@@ -1572,6 +1626,7 @@ this.setClipboardText = function(text)
     }
     catch (e)
     {
+        FBTest.exception("setClipboardText", e);
         FBTest.sysout("setClipboardText FAILS " + e, e);
     }
 }
@@ -1596,6 +1651,7 @@ this.getClipboardText = function()
     }
     catch (e)
     {
+        FBTest.exception("getClipboardText", e);
         FBTest.sysout("getClipboardText FAILS " + e, e);
     }
 
@@ -1609,10 +1665,10 @@ this.getClipboardText = function()
  * Compare expected Firefox version with the current Firefox installed.
  * @param {Object} expectedVersion Expected version of Firefox.
  * @returns
- * -1 the current version is smaller 
+ * -1 the current version is smaller
  *  0 the current version is the same
  *  1 the current version is bigger
- *  
+ *
  *  @example:
  *  if (compareFirefoxVersion("3.6") >= 0)
  *  {
@@ -1678,7 +1734,7 @@ this.runTestSuite = function(tests, callback)
         }
         catch (err)
         {
-            FBTest.progress("EXCEPTION " + err);
+            FBTest.exception("runTestSuite", err);
         }
     }, 200);
 }
@@ -1804,6 +1860,60 @@ this.inspectUsingBoxModelWithRulers = function(elt)
 this.inspectorClear = function()
 {
     FW.Firebug.Inspector.highlightObject(null);
+}
+
+// ************************************************************************************************
+// DOM
+
+/**
+ * Waits till a specified property is displayed in the DOM panel.
+ * 
+ * @param {String} propName Name of the property to be displayed
+ * @param {Function} callback Function called after the property is visible.
+ * @param {Boolean} checkAvailability Execute the callback synchronously if the property
+ *      is already available.
+ */
+this.waitForDOMProperty = function(propName, callback, checkAvailability)
+{
+    var panel = FBTest.getPanel("dom");
+    if (checkAvailability)
+    {
+        var row = getDOMMemberRow(panel, propName);
+        if (row)
+            return callback(row);
+    }
+
+    var recognizer = new MutationRecognizer(panel.document.defaultView,
+        "Text", {}, propName);
+
+    recognizer.onRecognizeAsync(function(element)
+    {
+        var row = FW.FBL.getAncestorByClass(element, "memberRow");
+        callback(row);
+    });
+}
+
+this.refreshDOMPanel = function()
+{
+    var panel = this.getPanel("dom");
+    panel.rebuild(true);
+}
+
+/**
+ * Returns the row element <tr> from the DOM panel for specified member name.
+ *
+ * @param {Object} chrome The current Firebug's chrome (optional)
+ * @param {Object} propName The name of the member displayed in the panel.
+ */
+this.getDOMPropertyRow = function(chrome, propName)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var domPanel = FBTest.getPanel("dom", true);
+    FBTest.ok(domPanel, "The DOM panel must be there");
+
+    return getDOMMemberRow(domPanel, propName);
 }
 
 // ************************************************************************************************

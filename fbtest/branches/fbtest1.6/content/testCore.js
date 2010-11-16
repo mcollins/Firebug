@@ -9,7 +9,7 @@ var FBTestApp = {};
 
 // Registration
 var namespaces = [];
-this.ns = function(fn) 
+this.ns = function(fn)
 {
     var ns = {};
     namespaces.push(fn, ns);
@@ -17,7 +17,7 @@ this.ns = function(fn)
 };
 
 // Initialization
-this.initialize = function() 
+this.initialize = function()
 {
     FBTestApp.prefDomain = "extensions.fbtest";
 
@@ -30,7 +30,7 @@ this.initialize = function()
     if (Firebug.registerStringBundle)
         Firebug.registerStringBundle("chrome://fbtest/locale/fbtest.properties");
 
-    for (var i=0; i<namespaces.length; i+=2) 
+    for (var i=0; i<namespaces.length; i+=2)
     {
         var fn = namespaces[i];
         var ns = namespaces[i+1];
@@ -46,7 +46,7 @@ this.initialize = function()
 };
 
 // Clean up
-this.shutdown = function() 
+this.shutdown = function()
 {
     window.removeEventListener("load", FBTestApp.initialize, false);
     window.removeEventListener("unload", FBTestApp.shutdown, false);

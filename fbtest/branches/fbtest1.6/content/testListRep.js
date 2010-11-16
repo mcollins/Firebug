@@ -18,21 +18,32 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
 {
     tableTag:
         TABLE({"class": "groupTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
-            TBODY(
-                FOR("group", "$groups",
-                    TR({"class": "testGroupRow", _repObject: "$group"},
-                        TD({"class": "groupName testGroupCol"},
-                            SPAN({"class": "testGroupName"},
-                                "$group|getGroupName"
-                            ),
-                            SPAN({"class": "testGroupCount"},
-                                "$group|getGroupCount"
-                            ),
-                            SPAN({"class": "groupAction testLink", onclick: "$onGroupClick"},
-                                SPAN("Run")
-                            )
-                        )
-                    )
+            TBODY()
+        ),
+
+    groupRowTag:
+        TR({"class": "testGroupRow", _repObject: "$group"},
+            TD({"class": "groupName testGroupCol"},
+                SPAN({"class": "testGroupName"},
+                    "$group|getGroupName"
+                ),
+                SPAN({"class": "testGroupCount"},
+                    "$group|getGroupCount"
+                ),
+                SPAN({"class": "groupAction testLink", onclick: "$onGroupClick"},
+                    SPAN("Run")
+                )
+            )
+        ),
+
+    groupSeparatorTag:
+        TR({"class": "testGroupSeparator"},
+            TD(
+                SPAN({"class": "extension"},
+                    "$group.extension"
+                ),
+                SPAN({"class": "location"},
+                    "$group.testListPath"
                 )
             )
         ),
@@ -147,13 +158,13 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         var items = [];
 
         items.push({
-          label: $STR("fbtest.cmd.Expand_All"),
+          label: $STR("fbtest.cmd.Expand All"),
           nol10n: true,
           command: bindFixed(this.onExpandAll, this, group)
         });
 
         items.push({
-          label: $STR("fbtest.cmd.Collapse_All"),
+          label: $STR("fbtest.cmd.Collapse All"),
           nol10n: true,
           command: bindFixed(this.onCollapseAll, this, group)
         });
@@ -167,7 +178,7 @@ FBTestApp.GroupList = domplate(Firebug.Rep,
         });
 
         items.push({
-          label: $STR("fbtest.contextmenu.label.Hide_Passing_Tests"),
+          label: $STR("fbtest.contextmenu.label.Hide Passing Tests"),
           nol10n: true,
           type: "checkbox",
           checked: hasClass(FBTestApp.TestConsole.table, "hidePassingTests"),
@@ -256,7 +267,8 @@ FBTestApp.TestList = domplate(
             TR({"class": "testListRow", _repObject: "$test",
                 $results: "$test|hasResults",
                 $error: "$test|hasError",
-                $todo: "$test|isTodo"},
+                $todo: "$test|isTodo",
+                $disabled: "$test|isDisabled"},
                 TD({"class": "testListCol testName", onclick: "$onExpandTest"},
                     SPAN("&nbsp;")
                 ),
@@ -292,6 +304,11 @@ FBTestApp.TestList = domplate(
     isTodo: function(test)
     {
         return test.category == "fails";
+    },
+
+    isDisabled: function(test)
+    {
+        return test.disabled;
     },
 
     onRunTest: function(event)
@@ -407,11 +424,19 @@ FBTestApp.TestList = domplate(
         });
 
         items.push({
-          label: $STR("fbtest.contextmenu.label.Hide_Passing_Tests"),
+          label: $STR("fbtest.contextmenu.label.Hide Passing Tests"),
           nol10n: true,
           type: "checkbox",
           checked: hasClass(FBTestApp.TestConsole.table, "hidePassingTests"),
           command: bindFixed(FBTestApp.TestConsole.hidePassingTests, FBTestApp.TestConsole)
+        });
+
+        items.push({
+          label: $STR("fbtest.contextmenu.label.Disable Test"),
+          nol10n: true,
+          type: "checkbox",
+          checked: test.disabled,
+          command: bindFixed(this.onDisableTest, this, test)
         });
 
         items.push("-");
@@ -449,8 +474,7 @@ FBTestApp.TestList = domplate(
 
     onOpenTestPage: function(test)
     {
-        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(
-            FBTestApp.TestConsole.getHTTPURLBase() + test.testPage);
+        FBTestApp.FBTest.FirebugWindow.FBL.openNewTab(test.testCasePath + test.testPage);
     },
 
     onRunFromHere: function(test)
@@ -473,6 +497,16 @@ FBTestApp.TestList = domplate(
             FBTrace.sysout("fbtest.onRunFromHere; Number of tests: " + tests.length, tests);
 
         FBTestApp.TestRunner.runTests(tests);
+    },
+
+    onDisableTest: function(test)
+    {
+        test.disabled = !test.disabled;
+
+        if (test.disabled)
+            setClass(test.row, "disabled");
+        else
+            removeClass(test.row, "disabled");
     }
 });
 
@@ -561,6 +595,8 @@ FBTestApp.Test = function(group, uri, desc, category, testPage)
     // Timing
     this.start = 0;
     this.end = 0;
+
+    this.disabled = false;
 }
 
 FBTestApp.Test.prototype =

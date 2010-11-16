@@ -4,11 +4,22 @@
     The final xpi file should be located in a release directory -->
 <project name="netExport" basedir="." default="build">
 
-    <!-- Directories -->
-    <property name="build.dir" value="release"/>
-
     <!-- Properties -->
     <property file="content/fbtest.properties"/>
+
+    <!-- Directories -->
+    <property name="build.dir" value="release"/>
+    <property name="release.dir" value="./release"/>
+    <property name="deploy-xpi.dir" value="${GETFIREBUG}/releases/fbtest/${VERSION}"/>
+    <property name="deploy-jsdoc.dir" value="${GETFIREBUG}/developer/api/fbtest${VERSION}"/>
+
+    <available file="${GETFIREBUG}" property="deploy.dir.available"/>
+
+    <!-- echo -->
+    <target name="echo">
+        <echo message="Build directory: ${build.dir}"/>
+        <echo message="Deploy directory ${GETFIREBUG} available: ${deploy.dir.available}"/>
+    </target>
 
     <!-- Clean -->
     <target name="clean">
@@ -83,6 +94,29 @@
 
         <!-- Final version message -->
         <echo message="FBTest version: ${VERSION}${RELEASE}"/>
+
+        <!-- Deploy -->
+        <antcall target="deploy" />
+    </target>
+
+    <!-- Deploy if target available -->
+    <target name="deploy" if="deploy.dir.available">
+
+        <!-- Deploy xpi & update.rdf files -->
+        <copy file="${build.dir}/update.rdf" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <copy file="${build.dir}/fbTest-${VERSION}${RELEASE}.xpi" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <echo message="XPI deployed to: ${VERSION}${RELEASE} to ${deploy-xpi.dir}"/>
+    </target>
+
+    <!-- Deploy if target available -->
+    <target name="deploy-jsdoc" if="deploy.dir.available">
+
+        <!-- Deploy jsdoc -->
+        <copy todir="${deploy-jsdoc.dir}">
+            <fileset dir="${release.dir}/jsdoc"/>
+        </copy>
+
+        <echo message="JSDoc deployed to: ${VERSION}${RELEASE} to ${deploy-xpi.dir}"/>
     </target>
 
     <!-- Support for generating docs from source code comments using js-doc-toolkit -->
@@ -90,7 +124,7 @@
 
         <property name="jsdoc.dir" value="../../../jsdoc/"/>
         <property name="jsdoc-toolkit.dir" value="${jsdoc.dir}/jsdoc-toolkit-2.3.0/"/>
-        <property name="jsdoc-output.dir" value="jsdoc/"/>
+        <property name="jsdoc-output.dir" value="${release.dir}/jsdoc/"/>
 
         <path id="jsdoctoolkit">
             <!-- Rhino js.jar 1.7.R2 must be used with jsdoctoolkit-ant-task-1.0.1.jar -->
@@ -101,7 +135,7 @@
             classpathref="jsdoctoolkit"
             classname="uk.co.darrenhurley.ant.tasks.JsDocToolkit"/>
 
-        <echo message="Generate doc from Firebug source ($svn/jsdoc/out/)."/>
+        <echo message="Generate doc from FBTest source ($svn/jsdoc/out/)."/>
 
         <!-- Clean the output direcotory -->
         <delete dir="${jsdoc-output.dir}"/>
@@ -111,6 +145,9 @@
             template="firebug"
             outputdir="${jsdoc-output.dir}"
             inputdir="." />
+
+        <!-- Deploy -->
+        <antcall target="deploy-jsdoc" />
     </target>
 
 </project>

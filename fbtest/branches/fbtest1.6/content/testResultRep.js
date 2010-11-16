@@ -668,7 +668,8 @@ FBTestApp.TestResult = function(win, pass, msg, expected, result)
 
 FBTestApp.TestException = function(win, msg, err)
 {
-    FBTestApp.TestResult.call(this, win, false, msg + err);
+    var msg = msg + " " + err + " " + err.fileName + " (" + err.lineNumber + ")";
+    FBTestApp.TestResult.call(this, win, false, msg);
 
     this.err = err;
     this.expected = null;
