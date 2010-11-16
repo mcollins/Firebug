@@ -715,6 +715,7 @@ FBTestApp.SelectionController =
             catch (e)
             {
                 FBTrace.sysout("SelectionController.selectionChanged; EXCEPTION " + e, e);
+                FBTestApp.FBTest.exception("SelectionController", e);
             }
         });
     }
