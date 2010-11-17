@@ -1,1 +1,1 @@
-The directory getfirebug.com/releases/swarms is an SVN external link to https://fbug.googlecode.com/svn/extensions/swarm/branches/swarm1.6/
+The directory getfirebug.com/releases/swarms is an SVN external link to https://fbug.googlecode.com/svn/extensions/swarm/branches/swarm1.7/
