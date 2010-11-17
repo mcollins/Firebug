@@ -300,7 +300,7 @@ InsideOutBox.prototype =
             FBTrace.sysout("----insideOutBox.createObjectBox: createObjectBoxes(object="+formatNode(object)+", rootObject="+formatNode(this.rootObject)+") ="+formatNode(objectBox), objectBox);
 
         if (!objectBox)  // we found an object outside of the navigatible tree
-            return null;
+            return;
         else if (object == this.rootObject)
             return objectBox;
         else
