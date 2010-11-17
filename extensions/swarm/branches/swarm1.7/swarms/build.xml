@@ -14,7 +14,7 @@
     <property file="ant.properties"/>
     <!-- If the local.properties does not give a server, then default wins -->
     <property name="testListServer" value="https://getfirebug.com"/>
-    <property name="swarmServer" value="https://getfirebug.com/releases"/>
+    <makeurl file="${basedir}/.." property="swarmServer"/>
 
     <target name="clean">
         <delete dir="${build.dir}/profile"/>
@@ -36,7 +36,7 @@
         <available property="firefox.exists" file="${firefox}" />
     </target>
 
-    <target name="firefoxInstall" unless="${firefox.exists}">
+    <target name="firefoxInstall" unless="$firefox.exists">
         <echo message="Install Firefox from ${firefoxChannel}"/>
         <echo message="And set property 'firefox=_exe name_' with forward slashes in ${basedir}/${firefoxVersion}/firefox.properties"/>
     </target>
