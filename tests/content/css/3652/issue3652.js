@@ -38,7 +38,7 @@ function runTest()
 
             // And again go back to 'Red' (now with capital R)
             FBTest.sendKey("DOWN", editor);
-            FBTest.compare("Red", editor.value, "Must be autocompleted to red.");
+            FBTest.compare("Red", editor.value, "Must be autocompleted to Red.");
 
             FBTest.testDone("issue3652.DONE");
         });
