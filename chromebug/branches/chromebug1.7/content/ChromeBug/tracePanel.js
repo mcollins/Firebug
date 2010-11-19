@@ -178,6 +178,7 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
     getOptionsMenuItems: function()
     {
          var items = this.controller.getOptionsMenuItems();
+         items.push("-");
          items.push(this.getAllOffOptionMenuItem());
          return items;
     },
@@ -185,13 +186,15 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
     getAllOffOptionMenuItem: function()
     {
         var self = this;
-        return {label: "AllOptionsOff",  nol10n: true, type: "checkbox", checked: false,
+        return {
+            label: "chromebug.AllOptionsOff",
             command: function allOff()
-        {
-            if(FBTrace.DBG_OPTOINS)
-                FBTrace.sysout("getAllOffOptionMenuItem ", self.controller);
-            self.controller.clearOptions();
-        }};
+            {
+                if (FBTrace.DBG_OPTOINS)
+                    FBTrace.sysout("getAllOffOptionMenuItem ", self.controller);
+                self.controller.clearOptions();
+            }
+        };
     },
 
     onPrefChange: function(optionName, optionValue)

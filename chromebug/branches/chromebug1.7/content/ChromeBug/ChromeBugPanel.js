@@ -1974,6 +1974,7 @@ function ChromeBugOnDOMContentLoaded(event)
 // Registration
 
 Firebug.registerModule(Firebug.Chromebug);
+Firebug.registerStringBundle("chrome://chromebug/locale/chromebug.properties");
 
 // ************************************************************************************************
 }});
