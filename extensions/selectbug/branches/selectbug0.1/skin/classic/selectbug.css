@@ -4,7 +4,7 @@
 }
 .selectionElement {
     padding: 0 0 0 1ex;
-    }
+}
 
 .selectbugWarning {
     font-size: 11px;
@@ -16,15 +16,26 @@
     color: black;
     padding: 1em;
     background-color: #FFEBEB;
-    }
+}
 
 /* Rules for selectbug's effect on CSS stylesheet panel */
 .selectedSelectorRule {
     border-color: Highlight !important;
-    background-color: #c4f4ff !important;
+    background-color: #EBF5FF !important;
     color: #000000 !important;
+    cursor: pointer;
 }
+
+.cssSelector,
+.cssPropName,
+.cssPropValue {
+    cursor: text;
+}
+
 .lockedSelectorRule {
     background-color: Highlight;
+}
+
+.lockedSelectorRule * {
     color: HighlightText !important;
 }
