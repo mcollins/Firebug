@@ -307,14 +307,12 @@ Firebug.CSSModule = extend(Firebug.Module,
         //
         // WARN: This behavior was determined anecdotally.
         // See http://code.google.com/p/fbug/issues/detail?id=2440
-        if (!isXMLPrettyPrint(doc)) {
-          var style = doc.createElementNS("http://www.w3.org/1999/xhtml", "style");
-          style.setAttribute("charset","utf-8");
-          unwrapObject(style).firebugIgnore = true;
-          style.setAttribute("type", "text/css");
-          style.innerHTML = "#fbIgnoreStyleDO_NOT_USE {}";
-          addStyleSheet(doc, style);
-          style.parentNode.removeChild(style);
+        if (!isXMLPrettyPrint(doc))
+        {
+            var style = createStyleSheet(doc);
+            style.innerHTML = "#fbIgnoreStyleDO_NOT_USE {}";
+            addStyleSheet(doc, style);
+            style.parentNode.removeChild(style);
         }
 
         // https://bugzilla.mozilla.org/show_bug.cgi?id=500365
@@ -455,26 +453,47 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
 
     getStyleSheetRules: function(context, styleSheet)
     {
+        // Skip all stylesheets marked as 'firebugIgnore', but don't skip the
+        // default stylesheet that is used in case there is no other stylesheet
+        // on the page.
+        var unwrapped = styleSheet ? unwrapObject(styleSheet.ownerNode) : null;
+        if (!styleSheet || unwrapped && unwrapped.firebugIgnore && !unwrapped.defaultStylesheet)
+            return [];
+
         var isSystemSheet = isSystemStyleSheet(styleSheet);
 
         function appendRules(cssRules)
         {
-            for (var i = 0; i < cssRules.length; ++i)
+            if (!cssRules)
+                return;
+
+            for (var i=0; i<cssRules.length; ++i)
             {
                 var rule = cssRules[i];
                 if (rule instanceof CSSStyleRule)
                 {
                     var props = this.getRuleProperties(context, rule);
                     var ruleId = getRuleId(rule);
-                    rules.push({tag: CSSStyleRuleTag.tag, rule: rule, id: ruleId,
-                                selector: rule.selectorText, props: props,
-                                isSystemSheet: isSystemSheet,
-                                isSelectorEditable: true});
+                    rules.push({
+                        tag: CSSStyleRuleTag.tag,
+                        rule: rule,
+                        id: ruleId,
+                        // Show universal selectors with pseudo-class
+                        // (http://code.google.com/p/fbug/issues/detail?id=3683)
+                        selector: rule.selectorText.replace(/ :/g, " *:"),
+                        props: props,
+                        isSystemSheet: isSystemSheet,
+                        isSelectorEditable: true
+                    });
                 }
                 else if (rule instanceof CSSImportRule)
+                {
                     rules.push({tag: CSSImportRuleTag.tag, rule: rule});
+                }
                 else if (rule instanceof CSSMediaRule)
-                    appendRules.apply(this, [rule.cssRules]);
+                {
+                    appendRules.apply(this, [safeGetCSSRules(styleSheet)]);
+                }
                 else
                 {
                     if (FBTrace.DBG_ERRORS || FBTrace.DBG_CSS)
@@ -484,7 +503,7 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         }
 
         var rules = [];
-        appendRules.apply(this, [styleSheet.cssRules]);
+        appendRules.apply(this, [safeGetCSSRules(styleSheet)]);
         return rules;
     },
 
@@ -634,6 +653,12 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         var location = getAncestorByClass(row, "cssRule");
         if (!location)
         {
+            location = getChildByClass(this.panelNode, "cssSheet");
+
+            // Stylesheet has no rules
+            if (!location)
+                this.template.tag.replace({rules: []}, this.panelNode);
+
             location = getChildByClass(this.panelNode, "cssSheet");
             Firebug.Editor.insertRowForObject(location);
         }
@@ -839,23 +864,26 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         if (FBTrace.DBG_CSS)
             FBTrace.sysout("css.updateLocation; " + (styleSheet ? styleSheet.href : "no stylesheet"));
 
-        if (!styleSheet)
-            return;
-
-        if (styleSheet.editStyleSheet)
+        if (styleSheet && styleSheet.editStyleSheet)
             styleSheet = styleSheet.editStyleSheet.sheet;
 
         var rules = this.getStyleSheetRules(this.context, styleSheet);
-
-        var result;
-        if (rules.length)
-            result = this.template.tag.replace({rules: rules}, this.panelNode);
+        if (rules && rules.length)
+        {
+            this.template.tag.replace({rules: rules}, this.panelNode);
+        }
         else
-            result = FirebugReps.Warning.tag.replace({object: "EmptyStyleSheet"}, this.panelNode);
+        {
+            // If there are no rules on the page display a description that also
+            // contains a link "create a rule".
+            var warning = FirebugReps.Warning.tag.replace({object: ""}, this.panelNode);
+            FirebugReps.Description.render($STR("css.EmptyStyleSheet"),
+                warning, bind(this.insertRule, this));
+        }
 
         this.showToolbarButtons("fbCSSButtons", !isSystemStyleSheet(this.location));
 
-        dispatch(this.fbListeners, 'onCSSRulesAdded', [this, this.panelNode]);
+        dispatch(this.fbListeners, "onCSSRulesAdded", [this, this.panelNode]);
 
         // If the full editing mode (not the inline) is on while the location changes,
         // open the editor again for another file.
@@ -1039,19 +1067,13 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         }
     },
 
-    showInfoTip: function(infoTip, target, x, y)
+    showInfoTip: function(infoTip, target, x, y, rangeParent, rangeOffset)
     {
         var propValue = getAncestorByClass(target, "cssPropValue");
         if (propValue)
         {
-            var offset = getClientOffset(propValue);
-            var offsetX = x-offset.x;
-
             var text = propValue.textContent;
-            var charWidth = propValue.offsetWidth/text.length;
-            var charOffset = Math.floor(offsetX/charWidth);
-
-            var cssValue = parseCSSValue(text, charOffset);
+            var cssValue = parseCSSValue(text, rangeOffset);
             if (cssValue)
             {
                 if (cssValue.value == this.infoTipValue)
@@ -1344,7 +1366,9 @@ CSSElementPanel.prototype = extend(Firebug.CSSStyleSheetPanel.prototype,
         }
         else
         {
-            var result = FirebugReps.Warning.tag.replace({object: "EmptyElementCSS"}, this.panelNode);
+            var warning = FirebugReps.Warning.tag.replace({object: ""}, this.panelNode);
+            var result = FirebugReps.Description.render($STR("css.EmptyElementCSS"),
+                warning, bind(this.editElementStyle, this));
             dispatch([Firebug.A11yModel], 'onCSSRulesAdded', [this, result]);
         }
     },
@@ -1769,6 +1793,12 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
     insertNewRow: function(target, insertWhere)
     {
         var rule = Firebug.getRepObject(target);
+        if (!rule)
+        {
+            if (FBTrace.DBG_CSS)
+                FBTrace.sysout("CSSEditor.insertNewRow; ERROR There is no CSS rule", target);
+            return;
+        }
 
         var emptyProp = {name: "", value: "", important: ""};
 
@@ -1883,17 +1913,17 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 {
     insertNewRow: function(target, insertWhere)
     {
-         var emptyRule = {
-                 selector: "",
-                 id: "",
-                 props: [],
-                 isSelectorEditable: true
-         };
+        var emptyRule = {
+            selector: "mySelector", // xxxHonza localization
+            id: "",
+            props: [],
+            isSelectorEditable: true
+        };
 
-         if (insertWhere == "before")
-             return CSSStyleRuleTag.tag.insertBefore({rule: emptyRule}, target);
-         else
-             return CSSStyleRuleTag.tag.insertAfter({rule: emptyRule}, target);
+        if (insertWhere == "before")
+            return CSSStyleRuleTag.tag.insertBefore({rule: emptyRule}, target);
+        else
+            return CSSStyleRuleTag.tag.insertAfter({rule: emptyRule}, target);
     },
 
     saveEdit: function(target, value, previousValue)
@@ -1903,10 +1933,27 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 
         target.innerHTML = escapeForCss(value);
 
-        if (value === previousValue)     return;
+        if (value === previousValue)
+            return;
 
         var row = getAncestorByClass(target, "cssRule");
         var styleSheet = this.panel.location;
+
+        if (!styleSheet)
+        {
+            // If there is no stylesheet on the page we need to create a temporary one,
+            // in order to make a place where to put (custom) user provided rules.
+            // If this code would be in this.getDefaultLocation the default stylesheet
+            // would be created automatically for all pages with not styles, which
+            // could be damaging for special pages (see eg issue 2440)
+            // At this moment the user edits the styles so some CSS changes on the page
+            // are expected.
+            var doc = this.panel.context.window.document;
+            var style = appendStylesheet(doc, "chrome://firebug/default-stylesheet.css");
+            FBL.unwrapObject(style).defaultStylesheet = true;
+            this.panel.location = styleSheet = style.sheet;
+        }
+
         styleSheet = styleSheet.editStyleSheet ? styleSheet.editStyleSheet.sheet : styleSheet;
 
         var cssRules = styleSheet.cssRules;
@@ -1962,7 +2009,9 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
                 row.repObject = undefined;
                 return;
             }
-        } else {
+        }
+        else
+        {
             rule = undefined;
         }
 

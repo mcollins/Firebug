@@ -378,7 +378,11 @@ this.createStyleSheet = function(doc, url)
     var style = doc.createElementNS("http://www.w3.org/1999/xhtml", "style");
     style.setAttribute("charset","utf-8");
     style.setAttribute("type", "text/css");
-    style.innerHTML = this.getResource(url);
+
+    var cssText = this.getResource(url);
+    if (cssText)
+        style.innerHTML = cssText;
+
     FBL.unwrapObject(style).firebugIgnore = true;
     return style;
 }
@@ -401,6 +405,8 @@ this.appendStylesheet = function(doc, uri)
     var styleSheet = this.createStyleSheet(doc, uri);
     styleSheet.setAttribute("id", uri);
     this.addStyleSheet(doc, styleSheet);
+
+    return styleSheet;
 },
 
 this.addScript = function(doc, id, src)
@@ -3101,7 +3107,6 @@ this.unwrapIValueObject = function(scope)
     return scopeVars;
 };
 
-
 // ************************************************************************************************
 // Source Files
 
@@ -3109,6 +3114,30 @@ this.getSourceFileByHref = function(url, context)
 {
     return context.sourceFileMap[url];
 };
+
+this.sourceURLsAsArray = function(context)
+{
+    var urls = [];
+    var sourceFileMap = context.sourceFileMap;
+    for (var url in sourceFileMap)
+        urls.push(url);
+
+    if (FBTrace.DBG_SOURCEFILES) FBTrace.sysout("sourceURLsAsArray urls="+urls.length+" in context "+context.getName()+"\n");
+
+    return urls;
+};
+
+this.sourceFilesAsArray = function(sourceFileMap)
+{
+    var sourceFiles = [];
+    for (var url in sourceFileMap)
+        sourceFiles.push(sourceFileMap[url]);
+    if (FBTrace.DBG_SOURCEFILES) FBTrace.sysout("sourceFilesAsArray sourcefiles="+sourceFiles.length, sourceFiles);
+    return sourceFiles;
+};
+
+// ************************************************************************************************
+// CSS
 
 this.getAllStyleSheets = function(context)
 {
@@ -3119,6 +3148,9 @@ this.getAllStyleSheets = function(context)
         var sheetLocation =  FBL.getURLForStyleSheet(sheet);
 
         if (!Firebug.showUserAgentCSS && FBL.isSystemURL(sheetLocation))
+            return;
+
+        if (sheet.ownerNode && unwrapObject(sheet.ownerNode).firebugIgnore)
             return;
 
         styleSheets.push(sheet);
@@ -3220,27 +3252,18 @@ this.createStyleSheetMap = function(context)
     return context.styleSheetMap;
 };
 
-this.sourceURLsAsArray = function(context)
+this.safeGetCSSRules = function(styleSheet)
 {
-    var urls = [];
-    var sourceFileMap = context.sourceFileMap;
-    for (var url in sourceFileMap)
-        urls.push(url);
+    try
+    {
+        return styleSheet.cssRules;
+    }
+    catch (e)
+    {
+    }
 
-    if (FBTrace.DBG_SOURCEFILES) FBTrace.sysout("sourceURLsAsArray urls="+urls.length+" in context "+context.getName()+"\n");
-
-    return urls;
-};
-
-this.sourceFilesAsArray = function(sourceFileMap)
-{
-    var sourceFiles = [];
-    for (var url in sourceFileMap)
-        sourceFiles.push(sourceFileMap[url]);
-    if (FBTrace.DBG_SOURCEFILES) FBTrace.sysout("sourceFilesAsArray sourcefiles="+sourceFiles.length, sourceFiles);
-    return sourceFiles;
-};
-
+    return null;
+}
 
 // ************************************************************************************************
 // Firefox browsing
