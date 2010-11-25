@@ -5419,7 +5419,7 @@ var NetPanelSearch = function(panel, rowFinder)
                 return sib;
         }
 
-        return wrapAround ? this.getFirstRow() : null;;
+        return wrapAround ? this.getFirstRow() : null;
     }
 
     this.shouldSearchResponses = function()
@@ -5680,6 +5680,9 @@ Firebug.NetMonitor.BrowserCache =
 
     enable: function(state)
     {
+        if (FBTrace.DBG_NET)
+            FBTrace.sysout("net.BrowserCache.enable; " + state);
+
         Firebug.setPref(this.cacheDomain, "disk.enable", state);
         Firebug.setPref(this.cacheDomain, "memory.enable", state);
     }
