@@ -25,7 +25,7 @@ function runTest()
             FBTest.sendKey("UP", editor);
             FBTest.sendKey("UP", editor);
             FBTest.compare("text-transform", editor.value,
-                "Must be autocompleted to -moz-transform-origin.");
+                "Must be autocompleted to text-transform.");
 
             FBTest.testDone("issue3671.DONE");
         });
