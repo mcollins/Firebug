@@ -24,9 +24,12 @@
 <button id="testButton4" onclick="onExecuteTest4()">Test4</button>
 <button id="testButton5" onclick="onExecuteTest5()">Test5</button>
 <button id="testButton6" onclick="onExecuteTest6()">Test6</button>
+<button id="testButton7" onclick="onExecuteTest7()">Test7</button>
+<button id="testButton8" onclick="onExecuteTest8()">Test8</button>
 
 <br/><br/>
 
+<i>Also verify that labels for header columns are always set (i.e. not 'undefined').</i>
 <script type="text/javascript">
 function Person(firstName, lastName, age)
 {
@@ -90,6 +93,21 @@ function onExecuteTest6()
         {property:2, label: "3rd"}
     ];
     console.table(table, columns);
+}
+
+function onExecuteTest7()
+{
+    var columns = [
+        {property: "firstName"},
+        {property: "lastName"}
+    ];
+    console.table(family, columns);
+}
+
+function onExecuteTest8()
+{
+    var columns = ["firstName", "lastName"];
+    console.table(family, columns);
 }
 </script>
 

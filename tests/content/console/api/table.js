@@ -14,12 +14,19 @@ function runTest()
             // #1 table with 3 columns, 2 rows and specified text content.
             var table1 = {cols: 3, rows: 3, content: "abc123234345"};
 
-            var text = "firstNamelastNameagedesc\"Susan\"\"Doyle\"32\"mother\"\"John\"\"Doyle\"33\"father\"\"Lily\"\"Doyle\"5undefined\"Mike\"\"Doyle\"8undefined";
-            var table2 = {cols: 4, rows: 4, content: text};
+            var text2 = "firstNamelastNameagedesc\"Susan\"\"Doyle\"32\"mother\"\"John\"\"Doyle\"33\"father\"\"Lily\"\"Doyle\"5undefined\"Mike\"\"Doyle\"8undefined";
+            var table2 = {cols: 4, rows: 4, content: text2};
+
             var table3 = {cols: 1, rows: 3, content: "Object Properties\"propA\"\"propB\"\"propC\""};
             var table4 = table2;
             var table5 = {cols: 2, rows: 3, content: "12233445"};
             var table6 = {cols: 2, rows: 3, content: "2nd3rd233445"};
+
+            var text7 = "firstNamelastName\"Susan\"\"Doyle\"\"John\"\"Doyle\"\"Lily\"\"Doyle\"\"Mike\"\"Doyle\"";
+            var table7 = {cols: 2, rows: 4, content: text7};
+
+            var text8 = text7;
+            var table8 = {cols: 2, rows: 4, content: text8};
 
             var tasks = new FBTest.TaskList();
             tasks.push(executeTest, "testButton1", doc, null, [table1]);
@@ -28,6 +35,8 @@ function runTest()
             tasks.push(executeTest, "testButton4", doc, "My family", [table4]);
             tasks.push(executeTest, "testButton5", doc, null, [table5]);
             tasks.push(executeTest, "testButton6", doc, null, [table6]);
+            tasks.push(executeTest, "testButton7", doc, null, [table7]);
+            tasks.push(executeTest, "testButton8", doc, null, [table8]);
 
             tasks.run(function() {
                 FBTest.testDone("console.table.DONE");
