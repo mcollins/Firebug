@@ -73,7 +73,7 @@ function executeTest(callback, buttonId, doc, title, expected)
  */
 function verifyLogBody(logRow, expected)
 {
-    var tables = logRow.querySelectorAll(".profileTable");
+    var tables = logRow.querySelectorAll(".dataTable");
     FBTest.compare(expected.length, tables.length, "There must be " +
         expected.length + " table(s).");
 
@@ -99,8 +99,8 @@ function verifyTableLayout(table, cols, rows, textContent)
 {
     FBTest.compare(textContent, table.textContent, "Verify expected text content.");
 
-    var head = table.querySelector(".profileThead");
-    var body = table.querySelector(".profileTbody");
+    var head = table.querySelector(".dataTableThead");
+    var body = table.querySelector(".dataTableTbody");
 
     if (!FBTest.ok(table && body, "Table header and body must be available."))
         return false;
