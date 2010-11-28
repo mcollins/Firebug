@@ -55,12 +55,15 @@ function runTest()
 
                 FBTest.sysout("after to detach, browser "+browser.currentURI.spec+" Firebug.chrome:"+FW.Firebug.chrome.window.location);
 
-                var mainBrowser = doc.getElementById('fbPanelBar1-browser');
-                var panelDocument = mainBrowser.contentDocument;
-                FBTest.sysout("onLoadWindow panelDocument "+panelDocument.location+":", panelDocument);
+                var callbacks = {};
+                bindDetachedFW(detachedFW, callbacks);
 
-                setTimeout( function onLoadBrowser(event)
+                function runOnNewEvent()
                 {
+                    var mainBrowser = doc.getElementById('fbPanelBar1-browser');
+                    var panelDocument = mainBrowser.contentDocument;
+                    FBTest.sysout("onLoadWindow panelDocument "+panelDocument.location+":", panelDocument);
+
                     FBTest.progress("panel document "+panelDocument.location+" load event handler")
                     FBTestFirebug.selectPanelTab('script', doc);
                     var panel = detachedFW.FirebugChrome.getSelectedPanel();
@@ -70,54 +73,67 @@ function runTest()
                     FBTest.compare(found, true, "The "+issue1483.fileName+" should be found");
                     // Select proper JS file.
                     FBTest.Firebug.selectSourceLine(panel.location.href, issue1483.lineNo, "js");
-                    setBreakpoint(detachedFW);
-                    setTimeout( function delayThenWait()
-                    {
-                            FBTestFirebug.waitForBreakInDebugger(detachedFW.FirebugChrome,
-                                    issue1483.lineNo, true, function closeOut()
-                                {
-                                    FBTest.progress("Remove breakpoint from "+detachedFW.location);
-                                    var panel = detachedFW.FirebugChrome.getSelectedPanel();
-                                    FBTest.progress("Remove breakpoint by toggle, from selected panel "+panel.name);
-                                    panel.toggleBreakpoint(issue1483.lineNo);
 
-                                    FBTest.progress("Removed breakpoint from selected panel "+panel.name);
-                                    var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo, detachedFW.FirebugChrome);
+                    var attributes = {"class": "sourceRow", breakpoint: "true"};
+                    var lookForBP = new MutationRecognizer(detachedFW, 'div', attributes);
 
-                                    if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ issue1483.lineNo+" should NOT have a breakpoint set"))
-                                        FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
-
-
-                                    FBTestFirebug.clickContinueButton(detachedFW.FirebugChrome);
-                                    FBTest.progress( "The continue button is pushed");
-
-                                    FBTest.progress("breakpoint checks complete");
-
-
-                                });
-                            FBTest.progress("Now reload");
-                            FBTestFirebug.reload(function ()
-                            {
-                                FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
-                                var panel = detachedFW.FirebugChrome.getSelectedPanel();
-                                FBTest.compare(panel.name, 'script', "The script panel should be selected");
-
-                                FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
-                                FBTest.progress("close detached window");
-                                detachedFW.close();
-
-                                //testAlwaysOpenOption();
-                                FBTestFirebug.testDone("openInNewWindow.DONE");
-                            });
-
-                    }, 100);
-
-
-                }, true);
+                    lookForBP.onRecognizeAsync(callbacks.onBreak);
+                    FBTest.progress("Ready to toggleBreakpoint on "+issue1483.lineNo);
+                    panel.toggleBreakpoint(issue1483.lineNo);
+                }
+                setTimeout(runOnNewEvent);
             } , true);
+
             FBTest.progress("Waiting for onLoadWindow event");
         });
     });
+};
+
+function bindDetachedFW(detachedFW, callbacks)
+{
+    callbacks.finalReload = function()
+    {
+        FBTest.progress("reloaded, check detachedFW "+detachedFW.location);
+        var panel = detachedFW.FirebugChrome.getSelectedPanel();
+        FBTest.compare(panel.name, 'script', "The script panel should be selected");
+
+        FBTest.compare(panel.context.name, issue1483.URL, "The context should be "+issue1483.URL);
+        FBTest.progress("close detached window");
+        detachedFW.close();
+
+        FBTestFirebug.testDone("openInNewWindow.DONE");
+    };
+
+    callbacks.closeOut = function closeOut()
+    {
+        FBTest.progress("Remove breakpoint from "+detachedFW.location);
+        var panel = detachedFW.FirebugChrome.getSelectedPanel();
+        FBTest.progress("Remove breakpoint by toggle, from selected panel "+panel.name);
+        panel.toggleBreakpoint(issue1483.lineNo);
+
+        FBTest.progress("Removed breakpoint from selected panel "+panel.name);
+        var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo, detachedFW.FirebugChrome);
+
+        if (!FBTest.compare("false", row.getAttribute('breakpoint'), "Line "+ issue1483.lineNo+" should NOT have a breakpoint set"))
+            FBTest.sysout("Failing row is "+row.parentNode.innerHTML, row)
+
+
+        FBTestFirebug.clickContinueButton(detachedFW.FirebugChrome);
+        FBTest.progress( "The continue button is pushed");
+
+        FBTest.progress("breakpoint checks complete");
+    };
+
+    callbacks.onBreak = function onBreak(sourceRow)
+    {
+        // use chromebug to see the elements that make up the row
+        var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
+        FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
+        FBTestFirebug.waitForBreakInDebugger(detachedFW.FirebugChrome,
+                issue1483.lineNo, true, callbacks.closeOut);
+        FBTest.progress("Now reload");
+        FBTestFirebug.reload(callbacks.finalReload);
+    };
 }
 
 function testAlwaysOpenOption()
@@ -186,14 +202,3 @@ function isPanelNode(event)
 }
 
 
-function setBreakpoint(detachedFW)
-{
-    var panel = detachedFW.Firebug.chrome.getSelectedPanel();
-    panel.toggleBreakpoint(issue1483.lineNo);
-
-    // use chromebug to see the elements that make up the row
-    var row = FBTestFirebug.getSourceLineNode(issue1483.lineNo);
-    FBTest.compare("true", row.getAttribute('breakpoint'), "Line "+issue1483.lineNo+" should have a breakpoint set");
-
-    //issue1483.secondReload(panel);
-};
