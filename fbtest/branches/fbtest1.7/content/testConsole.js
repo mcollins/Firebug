@@ -651,6 +651,7 @@ FBTestApp.TestConsole =
     {
         this.noTestTimeout = !this.noTestTimeout;
         $('noTestTimeout').setAttribute('checked', this.noTestTimeout?'true':'false');
+        Firebug.setPref(FBTestApp.prefDomain, "noTestTimeout", FBTestApp.TestConsole.noTestTimeout);
     },
 
     onViewToolbarsPopupShowing: function(event)

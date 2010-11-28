@@ -6,6 +6,7 @@ pref("extensions.fbtest.defaultTestCaseServer", "");
 pref("extensions.fbtest.defaultTestDriverServer", "");
 pref("extensions.fbtest.defaultLogDir", "");
 pref("extensions.fbtest.haltOnFailedTest", false);
+pref("extensions.fbtest.noTestTimeout", false);
 pref("extensions.firebug.alwaysOpenTestConsole", false); //xxxHonza: set by Firebug, but must not be part of Firebug branche.
 pref("extensions.fbtest.randomTestSelection", false);
 pref("extensions.fbtest.history", "");
