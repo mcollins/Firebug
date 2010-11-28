@@ -2,6 +2,10 @@ content    fbtest   content/
 skin       fbtest   classic/1.0     skin/classic/
 locale     fbtest   en-US           locale/en-US/
 
+# Maps resource://fbtest/* to files in modules/*
+resource fbtest modules/
+
+
 overlay    chrome://firebug/content/firebugOverlay.xul     chrome://fbtest/content/overlayFirebug.xul
 overlay    chrome://fbtest/content/testConsole.xul     chrome://fbtest/content/haltOnFailedTest.xul
 

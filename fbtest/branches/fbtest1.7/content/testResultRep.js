@@ -8,6 +8,7 @@ FBTestApp.ns(function() { with (FBL) {
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
+Components.utils.import("resource://fbtest/FBTestIntegrate.js")
 // ************************************************************************************************
 // Domplate for tests results
 
@@ -550,11 +551,8 @@ FBTestApp.TestResultTabView = domplate(
 
     onClickStackFrame: function(event)
     {
-        var winType = "FBTestConsole-SourceView";
         var lineNumber = event.target.getAttribute("lineNumber");
-        openDialog("chrome://global/content/viewSource.xul",
-            winType, "all,dialog=no",
-            event.target.innerHTML, null, null, lineNumber, false);
+        FBTestIntegrate.onSourceLinkClicked(event.target, event.target.innerHTML, lineNumber);
     },
 
     insertXml: function(xml, parentNode)
