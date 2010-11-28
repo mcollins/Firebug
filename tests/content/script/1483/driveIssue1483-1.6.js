@@ -13,8 +13,13 @@ function runTest()
         FBTest.enableConsolePanel();
         FBTest.enableScriptPanel(function ()
         {
-            FBTest.selectPanel("script");
             FBTest.progress("issue1483.script panel enabled");
+
+            var panel = FW.FirebugChrome.selectPanel("script");
+            FBTest.compare("script", panel.name, "The Script panel should be selected");
+
+            var found = FBTestFirebug.selectPanelLocationByName(panel, fileName);
+            FBTest.ok(found, "The panel location should be "+fileName);
 
             // Set breakpoint in index.js file at line 5
             FBTest.setBreakpoint(null, fileName, lineNo, function()
