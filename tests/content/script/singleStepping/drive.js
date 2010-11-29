@@ -84,7 +84,7 @@ var stepIntoFileName = "index.html";
 function checkStepInto()
 {
     var panel = FBTestFirebug.getSelectedPanel();
-    var name = panel.location.getObjectDescription().name;
+    var name = panel.getObjectDescription(panel.location).name;
     FBTest.compare(stepIntoFileName, name, "StepInto should land in " + stepIntoFileName);
     stepOver();
 };
@@ -104,7 +104,7 @@ var stepOverFileName = "index.html";
 function checkStepOver()
 {
     var panel = FBTestFirebug.getSelectedPanel();
-    var name = panel.location.getObjectDescription().name;
+    var name = panel.getObjectDescription(panel.location).name;
     FBTest.compare(stepOverFileName, name, "StepOver should land in " +
         stepOverFileName);
 
@@ -126,9 +126,9 @@ var stepOutFileName = "index.html";
 function checkstepOut()
 {
     var panel = FBTestFirebug.getSelectedPanel();
-    var name = panel.location.getObjectDescription().name.split('/')[0];
+    var name = panel.getObjectDescription(panel.location).name.split('/')[0];
     FBTest.sysout("panel.location.getObjectDescription().name: " +
-        panel.location.getObjectDescription().name, panel.location.getObjectDescription());
+            panel.getObjectDescription(panel.location).name, panel.getObjectDescription(panel.location));
     FBTest.compare(stepOutFileName, name, "StepOut should land in " +
         stepOutFileName);
 
