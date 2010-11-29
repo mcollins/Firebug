@@ -26,7 +26,7 @@ function runTest()
             var selectedLocationDescription = panel.getObjectDescription(panel.location);
             FBTest.compare("main.js", selectedLocationDescription.name,  "The selected location must be main.js");
 
-            var sourceBox = panel.getSourceBoxByURL(panel.location.href);
+            var sourceBox = panel.getSourceBoxByURL(panel.getObjectLocation(panel.location));
             var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
             if (sourceViewport)
             {
