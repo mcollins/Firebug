@@ -122,7 +122,7 @@ var ChromebugOverrides = {
                     }
                     else
                     {
-                    	FBTrace.sysout("Chromebug getNextSibling FAILS "+FBL.getElementCSSSelector(node)+" not a child of parent "+FBL.getElementCSSSelector(parent));
+                        FBTrace.sysout("Chromebug getNextSibling FAILS "+FBL.getElementCSSSelector(node)+" not a child of parent "+FBL.getElementCSSSelector(parent));
                     }
                 }
                 else
@@ -134,7 +134,7 @@ var ChromebugOverrides = {
             // else we are root and our nextSibling is null
         }
         if (FBTrace.DBG_HTML)
-        	FBTrace.sysout("Chromebug getNextSibling("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(nextSibling));
+            FBTrace.sysout("Chromebug getNextSibling("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(nextSibling));
         return nextSibling;
     },
 
@@ -146,7 +146,7 @@ var ChromebugOverrides = {
         // the Mozilla XBL tree walker fails for parentNode
         var parent = inIDOMUtils.getParentForNode(node, true);
         if (FBTrace.DBG_HTML)
-        	FBTrace.sysout("Chromebug getParentNode("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(parent));
+            FBTrace.sysout("Chromebug getParentNode("+FBL.getElementCSSSelector(node)+") = "+FBL.getElementCSSSelector(parent));
         return parent;
     },
 
@@ -361,6 +361,31 @@ var ChromebugOverrides = {
     {
         // no op, ignore the call
     },
+
+    // Override FBTestApp.TestResultTabView.onClickStackFrame
+    FBTestIntegrate_onSourceLinkClicked: function(elementClicked, url, lineNumber)
+    {
+        try
+        {
+            FBTrace.sysout("FBTestIntegrate_onSourceLinkClicked "+url+"@"+lineNumber);
+            var context = Firebug.Chromebug.eachContext(function visitContext(context)
+            {
+                if (context.sourceFileMap[url])
+                    return context;
+            });
+            if (context)
+                Firebug.Chromebug.selectContext(context);
+            else
+                FBTrace.sysout("FBTestIntegrate_onSourceLinkClicked NO context for  "+url);
+
+            var sourceLink = new FBL.SourceLink(url, lineNumber, "js");
+            Firebug.chrome.select(sourceLink);
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("FBTestIntegrate_onSourceLinkClicked FAILED "+exc, exc);
+        }
+    },
 };
 
 ChromebugOverrides.commandLine = {
@@ -519,6 +544,16 @@ function overrideFirebugFunctions()
         // Trace message coming from Firebug should be displayed in Chromebug's panel
         //
         //Firebug.setPref("extensions.firebug", "enableTraceConsole", "panel");
+
+        try
+        {
+            Components.utils.import("resource://fbtest/FBTestIntegrate.js")
+            FBTestIntegrate.onSourceLinkClicked = ChromebugOverrides.FBTestIntegrate_onSourceLinkClicked;
+        }
+        catch(eIntegrate)
+        {
+            FBTrace.sysout("FBTestIntegrate_onSourceLinkClicked override FAILED "+eIntegrate);
+        }
 
         window.dump("ChromebugPanel Overrides applied"+"\n");
     }
