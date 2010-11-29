@@ -197,6 +197,9 @@ StartupObserver.prototype =
                     if (!(script.fileName in cb.xulScriptsByURL))
                         cb.xulScriptsByURL[script.fileName] = [];
                     cb.xulScriptsByURL[script.fileName].push(script); // test for valid when removed
+                    if (!cb.breakpointedScripts)
+                        cb.breakpointedScripts = {};
+
                     cb.breakpointedScripts[script.tag] = script;
                     script.setBreakpoint(0);
                     //gStartupObserverSingleton.trackFiles.add(script,"XUL");
