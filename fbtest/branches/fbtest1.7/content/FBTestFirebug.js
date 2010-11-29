@@ -1087,8 +1087,7 @@ this.getSourceLineNode = function(lineNo, chrome)
 
     var panel = chrome.getSelectedPanel();
     var sourceBox = panel.selectedSourceBox;
-    if (!sourceBox)
-        throw new Error("getSourceLineNode no selectedSourceBox in panel "+panel.name);
+    FBTest.ok(sourceBox, "getSourceLineNode needs selectedSourceBox in panel "+panel.name);
 
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
     if (!sourceViewport)
@@ -1191,7 +1190,7 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
 
     var panel = FBTestFirebug.selectPanel("script");
     if (!url)
-        url = panel.location.href;
+        url = panel.getObjectLocation(panel.location);
 
     FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
     {
@@ -1208,7 +1207,7 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
 
     var panel = FBTestFirebug.selectPanel("script");
     if (!url)
-        url = panel.location.href;
+        url = panel.getObjectLocation(panel.location);
 
     FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
     {
@@ -1307,7 +1306,8 @@ window.onerror = function(errType, errURL, errLineNum)
     var fileName = path.substr(path.lastIndexOf("/") + 1);
     var errorDesc = errType + " (" + errLineNum + ")" + " " + errURL;
     FBTest.sysout(fileName + " ERROR " + errorDesc);
-    FBTest.ok(false, fileName + " ERROR " + errorDesc);
+    if (!FBTrace.DBG_ERRORS)  // then we are watching with another tracer, let it go
+        FBTest.ok(false, fileName + " ERROR " + errorDesc);
     FBTestFirebug.testDone();
     return false;
 }
@@ -1867,7 +1867,7 @@ this.inspectorClear = function()
 
 /**
  * Waits till a specified property is displayed in the DOM panel.
- * 
+ *
  * @param {String} propName Name of the property to be displayed
  * @param {Function} callback Function called after the property is visible.
  * @param {Boolean} checkAvailability Execute the callback synchronously if the property
