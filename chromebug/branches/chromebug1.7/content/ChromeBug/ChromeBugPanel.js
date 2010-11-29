@@ -1059,13 +1059,13 @@ Firebug.Chromebug = extend(Firebug.Module,
         var panel = context.getPanel("script", true);
         if (panel && panel.location)
         {
-            var location = "0@"+panel.location.href;
+            var location = "0@"+panel.getObjectLocation(panel.location);
 
             if (panel.selectedSourceBox) // see firebug.js buildViewAround
                 var lineNo = panel.selectedSourceBox.firstViewableLine + panel.selectedSourceBox.halfViewableLines;
 
             if (lineNo)
-                location = lineNo+"@"+panel.location.href;
+                location = lineNo+"@"+panel.getObjectLocation(panel.location);
 
             //prefs.setCharPref("extensions.chromebug.previousContext", location);
             //prefService.savePrefFile(null);
