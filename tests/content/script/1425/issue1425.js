@@ -41,8 +41,9 @@ function runTest()
                         "Verify source on line 1");
 
                 // Scroll to 1143
-                FBTest.progress("Scroll to line 1143")
-                FBTest.Firebug.selectSourceLine(panel.location.href, 1143, "js");
+                FBTest.progress("Scroll to line 1143");
+                var url = panel.getObjectLocation(panel.location);
+                FBTest.Firebug.selectSourceLine(url, 1143, "js");
 
                 var tries = 5;
                 var checking = setInterval( function checkScrolling()
@@ -65,7 +66,7 @@ function runTest()
                     else
                     {
 
-                        FBTest.sysout("Where is 1143 row in "+panel.location.href, rows);
+                        FBTest.sysout("Where is 1143 row in "+url, rows);
                     }
                     clearInterval(checking);
                     FBTestFirebug.testDone("issue1425.DONE");
