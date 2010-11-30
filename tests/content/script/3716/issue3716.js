@@ -9,7 +9,7 @@ function runTest()
             FW.FirebugChrome.selectPanel("script");
 
             // Wait for breakpoint hit, the breakpoint is set below.
-            FBTest.waitForBreakInDebugger(null, 11, false, function()
+            FBTest.waitForBreakInDebugger(null, 11, true, function()
             {
                 FBTest.clickContinueButton();
                 FBTest.testDone("issue3716.DONE");
