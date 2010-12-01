@@ -33,7 +33,7 @@ Firebug.FocusModule = extend(Firebug.Module, {
     this.unmonitorContext(context);
   },
   showPanel: function(browser, panel) {
-    if (panel.name == "html" || panel.name == "console") {
+    if (panel && (panel.name == "html" || panel.name == "console")) {
       this.addStyleSheet(panel.document);
     }
   },
