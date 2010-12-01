@@ -1818,7 +1818,8 @@ Firebug.WatchPanel.prototype = extend(Firebug.DOMBasePanel.prototype,
                 else
                 {
                     if (FBTrace.DBG_ERRORS)
-                        FBTrace.sysout("dom .generateScopeChain: bad scopeVars for scope.jsClassName:"+scope.jsClassName, scope );
+                        FBTrace.sysout("dom .generateScopeChain: bad scopeVars for scope.jsClassName:"+scope.jsClassName); // do not trace scopeVars, you will get a uncatchable exception
+                    scopeVars = {error: "Mozilla error: invalid scope variables"};
                 }
             }
 
