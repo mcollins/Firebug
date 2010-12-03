@@ -5,7 +5,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>firefocus@incaseofstairs.com</em:id>
-    <em:version>1.1</em:version>
+    <em:version>1.2</em:version>
     <em:type>2</em:type>
     <em:optionsURL>chrome://firefocus/content/options.xul</em:optionsURL>
 
@@ -38,5 +38,6 @@
     <em:translator>Ghelman (pt-BR)</em:translator>
     <em:translator>funalien (ru-RU)</em:translator>
     <em:translator>Jiane (zh-CN)</em:translator>
+    <em:translator>Sappa (uk-UA)</em:translator>
   </Description>
 </RDF>

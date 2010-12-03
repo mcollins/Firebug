@@ -20,4 +20,4 @@ In a later version of Firebug the configuration of these parameters will be inte
 the Firebug UI. (Progress on this issue is tracked under fbug issue 2443)
 
 Dependencies:
-Firefocus 1.1 requires Firebug 1.4.
+Firefocus 1.2 requires Firebug 1.4 or higher.
