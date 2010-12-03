@@ -1,0 +1,4 @@
+content  hellomodule  content/
+resource hellomodule  modules/
+overlay  chrome://browser/content/browser.xul  chrome://hellomodule/content/helloModule.xul
+
