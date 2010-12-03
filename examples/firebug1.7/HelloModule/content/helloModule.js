@@ -40,6 +40,9 @@ var HelloModule =
         var module = loader.require("add");
         sysout("1 + 2 = " + module.add(1, 2));
 
+        //var module = loader.require("subtract");
+        //sysout("3 - 1 = " + module.subtract(3, 1));
+
         // Load 'subtract' module - async.
         loader.require(["subtract"], function(module)
         {

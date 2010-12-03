@@ -8,7 +8,7 @@
     <em:name>Hello Module</em:name>
     <em:version>1.0</em:version>
     <em:creator>Jan Odvarko</em:creator>
-    <em:description>Example usage of CommonJS/RequireJS syntax in a Firefox extension</em:description>
+    <em:description>Example usage of CommonJS/RequireJS syntax in a Firefox/Firebug extension.</em:description>
 
     <em:targetApplication>
       <Description>
