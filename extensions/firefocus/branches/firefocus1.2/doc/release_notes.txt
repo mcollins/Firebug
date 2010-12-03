@@ -1,3 +1,10 @@
+12/03/2010 - 1.2
+
+Changes:
+- Added uk-UA locales
+
+----
+
 01/24/2009 - 1.1
 
 Changes:
