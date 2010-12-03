@@ -1,0 +1,24 @@
+
+.nodeBox.contentFocused > .nodeLabel,
+.nodeAttr.contentFocused,
+.nodeValue.contentFocused,
+.nodeText.contentFocused,
+.nodeBox.contentFocused > .nodeText {
+  border: 2px dashed #FF9933 !important;
+  -moz-border-radius: 2px !important;
+}
+
+
+.logRow-focusIn,
+.logRow-focusOut {
+    padding-left: 22px;
+    background-repeat: no-repeat;
+    background-position: 4px 2px;
+}
+
+.logRow-focusIn {
+  background-image: url(chrome://firefocus/skin/focusIn.png);
+}
+.logRow-focusOut {
+  background-image: url(chrome://firefocus/skin/focusOut.png);
+}

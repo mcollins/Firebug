@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <RDF:Description about="urn:mozilla:extension:firefocus@incaseofstairs.com">
+    <em:updates>
+      <RDF:Seq>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.0</em:version>
+
+            <!-- Firefox -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>3.0</em:minVersion>
+                <em:maxVersion>3.5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.0.xpi</em:updateLink>
+                <em:updateHash>sha1:eaefd5883f154a3dd4801166ff3e610a06956332</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.1</em:version>
+
+            <!-- Any suitably modern toolkit application -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>toolkit@mozilla.org</em:id>
+                <em:minVersion>1.9.0.11</em:minVersion>
+                <em:maxVersion>2.0.0.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.1.xpi</em:updateLink>
+                <em:updateHash>sha1:9eabc60ef403916d19373220976b72d993f5a069</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+      </RDF:Seq>
+    </em:updates>
+
+    <em:signature>
+      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAKaLP8iLDAcWn92ejszzzSfNZ8vGVfknVRiFvemCLPefyl
+      fk3x+KRAFpoSmm30Lktw+kVvyoMRxCTH61X9/oYRrK8hd8FcuKc3kqYHU/FWwlBWQddizoxk8w
+      sp+9TLVs3Jps55zEa+avlnRCM8qgX7FKNpYqD+ZrHFG/MlimHMCD
+    </em:signature>
+  </RDF:Description>
+</RDF:RDF>

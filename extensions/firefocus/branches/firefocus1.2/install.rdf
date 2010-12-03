@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>firefocus@incaseofstairs.com</em:id>
+    <em:version>1.1</em:version>
+    <em:type>2</em:type>
+    <em:optionsURL>chrome://firefocus/content/options.xul</em:optionsURL>
+
+    <!-- Any suitably modern toolkit application -->
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.9.0.11</em:minVersion>
+        <em:maxVersion>2.0.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:updateURL>http://www.incaseofstairs.com/download/firefocus/update.rdf</em:updateURL>
+    <em:updateKey>
+      MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQGclmSw7tlxGd5JLN5Y8ovW8AWWrkg6CsN8
+      CD/l80odWifwnxG+Jaw2Eo1kVVB5e4i9kEvh9BorPvLmee9zbOw9dOS2uyFfwttkw1td9mU0v/
+      PZh2fv24cuL37QIHOHsZ5TPl2e+cNBUiov9rKKi2r+TzUBpcmxcLqSBKAo4oWQIDAQAB
+    </em:updateKey>
+
+    <em:name>Firefocus</em:name>
+    <em:description>Track Page Focus in Firebug</em:description>
+    <em:creator>Kevin Decker</em:creator>
+    <em:homepageURL>http://www.incaseofstairs.com/firefocus</em:homepageURL>
+
+    <em:translator>erglo (de-DE)</em:translator>
+    <em:translator>Goofy (fr)</em:translator>
+    <em:translator>akarlovic (hr-HR)</em:translator>
+    <em:translator>m4dbra1n (it-IT)</em:translator>
+    <em:translator>renegade06 (mr-MK)</em:translator>
+    <em:translator>Ghelman (pt-BR)</em:translator>
+    <em:translator>funalien (ru-RU)</em:translator>
+    <em:translator>Jiane (zh-CN)</em:translator>
+  </Description>
+</RDF>

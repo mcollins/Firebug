@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<!DOCTYPE window [
+  <!ENTITY % firefocusDTD SYSTEM "chrome://firefocus/locale/firefocus.dtd">
+  %firefocusDTD;
+]>
+
+<prefwindow id="firefocus-prefs"
+     title="&firefocus.Options;"
+     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ 
+  <prefpane label="&firefocus.Options;">
+    <preferences>
+      <preference id="pref_logFocus" name="extensions.firebug.firefocus.logFocus" type="bool"/>
+      <preference id="pref_highlightFocus" name="extensions.firebug.firefocus.highlightFocus" type="bool"/>
+    </preferences>
+   
+    <vbox>
+      <checkbox label="&firefocus.LogFocus;" preference="pref_logFocus" />
+      <checkbox label="&firefocus.HighlightFocus;" preference="pref_highlightFocus" />
+    </vbox>
+  </prefpane>
+</prefwindow>

@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<project name="firefocus" default="dist">
+  <property name="version" value="1.1" />
+
+  <property name="src_dir" location="${basedir}" />
+  <property name="dist_dir" location="${basedir}/dist" />
+
+  <target name="clean">
+    <delete dir="${dist_dir}" />
+  </target>
+
+  <target name="dist" depends="clean">
+    <mkdir dir="${dist_dir}" />
+    <zip destfile="${dist_dir}/${ant.project.name}${version}.xpi" update="true">
+      <zipfileset dir="${src_dir}">
+        <exclude name="build.xml" />
+        <exclude name="update.rdf" />
+        <exclude name="**/.*/**"/>
+        <exclude name="test/**"/>
+        <exclude name="dist/**"/>
+      </zipfileset>
+    </zip>
+
+    <echo>Generating SHA1 checksum</echo>
+    <checksum file="${dist_dir}/${ant.project.name}${version}.xpi" format="MD5SUM" algorithm="SHA" fileext=".sha" />
+    <concat>
+      <fileset dir="${dist_dir}" includes="*.sha" />
+    </concat>
+  </target>
+</project>

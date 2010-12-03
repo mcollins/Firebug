@@ -1,0 +1,16 @@
+content firefocus content/firefocus/ contentaccessible=yes
+content firefocus content/firefocus/
+
+skin  firefocus  classic/1.0 skin/classic/
+
+locale  firefocus de-DE       locale/de-DE/
+locale  firefocus en-US       locale/en-US/
+locale  firefocus fr          locale/fr/
+locale  firefocus hr-HR       locale/hr-HR/
+locale  firefocus it-IT       locale/it-IT/
+locale  firefocus mk-MK       locale/mk-MK/
+locale  firefocus pt-BR       locale/pt-BR/
+locale  firefocus ru-RU       locale/ru-RU/
+locale  firefocus zh-CN       locale/zh-CN/
+
+overlay chrome://firebug/content/firebugOverlay.xul         chrome://firefocus/content/firefocus.xul
