@@ -34,7 +34,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-(function(global) {
+(function securableModuleRequireJS(global) {
    const Cc = Components.classes;
    const Ci = Components.interfaces;
    const Cu = Components.utils;
@@ -93,7 +93,7 @@
        // and use it here. Until that's in the platform, though,
        // we'll play it safe and parentify the filename unless
        // we're absolutely certain things will be ok if we don't.
-       var filenameURI = ios.newURI(options.filename,
+       var filenameURI = ios.newURI(filename,
                                     null,
                                     baseURI);
        if (filenameURI.scheme == 'chrome' &&
@@ -123,6 +123,9 @@
    },
 
    exports.SandboxFactory.prototype = {
+      /*
+       * options.principal defaults to this_defaultPrincipal, "system" gives systemPrincipal
+       */
      createSandbox: function createSandbox(options) {
        var principal = resolvePrincipal(options.principal,
                                         this._defaultPrincipal);
@@ -139,7 +142,16 @@
          getProperty: function getProperty(name) {
            return this._sandbox[name];
          },
-         evaluate: function evaluate(options) {
+         /*
+          * options: string to be evaluated in current sandbox
+          * or
+          * options: (object)
+          *    contents: to be evaled
+          *    lineNo: evaluation line
+          *    jsVersion: defaults to 1.8
+          *    filename: defaults to '<string>', becomes file -> <string> if you have systemPrincipal
+          */
+         evaluate: function evaluate(options) { // NB shadow variable!
            if (typeof(options) == 'string')
              options = {contents: options};
            options = {__proto__: options};
@@ -165,6 +177,17 @@
      }
    };
 
+   /*
+    * options.fs defaults to LocalFileSystem with options.rootPaths paths.
+    * * fs.getFile(path) returns {content: file data, filename: path, }, these go into createSandbox
+    * options.sandboxFactory defaults to SandboxFactory(options.defaultPrincipal)
+    * options.pathAccessed no default
+    * options.globals no default
+    * options.getModuleExports;
+    * options.modifyModuleSandbox;
+    * options.securityPolicy
+    *
+    */
    exports.Loader = function Loader(options) {
      options = {__proto__: options};
      if (options.fs === undefined) {
@@ -172,8 +195,7 @@
        if (rootPaths) {
          if (rootPaths.constructor.name != "Array")
            rootPaths = [rootPaths];
-         var fses = [new exports.LocalFileSystem(path)
-                     for each (path in rootPaths)];
+         var fses = [new exports.LocalFileSystem(path) for each (path in rootPaths)];
          options.fs = new exports.CompositeFileSystem(fses);
        } else
          options.fs = new exports.LocalFileSystem();
@@ -382,7 +404,7 @@
            // look for require calls, and pull them into the dependencies.
            // The comment regexp is not very robust, but good enough to
            // avoid commented out require calls and to find normal, sync
-           // require calls in the function. 
+           // require calls in the function.
            callback
                .toString()
                .replace(commentRegExp, "")
