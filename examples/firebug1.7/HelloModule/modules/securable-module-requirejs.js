@@ -126,8 +126,8 @@
       /*
        * options.principal defaults to this_defaultPrincipal, "system" gives systemPrincipal
        */
-     createSandbox: function createSandbox(options) {
-       var principal = resolvePrincipal(options.principal,
+     createSandbox: function createSandbox(sandbox_options) {
+       var principal = resolvePrincipal(sandbox_options.principal,
                                         this._defaultPrincipal);
 
        return {
@@ -264,7 +264,7 @@
                throw new Error("access denied to execute module: " +
                                module);
 
-             var sandbox = self.sandboxFactory.createSandbox(module_info);
+             var sandbox = self.sandboxFactory.createSandbox(module_info);  // the only argument used is module_info.principal
              self.sandboxes[path] = sandbox;
              for (name in self.globals)
                sandbox.defineProperty(name, self.globals[name]);
