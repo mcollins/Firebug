@@ -23,10 +23,12 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
 
 
     this.global = global;
+
     if (global instanceof Ci.nsIDOMWindow)
         this.window = global;
     else
     {
+        delete this.window;
         if (global && global.location)
             var name = global.location; // special case for jetpack
         else if (global)
@@ -39,20 +41,23 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
             if (browser.currentURI.spec)
             {
                 var parts = browser.currentURI.spec.split('/');
-                name += " containing " + parts.splice(-3).join('/');
+                name += '/'+ parts.splice(-3).join('/');
+                this.setName(browser.currentURI.spec);
             }
             else
-                name += " containing " + browser.currentURI;
+                name += '/'+ browser.currentURI;
         }
-
-        this.setName("noWindow://"+name);
+        else
+        {
+            this.setName("noWindow://"+name);
+        }
     }
 
     var persistedState = FBL.getPersistedState(this, "script");
     if (!persistedState.enabled)  // for now default all chromebug window to enabled.
         persistedState.enabled = "enable";
 
-    FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":"")+(this.global?" ":"NULL global ")+" and name "+this.getName());
+    FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":"")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
 }
 
 Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
