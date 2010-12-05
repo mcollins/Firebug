@@ -48,6 +48,9 @@
    var systemPrincipal = Cc["@mozilla.org/systemprincipal;1"]
                          .createInstance(Ci.nsIPrincipal);
 
+   Components.utils.import("resource://firebug/firebug-trace-service.js");
+   var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
+
    var commentRegExp = /(\/\*([\s\S]*?)\*\/|\/\/(.*)$)/mg;
    var cjsRequireRegExp = /require\(["']([\w\!\-_\.\/]+)["']\)/g;
    var cjsStandardDeps = ['require', 'exports', 'module'];
@@ -152,6 +155,9 @@
           *    filename: defaults to '<string>', becomes file -> <string> if you have systemPrincipal
           */
          evaluate: function evaluate(options) { // NB shadow variable!
+
+             FBTrace.sysout("evaluate filename "+options.filename+" type "+typeof(options.filename),options);
+
            if (typeof(options) == 'string')
              options = {contents: options};
            options = {__proto__: options};
@@ -164,8 +170,8 @@
            if (typeof(options.filename) != 'string')
              options.filename = '<string>';
 
-           if (this._principal == systemPrincipal)
-             options.filename = maybeParentifyFilename(options.filename);
+           //if (this._principal == systemPrincipal)
+           //  options.filename = maybeParentifyFilename(options.filename);
 
            return Cu.evalInSandbox(options.contents,
                                    this._sandbox,
@@ -285,7 +291,7 @@
                  };
                })(sandbox.globalScope.Iterator)
              );
-             sandbox.evaluate("var exports = {};");
+             sandbox.evaluate({contents: "var exports = {};", filename: module_info.filename});
              self.modules[path] = sandbox.getProperty("exports");
              self.module_infos[path] = module_info;
              if (self.modifyModuleSandbox)
