@@ -60,7 +60,8 @@ var HelloModule =
 
 function getLoader()
 {
-    var rootPath = resourceToFile("resource://hellomodule/");
+    // var rootPath = resourceToFile("resource://hellomodule/");
+    var rootPath = "resource://hellomodule/";
     return new SecurableModule.Loader({defaultPrincipal: "system", rootPath: rootPath});
 }
 
