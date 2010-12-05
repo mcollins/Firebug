@@ -82,7 +82,6 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
     {
         return this.halt(function evalInFrame(frame)
         {
-            window.dump("evaluateInCallingFrame "+frame.script.fileName+" stack: "+getJSDStackDump(frame)+"\n");
             var result = {};
             var ok = frame.eval(js, fileName, lineNo, result);
             var value = unwrapIValue(result.value);
