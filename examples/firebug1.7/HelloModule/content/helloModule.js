@@ -16,36 +16,34 @@ var HelloModule =
 {
     initialize: function()
     {
-        try
-        {
-            this.loadModules();
-        }
-        catch (err)
-        {
-            sysout(err);
-        }
+        // Dynamically register a menu item handler.
+        var command = document.getElementById("menu_LoadModules");
+        command.addEventListener("command", function() {
+            HelloModule.loadModules();
+        }, false);
     },
 
     loadModules: function()
     {
         var loader = getLoader();
 
+        // Connection to the Firebug trace console.
+        var FBTrace = loader.require("firebug-trace").FBTrace;
+
         // Load 'add' module - sync.
         var module = loader.require("add");
-        sysout("1 + 2 = " + module.add(1, 2));
+        FBTrace.sysout("1 + 2 = " + module.add(1, 2));
 
         //var module = loader.require("subtract");
-        //sysout("3 - 1 = " + module.subtract(3, 1));
+        //FBTrace.sysout("3 - 1 = " + module.subtract(3, 1));
 
         // Load 'subtract' module - async.
         loader.require(["subtract"], function(module)
         {
-            sysout("3 - 1 = " + module.subtract(3, 1));
+            FBTrace.sysout("3 - 1 = " + module.subtract(3, 1));
         });
 
-        // Connection to the Firebug trace console.
-        var FBTrace = loader.require("firebug-trace").FBTrace;
-        FBTrace.sysout("helloModule; Hello from CommonJS/RequireJS world!");
+        FBTrace.sysout("helloModule; All modules loaded!");
     },
 
     shutdown: function()
@@ -78,15 +76,6 @@ function resourceToFile(resourceURL)
 
     var path = resHandler.getSubstitution(sub).spec;
     return path + splitted.join("/");
-}
-
-// ************************************************************************************************
-// Logging
-
-function sysout(msg)
-{
-    Components.utils.reportError(msg);
-    dump(msg + "\n");
 }
 
 // ************************************************************************************************
