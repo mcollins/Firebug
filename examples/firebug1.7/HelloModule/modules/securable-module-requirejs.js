@@ -346,11 +346,18 @@
 
          // If just a define({}) call (no dependencies),
          // adjust args accordingly.
-         // xxxHonza: Array is undefined
-         /*if (!Array.isArray(deps)) {
+
+         // xxxHonza: Array is undefined, so use this helper function
+         // The original loader is targeted for Fx40 where Array.isArray is introduced.
+         function isArray(it) {
+           var ostring = Object.prototype.toString;
+           return ostring.call(it) === "[object Array]";
+         }
+
+         if (!isArray(deps)) { // Array.isArray removed for now.
            callback = deps;
            deps = null;
-         }*/
+         }
 
          // Set up the path if we have a name
          if (name) {

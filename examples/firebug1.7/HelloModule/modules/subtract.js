@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define(["require", "exports", "module"], function(require, exports, module) {
+define(function(require, exports, module) {
 
 // ************************************************************************************************
 // Module Implementation
