@@ -7,13 +7,7 @@
 
 var Ci = Components.interfaces;
 var Cc = Components.classes;
-var Cc = Components.classes;
-
-var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-
-// Module loader
-var SecurableModule = {};
-Components.utils["import"]("resource://hellomodule/securable-module-requirejs.js", SecurableModule);
+var Cu = Components.utils;
 
 // ************************************************************************************************
 // Initialization
@@ -48,6 +42,10 @@ var HelloModule =
         {
             sysout("3 - 1 = " + module.subtract(3, 1));
         });
+
+        // Connection to the Firebug trace console.
+        var FBTrace = loader.require("firebug-trace").FBTrace;
+        FBTrace.sysout("helloModule; Hello from CommonJS/RequireJS world!");
     },
 
     shutdown: function()
@@ -60,6 +58,9 @@ var HelloModule =
 
 function getLoader()
 {
+    var SecurableModule = {};
+    Cu["import"]("resource://hellomodule/securable-module-requirejs.js", SecurableModule);
+
     // var rootPath = resourceToFile("resource://hellomodule/");
     var rootPath = "resource://hellomodule/";
     return new SecurableModule.Loader({defaultPrincipal: "system", rootPath: rootPath});
@@ -67,6 +68,7 @@ function getLoader()
 
 function resourceToFile(resourceURL)
 {
+    var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
     var resHandler = ioService.getProtocolHandler("resource")
         .QueryInterface(Ci.nsIResProtocolHandler);
 
