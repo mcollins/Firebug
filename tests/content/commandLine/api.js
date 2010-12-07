@@ -40,6 +40,27 @@ function runTest()
             tasks.push(executeAndVerify, "table(a)", "Object Properties10",
                 "div", "logRow logRow-table");
 
+            // $$ must return a real array so, eg map() can be applied.
+            tasks.push(executeAndVerify,
+                "$$('.a').map(function(item){return item.localName;});",
+                "[\"div\", \"div\", \"div\"]",
+                "span", "objectBox objectBox-array");
+
+            // $x must also return a real array so, eg map() can be applied.
+            tasks.push(executeAndVerify,
+                "$x(\"//div[contains(@class, 'a')]\").map",
+                "map()",
+                "a", "objectLink objectLink-function");
+
+            // Again test the returned array.
+            tasks.push(executeAndVerify, "keys(b).map", "map()",
+                "a", "objectLink objectLink-function");
+
+            // Again test the returned array.
+            tasks.push(executeAndVerify, "values(b).map", "map()",
+                "a", "objectLink objectLink-function");
+
+            // Run all expressions step by step.
             tasks.run(function() {
                 FBTest.testDone("commandline.api.DONE");
             });
