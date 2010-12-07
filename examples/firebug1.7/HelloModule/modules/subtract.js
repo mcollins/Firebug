@@ -5,7 +5,7 @@ define(function(require, exports, module) {
 // ************************************************************************************************
 // Module Implementation
 
-exports.subtract = function add(a, b)
+exports.subtract = function subtract(a, b)
 {
     return a - b;
 };
