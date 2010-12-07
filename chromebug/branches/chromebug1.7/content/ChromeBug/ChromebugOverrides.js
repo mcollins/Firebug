@@ -24,37 +24,6 @@ var ChromebugOverrides = {
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Location interface provider for binding.xml panelFileList
-/*
-    getLocationProvider: function()
-    {
-        // a function that returns an object with .getObjectDescription() and .getLocationList()
-        return function multiContextLocator()
-        {
-            FBTrace.sysout("ChromebugOverride running multiContextLocator");
-            var locatorDelegator =
-            {
-                    getObjectDescription: function(object)
-                    {
-                        // the selected panel may not be able to handle this because its in the wrong context
-                        if (FBTrace.DBG_LOCATIONS)
-                            FBTrace.sysout("MultiContextLocator getObjectDescription "+object, object);
-                        return Firebug.chrome.getSelectedPanel().getObjectDescription(object);
-                    },
-                    getLocationList: function()
-                    {
-                        // The select panel is in charge.
-                        return Firebug.chrome.getSelectedPanel().getLocationList();
-                    },
-                    getObjectLocation: function(object)
-                    {
-                        var d = this.getObjectDescription(object);
-                        return (d?d.path+d.name:"no description");
-                    },
-            }
-            return locatorDelegator;
-        }
-     },
-*/
 
     // Override Firebug.HTMLPanel.prototype
     getTreeWalker: function(node)
@@ -436,8 +405,8 @@ function overrideFirebugFunctions()
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentURI = bind(Firebug.Chromebug.getCurrentURI, Firebug.Chromebug);
 
-        // We set context on use control only
-        ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
+        // We set context on user control only
+        /*ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
         top.Firebug.chrome.setFirebugContext = function(context)
         {
             if (!context)
@@ -449,7 +418,7 @@ function overrideFirebugFunctions()
                     FBTrace.sysout("setFirebugContext NULL set to "+(context?context.getName():"NULL"));
             }
         }
-
+*/
         // We don't want the context to show as windows load in Chromebug. Instead we wait for the user to select one.
         Firebug.Chromebug.firebugShowContext = Firebug.showContext;
         Firebug.showContext = function(browser, context)
