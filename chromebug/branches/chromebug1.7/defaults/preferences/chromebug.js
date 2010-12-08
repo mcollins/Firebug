@@ -134,6 +134,7 @@ pref("extensions.chromebug.DBG_PANELS", false);       // panel selection        
 pref("extensions.chromebug.DBG_CACHE", false);        // sourceCache                               /*@explore*/
 pref("extensions.chromebug.DBG_CONSOLE", false);        // console                                   /*@explore*/
 pref("extensions.chromebug.DBG_COMMANDLINE", false);  // command line                              /*@explore*/
+pref("extensions.chromebug.DBG_COMPILATION_UNIT", false);        // sourceCache                               /*@explore*/
 pref("extensions.chromebug.DBG_CSS", false);          //                                             /*@explore*/
 pref("extensions.chromebug.DBG_DBG2FIREBUG", false);  //                                             /*@explore*/
 pref("extensions.chromebug.DBG_DOM", false);  //                                             /*@explore*/
