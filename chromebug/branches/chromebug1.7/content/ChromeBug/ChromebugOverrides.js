@@ -219,15 +219,15 @@ var ChromebugOverrides = {
         return context;
     },
 
-    showThisSourceFile: function(sourceFile)
+    showThisCompilationUnit: function(compilationUnit)
     {
-        if (sourceFile.isEval() && !this.showEvals)
-               return false;
-
-        if (sourceFile.isEvent() && !this.showEvents)
+        if (compilationUnit.getKind() === CompilationUnit.EVAL && !this.showEvals)
             return false;
 
-        var description = Chromebug.parseURI(sourceFile.href);
+        if (compilationUnit.getKind() === CompilationUnit.BROWSER_GENERATED && !this.showEvents)
+            return false;
+
+        var description = Chromebug.parseURI(compilationUnit.getURL());
 
         if (Firebug.Chromebug.allFilesList.isWantedDescription(description))
             return true;
@@ -431,9 +431,15 @@ function overrideFirebugFunctions()
         Firebug.chrome.select = function(object, panelName, sidePanelName, forceUpdate)
         {
             // Some objects need to cause context changes.
-            if (object instanceof Ci.jsdIStackFrame)
+            if (object instanceof StackFrame)
             {
-                context = ChromebugOverrides.getContextByFrame(object);
+                var context = object.context;
+                if (context != Firebug.currentContext)
+                    Firebug.Chromebug.selectContext(context);
+            }
+            else if (object instanceof Ci.jsdIStackFrame)
+            {
+                var context = ChromebugOverrides.getContextByFrame(object);
                 if (context != Firebug.currentContext)
                     Firebug.Chromebug.selectContext(context);
             }
@@ -472,7 +478,7 @@ function overrideFirebugFunctions()
         top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
         top.Firebug.Debugger.breakNowURLPrefix = "chrome://fb4cb/",
         top.Firebug.Debugger.getContextByFrame = ChromebugOverrides.getContextByFrame;
-        top.Firebug.ScriptPanel.prototype.showThisSourceFile = ChromebugOverrides.showThisSourceFile;
+        top.Firebug.ScriptPanel.prototype.showThisCompilationUnit = ChromebugOverrides.showThisCompilationUnit;
         top.Firebug.SourceFile.getSourceFileByScript = ChromebugOverrides.getSourceFileByScript;
 
         top.Firebug.showBar = function() {

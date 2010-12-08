@@ -303,12 +303,13 @@ Chromebug.SourceFileListBase.prototype = extend(new Firebug.Listener(),
         var context = description.context;
         if (context)
         {
-            var sourceFile= context.sourceFileMap[description.href];
+            var url = description.href;
+            var unit = context.getCompilationUnit(url);
             if (FBTrace.DBG_LOCATIONS)
-                FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+description.href, description);
+                FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+url, description);
             Firebug.Chromebug.selectContext(context);
 
-            FirebugChrome.select(sourceFile, "script", "watch", true);  // SourceFile
+            FirebugChrome.select(unit, "script", "watch", true);  // SourceFile
             this.setCurrentLocation(description);
         }
         else

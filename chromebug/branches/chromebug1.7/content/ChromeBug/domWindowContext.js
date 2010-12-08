@@ -57,7 +57,8 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
     if (!persistedState.enabled)  // for now default all chromebug window to enabled.
         persistedState.enabled = "enable";
 
-    FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":"")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
+    if (FBTrace.DBG_CHROMEBUG)
+        FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":" no window ")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
 }
 
 Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,

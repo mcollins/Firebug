@@ -168,7 +168,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
         this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
-        FBTrace.sysout("createBrowser "+browser.tag+" global:"+(global?safeToString(global):"no global")+" for browserName "+browserName+' with URI '+browser.currentURI.spec);
+        FBTrace.sysout("createBrowser "+browser.tag+" global:"+(global?safeToString(global):"no global")+" for browserName "+browserName+" from "+browserNameFrom);
         return browser;
     },
 
@@ -987,7 +987,10 @@ Firebug.Chromebug = extend(Firebug.Module,
         // Firebug.currentContext is not context. Maybe this does not happen in firebug because the user always starts
         // with an active tab with Firebug.currentContext and cause the breakpoints to land in the default context.
         if (Firebug.currentContext != context)
-            Firebug.showContext(context.browser, context);
+            Firebug.Chromebug.selectContext(context);
+
+        if (Firebug.currentContext != context)
+            FBTrace.sysout("ChromebugPanle.onStop showContext FAILS "+Firebug.currentContext.getName());
 
         var stopName = getExecutionStopNameFromType(type);
         if (FBTrace.DBG_UI_LOOP)
