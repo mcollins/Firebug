@@ -1,88 +1,70 @@
 /* See license.txt for terms of usage */
 
-(function() {
+FBL.ns(function() { with (FBL) { 
 
-// ************************************************************************************************
+// ********************************************************************************************* //
 // Constants
 
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 var Cu = Components.utils;
 
-// ************************************************************************************************
-// Initialization
+// Chrome module loader initialization
+var loader = new SecurableModule.Loader({defaultPrincipal: "system",
+    rootPath: "resource://hellomodule/modules"});
+function require() { return loader.require.apply(loader, arguments); };
 
-var HelloModule =
+// ********************************************************************************************* //
+// Imports
+
+var DomTree = require("modules/domTree").DomTree;
+var add = loader.require("modules/add").add;
+var subtract = loader.require("modules/subtract").subtract;
+
+// ********************************************************************************************* //
+// Firebug Panel
+
+var panelName = "HelloModule";
+
+/**
+ * Panel implementation
+ */
+function HelloModulePanel() {} 
+HelloModulePanel.prototype = extend(Firebug.Panel,
 {
+    name: panelName,
+    title: "Hello Module!",
+
     initialize: function()
     {
-        // Dynamically register a menu item handler.
-        var command = document.getElementById("menu_LoadModules");
-        command.addEventListener("command", function() {
-            HelloModule.loadModules();
-        }, false);
+        Firebug.Panel.initialize.apply(this, arguments);
     },
 
-    loadModules: function()
+    show: function(state)
     {
-        var loader = getLoader();
+        var domTree = new DomTree(FBL.unwrapObject(this.context.window));
+        domTree.append(this.panelNode);
+    }
+}); 
 
-        // Connection to the Firebug trace console.
-        var FBTrace = loader.require("firebug-trace").FBTrace;
+// ********************************************************************************************* //
 
-        // Load 'add' module - sync.
-        var module = loader.require("add");
-        FBTrace.sysout("1 + 2 = " + module.add(1, 2));
-
-        //var module = loader.require("subtract");
-        //FBTrace.sysout("3 - 1 = " + module.subtract(3, 1));
-
-        // Load 'subtract' module - async.
-        loader.require(["subtract"], function(module)
-        {
-            FBTrace.sysout("3 - 1 = " + module.subtract(3, 1));
-        });
-
+Firebug.HelloModuleModel = extend(Firebug.Module, 
+{ 
+    onLoadModules: function(context)
+    {
+        FBTrace.sysout("1 + 2 = " + add(1, 2));
+        FBTrace.sysout("3 - 1 = " + subtract(3, 1));
         FBTrace.sysout("helloModule; All modules loaded!");
-    },
+    }
+});
 
-    shutdown: function()
-    {
-    },
-};
-
-// ************************************************************************************************
-// Loader
-
-function getLoader()
-{
-    var SecurableModule = {};
-    Cu["import"]("resource://hellomodule/securable-module-requirejs.js", SecurableModule);
-
-    // var rootPath = resourceToFile("resource://hellomodule/");
-    var rootPath = "resource://hellomodule/";
-    return new SecurableModule.Loader({defaultPrincipal: "system", rootPath: rootPath});
-}
-
-function resourceToFile(resourceURL)
-{
-    var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-    var resHandler = ioService.getProtocolHandler("resource")
-        .QueryInterface(Ci.nsIResProtocolHandler);
-
-    var justURL = resourceURL.split("resource://")[1];
-    var splitted = justURL.split("/");
-    var sub = splitted.shift();
-
-    var path = resHandler.getSubstitution(sub).spec;
-    return path + splitted.join("/");
-}
-
-// ************************************************************************************************
+// ********************************************************************************************* //
 // Registration
 
-window.addEventListener("load", function() { HelloModule.initialize(); }, false);
-window.addEventListener("unload", function() { HelloModule.shutdown(); }, false);
+Firebug.registerPanel(HelloModulePanel);
+Firebug.registerModule(Firebug.HelloModuleModel); 
+Firebug.registerStylesheet("chrome://hellomodule/skin/domTree.css");
 
-// ************************************************************************************************
-})();
+// ********************************************************************************************* //
+}});
