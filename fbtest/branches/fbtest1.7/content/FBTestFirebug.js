@@ -1135,7 +1135,8 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     if (!chrome)
         chrome = FW.Firebug.chrome;
 
-    FBTest.progress("fbTestFirebug.waitForBreakInDebugger in chrome.window" + chrome.window.location);
+    FBTest.progress("fbTestFirebug.waitForBreakInDebugger in chrome.window " +
+        chrome.window.location);
 
     // Get document of Firebug's panel.html
     var panel = chrome.getSelectedPanel();

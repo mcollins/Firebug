@@ -451,7 +451,11 @@ FBTestApp.TestRunner = extend(new Firebug.Listener(),
         try
         {
             FBTestApp.TestRunner.clearTestTimeout();
-            //$("testFrame").contentWindow.location = "about:blank";
+
+            // Since the test finished, the test frame must be set to about:blank so,
+            // the current test window is unloaded and proper clean up code executed
+            // (eg. registered MutationRecognizers)
+            $("testFrame").contentWindow.location = "about:blank";
         }
         catch(e)
         {
