@@ -1926,12 +1926,12 @@ var getElementSimpleType = this.getElementSimpleType = function(node)
 
 var isElementHTML = this.isElementHTML = function(node)
 {
-    return node.nodeName == node.nodeName.toUpperCase();
+    return node.nodeName == node.nodeName.toUpperCase() && node.namespaceURI == 'http://www.w3.org/1999/xhtml';
 }
 
 var isElementXHTML = this.isElementXHTML = function(node)
 {
-    return node.nodeName == node.nodeName.toLowerCase();
+    return node.nodeName == node.nodeName.toLowerCase() && node.namespaceURI == 'http://www.w3.org/1999/xhtml';
 }
 
 var isElementMathML = this.isElementMathML = function(node)
