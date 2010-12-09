@@ -2827,6 +2827,25 @@ this.getStackFrame = function(frame, context)
     }
 };
 
+this.cleanStackTraceOfFirebug = function(trace)
+{
+    if (trace && trace.frames){
+        while (trace.frames.length && 
+            (
+             /^_[fF]irebug/.test(trace.frames[trace.frames.length - 1].fn) || 
+             /^\s*with\s*\(\s*_[fF]irebug/.test(trace.frames[trace.frames.length - 1].sourceFile.source) ||
+             (trace.frames[trace.frames.length - 1].fn == "" && trace.frames[trace.frames.length - 1].sourceFile.source == undefined)
+            )
+        )
+        {
+            trace.frames.pop();
+        }
+        if(trace.frames.length == 0)
+            trace = undefined;
+    }
+    return trace;
+}
+
 function getStackDump()
 {
     var lines = [];
