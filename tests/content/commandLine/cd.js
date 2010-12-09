@@ -10,7 +10,7 @@ function runTest()
             var tasks = new FBTest.TaskList();
 
             tasks.push(executeAndVerify, "cd(frames[0])",
-                "[\"Current window:\", Window apiFrame.html]",
+                "[\"Current window:\", Window cdFrame.html]",
                 "span", "objectBox objectBox-array");
 
             tasks.push(executeAndVerify, "$(\"test-iframe-1\")",
@@ -18,7 +18,7 @@ function runTest()
                 "a", "objectLink objectLink-element");
 
             tasks.push(executeAndVerify, "cd(top)",
-                "[\"Current window:\", Window api.html]",
+                "[\"Current window:\", Window cd.html]",
                 "span", "objectBox objectBox-array");
 
             tasks.run(function() {
