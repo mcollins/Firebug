@@ -406,7 +406,7 @@ function overrideFirebugFunctions()
         top.Firebug.chrome.getCurrentURI = bind(Firebug.Chromebug.getCurrentURI, Firebug.Chromebug);
 
         // We set context on user control only
-        /*ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
+        ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
         top.Firebug.chrome.setFirebugContext = function(context)
         {
             if (!context)
@@ -417,8 +417,13 @@ function overrideFirebugFunctions()
                 if (FBTrace.DBG_CHROMEBUG)
                     FBTrace.sysout("setFirebugContext NULL set to "+(context?context.getName():"NULL"));
             }
+            else
+            {
+                if (FBTrace.DBG_CHROMEBUG)
+                    FBTrace.sysout("setFirebugContext NO-OP for "+(context?context.getName():"NULL"));
+            }
         }
-*/
+
         // We don't want the context to show as windows load in Chromebug. Instead we wait for the user to select one.
         Firebug.Chromebug.firebugShowContext = Firebug.showContext;
         Firebug.showContext = function(browser, context)
@@ -439,6 +444,7 @@ function overrideFirebugFunctions()
             }
             else if (object instanceof Ci.jsdIStackFrame)
             {
+                FBTrace.sysout("select, object is jsdIStackFrame!", object);
                 var context = ChromebugOverrides.getContextByFrame(object);
                 if (context != Firebug.currentContext)
                     Firebug.Chromebug.selectContext(context);

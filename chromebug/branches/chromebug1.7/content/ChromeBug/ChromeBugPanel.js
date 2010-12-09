@@ -1047,7 +1047,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (FBTrace.DBG_UI_LOOP)
                     FBTrace.sysout("ChromeBugPanel.onStop marking context: "+(callingContext?callingContext.getName():null));
                 callingContext.stopped = true;
-                callingContext.debugFrame = calledFrame;
+                callingContext.stoppedFrame = calledFrame;
             }
         }
 
@@ -1080,7 +1080,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         Firebug.Chromebug.eachContext(function clearStopped(anotherContext)
         {
             delete anotherContext.stopped;
-            delete anotherContext.debugFrame;
+            delete anotherContext.stoppedFrame;
             if (anotherContext != context && anotherContext.suppressed)
                 Firebug.Debugger.unsuppressEventHandling(anotherContext);
             delete anotherContext.suppressed;

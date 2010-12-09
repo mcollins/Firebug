@@ -14,7 +14,7 @@ var panelName = "firebugCache";
 // Firebug Cache Module
 
 /**
- * Implementation of a Module & Panel for Fierebug cache viewer.
+ * Implementation of a Module & Panel for Firebug cache viewer.
  */
 Firebug.Chromebug.FBCacheModule = extend(Firebug.Module,
 {
@@ -257,7 +257,7 @@ Firebug.Chromebug.FBCacheModule.CacheList = domplate(Firebug.Rep,
         return cache.name;
     },
 
-    getCacheSize: function(cache) 
+    getCacheSize: function(cache)
     {
         if (!cache.entries)
         {
@@ -284,10 +284,10 @@ Firebug.Chromebug.FBCacheModule.CacheList = domplate(Firebug.Rep,
 
     onClick: function(event)
     {
-        if (isLeftClick(event)) 
+        if (isLeftClick(event))
         {
             var row = getAncestorByClass(event.target, "cacheListRow");
-            if (row) 
+            if (row)
             {
                 this.toggleRow(row);
                 cancelEvent(event);
@@ -393,7 +393,7 @@ Firebug.Chromebug.FBCacheModule.CacheTable = domplate(Firebug.Rep,
             // xxxHonza: localization
             var numLines = entry.lines.length;
             return formatSize(entry.size) + " (" + numLines + " " +
-                (numLines > 1 ? "lines" : "line") + ")"; 
+                (numLines > 1 ? "lines" : "line") + ")";
         }
         catch (err)
         {
