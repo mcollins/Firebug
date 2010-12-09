@@ -465,15 +465,6 @@ this.closeFirebug = function()
 }
 
 /**
- * Detach Firebug into a new separate window.
- */
-this.detachFirebug = function()
-{
-    this.openFirebug();
-    return FW.Firebug.detachBar();
-}
-
-/**
  * Returns true if Firebug is currently opened; false otherwise.
  */
 this.isFirebugOpen = function()
@@ -501,6 +492,46 @@ this.clearCache = function()
         FBTest.sysout("clearCache FAILS "+exc, exc);
     }
 };
+
+// ************************************************************************************************
+
+this.isDetached = function()
+{
+    return FW.Firebug.isDetached();
+}
+
+/**
+ * Detach Firebug into a new separate window.
+ */
+this.detachFirebug = function()
+{
+    if (FW.Firebug.isDetached())
+        return null;
+
+    this.openFirebug();
+    return FW.Firebug.detachBar(FW.FirebugContext);
+}
+
+/**
+ * Close detached Firebug window.
+ */
+this.closeDetachedFirebug = function()
+{
+    if (!FW.Firebug.isDetached())
+        return false;
+
+    // Better would be to look according to the window type, but it's not set in firebug.xul
+    var result = FW.FBL.iterateBrowserWindows("", function(win)
+    {
+        if (win.location.href == "chrome://firebug/content/firebug.xul")
+        {
+            win.close();
+            return true;
+        }
+    });
+
+    return result;
+}
 
 // ************************************************************************************************
 // URLs
@@ -1216,7 +1247,11 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
     FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
     {
         if (row.getAttribute("breakpoint") != "true")
-            panel.toggleBreakpoint(lineNo);
+        {
+            // Click to create a brekpoint.
+            FBTest.mouseDown(row.querySelector(".sourceLine"));
+            FBTest.compare(row.getAttribute("breakpoint"), "true", "Breakpoint must be set");
+        }
         callback(row);
     });
 }
@@ -1233,7 +1268,11 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
     FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
     {
         if (row.getAttribute("breakpoint") == "true")
-            panel.toggleBreakpoint(lineNo);
+        {
+            // Click to remove a brekpoint.
+            FBTest.mouseDown(row.querySelector(".sourceLine"));
+            FBTest.ok(row.getAttribute("breakpoint") != "true", "Breakpoint must be set");
+        }
         callback(row);
     });
 }
