@@ -1135,8 +1135,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     if (!chrome)
         chrome = FW.Firebug.chrome;
 
-    FBTest.progress("fbTestFirebug.waitForBreakInDebugger in chrome.window " +
-        chrome.window.location);
+    FBTest.progress("waitForBreakInDebugger in chrome.window: " + chrome.window.location);
 
     // Get document of Firebug's panel.html
     var panel = chrome.getSelectedPanel();
@@ -1151,20 +1150,41 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
     lookBP.onRecognizeAsync(function onBreak(sourceRow)
     {
-        FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exe_line" +
-            (breakpoint ? " and breakpoint" : ""));
-
         var panel = chrome.getSelectedPanel();
-        FBTest.compare("script", panel.name, "The script panel should be selected");
+        if (panel)
+        {
+            onPanelReady(sourceRow);
+            return;
+        }
 
-        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
-        FBTest.ok(row, "Row " + lineNo + " must be found");
+        FBTest.progress("onRecognizeAsync; wait for panel to be selected");
 
-        var currentLineNo = parseInt(sourceRow.firstChild.textContent, 10);
-        FBTest.compare(lineNo, currentLineNo, "The break must be on " + lineNo + " line.");
+        // The script panel is not yet selected so wait for the 'selectingPanel' event.
+        var panelBar1 = FW.FBL.$("fbPanelBar1", chrome.window.document);
+        function onSelectingPanel()
+        {
+            panelBar1.removeEventListener("selectingPanel", onSelectingPanel, false);
+            onPanelReady(sourceRow);
+        }
+        panelBar1.addEventListener("selectingPanel", onSelectingPanel, false);
+    });
 
+    function onPanelReady(sourceRow)
+    {
         try
         {
+            FBTest.progress("onRecognizeAsync; check source line number, exe_line" +
+                (breakpoint ? " and breakpoint" : ""));
+
+            var panel = chrome.getSelectedPanel();
+            FBTest.compare("script", panel.name, "The script panel should be selected");
+
+            var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+            FBTest.ok(row, "Row " + lineNo + " must be found");
+
+            var currentLineNo = parseInt(sourceRow.firstChild.textContent, 10);
+            FBTest.compare(lineNo, currentLineNo, "The break must be on " + lineNo + " line.");
+
             callback(sourceRow);
         }
         catch (exc)
@@ -1172,7 +1192,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
             FBTest.exception("waitForBreakInDebugger", exc);
             FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
         }
-    });
+    }
 
     FBTest.sysout("fbTestFirebug.waitForBreakInDebugger recognizing ", lookBP);
 }
