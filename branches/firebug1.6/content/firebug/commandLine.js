@@ -706,8 +706,13 @@ Firebug.CommandLine = extend(Firebug.Module,
         if (this.isSandbox(context))
             return;
 
+        if (isXMLPrettyPrint(context, win))
+            return false;
+
         if (win)
+        {
             Firebug.CommandLine.injector.attachCommandLine(context, win);
+        }
         else
         {
             Firebug.CommandLine.injector.attachCommandLine(context, context.window);
@@ -1138,21 +1143,20 @@ function getCompletionBox()
 
 function FirebugCommandLineAPI(context)
 {
-    this.$ = function(id)  // uses only DOM calls
+    this.$ = function(id)  // returns unwrapped elements from the page
     {
-        var doc = context.baseWindow.document;
-        return context.baseWindow.document.getElementById(id);
+        return FBL.unwrapObject(context.baseWindow.document).getElementById(id);
     };
 
-    this.$$ = function(selector) // uses only DOM calls
+    this.$$ = function(selector) // returns unwrapped elements from the page
     {
-        var result = context.baseWindow.document.querySelectorAll(selector);
+        var result = FBL.unwrapObject(context.baseWindow.document).querySelectorAll(selector);
         return cloneArray(result);
     };
 
-    this.$x = function(xpath) // uses only DOM calls
+    this.$x = function(xpath) // returns unwrapped elements from the page
     {
-        return FBL.getElementsByXPath(context.baseWindow.document, xpath);
+        return FBL.getElementsByXPath(FBL.unwrapObject(context.baseWindow.document), xpath);
     };
 
     this.$n = function(index) // values from the extension space
@@ -1184,7 +1188,7 @@ function FirebugCommandLineAPI(context)
         // The window object parameter uses XPCSafeJSObjectWrapper, but we need XPCNativeWrapper
         // (and its wrappedJSObject member). So, look within all registered consoleHandlers for
         // the same window (from tabWatcher) that uses uses XPCNativeWrapper (operator "==" works).
-        var entry = Firebug.Console.injector.getConsoleHandlerEntry(context, object);
+        var entry = Firebug.Console.injector.getConsoleHandler(context, object);
         if (entry)
             context.baseWindow = entry.win;
 

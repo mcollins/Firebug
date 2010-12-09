@@ -22,6 +22,7 @@ this.fbs = fbs; // left over from component.
 Components.utils.import("resource://firebug/firebug-http-observer.js");
 this.httpObserver = httpRequestObserver;
 this.jsd = this.CCSV("@mozilla.org/js/jsd/debugger-service;1", "jsdIDebuggerService");
+this.domUtils = this.CCSV("@mozilla.org/inspector/dom-utils;1", "inIDOMUtils");
 
 const finder = this.finder = this.CCIN("@mozilla.org/embedcomp/rangefind;1", "nsIFind");
 const wm = this.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
@@ -1842,7 +1843,7 @@ this.getElementCSSSelector = function(element)
     if (element.id)
         label += "#" + element.id;
 
-    if (element.classList.length > 0)
+    if (element.classList && element.classList.length > 0)
         label += "." + element.classList.item(0);
 
     return label;
@@ -2081,6 +2082,40 @@ this.getElementXML = function(element)
     var xml = [];
     toXML(element);
     return xml.join("");
+};
+
+// ************************************************************************************************
+// Whitespace and Entity conversions
+
+/**
+ * Returns true if given document is based on a XML and so displaying pretty printed XML elements.
+ */
+this.isXMLPrettyPrint = function(context, win)
+{
+    if (context.isXMLPrettyPrint)
+        return true;
+
+    try
+    {
+        var doc = win ? win.document : context.window.document;
+        var bindings = this.domUtils.getBindingURLs(doc.documentElement);
+        for (var i = 0; i < bindings.length; i++)
+        {
+            var bindingURI = bindings.queryElementAt(i, Ci.nsIURI);
+            if (FBTrace.DBG_CSS)
+                FBTrace.sysout("bindingURL: " + i + " " + bindingURI.resolve(""));
+
+            if (bindingURI.resolve("") === "chrome://global/content/xml/XMLPrettyPrint.xml")
+            {
+                return context.isXMLPrettyPrint = true;
+            }
+        }
+    }
+    catch (e)
+    {
+        if (FBTrace.DBG_ERRORS)
+            FBTrace.sysout("css.isXMLPrettyPrint; EXCEPTION "+e, e);
+    }
 };
 
 // ************************************************************************************************
@@ -5974,14 +6009,28 @@ domMemberMap.Event =
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-this.isDOMConstant = function(name)
+this.isDOMConstant = function(object, name)
 {
+    if (name == undefined)
+    {
+        return isDOMConstantDep({},object);
+    }
+    
     // The constant map has also its own prototype, but it isn't considered to be a constant.
     if (name == "__proto__")
+        return false;
+    
+    if (!(
+        object instanceof Window || 
+        object instanceof Node || 
+        object instanceof Location || 
+        object instanceof Event
+    ))
         return false;
 
     return (name in this.domConstantMap);
 }
+var isDOMConstantDep = deprecated("isDOMConstant(name) signature changed (object,name)",this.isDOMConstant);
 
 this.domConstantMap =
 {

@@ -1264,8 +1264,6 @@ top.Firebug =
         if (detachCommand)
             detachCommand.setAttribute("checked", Firebug.isDetached());
 
-        this.showKeys(shouldShow);
-
         //xxxHonza: should be removed.
         dispatch(Firebug.uiListeners, show ? "showUI" : "hideUI", [browser, Firebug.currentContext]);
 
@@ -1273,18 +1271,6 @@ top.Firebug =
         // Panel.show method, which expects the active context to be already registered.
         if (show)
             Firebug.chrome.syncPanel();
-    },
-
-    showKeys: function(shouldShow)
-    {
-        if (!this.fbOnlyKeys)
-        {
-            var keyset = document.getElementById("mainKeyset");
-            this.fbOnlyKeys = keyset.getElementsByClassName("fbOnlyKey").item(0);
-        }
-        var keys = this.fbOnlyKeys;
-        for (var i = 0; i < keys.length; i++)
-            keys[i].setAttribute("disabled", !!shouldShow);
     },
 
     closeFirebug: function(userCommand)  // this is really deactivate
@@ -1379,7 +1365,8 @@ top.Firebug =
         if (!forceOpen && Firebug.isDetached())  // detached -> minimized
         {
             Firebug.chrome.close();
-            detachCommand.setAttribute("checked", false);
+            if (detachCommand)
+                detachCommand.setAttribute("checked", false);
             if (reopenInBrowser)
             {
                 setTimeout(function delayMinimize()
