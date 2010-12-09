@@ -1248,7 +1248,7 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
     {
         if (row.getAttribute("breakpoint") != "true")
         {
-            // Click to create a brekpoint.
+            // Click to create a breakpoint.
             FBTest.mouseDown(row.querySelector(".sourceLine"));
             FBTest.compare(row.getAttribute("breakpoint"), "true", "Breakpoint must be set");
         }
@@ -1269,7 +1269,7 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
     {
         if (row.getAttribute("breakpoint") == "true")
         {
-            // Click to remove a brekpoint.
+            // Click to remove a breakpoint.
             FBTest.mouseDown(row.querySelector(".sourceLine"));
             FBTest.ok(row.getAttribute("breakpoint") != "true", "Breakpoint must be set");
         }
