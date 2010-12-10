@@ -2,7 +2,8 @@
 
 var FBL = fbXPCOMUtils;
 
-try { /*@explore*/
+try {
+// ************************************************************************************************
 
 (function() {
 
@@ -5090,13 +5091,13 @@ this.StackTrace.prototype =
     }
 };
 
-this.traceToString = function(trace)                /*@explore*/
-{                                                   /*@explore*/
-    var str = "<top>";                              /*@explore*/
-    for(var i = 0; i < trace.frames.length; i++)    /*@explore*/
-        str += "\n" + trace.frames[i];              /*@explore*/
-    str += "\n<bottom>";                            /*@explore*/
-    return str;                                     /*@explore*/
+this.traceToString = function(trace)
+{
+    var str = "<top>";
+    for(var i = 0; i < trace.frames.length; i++)
+        str += "\n" + trace.frames[i];
+    str += "\n<bottom>";
+    return str;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -7770,9 +7771,13 @@ this.checkFirebugVersion = function(expectedVersion)
 
 // ************************************************************************************************
 }).apply(FBL);
-} catch(e) /*@explore*/
-{ /*@explore*/
-    dump("FBL Fails "+e+"\n"); /*@explore*/
-    dump("If the service @joehewitt.com/firebug;1 fails, try deleting compreg.dat, xpti.dat\n"); /*@explore*/
-    dump("Another cause can be mangled install.rdf.\n"); /*@explore*/
-} /*@explore*/
+
+// ************************************************************************************************
+}
+catch(e)
+{
+    dump("FBL Fails "+e+"\n");
+    dump("If the service @joehewitt.com/firebug;1 fails, try deleting compreg.dat, xpti.dat\n");
+    dump("Another cause can be mangled install.rdf.\n");
+}
+// ************************************************************************************************
