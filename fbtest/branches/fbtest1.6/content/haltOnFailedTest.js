@@ -23,6 +23,8 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
 
         FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled = Firebug.getPref(FBTestApp.prefDomain, "haltOnFailedTest");
         this.setHaltOnFailedTestButton();
+        FBTestApp.TestConsole.noTestTimeout = Firebug.getPref(FBTestApp.prefDomain, "noTestTimeout");
+        this.setNoTestTimeout();
     },
 
     internationalizeUI: function()
@@ -42,6 +44,11 @@ FBTestApp.TestWindowLoader.HaltOnFailedTest =
     setHaltOnFailedTestButton: function()
     {
         $('haltOnFailedTest').setAttribute('checked', FBTestApp.TestWindowLoader.HaltOnFailedTest.enabled?'true':'false');
+    },
+
+    setNoTestTimeout: function()
+    {
+        $('noTestTimeout').setAttribute('checked', FBTestApp.TestConsole.noTestTimeout?'true':'false');
     },
 
     onToggleHaltOnFailedTest: function()

@@ -465,15 +465,6 @@ this.closeFirebug = function()
 }
 
 /**
- * Detach Firebug into a new separate window.
- */
-this.detachFirebug = function()
-{
-    this.openFirebug();
-    return FW.Firebug.detachBar();
-}
-
-/**
  * Returns true if Firebug is currently opened; false otherwise.
  */
 this.isFirebugOpen = function()
@@ -501,6 +492,46 @@ this.clearCache = function()
         FBTest.sysout("clearCache FAILS "+exc, exc);
     }
 };
+
+// ************************************************************************************************
+
+this.isDetached = function()
+{
+    return FW.Firebug.isDetached();
+}
+
+/**
+ * Detach Firebug into a new separate window.
+ */
+this.detachFirebug = function()
+{
+    if (FW.Firebug.isDetached())
+        return null;
+
+    this.openFirebug();
+    return FW.Firebug.detachBar(FW.FirebugContext);
+}
+
+/**
+ * Close detached Firebug window.
+ */
+this.closeDetachedFirebug = function()
+{
+    if (!FW.Firebug.isDetached())
+        return false;
+
+    // Better would be to look according to the window type, but it's not set in firebug.xul
+    var result = FW.FBL.iterateBrowserWindows("", function(win)
+    {
+        if (win.location.href == "chrome://firebug/content/firebug.xul")
+        {
+            win.close();
+            return true;
+        }
+    });
+
+    return result;
+}
 
 // ************************************************************************************************
 // URLs
@@ -774,12 +805,12 @@ this.enableAllPanels = function()
  */
 this.selectPanel = function(panelName, chrome)
 {
-    return chrome?chrome.selectPanel(panelName):FW.FirebugChrome.selectPanel(panelName);
+    return chrome?chrome.selectPanel(panelName):FW.Firebug.chrome.selectPanel(panelName);
 }
 
 this.selectSidePanel = function(panelName, chrome)
 {
-    return chrome?chrome.selectSidePanel(panelName):FW.FirebugChrome.selectSidePanel(panelName);
+    return chrome?chrome.selectSidePanel(panelName):FW.Firebug.chrome.selectSidePanel(panelName);
 }
 
 /* select a panel tab */
@@ -948,12 +979,12 @@ this.executeCommand = function(expr, chrome)
 
 this.typeCommand = function(string)
 {
-    var doc = FW.FirebugChrome.window.document;
+    var doc = FW.Firebug.chrome.window.document;
     var cmdLine = doc.getElementById("fbCommandLine");
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
-    FW.FirebugChrome.window.focus();
+    FW.Firebug.chrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
 
@@ -986,7 +1017,7 @@ this.clickContinueButton = function(chrome)
 this.clickBreakOnNextButton = function(chrome)
 {
     if (!chrome)
-        chrome = FW.FirebugChrome;
+        chrome = FW.Firebug.chrome;
 
     var doc = chrome.window.document;
     var button = doc.getElementById("fbBreakOnNextButton");
@@ -1016,7 +1047,7 @@ this.clickPersistButton = function(chrome)
 this.clickToolbarButton = function(chrome, buttonID)
 {
     if (!chrome)
-        chrome = FW.FirebugChrome;
+        chrome = FW.Firebug.chrome;
 
     var doc = chrome.window.document;
     var button = doc.getElementById(buttonID);
@@ -1087,8 +1118,7 @@ this.getSourceLineNode = function(lineNo, chrome)
 
     var panel = chrome.getSelectedPanel();
     var sourceBox = panel.selectedSourceBox;
-    if (!sourceBox)
-        throw new Error("getSourceLineNode no selectedSourceBox in panel "+panel.name);
+    FBTest.ok(sourceBox, "getSourceLineNode needs selectedSourceBox in panel "+panel.name);
 
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
     if (!sourceViewport)
@@ -1136,7 +1166,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     if (!chrome)
         chrome = FW.Firebug.chrome;
 
-    FBTest.progress("fbTestFirebug.waitForBreakInDebugger in chrome.window" + chrome.window.location);
+    FBTest.progress("waitForBreakInDebugger in chrome.window: " + chrome.window.location);
 
     // Get document of Firebug's panel.html
     var panel = chrome.getSelectedPanel();
@@ -1151,20 +1181,41 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
     var lookBP = new MutationRecognizer(doc.defaultView, "div", attributes);
     lookBP.onRecognizeAsync(function onBreak(sourceRow)
     {
-        FBTest.progress("FBTestFirebug.waitForBreakdInDebugger.onRecognize; check source line number, exe_line" +
-            (breakpoint ? " and breakpoint" : ""));
-
         var panel = chrome.getSelectedPanel();
-        FBTest.compare("script", panel.name, "The script panel should be selected");
+        if (panel)
+        {
+            onPanelReady(sourceRow);
+            return;
+        }
 
-        var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
-        FBTest.ok(row, "Row " + lineNo + " must be found");
+        FBTest.progress("onRecognizeAsync; wait for panel to be selected");
 
-        var currentLineNo = parseInt(sourceRow.firstChild.textContent, 10);
-        FBTest.compare(lineNo, currentLineNo, "The break must be on " + lineNo + " line.");
+        // The script panel is not yet selected so wait for the 'selectingPanel' event.
+        var panelBar1 = FW.FBL.$("fbPanelBar1", chrome.window.document);
+        function onSelectingPanel()
+        {
+            panelBar1.removeEventListener("selectingPanel", onSelectingPanel, false);
+            onPanelReady(sourceRow);
+        }
+        panelBar1.addEventListener("selectingPanel", onSelectingPanel, false);
+    });
 
+    function onPanelReady(sourceRow)
+    {
         try
         {
+            FBTest.progress("onRecognizeAsync; check source line number, exe_line" +
+                (breakpoint ? " and breakpoint" : ""));
+
+            var panel = chrome.getSelectedPanel();
+            FBTest.compare("script", panel.name, "The script panel should be selected");
+
+            var row = FBTestFirebug.getSourceLineNode(lineNo, chrome);
+            FBTest.ok(row, "Row " + lineNo + " must be found");
+
+            var currentLineNo = parseInt(sourceRow.firstChild.textContent, 10);
+            FBTest.compare(lineNo, currentLineNo, "The break must be on " + lineNo + " line.");
+
             callback(sourceRow);
         }
         catch (exc)
@@ -1172,7 +1223,7 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
             FBTest.exception("waitForBreakInDebugger", exc);
             FBTest.sysout("listenForBreakpoint callback FAILS "+exc, exc);
         }
-    });
+    }
 
     FBTest.sysout("fbTestFirebug.waitForBreakInDebugger recognizing ", lookBP);
 }
@@ -1191,12 +1242,16 @@ this.setBreakpoint = function(chrome, url, lineNo, callback)
 
     var panel = FBTestFirebug.selectPanel("script");
     if (!url)
-        url = panel.location.href;
+        url = panel.getObjectLocation(panel.location);
 
     FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
     {
         if (row.getAttribute("breakpoint") != "true")
-            panel.toggleBreakpoint(lineNo);
+        {
+            // Click to create a breakpoint.
+            FBTest.mouseDown(row.querySelector(".sourceLine"));
+            FBTest.compare(row.getAttribute("breakpoint"), "true", "Breakpoint must be set");
+        }
         callback(row);
     });
 }
@@ -1208,12 +1263,16 @@ this.removeBreakpoint = function(chrome, url, lineNo, callback)
 
     var panel = FBTestFirebug.selectPanel("script");
     if (!url)
-        url = panel.location.href;
+        url = panel.getObjectLocation(panel.location);
 
     FBTestFirebug.selectSourceLine(url, lineNo, "js", chrome, function(row)
     {
         if (row.getAttribute("breakpoint") == "true")
-            panel.toggleBreakpoint(lineNo);
+        {
+            // Click to remove a breakpoint.
+            FBTest.mouseDown(row.querySelector(".sourceLine"));
+            FBTest.ok(row.getAttribute("breakpoint") != "true", "Breakpoint must be set");
+        }
         callback(row);
     });
 }
@@ -1307,7 +1366,8 @@ window.onerror = function(errType, errURL, errLineNum)
     var fileName = path.substr(path.lastIndexOf("/") + 1);
     var errorDesc = errType + " (" + errLineNum + ")" + " " + errURL;
     FBTest.sysout(fileName + " ERROR " + errorDesc);
-    FBTest.ok(false, fileName + " ERROR " + errorDesc);
+    if (!FBTrace.DBG_ERRORS)  // then we are watching with another tracer, let it go
+        FBTest.ok(false, fileName + " ERROR " + errorDesc);
     FBTestFirebug.testDone();
     return false;
 }
@@ -1318,7 +1378,7 @@ window.onerror = function(errType, errURL, errLineNum)
 /**
  * Select a location, eg a sourcefile in the Script panel, using the string the user sees.<br/><br/>
  * Example:<br/>
- * <code>var panel = FW.FirebugChrome.selectPanel("script");<br/>
+ * <code>var panel = FW.Firebug.chrome.selectPanel("script");<br/>
  * FBTestFirebug.selectPanelLocationByName(panel, "foo.js");<code>
  */
 this.selectPanelLocationByName = function(panel, name)
@@ -1412,7 +1472,7 @@ this.waitForDisplayedElement = function(panelName, config, callback)
         }
     }
 
-    FW.FirebugChrome.selectPanel(panelName);
+    FW.Firebug.chrome.selectPanel(panelName);
 
     var doc = FBTestFirebug.getPanelDocument();
     var recognizer = new MutationRecognizer(doc.defaultView, config.tagName,
@@ -1444,7 +1504,7 @@ this.waitForDisplayedElement = function(panelName, config, callback)
  */
 this.waitForDisplayedText = function(panelName, text, callback)
 {
-    var panel = FW.FirebugChrome.selectPanel(panelName);
+    var panel = FW.Firebug.chrome.selectPanel(panelName);
     var rec = new MutationRecognizer(panel.document.defaultView, "Text", {}, text);
     rec.onRecognizeAsync(callback);
 }
@@ -1487,7 +1547,7 @@ this.clearConsole = function(chrome)
  */
 this.searchInScriptPanel = function(searchText, callback)
 {
-    FW.FirebugChrome.selectPanel("script");
+    FW.Firebug.chrome.selectPanel("script");
 
     var config = {tagName: "div", classes: "sourceRow jumpHighlight"};
     FBTest.waitForDisplayedElement("script", config, callback);
@@ -1867,7 +1927,7 @@ this.inspectorClear = function()
 
 /**
  * Waits till a specified property is displayed in the DOM panel.
- * 
+ *
  * @param {String} propName Name of the property to be displayed
  * @param {Function} callback Function called after the property is visible.
  * @param {Boolean} checkAvailability Execute the callback synchronously if the property
