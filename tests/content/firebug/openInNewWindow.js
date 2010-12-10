@@ -63,7 +63,13 @@ function reloadAgainAndWaitForBreak(callback)
     {
         hit = true;
         FBTest.progress("The second break on the breakpoint.");
-        FBTest.clickContinueButton();
+
+        // xxxHonza: This timeout is puzzling me, but if it isn't there
+        // the debugger is not resumed even if the Debugger.resume is 
+        // properly called.
+        setTimeout(function() {
+            FBTest.clickContinueButton();
+        }, 500);
     });
 
     FBTest.reload(function()
