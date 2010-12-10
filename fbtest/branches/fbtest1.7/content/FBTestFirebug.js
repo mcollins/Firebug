@@ -805,12 +805,12 @@ this.enableAllPanels = function()
  */
 this.selectPanel = function(panelName, chrome)
 {
-    return chrome?chrome.selectPanel(panelName):FW.FirebugChrome.selectPanel(panelName);
+    return chrome?chrome.selectPanel(panelName):FW.Firebug.chrome.selectPanel(panelName);
 }
 
 this.selectSidePanel = function(panelName, chrome)
 {
-    return chrome?chrome.selectSidePanel(panelName):FW.FirebugChrome.selectSidePanel(panelName);
+    return chrome?chrome.selectSidePanel(panelName):FW.Firebug.chrome.selectSidePanel(panelName);
 }
 
 /* select a panel tab */
@@ -979,12 +979,12 @@ this.executeCommand = function(expr, chrome)
 
 this.typeCommand = function(string)
 {
-    var doc = FW.FirebugChrome.window.document;
+    var doc = FW.Firebug.chrome.window.document;
     var cmdLine = doc.getElementById("fbCommandLine");
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
-    FW.FirebugChrome.window.focus();
+    FW.Firebug.chrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
 
@@ -1017,7 +1017,7 @@ this.clickContinueButton = function(chrome)
 this.clickBreakOnNextButton = function(chrome)
 {
     if (!chrome)
-        chrome = FW.FirebugChrome;
+        chrome = FW.Firebug.chrome;
 
     var doc = chrome.window.document;
     var button = doc.getElementById("fbBreakOnNextButton");
@@ -1047,7 +1047,7 @@ this.clickPersistButton = function(chrome)
 this.clickToolbarButton = function(chrome, buttonID)
 {
     if (!chrome)
-        chrome = FW.FirebugChrome;
+        chrome = FW.Firebug.chrome;
 
     var doc = chrome.window.document;
     var button = doc.getElementById(buttonID);
@@ -1378,7 +1378,7 @@ window.onerror = function(errType, errURL, errLineNum)
 /**
  * Select a location, eg a sourcefile in the Script panel, using the string the user sees.<br/><br/>
  * Example:<br/>
- * <code>var panel = FW.FirebugChrome.selectPanel("script");<br/>
+ * <code>var panel = FW.Firebug.chrome.selectPanel("script");<br/>
  * FBTestFirebug.selectPanelLocationByName(panel, "foo.js");<code>
  */
 this.selectPanelLocationByName = function(panel, name)
@@ -1472,7 +1472,7 @@ this.waitForDisplayedElement = function(panelName, config, callback)
         }
     }
 
-    FW.FirebugChrome.selectPanel(panelName);
+    FW.Firebug.chrome.selectPanel(panelName);
 
     var doc = FBTestFirebug.getPanelDocument();
     var recognizer = new MutationRecognizer(doc.defaultView, config.tagName,
@@ -1504,7 +1504,7 @@ this.waitForDisplayedElement = function(panelName, config, callback)
  */
 this.waitForDisplayedText = function(panelName, text, callback)
 {
-    var panel = FW.FirebugChrome.selectPanel(panelName);
+    var panel = FW.Firebug.chrome.selectPanel(panelName);
     var rec = new MutationRecognizer(panel.document.defaultView, "Text", {}, text);
     rec.onRecognizeAsync(callback);
 }
@@ -1547,7 +1547,7 @@ this.clearConsole = function(chrome)
  */
 this.searchInScriptPanel = function(searchText, callback)
 {
-    FW.FirebugChrome.selectPanel("script");
+    FW.Firebug.chrome.selectPanel("script");
 
     var config = {tagName: "div", classes: "sourceRow jumpHighlight"};
     FBTest.waitForDisplayedElement("script", config, callback);
