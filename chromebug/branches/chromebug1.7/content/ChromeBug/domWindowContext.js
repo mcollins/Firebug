@@ -14,7 +14,10 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
 {
     var tabContext = new Firebug.TabContext(global, browser, Firebug.chrome, persistedState);
     for (var n in tabContext)
-         this[n] = tabContext[n];
+    {
+         if (typeof(this[n]) != 'function')
+             this[n] = tabContext[n];
+    }
 
     this.isChromeBug = true;
     this.loaded = true;
