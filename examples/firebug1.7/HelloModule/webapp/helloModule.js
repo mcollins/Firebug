@@ -5,7 +5,7 @@ define(function(require, exports, module) {
 //*************************************************************************************************
 // Imports
 
-var DomTree = require("modules/domTree").DomTree;
+var DomTree = require("modules/dom-tree").DomTree;
 
 //*************************************************************************************************
 // The Application

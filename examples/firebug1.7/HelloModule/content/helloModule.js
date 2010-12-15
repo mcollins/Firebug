@@ -17,7 +17,7 @@ function require() { return loader.require.apply(loader, arguments); };
 // ********************************************************************************************* //
 // Imports
 
-var DomTree = require("modules/domTree").DomTree;
+var DomTree = require("modules/dom-tree").DomTree;
 var add = loader.require("modules/add").add;
 var subtract = loader.require("modules/subtract").subtract;
 
