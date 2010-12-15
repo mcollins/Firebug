@@ -1424,6 +1424,9 @@ var KeyBindingsManager =
         var contentBox = $("fbContentBox");
         contentBox.addEventListener("focus", this.onFocus, true);
         contentBox.addEventListener("blur", this.onBlur, true);
+
+        // Shortcuts are disabled by default.
+        this.enableKeys(false);
     },
 
     shutdown: function()
@@ -1438,7 +1441,6 @@ var KeyBindingsManager =
         if (this.isEnabled)
             return;
 
-        this.isEnabled = true;
         this.enableKeys(true);
     },
 
@@ -1447,12 +1449,16 @@ var KeyBindingsManager =
         if (!this.isEnabled)
             return;
 
-        this.isEnabled = false;
         this.enableKeys(false);
     },
 
     enableKeys: function(enable)
     {
+        this.isEnabled = enable;
+
+        if (FBTrace.DBG_SHORTCUTS)
+            FBTrace.sysout("shortcuts.enableKeys; " + enable);
+
         // Get all key bindings marked as fbOnlyKey
         if (!this.fbOnlyKeys)
         {
