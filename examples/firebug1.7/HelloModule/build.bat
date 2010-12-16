@@ -1,1 +1,1 @@
-requirejs\build\build.bat build.js
+requirejs\build\build.bat build-config.js
