@@ -156,11 +156,9 @@
           */
          evaluate: function evaluate(options) { // NB shadow variable!
 
-             FBTrace.sysout("evaluate filename "+options.filename+" type "+typeof(options.filename),options);
-
            if (typeof(options) == 'string')
              options = {contents: options};
-           options = {__proto__: options};
+           options = {__proto__: options}; // what magic is this?
            if (typeof(options.contents) != 'string')
              throw new Error('Expected string for options.contents');
            if (options.lineNo === undefined)
@@ -172,6 +170,9 @@
 
            //if (this._principal == systemPrincipal)
            //  options.filename = maybeParentifyFilename(options.filename);
+
+           if (FBTrace.DBG_LOAD)
+               FBTrace.sysout("evaluate filename "+options.filename+" type "+typeof(options.filename),options);
 
            return Cu.evalInSandbox(options.contents,
                                    this._sandbox,
@@ -237,13 +238,13 @@
        var self = this;
 
        function syncRequire(module) {
-         var exports;
+         var module_exports;  // hides exports
 
          if (self.getModuleExports)
-           exports = self.getModuleExports(basePath, module);
+           module_exports = self.getModuleExports(basePath, module);
 
          var module_info = null; /* null for require("chrome") */
-         if (!exports) {
+         if (!module_exports) {
            var path = self.fs.resolveModule(basePath, module);
            if (!path)
              throw new Error('Module "' + module + '" not found');
@@ -291,22 +292,36 @@
                  };
                })(sandbox.globalScope.Iterator)
              );
+
+             // Install a global 'exports' in the _sandbox. How is it different from defineProperty? only because of the filename
              sandbox.evaluate({contents: "var exports = {};", filename: module_info.filename});
+
+             // Point to the global 'exports' in the sandbox
              self.modules[path] = sandbox.getProperty("exports");
+
+             if (FBTrace.DBG_LOAD)
+            	 sandbox.defineProperty('FBTrace', FBTrace);
+             else
+            	 sandbox.defineProperty('FBTrace', {});
+
              self.module_infos[path] = module_info;
              if (self.modifyModuleSandbox)
-               self.modifyModuleSandbox(sandbox, module_info);
+                 self.modifyModuleSandbox(sandbox, module_info);
+
              sandbox.evaluate(module_info);
+
+             if (FBTrace.DBG_LOAD)
+            	 FBTrace.sysout("sandbox after evaluate ", sandbox._sandbox);
            }
-           exports = self.modules[path];
+           module_exports = self.modules[path];
          }
 
          if (self.securityPolicy &&
              !self.securityPolicy.allowImport(self, basePath, module,
-                                              module_info, exports))
+                                              module_info, module_exports))
            throw new Error("access denied to import module: " + module);
 
-         return exports;
+         return module_exports;
        };
 
        // START support Async module-style require and define calls.
@@ -335,7 +350,7 @@
 
          // For anonymous modules, the namePath is the basePath
          var namePath = basePath,
-             exports = {}, exported;
+             define_exports = this.exports, exported;
 
          // Adjust args if an anonymous module
          if (typeof name !== 'string') {
@@ -371,14 +386,14 @@
            return;
          }
 
-         // Set the exports value now in case other modules need a handle
+         // Set the define_exports value now in case other modules need a handle
          // on it for cyclical cases.
-         self.modules[namePath] = exports;
+         self.modules[namePath] = define_exports;
 
          // Load dependencies and call the module's definition function.
-         exported = asyncMain(name, namePath, exports, deps, callback);
+         exported = asyncMain(name, namePath, define_exports, deps, callback);
 
-         // Assign output of function to name, if exports was not
+         // Assign output of function to name, if define_exports was not
          // in play (which asyncMain already figured out).
          if (exported !== undefined) {
            if (self.pathAccessed[namePath] > 1) {
@@ -389,6 +404,7 @@
                              'after another module has referenced its ' +
                              'exported value.');
            } else {
+
              self.modules[namePath] = exported;
            }
          }
@@ -399,7 +415,7 @@
        // It makes sure all the dependencies exist before calling the
        // callback function. It will return the result of the callback
        // function if "exports" is not a dependency.
-       function asyncMain (name, namePath, exports, deps, callback) {
+       function asyncMain (name, namePath, asyncMain_exports, deps, callback) {
 
          if (typeof deps === 'function') {
            callback = deps;
@@ -450,7 +466,7 @@
                });
              } else if (dep === "exports") {
                usesExports = true;
-               depModules.push(exports);
+               depModules.push(asyncMain_exports);
              } else {
                var overridden;
                if (self.getModuleExports)
