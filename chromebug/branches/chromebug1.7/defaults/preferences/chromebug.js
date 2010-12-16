@@ -143,6 +143,7 @@ pref("extensions.chromebug.DBG_DISPATCH", false);     //                        
 pref("extensions.chromebug.DBG_HTML", false);         //                                          /*@explore*/
 pref("extensions.chromebug.DBG_LINETABLE", false);    // /*@explore*/
 pref("extensions.chromebug.DBG_LOCATIONS", false);    // panelFileList
+pref("extensions.chromebug.DBG_LOAD", false);    // panelFileList
 pref("extensions.chromebug.DBG_SOURCEFILES", false);  // debugger and sourceCache                  /*@explore*/
 pref("extensions.chromebug.DBG_WINDOWS", false);      // tabWatcher, dispatch events; very useful for understand modules/panels  /*@explore*/
 pref("extensions.chromebug.DBG_NET", false);          // net.js                                    /*@explore*/
