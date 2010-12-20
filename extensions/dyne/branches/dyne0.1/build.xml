@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+
+<!-- In order to build dyne extension run: $ant build
+    The final xpi file should be located in release directory
+    GETFIREBUG in ant.properties assumes you have fbug and getfirebug.com directories at the same level -->
+<project name="dyne" basedir="." default="build">
+
+    <!-- Directories -->
+    <property name="build.dir" value="../../build"/>
+
+    <!-- Properties -->
+    <property file="ant.properties"/>
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- Build -->
+    <target name="build" depends="clean">
+
+        <!-- Copy directory -->
+        <copy todir="${build.dir}">
+            <fileset dir=".">
+               <include name="**/*.js"/>
+               <include name="**/*.xul"/>
+               <include name="**/*.properties"/>
+               <include name="**/*.css"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy extension installation files and licence.txt -->
+        <copy file="chrome.manifest" todir="${build.dir}"/>
+        <copy file="install.rdf" todir="${build.dir}"/>
+        <copy file="license.txt" todir="${build.dir}"/>
+
+        <!-- Update release version from ant.properties file -->
+        <replace file="${build.dir}/install.rdf" propertyFile="ant.properties">
+            <replacefilter token="@VERSION@" property="VERSION"/>
+            <replacefilter token="@RELEASE@" property="RELEASE"/>
+        </replace>
+
+        <!-- Create final dyne.xpi file -->
+        <zip destfile="${GETFIREBUG}/dyne-${VERSION}${RELEASE}.xpi"
+            basedir="${build.dir}" update="true" />
+
+        <!-- Generate update.rdf file -->
+        <delete file="${GETFIREBUG}/update.rdf"/>
+        <copy file="update.rdf" todir="${GETFIREBUG}"/>
+
+        <replace file="${GETFIREBUG}/update.rdf" propertyFile="ant.properties">
+            <replacefilter token="@VERSION@" property="VERSION"/>
+            <replacefilter token="@RELEASE@" property="RELEASE"/>
+        </replace>
+
+        <delete dir="${build.dir}"/>
+
+        <!-- Final version message -->
+        <echo message="dyne version: ${VERSION}${RELEASE} in ${GETFIREBUG}"/>
+    </target>
+
+</project>

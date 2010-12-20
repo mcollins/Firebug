@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>dyne@getfirebug.com</em:id>
+    <em:version>@VERSION@@RELEASE@</em:version>
+    <em:type>2</em:type>
+
+    <!-- Any suitably modern toolkit application -->
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.9.0.*</em:minVersion>
+        <em:maxVersion>2.0.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <em:name>dyne</em:name>
+    <em:description>CSS selectors sidepanel for Firebug.</em:description>
+    <em:creator>John J. Barton</em:creator>
+    <em:contributor>Jan Odvarko</em:contributor>
+    <em:homepageURL>http://getfirebug.com/releases/extensions.html#dyne</em:homepageURL>
+
+    <em:updateURL>https://getfirebug.com/releases/dyne/1.5/update.rdf</em:updateURL>
+  </Description>
+</RDF>
