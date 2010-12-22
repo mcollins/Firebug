@@ -857,7 +857,7 @@ top.FirebugChrome =
 
                     panelStatus.selectObject(panel.selection);
                     if (FBTrace.DBG_PANELS)
-	                    FBTrace.sysout("syncStatusPath "+path.length+" items ", path);
+                        FBTrace.sysout("syncStatusPath "+path.length+" items ", path);
                 }
             }
         }
@@ -1236,9 +1236,10 @@ top.FirebugChrome =
 
                 var title = Firebug.getPanelTitle(panelType);
                 var label = FBL.$STRF("InspectInTab", [title]);
+                var id = "InspectIn" + panelName + "Tab";
 
                 var command = bindFixed(this.select, this, object, panelName);
-                items.push({label: label, command: command, nol10n: true});
+                items.push({label: label, command: command, nol10n: true, id: id});
             }
         }
 

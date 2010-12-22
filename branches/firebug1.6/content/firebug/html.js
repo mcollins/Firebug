@@ -1202,7 +1202,14 @@ Firebug.HTMLPanel.prototype = extend(WalkingPanel,
     {
         var path = [];
         for (; element; element = this.getParentObject(element))
+        {
+            // Ignore the document itself, it shouldn't be displayed in
+            // the object path (aka breadcrumbs).
+            if (element instanceof Document)
+                continue;
+
             path.push(element);
+        }
 
         return path;
     },

@@ -5666,7 +5666,28 @@ domMemberMap.Element = extendArray(domMemberMap.Node,
     "isSupported",
     "getFeature",
     "getUserData",
-    "setUserData"
+    "setUserData",
+
+    "childElementCount",
+    "children",
+    "classList",
+    "clientLeft",
+    "clientTop",
+    "contentEditable",
+    "draggable",
+    "firstElementChild",
+    "lastElementChild",
+    "nextElementSibling",
+    "previousElementSibling",
+
+    "getBoundingClientRect",
+    "getClientRects",
+    "getElementsByClassName",
+    "mozMatchesSelector",
+    "querySelector",
+    "querySelectorAll",
+    "scrollIntoView"
+
 ]);
 
 domMemberMap.SVGElement = extendArray(domMemberMap.Element,
@@ -6034,24 +6055,24 @@ this.isDOMConstant = function(object, name)
     {
         return isDOMConstantDep({},object);
     }
-    
+
     // The constant map has also its own prototype, but it isn't considered to be a constant.
     if (name == "__proto__")
         return false;
-    
+
     if (!(
-        object instanceof Window || 
-        object instanceof Node || 
-        object instanceof Location || 
+        object instanceof Window ||
+        object instanceof Node ||
+        object instanceof Location ||
         object instanceof Event
     ))
         return false;
 
-    return (name in this.domConstantMap);
+    return domConstantMap.hasOwnProperty(name);
 }
 var isDOMConstantDep = deprecated("isDOMConstant(name) signature changed (object,name)",this.isDOMConstant);
 
-this.domConstantMap =
+var domConstantMap = this.domConstantMap =
 {
     "ELEMENT_NODE": 1,
     "ATTRIBUTE_NODE": 1,
