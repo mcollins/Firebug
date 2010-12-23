@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-FBL.ns(function() { with (FBL) { 
+FBL.ns(function() { with (FBL) {
 
 // ********************************************************************************************* //
 // Constants
@@ -9,17 +9,6 @@ var Ci = Components.interfaces;
 var Cc = Components.classes;
 var Cu = Components.utils;
 
-// Chrome module loader initialization
-var loader = new SecurableModule.Loader({defaultPrincipal: "system",
-    rootPath: "resource://hellomodule/modules"});
-function require() { return loader.require.apply(loader, arguments); };
-
-// ********************************************************************************************* //
-// Imports
-
-var DomTree = require("dom-tree").DomTree;
-var add = loader.require("add").add;
-var subtract = loader.require("subtract").subtract;
 
 // ********************************************************************************************* //
 // Firebug Panel
@@ -29,7 +18,7 @@ var panelName = "HelloModule";
 /**
  * Panel implementation
  */
-function HelloModulePanel() {} 
+function HelloModulePanel() {}
 HelloModulePanel.prototype = extend(Firebug.Panel,
 {
     name: panelName,
@@ -45,14 +34,26 @@ HelloModulePanel.prototype = extend(Firebug.Panel,
         var domTree = new DomTree(FBL.unwrapObject(this.context.window));
         domTree.append(this.panelNode);
     }
-}); 
+});
 
 // ********************************************************************************************* //
 
-Firebug.HelloModuleModel = extend(Firebug.Module, 
-{ 
+Firebug.HelloModuleModel = extend(Firebug.Module,
+{
     onLoadModules: function(context)
     {
+        // Chrome module loader initialization
+        var loader = new SecurableModule.Loader({defaultPrincipal: "system",
+            rootPath: "resource://hellomodule/modules"});
+        function require() { return loader.require.apply(loader, arguments); };
+
+        // ********************************************************************************************* //
+        // Imports
+
+        var DomTree = require("dom-tree").DomTree;
+        var add = loader.require("add").add;
+        var subtract = loader.require("subtract").subtract;
+
         FBTrace.sysout("1 + 2 = " + add(1, 2));
         FBTrace.sysout("3 - 1 = " + subtract(3, 1));
         FBTrace.sysout("helloModule; All modules loaded!");
@@ -63,7 +64,7 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
 // Registration
 
 Firebug.registerPanel(HelloModulePanel);
-Firebug.registerModule(Firebug.HelloModuleModel); 
+Firebug.registerModule(Firebug.HelloModuleModel);
 Firebug.registerStylesheet("chrome://hellomodule/skin/domTree.css");
 
 // ********************************************************************************************* //

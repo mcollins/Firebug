@@ -3,16 +3,16 @@
     <script src="chrome://hellomodule/content/securable-module-requirejs.js" type="application/x-javascript"/>
     <script src="chrome://hellomodule/content/helloModule.js" type="application/x-javascript"/>
 
-    <commandset id="mainCommandSet"> 
+    <commandset id="mainCommandSet">
         <command id="cmd_loadModules" oncommand="Firebug.HelloModuleModel.onLoadModules(FirebugContext)"/>
-    </commandset> 
+    </commandset>
 
     <!-- Extend Firebug's status bar context menu -->
-    <statusbar id="status-bar">
+    <popupset id="mainPopupSet">
         <menupopup id="fbStatusContextMenu">
             <menuseparator/>
             <menuitem id="menu_LoadModules" label="Load Modules" command="cmd_loadModules"/>
         </menupopup>
-    </statusbar>
+    </popupset>
 
 </overlay>
