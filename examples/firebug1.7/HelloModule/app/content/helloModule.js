@@ -38,21 +38,26 @@ HelloModulePanel.prototype = extend(Firebug.Panel,
 
 // ********************************************************************************************* //
 
+
+
 Firebug.HelloModuleModel = extend(Firebug.Module,
 {
     onLoadModules: function(context)
     {
         // Chrome module loader initialization
-        var loader = new SecurableModule.Loader({defaultPrincipal: "system",
+        /*
+        var loader = new SecurableModule.Loader({principal: "system",
             rootPath: "resource://hellomodule/modules"});
         function require() { return loader.require.apply(loader, arguments); };
+*/
 
+        Components.utils.import("resource://hellomodule/ModuleLoader.js");
         // ********************************************************************************************* //
         // Imports
 
-        var DomTree = require("dom-tree").DomTree;
-        var add = loader.require("add").add;
-        var subtract = loader.require("subtract").subtract;
+        var DomTree = require(["resource://hellomodule/dom-tree.js"]).DomTree;
+        var add = require("resource://hellomodule/add.js").add;
+        var subtract = require("resource://hellomodule/subtract.js").subtract;
 
         FBTrace.sysout("1 + 2 = " + add(1, 2));
         FBTrace.sysout("3 - 1 = " + subtract(3, 1));

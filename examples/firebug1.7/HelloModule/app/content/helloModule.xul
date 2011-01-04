@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <overlay id="helloModule" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    <script src="chrome://hellomodule/content/securable-module-requirejs.js" type="application/x-javascript"/>
+    <!-- <script src="chrome://hellomodule/content/securable-module-requirejs.js" type="application/x-javascript"/>
+    <script src="chrome://hellomodule/content/ModuleLoader.js" type="application/x-javascript"/> -->
     <script src="chrome://hellomodule/content/helloModule.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
