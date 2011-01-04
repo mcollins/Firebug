@@ -1,6 +1,6 @@
-    // Firebug dev support
-    Components.utils.import("resource://firebug/firebug-trace-service.js");
-    var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
+// Firebug dev support
+Components.utils.import("resource://firebug/firebug-trace-service.js");
+var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
 
 // allow this file to be loaded via resource url eg resource://firebug/ModuleLoader.js
 var EXPORTED_SYMBOLS = ["ModuleLoader", "require", "define"];
@@ -13,7 +13,7 @@ var Cu = Components.utils;
 // Similar to: http://wiki.ecmascript.org/doku.php?id=strawman:module_loaders
 
 /*
- * @param load: a hook that filters and transforms MRL’s for loading. OMITTED
+ * @param load: a hook that filters and transforms MRL's for loading. OMITTED
  * @param global: the global object to use for the execution context associated with the module loader.
  */
 
@@ -78,7 +78,7 @@ ModuleLoader.prototype = {
         return this.global;
     },
     /*
-     * @return registers a frozen object as a top-level module in the module loader’s registry. The own-properties of the object are treated as the exports of the module instance.
+     * @return registers a frozen object as a top-level module in the module loader's registry. The own-properties of the object are treated as the exports of the module instance.
      */
     attachModule: function(name, module) {
         this.registry[name] = module;  // its a lie, we register compilation units
