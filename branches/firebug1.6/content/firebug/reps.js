@@ -669,7 +669,7 @@ this.Element = domplate(Firebug.Rep,
     tag:
         OBJECTLINK(
             "&lt;",
-            SPAN({"class": "nodeTag"}, "$object.localName|toLowerCase"),
+            SPAN({"class": "nodeTag"}, "$object|getLocalName"),
             FOR("attr", "$object|attrIterator",
                 "&nbsp;$attr.localName=&quot;",
                 SPAN({"class": "nodeValue"}, "$attr|getAttrValue"),
@@ -688,6 +688,18 @@ this.Element = domplate(Firebug.Rep,
             )
          ),
 
+    getLocalName: function(object)
+    {
+        try
+        {
+            return object.localName.toLowerCase();
+        }
+        catch (err)
+        {
+            return "";
+        }
+    },
+
     getAttrValue: function(attr)
     {
         var limit = Firebug.displayedAttributeValueLimit;
@@ -701,19 +713,33 @@ this.Element = domplate(Firebug.Rep,
 
     getSelectorTag: function(elt)
     {
-        return elt.localName.toLowerCase();
+        return this.getLocalName(elt);
     },
 
     getSelectorId: function(elt)
     {
-        return elt.id ? ("#" + elt.id) : "";
+        try
+        {
+            return elt.id ? ("#" + elt.id) : "";
+        }
+        catch (e)
+        {
+            return "";
+        }
     },
 
     getSelectorClass: function(elt)
     {
-        return elt.getAttribute("class")
-            ? ("." + elt.getAttribute("class").split(" ")[0])
-            : "";
+        try
+        {
+            return elt.getAttribute("class")
+                ? ("." + elt.getAttribute("class").split(" ")[0])
+                : "";
+        }
+        catch (err)
+        {
+        }
+        return "";
     },
 
     getValue: function(elt)
@@ -2166,9 +2192,18 @@ this.StorageList = domplate(Firebug.Rep,
 
     summarize: function(globalStorage)
     {
-        var context = Firebug.currentContext;
-        var domain = getPrettyDomain(context.window.location.href);
-        return globalStorage.namedItem(domain).length + " items in Global Storage "; //xxxHonza localization
+        try
+        {
+            var context = Firebug.currentContext;
+            var domain = getPrettyDomain(context.window.location.href);
+            return globalStorage.namedItem(domain).length + " items in Global Storage "; //xxxHonza localization
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("reps.StorageList.summarize; EXCEPTION " + e, e);
+        }
+        return "";
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2182,8 +2217,16 @@ this.StorageList = domplate(Firebug.Rep,
 
     getRealObject: function(object, context)
     {
-        var domain = getPrettyDomain(context.window.location.href);
-        return globalStorage.namedItem(domain);
+        try
+        {
+            var domain = getPrettyDomain(context.window.location.href);
+            return globalStorage.namedItem(domain);
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("reps.StorageList.getRealObject; EXCEPTION " + e, e);
+        }
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2201,9 +2244,18 @@ this.StorageList = domplate(Firebug.Rep,
 
     propIterator: function(object, max)
     {
-        var context = Firebug.currentContext;
-        var domain = getPrettyDomain(context.window.location.href);
-        return FirebugReps.Obj.propIterator(object.namedItem(domain), max);
+        try
+        {
+            var context = Firebug.currentContext;
+            var domain = getPrettyDomain(context.window.location.href);
+            return FirebugReps.Obj.propIterator(object.namedItem(domain), max);
+        }
+        catch (e)
+        {
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("reps.StorageList.propIterator; EXCEPTION " + e, e);
+        }
+        return [];
     },
 });
 
