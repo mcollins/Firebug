@@ -123,7 +123,7 @@ var require, define;
     function newContext(contextName) {
         var context, resume,
             config = {
-                waitSeconds: 7,
+                waitSeconds: 0,
                 baseUrl: s.baseUrl || "./",
                 paths: {},
                 packages: {}
@@ -1205,6 +1205,8 @@ var require, define;
     req.isArray = isArray;
     req.isFunction = isFunction;
     req.mixin = mixin;
+    // publish the default value so clients can test without copy/paste
+    req.defaultContextName = defContextName;
     //Used to filter out dependencies that are already paths.
     req.jsExtRegExp = /^\/|:|\?|\.js$/;
     s = req.s = {
@@ -1258,6 +1260,7 @@ var require, define;
 
         if (!urlFetched[url]) {
             context.scriptCount += 1;
+            req.completeLoad = context.completeLoad;
             req.attach(url, contextName, moduleName);
             urlFetched[url] = true;
 

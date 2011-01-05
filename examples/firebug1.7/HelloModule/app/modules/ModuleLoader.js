@@ -14,13 +14,13 @@ var Cu = Components.utils;
 
 /*
  * @param load: a hook that filters and transforms MRL's for loading. OMITTED
+ * @param name: string to be returned by getModuleLoaderName
  * @param global: the global object to use for the execution context associated with the module loader.
- * @param name: optional string to be returned by getModuleLoaderName
  */
 
-function ModuleLoader(global, name) {
-    this.global = global;
+function ModuleLoader(name, global) {
     this.name = name;
+    this.global = global;
 
     this.registry = {};
     this.totalEvals = 0;
@@ -51,35 +51,19 @@ ModuleLoader.get = function(name) {
 ModuleLoader.systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].createInstance(Ci.nsIPrincipal);
 ModuleLoader.mozIOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
-ModuleLoader.getDefaultLoader = function(name) {
-    var global;
-
-    isBrowser = !!(typeof window !== "undefined" && navigator && document);
-
-    if (isBrowser)
-        global = window;
-
-    return new ModuleLoader(global, name);
-}
-
-
 ModuleLoader.bootStrap = function(requirejsPath) {
-
-    var primordialLoader = ModuleLoader.getDefaultLoader();
+    var primordialLoader = new ModuleLoader("_Primordial");
     var unit = primordialLoader.loadModule(requirejsPath);
     // require.js does not export so we need to fix that
     unit.exports = {
         require: unit.sandbox.require,
         define: unit.sandbox.define
     };
-    // attach to requirejs using http://requirejs.org/docs/api.html#config
-    unit.exports.require({context:primordialLoader.getModuleLoaderName()});
-
     return unit.exports;
 }
 
 // The ModuleLoader.prototype will close over these globals which will be set when the outer function runs.
-var require;
+var coreRequire;
 var define;
 
 ModuleLoader.prototype = {
@@ -140,7 +124,7 @@ ModuleLoader.prototype = {
             }
         }
 
-        thatGlobal.require = require;  // by the time we are called to loadModules, the bootstrap has set these globals
+        thatGlobal.require = coreRequire;  // by the time we are called to loadModules, the bootstrap has set these globals
         thatGlobal.define = define;
 
         thatGlobal.exports = {}; // create the container for the module to fill with exported properties
@@ -151,12 +135,31 @@ ModuleLoader.prototype = {
                 if (callback) {
                     callback(unit.exports);  // this call throws we do not register the module?
                 }
-                this.attachModule(mrl, unit);
             }
         }
+        this.attachModule(mrl, unit);  // even if we don't have any valid exports, so we can try to finish dependencies
         return unit;
     },
 
+    // **** clients will get require from their ModuleLoader instance
+    require: function remapRequire() {
+        var maybeConfig = arguments[0];
+
+        if (maybeConfig) {
+            if (!coreRequire.isArray(maybeConfig) && typeof( maybeConfig ) !== "string") {  // isA config
+                var cfg = maybeConfig;
+                if (!cfg.context) {
+                    cfg.context = ModuleLoader.currentModuleLoader.getModuleLoaderName();
+                } // else caller better know what they are doing...
+                var args = arguments;
+            } else {
+                var args = [{context: ModuleLoader.currentModuleLoader.getModuleLoaderName()}];
+                for (var i = 0; i < arguments.length; ++i)
+                       args.push(arguments[i]);
+            }
+            return coreRequire.apply(this, args);
+        }
+    },
     // ****
     getSandbox: function(unit) {
         unit.principal = this.getPrincipal();
@@ -243,10 +246,10 @@ ModuleLoader.prototype = {
 }
 
 ModuleLoader.requireJSFileName = "resource://hellomodule/require.js";
-require = ModuleLoader.bootStrap(ModuleLoader.requireJSFileName).require;
+coreRequire = ModuleLoader.bootStrap(ModuleLoader.requireJSFileName).require;
 
-if (require) {
-    define = require.def; // see require.js
+if (coreRequire) {
+    define = coreRequire.def; // see require.js
 } else {
     throw new Error("ModuleLoader ERROR failed to read and load "+ModuleLoader.requireJSFileName);
 }
@@ -255,14 +258,12 @@ if (require) {
 
 // Override to connect require.js to our loader
 //
-require.attach = function (url_chopped_off, moduleLoaderName, moduleName, callback, type) {
-
-    var url = url_chopped_off;// + ".js";
+coreRequire.attach = function (url, moduleLoaderName, moduleName, callback, type) {
 
     var moduleLoader = ModuleLoader.get(moduleLoaderName);
 
     if (!moduleLoader) {  // then perhaps we can create one?
-        var defaultContextName = require.defaultContextName; // it was published by requirejs
+        var defaultContextName = coreRequire.defaultContextName; // it was published by requirejs
         if (!defaultContextName) {
             defaultContextName = "_"; // I saw it in the source and copied it here.
         }
@@ -272,20 +273,25 @@ require.attach = function (url_chopped_off, moduleLoaderName, moduleName, callba
     }
     if (moduleLoader) { // then we are good to go!
         var unit = moduleLoader.loadModule(url, callback);
+        coreRequire.completeLoad(moduleName);
         var module = moduleLoader.getModule(url);
         if (module) {
             return module;
         } else {
-            require.onError(new Error("loading modules from "+url+" gave no exports; modules must add properties to |exports|"), unit);
+            coreRequire.onError(new Error("loading modules from "+url+" gave no exports; modules must add properties to |exports|"), unit);
         }
     } else {
-        return require.onError( new Error("require.attach called with unknown moduleLoaderName "+moduleLoaderName+" for url "+url), ModuleLoader );
+        return coreRequire.onError( new Error("require.attach called with unknown moduleLoaderName "+moduleLoaderName+" for url "+url), ModuleLoader );
     }
 
 }
 
-require.chainOnError = require.onError;
-require.onError = function (err, object) {
+coreRequire.chainOnError = coreRequire.onError;
+coreRequire.onError = function (err, object) {
     FBTrace.sysout(err+"",{errorObject: err, moreInfo: object});
-    require.chainOnError(err);
+    coreRequire.chainOnError(err);
 }
+
+// Every time we createInstance we will emit a new ModuleLoader
+
+// Prepare our exports, these will eventually be customized by the component createInstance

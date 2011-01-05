@@ -52,6 +52,7 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
 */
 
         Components.utils.import("resource://hellomodule/ModuleLoader.js");
+        var require = (new ModuleLoader("resource://hellomodule/")).require;
         // ********************************************************************************************* //
         // Imports
 
