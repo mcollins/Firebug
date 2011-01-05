@@ -15,10 +15,12 @@ var Cu = Components.utils;
 /*
  * @param load: a hook that filters and transforms MRL's for loading. OMITTED
  * @param global: the global object to use for the execution context associated with the module loader.
+ * @param name: optional string to be returned by getModuleLoaderName
  */
 
-function ModuleLoader(global) {
+function ModuleLoader(global, name) {
     this.global = global;
+    this.name = name;
 
     this.registry = {};
     this.totalEvals = 0;
@@ -49,7 +51,7 @@ ModuleLoader.get = function(name) {
 ModuleLoader.systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].createInstance(Ci.nsIPrincipal);
 ModuleLoader.mozIOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
-ModuleLoader.bootStrap = function(requirejsPath) {
+ModuleLoader.getDefaultLoader = function(name) {
     var global;
 
     isBrowser = !!(typeof window !== "undefined" && navigator && document);
@@ -57,18 +59,28 @@ ModuleLoader.bootStrap = function(requirejsPath) {
     if (isBrowser)
         global = window;
 
-    var primordialLoader = new ModuleLoader(global);
+    return new ModuleLoader(global, name);
+}
+
+
+ModuleLoader.bootStrap = function(requirejsPath) {
+
+    var primordialLoader = ModuleLoader.getDefaultLoader();
     var unit = primordialLoader.loadModule(requirejsPath);
     // require.js does not export so we need to fix that
-    unit.module = {
+    unit.exports = {
         require: unit.sandbox.require,
         define: unit.sandbox.define
     };
     // attach to requirejs using http://requirejs.org/docs/api.html#config
-    unit.module.require({context:primordialLoader.getModuleLoaderName()});
+    unit.exports.require({context:primordialLoader.getModuleLoaderName()});
 
-    return unit.module;
+    return unit.exports;
 }
+
+// The ModuleLoader.prototype will close over these globals which will be set when the outer function runs.
+var require;
+var define;
 
 ModuleLoader.prototype = {
     /*
@@ -87,7 +99,8 @@ ModuleLoader.prototype = {
      * @return the module instance object registered at name, or null if there is no such module in the registry.
      */
     getModule: function(name) {
-        return this.registry[name].module;
+        var entry = this.registry[name];
+        if (entry) return entry.exports;
     },
     /*
      * @param unit compilation unit: {
@@ -98,7 +111,6 @@ ModuleLoader.prototype = {
      * @return completion value
      */
     evalScript: function(unit) {
-        unit.sandbox = this.getSandbox(unit);
         try {
             unit.jsVersion = unit.jsVersion || "1.8";
             unit.url = unit.url || (this.getModuleLoaderName() + this.totalEvals)
@@ -120,12 +132,28 @@ ModuleLoader.prototype = {
             source: this.mozReadTextFromFile(mrl),
             url: mrl,
         }
-        var moduleInstanceObject = this.evalScript(unit);
-        if (callback) {
-            callback(moduleInstanceObject);  // this call throws we do not register the module?
+        var thatGlobal = unit.sandbox = this.getSandbox(unit);
+
+        if (this.global) { // simulate |with|
+            for (var p in this.global) {
+                thatGlobal[p] = this.global[p];
+            }
         }
-        unit.module = moduleInstanceObject;
-        this.attachModule(mrl, unit);
+
+        thatGlobal.require = require;  // by the time we are called to loadModules, the bootstrap has set these globals
+        thatGlobal.define = define;
+
+        thatGlobal.exports = {}; // create the container for the module to fill with exported properties
+        unit.exports = thatGlobal.exports; // point to the container before the source can muck with it.
+        unit.evalResult = this.evalScript(unit);
+        for (var p in unit.exports) {
+            if (unit.exports.hasOwnProperty(p)) { // then we had at least on export
+                if (callback) {
+                    callback(unit.exports);  // this call throws we do not register the module?
+                }
+                this.attachModule(mrl, unit);
+            }
+        }
         return unit;
     },
 
@@ -214,28 +242,44 @@ ModuleLoader.prototype = {
 
 }
 
-var require = ModuleLoader.bootStrap("resource://hellomodule/require.js").require;
-var define = require.def; // see require.js
+ModuleLoader.requireJSFileName = "resource://hellomodule/require.js";
+require = ModuleLoader.bootStrap(ModuleLoader.requireJSFileName).require;
+
+if (require) {
+    define = require.def; // see require.js
+} else {
+    throw new Error("ModuleLoader ERROR failed to read and load "+ModuleLoader.requireJSFileName);
+}
+
+
 
 // Override to connect require.js to our loader
 //
-require.attach = function (url, moduleLoaderName, moduleName, callback, type) {
+require.attach = function (url_chopped_off, moduleLoaderName, moduleName, callback, type) {
+
+    var url = url_chopped_off;// + ".js";
 
     var moduleLoader = ModuleLoader.get(moduleLoaderName);
 
-    if (moduleLoader) {
-        moduleLoader.loadModule(url, callback);
-        return moduleLoader.get(url);
-    } else {
-        var defaultContextName = require.defaultContextName;
+    if (!moduleLoader) {  // then perhaps we can create one?
+        var defaultContextName = require.defaultContextName; // it was published by requirejs
         if (!defaultContextName) {
             defaultContextName = "_"; // I saw it in the source and copied it here.
         }
         if (moduleLoaderName === defaultContextName) {
-            return require.onError( new Error("require not configured: require.attach called with default context name "+moduleLoaderName+" for url "+url), ModuleLoader );
-        } else {
-            return require.onError( new Error("require.attach called with unknown moduleLoaderName "+moduleLoaderName+" for url "+url), ModuleLoader );
+            moduleLoader = ModuleLoader.getDefaultLoader(moduleLoaderName);
         }
+    }
+    if (moduleLoader) { // then we are good to go!
+        var unit = moduleLoader.loadModule(url, callback);
+        var module = moduleLoader.getModule(url);
+        if (module) {
+            return module;
+        } else {
+            require.onError(new Error("loading modules from "+url+" gave no exports; modules must add properties to |exports|"), unit);
+        }
+    } else {
+        return require.onError( new Error("require.attach called with unknown moduleLoaderName "+moduleLoaderName+" for url "+url), ModuleLoader );
     }
 
 }
