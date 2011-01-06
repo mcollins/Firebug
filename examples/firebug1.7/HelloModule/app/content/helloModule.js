@@ -57,8 +57,8 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
         // Imports
 
         //var DomTree = require({baseUrl:'resource://'}, ["hellomodule/dom-tree"], function(){}).DomTree;
-        var DomTree = require( ["resource://hellomodule/dom-tree.js"]).DomTree;
-         var add = require(["resource://hellomodule/add"]).add;
+        var DomTree = require( "resource://hellomodule/dom-tree.js").DomTree;
+         var add = require("resource://hellomodule/add").add;
         var subtract = require("resource://hellomodule/subtract.js").subtract;
 
         FBTrace.sysout("1 + 2 = " + add(1, 2));

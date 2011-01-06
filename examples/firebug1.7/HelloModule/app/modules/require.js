@@ -1415,6 +1415,7 @@ var require, define;
      * Attaches the script represented by the URL to the current
      * environment. Right now only supports browser loading,
      * but can be redefined in other environments to do the right thing.
+     * Only called by require.load().
      * @param {String} url the url of the script to attach.
      * @param {String} contextName the name of the context that wants the script.
      * @param {moduleName} the name of the module that is associated with the script.

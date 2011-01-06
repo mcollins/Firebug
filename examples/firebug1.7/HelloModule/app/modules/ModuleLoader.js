@@ -288,34 +288,27 @@ if (coreRequire) {
 
 
 // Override to connect require.js to our loader
-//
-coreRequire.attach = function (url, moduleLoaderName, moduleName, callback, type) {
+coreRequire.load = function (context, moduleName, url) {
+    //isDone is used by require.ready()
+    this.s.isDone = false;
 
-    var moduleLoader = ModuleLoader.get(moduleLoaderName);
+    //Indicate a the module is in process of loading.
+    context.loaded[moduleName] = false;
+    context.scriptCount += 1;
 
-    if (!moduleLoader) {  // then perhaps we can create one?
-        var defaultContextName = coreRequire.defaultContextName; // it was published by requirejs
-        if (!defaultContextName) {
-            defaultContextName = "_"; // I saw it in the source and copied it here.
-        }
-        if (moduleLoaderName === defaultContextName) {
-            moduleLoader = ModuleLoader.getDefaultLoader(moduleLoaderName);
-        }
-    }
+    var moduleLoader = ModuleLoader.get(context.contextName);
+
     if (moduleLoader) { // then we are good to go!
-        var unit = moduleLoader.loadModule(url, callback);
-        coreRequire.completeLoad(moduleName);
-        var module = moduleLoader.getModule(url);
-        if (module) {
-            return module;
-        } else {
-            coreRequire.onError(new Error("loading modules from "+url+" gave no exports; modules must add properties to |exports|"), unit);
-        }
+        var unit = moduleLoader.loadModule(url);
     } else {
-        return coreRequire.onError( new Error("require.attach called with unknown moduleLoaderName "+moduleLoaderName+" for url "+url), ModuleLoader );
+        return coreRequire.onError( new Error("require.attach called with unknown moduleLoaderName "+context.contextName+" for url "+url), ModuleLoader );
     }
 
-}
+    //Support anonymous modules.
+    context.completeLoad(moduleName);
+
+    unit.exports = context.defined[moduleName];
+};
 
 coreRequire.chainOnError = coreRequire.onError;
 coreRequire.onError = function (err, object) {
