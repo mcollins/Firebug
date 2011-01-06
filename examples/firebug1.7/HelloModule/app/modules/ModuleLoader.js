@@ -24,6 +24,12 @@ function ModuleLoader(name, global) {
 
     this.registry = {};
     this.totalEvals = 0;
+    this.totalEntries = 0;
+
+    var self = this;  // during the ctor call, bind a ref to the loader
+    this.require  = function() {
+        return self.remapRequire.apply(self, arguments);  // use the bound ref to call apply with proper |this|
+    }
 
     ModuleLoader.currentModuleLoader = this;
     ModuleLoader.instanceCount = 0;
@@ -78,6 +84,7 @@ ModuleLoader.prototype = {
      */
     attachModule: function(name, module) {
         this.registry[name] = module;  // its a lie, we register compilation units
+        this.totalEntries++;
     },
     /*
      * @return the module instance object registered at name, or null if there is no such module in the registry.
@@ -112,9 +119,23 @@ ModuleLoader.prototype = {
     },
 
     loadModule: function(mrl, callback) {
+        try {
+            var mozURI = ModuleLoader.mozIOService.newURI(mrl, null, (this.baseURI ? this.baseURI : null));
+            var url = mozURI.spec;
+
+            if (!this.baseURI) {  // then we did not have one configured before, use the first one we see
+                var baseURL = url.split('/').slice(0,-1).join('/');
+                this.baseURI =  ModuleLoader.mozIOService.newURI(mrl, null, null);
+            }
+
+        } catch (exc) {
+            return coreRequire.onError(new Error("ModuleLoader could not convert "+mrl+" to absolute URL using baseURI "+this.baseURI), {exception: exc, moduleLoader: this});
+        }
+
         var unit = {
-            source: this.mozReadTextFromFile(mrl),
-            url: mrl,
+            source: this.mozReadTextFromFile(url),
+            url: url,
+            mrl: mrl, // relative
         }
         var thatGlobal = unit.sandbox = this.getSandbox(unit);
 
@@ -137,28 +158,38 @@ ModuleLoader.prototype = {
                 }
             }
         }
-        this.attachModule(mrl, unit);  // even if we don't have any valid exports, so we can try to finish dependencies
+        this.attachModule(url, unit);  // even if we don't have any valid exports, so we can try to finish dependencies
         return unit;
     },
 
     // **** clients will get require from their ModuleLoader instance
-    require: function remapRequire() {
+
+    remapRequire: function () {
         var maybeConfig = arguments[0];
 
         if (maybeConfig) {
             if (!coreRequire.isArray(maybeConfig) && typeof( maybeConfig ) !== "string") {  // isA config
                 var cfg = maybeConfig;
-                if (!cfg.context) {
-                    cfg.context = ModuleLoader.currentModuleLoader.getModuleLoaderName();
-                } // else caller better know what they are doing...
                 var args = arguments;
             } else {
-                var args = [{context: ModuleLoader.currentModuleLoader.getModuleLoaderName()}];
+                var cfg = {};
+                var args = [{context: this.getModuleLoaderName()}];
                 for (var i = 0; i < arguments.length; ++i)
                        args.push(arguments[i]);
             }
-            return coreRequire.apply(this, args);
+            this.remapConfig(cfg);
+            args[0] = cfg;
+            return coreRequire.apply(null, args);
         }
+    },
+
+    remapConfig: function(cfg) {
+         if (!cfg.context) {
+             cfg.context = this.getModuleLoaderName();
+         } // else caller better know what they are doing...
+         if (!cfg.baseUrl && this.baseURI) {
+             cfg.baseUrl = this.baseURI.spec;
+         }
     },
     // ****
     getSandbox: function(unit) {
@@ -239,7 +270,7 @@ ModuleLoader.prototype = {
             return data;
         } catch (err) {
             if (FBTrace.DBG_ERRORS || FBTrace.DBG_STORAGE)
-                FBTrace.sysout("mozReadTextFromFile; EXCEPTION", err);
+                FBTrace.sysout("mozReadTextFromFile; EXCEPTION", {err:err, pathToFile: pathToFile, moduleLoader: this});
         }
     },
 
