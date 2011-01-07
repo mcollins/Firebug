@@ -60,7 +60,7 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
         Components.utils.import("resource://hellomodule/ModuleLoader.js");
 
         // Create Module Loader implementation for specific path.
-        var require = (new ModuleLoader("resource://hellomodule/")).loadDepsThenCallback;
+        var require = (new ModuleLoader(null, {context:"resource://hellomodule/", baseUrl:"resource://hellomodule/"})).loadDepsThenCallback;
 
         // Import all necesasry modules for this application (running in Firefox chrome space).
         //var DomTree = require({baseUrl:'resource://'}, ["hellomodule/dom-tree"], function(){}).DomTree;
