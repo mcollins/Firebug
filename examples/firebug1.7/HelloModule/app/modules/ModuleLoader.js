@@ -1,14 +1,6 @@
-/* See license.txt for terms of usage */
-
-// ********************************************************************************************* //
-// Firebug Support
-
-// Get access to Firebug Tracing Console.
+// Firebug dev support
 Components.utils.import("resource://firebug/firebug-trace-service.js");
 var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
-
-// ********************************************************************************************* //
-// JavaScript code modules
 
 // allow this file to be loaded via resource url eg resource://firebug/ModuleLoader.js
 var EXPORTED_SYMBOLS = ["ModuleLoader", "require", "define"];
@@ -17,21 +9,16 @@ var Ci = Components.interfaces;
 var Cc = Components.classes;
 var Cu = Components.utils;
 
-// ********************************************************************************************* //
-// Loader Implementation
 
-// Every time we createInstance we will emit a new ModuleLoader
-// Prepare our exports, these will eventually be customized by the component createInstance
 // Similar to: http://wiki.ecmascript.org/doku.php?id=strawman:module_loaders
 
-/**
+/*
  * @param load: a hook that filters and transforms MRL's for loading. OMITTED
- * @param {String} name: string to be returned by getModuleLoaderName
- * @param {Object} global: the global object to use for the execution context associated
- *      with the 
+ * @param name: string to be returned by getModuleLoaderName
+ * @param global: the global object to use for the execution context associated with the module loader.
  */
-function ModuleLoader(name, global)
-{
+
+function ModuleLoader(name, global) {
     this.name = name;
     this.global = global;
 
@@ -40,10 +27,8 @@ function ModuleLoader(name, global)
     this.totalEntries = 0;
 
     var self = this;  // during the ctor call, bind a ref to the loader
-    this.require = function()
-    {
-        // use the bound ref to call apply with proper |this|
-        return self.remapRequire.apply(self, arguments);
+    this.require  = function() {
+        return self.remapRequire.apply(self, arguments);  // use the bound ref to call apply with proper |this|
     }
 
     ModuleLoader.currentModuleLoader = this;
@@ -52,24 +37,16 @@ function ModuleLoader(name, global)
     if (!ModuleLoader.loaders) {
         ModuleLoader.loaders = [];
     }
-
     ModuleLoader.loaders.push(this);
 }
-
-/**
+/*
  * @return the current module loader for the current execution context.
  */
-ModuleLoader.current = function getCurrentModuleLoader()
-{
+ModuleLoader.current = function getCurrentModuleLoader() {
     return ModuleLoader.currentModuleLoader;
 }
 
-/**
- * @param {Object} name Name of registered loader.
- * @return a module loader according to the given name (e.g 'resource://hellomodule/').
- */
-ModuleLoader.get = function(name)
-{
+ModuleLoader.get = function(name) {
     for (var i = 0; i < ModuleLoader.loaders.length; i++) {
         if (ModuleLoader.loaders[i].getModuleLoaderName() === name) {
             return ModuleLoader.loaders[i];
@@ -80,11 +57,9 @@ ModuleLoader.get = function(name)
 ModuleLoader.systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].createInstance(Ci.nsIPrincipal);
 ModuleLoader.mozIOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
-ModuleLoader.bootStrap = function(requirejsPath)
-{
+ModuleLoader.bootStrap = function(requirejsPath) {
     var primordialLoader = new ModuleLoader("_Primordial");
     var unit = primordialLoader.loadModule(requirejsPath);
-
     // require.js does not export so we need to fix that
     unit.exports = {
         require: unit.sandbox.require,
@@ -93,53 +68,40 @@ ModuleLoader.bootStrap = function(requirejsPath)
     return unit.exports;
 }
 
-// The ModuleLoader.prototype will close over these globals which will be set when the
-// outer function runs.
+// The ModuleLoader.prototype will close over these globals which will be set when the outer function runs.
 var coreRequire;
 var define;
 
-ModuleLoader.prototype =
-{
-    /**
+ModuleLoader.prototype = {
+    /*
      *  @return produces the global object for the execution context associated with moduleLoader.
      */
-    globalObject: function()
-    {
+    globalObject: function () {
         return this.global;
     },
-
-    /**
-     * @return registers a frozen object as a top-level module in the module loader's registry.
-     * The own-properties of the object are treated as the exports of the module instance.
+    /*
+     * @return registers a frozen object as a top-level module in the module loader's registry. The own-properties of the object are treated as the exports of the module instance.
      */
-    attachModule: function(name, module)
-    {
+    attachModule: function(name, module) {
         this.registry[name] = module;  // its a lie, we register compilation units
         this.totalEntries++;
     },
-
-    /**
-     * @return the module instance object registered at name, or null if there is no
-     * such module in the registry.
+    /*
+     * @return the module instance object registered at name, or null if there is no such module in the registry.
      */
-    getModule: function(name)
-    {
+    getModule: function(name) {
         var entry = this.registry[name];
         if (entry) return entry.exports;
     },
-
-    /**
+    /*
      * @param unit compilation unit: {
-     *      source: a string of JavaScript source,
-     *      url: identifier,
-     *      jsVersion: JavaScript version to compile under
-     *      staringLineNumber: offset for source line numbers.
-     * }
-     * 
+     * 	source: a string of JavaScript source,
+     *  url: identifier,
+     *  jsVersion: JavaScript version to compile under
+     *  staringLineNumber: offset for source line numbers.
      * @return completion value
      */
-    evalScript: function(unit)
-    {
+    evalScript: function(unit) {
         try {
             unit.jsVersion = unit.jsVersion || "1.8";
             unit.url = unit.url || (this.getModuleLoaderName() + this.totalEvals)
@@ -148,8 +110,6 @@ ModuleLoader.prototype =
             var evalResult = Cu.evalInSandbox(unit.source, unit.sandbox,  unit.jsVersion, unit.url, unit.startingLineNumber);
             // afterCompilationUnit
             this.totalEvals += 1;
-
-            // xxxHonza, xxxJJB: what if the script is wrapped in a callback (see add.js)
             return evalResult;
         } catch (exc) {
             if (FBTrace.DBG_ERRORS) {
@@ -158,8 +118,7 @@ ModuleLoader.prototype =
         }
     },
 
-    loadModule: function(mrl, callback)
-    {
+    loadModule: function(mrl, callback) {
         try {
             var mozURI = ModuleLoader.mozIOService.newURI(mrl, null, (this.baseURI ? this.baseURI : null));
             var url = mozURI.spec;
@@ -203,33 +162,22 @@ ModuleLoader.prototype =
         return unit;
     },
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    // Clients will get require from their ModuleLoader instance
+    // **** clients will get require from their ModuleLoader instance
 
-    remapRequire: function()
-    {
-        coreRequire.apply(null, arguments);
-        return;
-
+    remapRequire: function () {
         var maybeConfig = arguments[0];
 
-        if (maybeConfig)
-        {
-            if (!coreRequire.isArray(maybeConfig) && typeof( maybeConfig ) !== "string")
-            {
-                // isA config
+        if (maybeConfig) {
+            if (!coreRequire.isArray(maybeConfig) && typeof( maybeConfig ) !== "string") {  // isA config
                 var cfg = maybeConfig;
                 var args = arguments;
-            }
-            else
-            {
+            } else {
                 var moduleName = arguments[0];
                 var cfg = {};
                 var args = [{context: this.getModuleLoaderName()}];
                 for (var i = 0; i < arguments.length; ++i)
-                    args.push(arguments[i]);
+                       args.push(arguments[i]);
             }
-
             this.remapConfig(cfg);
             args[0] = cfg;
             coreRequire.apply(null, args);
@@ -238,29 +186,22 @@ ModuleLoader.prototype =
         }
     },
 
-    remapConfig: function(cfg)
-    {
+    remapConfig: function(cfg) {
          if (!cfg.context) {
              cfg.context = this.getModuleLoaderName();
          } // else caller better know what they are doing...
-
          if (!cfg.baseUrl && this.baseURI) {
              cfg.baseUrl = this.baseURI.spec;
          }
     },
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    getSandbox: function(unit)
-    {
+    // ****
+    getSandbox: function(unit) {
         unit.principal = this.getPrincipal();
         return unit.sandbox = new Cu.Sandbox(unit.principal);
     },
 
-    getPrincipal: function()
-    {
-        if (!this.principal)
-        {
+    getPrincipal: function() {
+        if (!this.principal) {
             if (this.global && (this.global instanceof Ci.nsIDOMWindow)) {
                 this.principal = this.global;
             } else {
@@ -270,10 +211,8 @@ ModuleLoader.prototype =
         return this.principal;
     },
 
-    getModuleLoaderName: function()
-    {
-        if (!this.name)
-        {
+    getModuleLoaderName: function()	{
+        if (!this.name)	{
             if (this.global && (this.global instanceof Window) ) {
                 this.name = this.safeGetWindowLocation(this.global);
             }
@@ -286,8 +225,7 @@ ModuleLoader.prototype =
         return this.name;
     },
 
-    safeGetWindowLocation: function(window)
-    {
+    safeGetWindowLocation: function(window)	{
         try {
             if (window) {
                 if (window.closed) {
@@ -311,8 +249,7 @@ ModuleLoader.prototype =
         }
     },
 
-    mozReadTextFromFile: function(pathToFile)
-    {
+    mozReadTextFromFile: function(pathToFile) {
         try {
             var channel = ModuleLoader.mozIOService.newChannel(pathToFile, null, null);
             var inputStream = channel.open();
@@ -334,18 +271,13 @@ ModuleLoader.prototype =
             inputStream.close();
 
             return data;
-        }
-        catch (err)
-        {
+        } catch (err) {
             if (FBTrace.DBG_ERRORS || FBTrace.DBG_STORAGE)
-                FBTrace.sysout("mozReadTextFromFile; EXCEPTION",
-                    {err:err, pathToFile: pathToFile, moduleLoader: this});
+                FBTrace.sysout("mozReadTextFromFile; EXCEPTION", {err:err, pathToFile: pathToFile, moduleLoader: this});
         }
     },
-}
 
-// ********************************************************************************************* //
-// Core Require
+}
 
 ModuleLoader.requireJSFileName = "resource://hellomodule/require.js";
 coreRequire = ModuleLoader.bootStrap(ModuleLoader.requireJSFileName).require;
@@ -356,9 +288,10 @@ if (coreRequire) {
     throw new Error("ModuleLoader ERROR failed to read and load "+ModuleLoader.requireJSFileName);
 }
 
+
+
 // Override to connect require.js to our loader
-coreRequire.load = function (context, moduleName, url)
-{
+coreRequire.load = function (context, moduleName, url) {
     //isDone is used by require.ready()
     this.s.isDone = false;
 
@@ -366,10 +299,7 @@ coreRequire.load = function (context, moduleName, url)
     context.loaded[moduleName] = false;
     context.scriptCount += 1;
 
-    // xxxHonza, xxxJJB: This always returns undefiend since context.contextName == "_"
-    // which is not name of a registered module (it's "resource://hellomodule/");
-    //var moduleLoader = ModuleLoader.get(context.contextName);
-    var moduleLoader = ModuleLoader.current();
+    var moduleLoader = ModuleLoader.get(context.contextName);
 
     if (moduleLoader) { // then we are good to go!
         var unit = moduleLoader.loadModule(url);
@@ -384,11 +314,11 @@ coreRequire.load = function (context, moduleName, url)
 };
 
 coreRequire.chainOnError = coreRequire.onError;
-
-coreRequire.onError = function (err, object)
-{
+coreRequire.onError = function (err, object) {
     FBTrace.sysout(err+"",{errorObject: err, moreInfo: object});
     coreRequire.chainOnError(err);
 }
 
-// ********************************************************************************************* //
+// Every time we createInstance we will emit a new ModuleLoader
+
+// Prepare our exports, these will eventually be customized by the component createInstance
