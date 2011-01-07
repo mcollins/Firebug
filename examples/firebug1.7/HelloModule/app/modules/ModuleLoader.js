@@ -148,6 +148,8 @@ ModuleLoader.prototype =
             var evalResult = Cu.evalInSandbox(unit.source, unit.sandbox,  unit.jsVersion, unit.url, unit.startingLineNumber);
             // afterCompilationUnit
             this.totalEvals += 1;
+
+            // xxxHonza, xxxJJB: what if the script is wrapped in a callback (see add.js)
             return evalResult;
         } catch (exc) {
             if (FBTrace.DBG_ERRORS) {
@@ -206,6 +208,9 @@ ModuleLoader.prototype =
 
     remapRequire: function()
     {
+        coreRequire.apply(null, arguments);
+        return;
+
         var maybeConfig = arguments[0];
 
         if (maybeConfig)
@@ -361,7 +366,10 @@ coreRequire.load = function (context, moduleName, url)
     context.loaded[moduleName] = false;
     context.scriptCount += 1;
 
-    var moduleLoader = ModuleLoader.get(context.contextName);
+    // xxxHonza, xxxJJB: This always returns undefiend since context.contextName == "_"
+    // which is not name of a registered module (it's "resource://hellomodule/");
+    //var moduleLoader = ModuleLoader.get(context.contextName);
+    var moduleLoader = ModuleLoader.current();
 
     if (moduleLoader) { // then we are good to go!
         var unit = moduleLoader.loadModule(url);
