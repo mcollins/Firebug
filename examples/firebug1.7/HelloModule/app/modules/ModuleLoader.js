@@ -172,6 +172,7 @@ ModuleLoader.prototype = {
                 var cfg = maybeConfig;
                 var args = arguments;
             } else {
+                var moduleName = arguments[0];
                 var cfg = {};
                 var args = [{context: this.getModuleLoaderName()}];
                 for (var i = 0; i < arguments.length; ++i)
@@ -179,7 +180,9 @@ ModuleLoader.prototype = {
             }
             this.remapConfig(cfg);
             args[0] = cfg;
-            return coreRequire.apply(null, args);
+            coreRequire.apply(null, args);
+            if (moduleName)
+                return this.getModule(moduleName);
         }
     },
 
