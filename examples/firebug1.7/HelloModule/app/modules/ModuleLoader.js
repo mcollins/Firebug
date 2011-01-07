@@ -40,7 +40,7 @@ function ModuleLoader(name, global)
     this.totalEntries = 0;
 
     var self = this;  // during the ctor call, bind a ref to the loader
-    this.require  = function()
+    this.require = function()
     {
         // use the bound ref to call apply with proper |this|
         return self.remapRequire.apply(self, arguments);
@@ -208,18 +208,23 @@ ModuleLoader.prototype =
     {
         var maybeConfig = arguments[0];
 
-        if (maybeConfig) {
+        if (maybeConfig)
+        {
             if (!coreRequire.isArray(maybeConfig) && typeof( maybeConfig ) !== "string")
-            {  // isA config
+            {
+                // isA config
                 var cfg = maybeConfig;
                 var args = arguments;
-            } else {
+            }
+            else
+            {
                 var moduleName = arguments[0];
                 var cfg = {};
                 var args = [{context: this.getModuleLoaderName()}];
                 for (var i = 0; i < arguments.length; ++i)
-                       args.push(arguments[i]);
+                    args.push(arguments[i]);
             }
+
             this.remapConfig(cfg);
             args[0] = cfg;
             coreRequire.apply(null, args);
@@ -233,6 +238,7 @@ ModuleLoader.prototype =
          if (!cfg.context) {
              cfg.context = this.getModuleLoaderName();
          } // else caller better know what they are doing...
+
          if (!cfg.baseUrl && this.baseURI) {
              cfg.baseUrl = this.baseURI.spec;
          }
@@ -248,7 +254,8 @@ ModuleLoader.prototype =
 
     getPrincipal: function()
     {
-        if (!this.principal) {
+        if (!this.principal)
+        {
             if (this.global && (this.global instanceof Ci.nsIDOMWindow)) {
                 this.principal = this.global;
             } else {
@@ -345,7 +352,8 @@ if (coreRequire) {
 }
 
 // Override to connect require.js to our loader
-coreRequire.load = function (context, moduleName, url) {
+coreRequire.load = function (context, moduleName, url)
+{
     //isDone is used by require.ready()
     this.s.isDone = false;
 
