@@ -68,7 +68,7 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
         //var add = require("resource://hellomodule/add").add;
         //var subtract = require("resource://hellomodule/subtract.js").subtract;
 
-        var DomTree = require([
+        require([
             "resource://hellomodule/dom-tree.js",
             "resource://hellomodule/add.js",
             "resource://hellomodule/subtract.js"],
