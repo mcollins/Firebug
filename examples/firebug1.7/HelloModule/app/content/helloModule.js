@@ -60,7 +60,7 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
         Components.utils.import("resource://hellomodule/ModuleLoader.js");
 
         // Create Module Loader implementation for specific path.
-        var require = (new ModuleLoader("resource://hellomodule/")).require;
+        var require = (new ModuleLoader("resource://hellomodule/")).loadDepsThenCallback;
 
         // Import all necesasry modules for this application (running in Firefox chrome space).
         //var DomTree = require({baseUrl:'resource://'}, ["hellomodule/dom-tree"], function(){}).DomTree;
@@ -72,13 +72,13 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
             "resource://hellomodule/dom-tree.js",
             "resource://hellomodule/add.js",
             "resource://hellomodule/subtract.js"],
-            function(DomTree, add, subtract)
+            function(DomTree, AddModule, SubtractModule)
             {
                 try
                 {
                     FBTrace.sysout("helloModule; All modules loaded!");
-                    FBTrace.sysout("1 + 2 = " + add(1, 2));
-                    FBTrace.sysout("3 - 1 = " + subtract(3, 1));
+                    FBTrace.sysout("1 + 2 = " + AddModule.add(1, 2));
+                    FBTrace.sysout("3 - 1 = " + SubtractModule.subtract(3, 1));
                 }
                 catch (err)
                 {

@@ -13,26 +13,28 @@ var Cu = Components.utils;
 // Similar to: http://wiki.ecmascript.org/doku.php?id=strawman:module_loaders
 
 /*
- * @param load: a hook that filters and transforms MRL's for loading. OMITTED
- * @param name: string to be returned by getModuleLoaderName
  * @param global: the global object to use for the execution context associated with the module loader.
+ * use null for system modules and give {context:<string>} to config
+ * use window for window modules, config optional
+ * @param requirejsConfig: object matching http://requirejs.org/docs/api.html#config
  */
 
-function ModuleLoader(name, global) {
-    this.name = name;
+function ModuleLoader(global, requirejsConfig) {
+    this.config = requirejsConfig;
     this.global = global;
 
     this.registry = {};
     this.totalEvals = 0;
     this.totalEntries = 0;
+    ModuleLoader.instanceCount += 1;
+    this.instanceCount = ModuleLoader.instanceCount;
 
-    var self = this;  // during the ctor call, bind a ref to the loader
-    this.require  = function() {
-        return self.remapRequire.apply(self, arguments);  // use the bound ref to call apply with proper |this|
+    var self = this;
+    this.loadDepsThenCallback  = function() { // during the ctor call, bind a ref to the loader
+        return self.prefixWithConfig.apply(self, arguments);  // use the bound ref to call apply with proper |this|
     }
 
     ModuleLoader.currentModuleLoader = this;
-    ModuleLoader.instanceCount = 0;
 
     if (!ModuleLoader.loaders) {
         ModuleLoader.loaders = [];
@@ -45,6 +47,8 @@ function ModuleLoader(name, global) {
 ModuleLoader.current = function getCurrentModuleLoader() {
     return ModuleLoader.currentModuleLoader;
 }
+
+ModuleLoader.instanceCount = 0;
 
 ModuleLoader.get = function(name) {
     for (var i = 0; i < ModuleLoader.loaders.length; i++) {
@@ -164,25 +168,21 @@ ModuleLoader.prototype = {
 
     // **** clients will get require from their ModuleLoader instance
 
-    remapRequire: function () {
-        var maybeConfig = arguments[0];
+    prefixWithConfig: function (deps, callback) {
+        var firstArg = arguments[0];
 
-        if (maybeConfig) {
-            if (!coreRequire.isArray(maybeConfig) && typeof( maybeConfig ) !== "string") {  // isA config
-                var cfg = maybeConfig;
-                var args = arguments;
-            } else {
-                var moduleName = arguments[0];
-                var cfg = {};
-                var args = [{context: this.getModuleLoaderName()}];
+        if (firstArg) {
+            if (coreRequire.isArray(firstArg) || typeof( firstArg ) === "string") {  // then deps is first arg
+                var args = [{}];  // start with our our new first arg
                 for (var i = 0; i < arguments.length; ++i)
                        args.push(arguments[i]);
+            } else { // then caller wants requirejs config api
+                var args = arguments;
             }
-            this.remapConfig(cfg);
-            args[0] = cfg;
+            args[0] = this.remapConfig(args[0]);
             coreRequire.apply(null, args);
-            if (moduleName)
-                return this.getModule(moduleName);
+        } else {
+            coreRequire.onError("ModuleLoader.loadDepsThenCallback(deps, callback), deps string or array of strings, callback called after strings resolved and loaded", this);
         }
     },
 
@@ -190,9 +190,25 @@ ModuleLoader.prototype = {
          if (!cfg.context) {
              cfg.context = this.getModuleLoaderName();
          } // else caller better know what they are doing...
-         if (!cfg.baseUrl && this.baseURI) {
+
+         if (cfg.baseUrl) {
+             try {
+                 this.baseURI = ModuleLoader.mozIOService.newURI(cfg.baseUrl, null, null);
+             } catch (exc) {
+                 coreRequire.onError("ModuleLoader ERROR failed to create baseURI from "+cfg.baseUrl, this);
+             }
+         }
+         else if (this.baseURI) {
              cfg.baseUrl = this.baseURI.spec;
          }
+
+         var overlayedConfig = {};
+         for (var p in this.config)
+             overlayedConfig[p] = this.config[p];
+         for (var p in cfg)
+             overlayedConfig[p] = cfg[p];
+
+         return overlayedConfig;
     },
     // ****
     getSandbox: function(unit) {
@@ -213,13 +229,15 @@ ModuleLoader.prototype = {
 
     getModuleLoaderName: function()	{
         if (!this.name)	{
-            if (this.global && (this.global instanceof Window) ) {
-                this.name = this.safeGetWindowLocation(this.global);
+            if (this.global) {
+                    if (this.global instanceof Ci.nsIDOMWindow) {
+                        this.name = this.safeGetWindowLocation(this.global);
+                    } else {
+                        this.name = (this.global + "" + this.instanceCount).replace(/\s/,'_');
+                    }
             }
             else {
-                ModuleLoader.instanceCount += 1;
-                var count = ModuleLoader.instanceCount;
-                this.name = "ModuleLoader_"+count;
+                this.name = "ModuleLoader_"+this.instanceCount;
             }
         }
         return this.name;
