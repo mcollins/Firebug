@@ -45,20 +45,24 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
     onLoadModules: function(context)
     {
         // Chrome module loader initialization
-        /*
-        var loader = new SecurableModule.Loader({principal: "system",
-            rootPath: "resource://hellomodule/modules"});
-        function require() { return loader.require.apply(loader, arguments); };
-*/
 
+        // Replace securable module loader (from Jatpack) by a RequireJS.
+        // RequireJS itself is loaded using ModuleLoader.
+        //
+        //var loader = new SecurableModule.Loader({principal: "system",
+        //    rootPath: "resource://hellomodule/modules"});
+        //function require() { return loader.require.apply(loader, arguments); };
+
+        // Get ModuleLoader implementation (it's Mozilla JS code module)
         Components.utils.import("resource://hellomodule/ModuleLoader.js");
-        var require = (new ModuleLoader("resource://hellomodule/")).require;
-        // ********************************************************************************************* //
-        // Imports
 
+        // Create Module Loader implementation for specific path.
+        var require = (new ModuleLoader("resource://hellomodule/")).require;
+
+        // Import all necesasry modules for this application (running in Firefox chrome space).
         //var DomTree = require({baseUrl:'resource://'}, ["hellomodule/dom-tree"], function(){}).DomTree;
         var DomTree = require( "resource://hellomodule/dom-tree.js").DomTree;
-         var add = require("resource://hellomodule/add").add;
+        var add = require("resource://hellomodule/add").add;
         var subtract = require("resource://hellomodule/subtract.js").subtract;
 
         FBTrace.sysout("1 + 2 = " + add(1, 2));
