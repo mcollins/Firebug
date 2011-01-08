@@ -1,21 +1,34 @@
-// Firebug dev support
+/*
+ * Load and extend require.js by James Burke to support loading modules into Firefox extensions
+ *
+ * Copyright 2011 John J. Barton for IBM Corp.
+ * This code is released under Firebug's BSD license.
+ *
+ *
+ * Key ideas from securable-modules.js by Atul Varma <atul@mozilla.com>,
+ * with enhancements by Jan Odvarko and James Burke released under BSD license
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=614239 accessed on Jan. 8, 2011
+ *
+ * API influenced by: http://wiki.ecmascript.org/doku.php?id=strawman:module_loaders accessed on Jan. 8, 2011
+ */
+
+// allow this file to be loaded via resource url
+// eg Components.utils.import("resource://hellomodule/ModuleLoader.js");
+var EXPORTED_SYMBOLS = ["ModuleLoader"];
+
+//Firebug dev support
 Components.utils.import("resource://firebug/firebug-trace-service.js");
 var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
-
-// allow this file to be loaded via resource url eg resource://firebug/ModuleLoader.js
-var EXPORTED_SYMBOLS = ["ModuleLoader", "require", "define"];
 
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 var Cu = Components.utils;
 
 
-// Similar to: http://wiki.ecmascript.org/doku.php?id=strawman:module_loaders
-
 /*
  * @param global: the global object to use for the execution context associated with the module loader.
- * use null for system modules and give {context:<string>} to config
- * use window for window modules, config optional
+ * use null for system modules, then {context:<string>} to config (required)
+ * use |window| for window modules, config optional
  * @param requirejsConfig: object matching http://requirejs.org/docs/api.html#config
  */
 
@@ -26,6 +39,7 @@ function ModuleLoader(global, requirejsConfig) {
     this.registry = {};
     this.totalEvals = 0;
     this.totalEntries = 0;
+
     ModuleLoader.instanceCount += 1;
     this.instanceCount = ModuleLoader.instanceCount;
 
@@ -43,6 +57,7 @@ function ModuleLoader(global, requirejsConfig) {
 }
 /*
  * @return the current module loader for the current execution context.
+ * (XXXjjb: dubious value)
  */
 ModuleLoader.current = function getCurrentModuleLoader() {
     return ModuleLoader.currentModuleLoader;
@@ -63,13 +78,13 @@ ModuleLoader.mozIOService = Cc['@mozilla.org/network/io-service;1'].getService(C
 
 ModuleLoader.bootStrap = function(requirejsPath) {
     var primordialLoader = new ModuleLoader("_Primordial");
-    var unit = primordialLoader.loadModule(requirejsPath);
+    ModuleLoader.bootstrapUnit = primordialLoader.loadModule(requirejsPath);
     // require.js does not export so we need to fix that
-    unit.exports = {
-        require: unit.sandbox.require,
-        define: unit.sandbox.define
+    ModuleLoader.bootstrapUnit.exports = {
+        require: ModuleLoader.bootstrapUnit.sandbox.require,
+        define: ModuleLoader.bootstrapUnit.sandbox.define
     };
-    return unit.exports;
+    return ModuleLoader.bootstrapUnit.exports;
 }
 
 // The ModuleLoader.prototype will close over these globals which will be set when the outer function runs.
@@ -143,14 +158,16 @@ ModuleLoader.prototype = {
         }
         var thatGlobal = unit.sandbox = this.getSandbox(unit);
 
-        if (this.global) { // simulate |with|
-            for (var p in this.global) {
-                thatGlobal[p] = this.global[p];
-            }
+        // **** For security analysis we need to recognize that these added properties are visible to evaled code. ****
+
+        // Any properties of this.global that are functions compiled in chrome scope become exposed to evaled code.
+        if (this.global) {
+            this.copyProperties(thatGlobal, this.global);
         }
 
-        thatGlobal.require = coreRequire;  // by the time we are called to loadModules, the bootstrap has set these globals
-        thatGlobal.define = define;
+        this.loadModuleLoading(thatGlobal);  // only for system sandboxes.
+
+        // *** end of added properties ****
 
         thatGlobal.exports = {}; // create the container for the module to fill with exported properties
         unit.exports = thatGlobal.exports; // point to the container before the source can muck with it.
@@ -164,6 +181,21 @@ ModuleLoader.prototype = {
         }
         this.attachModule(url, unit);  // even if we don't have any valid exports, so we can try to finish dependencies
         return unit;
+    },
+
+    copyProperties: function(thatObject, thisObject) {
+        if (thisObject) {
+            for (var p in thisObject) {
+                thatObject[p] = thisObject[p];
+            }
+        }
+    },
+
+    loadModuleLoading: function(thatGlobal) {
+        if (this.principal.equals(ModuleLoader.systemPrincipal)) {
+            thatGlobal.require = coreRequire;  // reuse the require compile objects
+            thatGlobal.define = define;
+        }
     },
 
     // **** clients will get require from their ModuleLoader instance
@@ -297,7 +329,10 @@ ModuleLoader.prototype = {
 
 }
 
+// *** load require.js and override its methods as needed. ****
+
 ModuleLoader.requireJSFileName = "resource://hellomodule/require.js";
+
 coreRequire = ModuleLoader.bootStrap(ModuleLoader.requireJSFileName).require;
 
 if (coreRequire) {
@@ -306,29 +341,23 @@ if (coreRequire) {
     throw new Error("ModuleLoader ERROR failed to read and load "+ModuleLoader.requireJSFileName);
 }
 
-
-
 // Override to connect require.js to our loader
 coreRequire.load = function (context, moduleName, url) {
-    //isDone is used by require.ready()
-    this.s.isDone = false;
 
-    //Indicate a the module is in process of loading.
-    context.loaded[moduleName] = false;
+    this.s.isDone = false; // signal for require.ready()
+
+    context.loaded[moduleName] = false; //in process of loading.
     context.scriptCount += 1;
 
-    var moduleLoader = ModuleLoader.get(context.contextName);
+    var moduleLoader = ModuleLoader.get(context.contextName); // set in config for each subsystem
 
-    if (moduleLoader) { // then we are good to go!
+    if (moduleLoader) {
         var unit = moduleLoader.loadModule(url);
+        context.completeLoad(moduleName);             // round up all the dependencies
+        unit.exports = context.defined[moduleName];   // remember what we exported.
     } else {
         return coreRequire.onError( new Error("require.attach called with unknown moduleLoaderName "+context.contextName+" for url "+url), ModuleLoader );
     }
-
-    //Support anonymous modules.
-    context.completeLoad(moduleName);
-
-    unit.exports = context.defined[moduleName];
 };
 
 coreRequire.chainOnError = coreRequire.onError;
