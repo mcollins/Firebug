@@ -163,7 +163,7 @@ var ChromebugOverrides = {
 
                 // global is the outermost scope
                 var context = ChromebugOverrides.getContextByFrame(frame, global);
-                context.jsDebuggerActive = true;
+                context.jsDebuggerCalledUs = true;
             }
             this.breakContext = context;
 
