@@ -1078,8 +1078,9 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
     var clickCount = event.clickCount || 1;
 
     var rect = node.getBoundingClientRect();
-    var left = rect.left + offsetX;
-    var top = rect.top + offsetY;
+    // add a half becaue sendMouseEvent will round off our coordinates to the nearest int
+    var left = rect.left + offsetX + 0.5;
+    var top = rect.top + offsetY + 0.5;
 
     if (event.type)
     {
