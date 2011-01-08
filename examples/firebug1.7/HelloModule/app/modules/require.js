@@ -28,7 +28,7 @@ var require, define;
         //to feature test w/o causing perf issues.
         readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ?
                       /^complete$/ : /^(complete|loaded)$/,
-        defContextName = "_",  // default contextName
+        defContextName = "_",
         reqWaitIdPrefix = "_r@@",
         empty = {},  // !(p in empty) is a way to implement hasOwnProperty(p)
         contexts = {},
@@ -123,7 +123,7 @@ var require, define;
     function newContext(contextName) {
         var context, resume,
             config = {
-                waitSeconds: 0,
+                waitSeconds: 7,
                 baseUrl: s.baseUrl || "./",
                 paths: {},
                 packages: {}
@@ -1260,7 +1260,6 @@ var require, define;
 
         if (!urlFetched[url]) {
             context.scriptCount += 1;
-            req.completeLoad = context.completeLoad;
             req.attach(url, contextName, moduleName);
             urlFetched[url] = true;
 
@@ -1415,7 +1414,6 @@ var require, define;
      * Attaches the script represented by the URL to the current
      * environment. Right now only supports browser loading,
      * but can be redefined in other environments to do the right thing.
-     * Only called by require.load().
      * @param {String} url the url of the script to attach.
      * @param {String} contextName the name of the context that wants the script.
      * @param {moduleName} the name of the module that is associated with the script.
