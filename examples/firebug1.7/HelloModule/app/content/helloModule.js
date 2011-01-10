@@ -60,15 +60,9 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
         Components.utils.import("resource://hellomodule/ModuleLoader.js");
 
         // Create Module Loader implementation for specific path.
-        var require = (new ModuleLoader(null, {context:"resource://hellomodule/", baseUrl:"resource://hellomodule/"})).loadDepsThenCallback;
+        var loadModules = (new ModuleLoader(null, {context:"resource://hellomodule/"})).loadDepsThenCallback;
 
-        // Import all necesasry modules for this application (running in Firefox chrome space).
-        //var DomTree = require({baseUrl:'resource://'}, ["hellomodule/dom-tree"], function(){}).DomTree;
-        //var DomTree = require("resource://hellomodule/dom-tree.js").DomTree;
-        //var add = require("resource://hellomodule/add").add;
-        //var subtract = require("resource://hellomodule/subtract.js").subtract;
-
-        require([
+        loadModules([
             "resource://hellomodule/dom-tree.js",
             "resource://hellomodule/add.js",
             "resource://hellomodule/subtract.js"],
@@ -85,6 +79,25 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
                     FBTrace.sysout("helloModule; EXCEPTION " + err, err);
                 }
             }
+        );
+
+        // Create Module Loader implementation for specific path.
+        var require = (new ModuleLoader(null, {context:"resource://hellomodule/", baseUrl:"resource://hellomodule/"})).loadDepsThenCallback;
+
+        require(["dom-tree.js", "add.js", "subtract.js"],
+                function(DomTree, AddModule, SubtractModule)
+                {
+                    try
+                    {
+                        FBTrace.sysout("helloModule; All modules loaded using relative URLs!");
+                        FBTrace.sysout("1 + 2 = " + AddModule.add(1, 2));
+                        FBTrace.sysout("3 - 1 = " + SubtractModule.subtract(3, 1));
+                    }
+                    catch (err)
+                    {
+                        FBTrace.sysout("helloModule; EXCEPTION " + err, err);
+                    }
+                }
         );
     }
 });

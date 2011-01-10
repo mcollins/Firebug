@@ -1,9 +1,8 @@
 /*
- * Load and extend require.js by James Burke to support loading modules into Firefox extensions
+ * Extends require.js (by James Burke) to support loading modules into Firefox extensions
  *
  * Copyright 2011 John J. Barton for IBM Corp.
  * This code is released under Firebug's BSD license.
- *
  *
  * Key ideas from securable-modules.js by Atul Varma <atul@mozilla.com>,
  * with enhancements by Jan Odvarko and James Burke released under BSD license
@@ -16,10 +15,6 @@
 // eg Components.utils.import("resource://hellomodule/ModuleLoader.js");
 var EXPORTED_SYMBOLS = ["ModuleLoader"];
 
-//Firebug dev support
-Components.utils.import("resource://firebug/firebug-trace-service.js");
-var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
-
 var Ci = Components.interfaces;
 var Cc = Components.classes;
 var Cu = Components.utils;
@@ -30,11 +25,15 @@ var Cu = Components.utils;
  * use null for system modules, then {context:<string>} to config (required)
  * use |window| for window modules, config optional
  * @param requirejsConfig: object matching http://requirejs.org/docs/api.html#config
+ * @param securityOrigin: a window, URI, or nsIPrincipal. Overrides global as origin URI for scripts in sandbox
+ * Operations on the global object in the evaled code must be carefully studied unless
+ * the securityOrigin is more restricting.
  */
 
-function ModuleLoader(global, requirejsConfig) {
-    this.config = requirejsConfig;
+function ModuleLoader(global, requirejsConfig, securityOrigin) {
+    this.config = ModuleLoader.copyProperties(requirejsConfig);
     this.global = global;
+    this.securityOrigin;
 
     this.registry = {};
     this.totalEvals = 0;
@@ -72,12 +71,31 @@ ModuleLoader.get = function(name) {
         }
     }
 }
+/*
+ * @return shallow copy of lhs overridden by rhs
+ * @param lhs left hand side object, properties copied in to return
+ * @param rhs (optional) right hand side object, properties copied over lhs
+ */
+ModuleLoader.copyProperties = function(lhs, rhs) {
+    var obj = {};
+    if (rhs) {
+        for (var p in rhs) {
+            obj[p] = rhs[p];
+        }
+    }
+    if (lhs) {
+        for (var p in lhs) {
+            obj[p] = lhs[p];
+        }
+    }
+    return obj;
+}
 
 ModuleLoader.systemPrincipal = Cc["@mozilla.org/systemprincipal;1"].createInstance(Ci.nsIPrincipal);
 ModuleLoader.mozIOService = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
 
 ModuleLoader.bootStrap = function(requirejsPath) {
-    var primordialLoader = new ModuleLoader("_Primordial");
+    var primordialLoader = new ModuleLoader(null, {context: "_Primordial"});
     ModuleLoader.bootstrapUnit = primordialLoader.loadModule(requirejsPath);
     // require.js does not export so we need to fix that
     ModuleLoader.bootstrapUnit.exports = {
@@ -131,9 +149,7 @@ ModuleLoader.prototype = {
             this.totalEvals += 1;
             return evalResult;
         } catch (exc) {
-            if (FBTrace.DBG_ERRORS) {
-                FBTrace.sysout("ModuleLoader.evalScript ERROR "+exc, {exc: exc, unit: unit});
-            }
+            return coreRequire.onError(new Error("ModuleLoader.evalScript ERROR "+exc), {exc: exc, unit: unit});
         }
     },
 
@@ -162,7 +178,7 @@ ModuleLoader.prototype = {
 
         // Any properties of this.global that are functions compiled in chrome scope become exposed to evaled code.
         if (this.global) {
-            this.copyProperties(thatGlobal, this.global);
+            thatGlobal = ModuleLoader.copyProperties(thatGlobal, this.global);
         }
 
         this.loadModuleLoading(thatGlobal);  // only for system sandboxes.
@@ -183,14 +199,6 @@ ModuleLoader.prototype = {
         return unit;
     },
 
-    copyProperties: function(thatObject, thisObject) {
-        if (thisObject) {
-            for (var p in thisObject) {
-                thatObject[p] = thisObject[p];
-            }
-        }
-    },
-
     loadModuleLoading: function(thatGlobal) {
         if (this.principal.equals(ModuleLoader.systemPrincipal)) {
             thatGlobal.require = coreRequire;  // reuse the require compile objects
@@ -206,12 +214,13 @@ ModuleLoader.prototype = {
         if (firstArg) {
             if (coreRequire.isArray(firstArg) || typeof( firstArg ) === "string") {  // then deps is first arg
                 var args = [{}];  // start with our our new first arg
-                for (var i = 0; i < arguments.length; ++i)
+                for (var i = 0; i < arguments.length; ++i) {
                        args.push(arguments[i]);
+                }
             } else { // then caller wants requirejs config api
                 var args = arguments;
             }
-            args[0] = this.remapConfig(args[0]);
+            args[0] = this.remapConfig(ModuleLoader.copyProperties(args[0], this.config));
             coreRequire.apply(null, args);
         } else {
             coreRequire.onError("ModuleLoader.loadDepsThenCallback(deps, callback), deps string or array of strings, callback called after strings resolved and loaded", this);
@@ -219,29 +228,25 @@ ModuleLoader.prototype = {
     },
 
     remapConfig: function(cfg) {
-         if (!cfg.context) {
-             cfg.context = this.getModuleLoaderName();
-         } // else caller better know what they are doing...
+        if (!cfg.context) {
+            // The require.js config object uses 'context' property name to mean 'contextName'.
+            cfg.context = this.getModuleLoaderName();
+        } // else caller better know what they are doing...
 
-         if (cfg.baseUrl) {
-             try {
-                 this.baseURI = ModuleLoader.mozIOService.newURI(cfg.baseUrl, null, null);
-             } catch (exc) {
-                 coreRequire.onError("ModuleLoader ERROR failed to create baseURI from "+cfg.baseUrl, this);
-             }
-         }
-         else if (this.baseURI) {
-             cfg.baseUrl = this.baseURI.spec;
-         }
+        if (cfg.baseUrl) {
+            try {
+                this.baseURI = ModuleLoader.mozIOService.newURI(cfg.baseUrl, null, null);
+            } catch (exc) {
+                coreRequire.onError("ModuleLoader ERROR failed to create baseURI from "+cfg.baseUrl, this);
+            }
+        }
+        else if (this.baseURI) {
+            cfg.baseUrl = this.baseURI.spec;
+        }
 
-         var overlayedConfig = {};
-         for (var p in this.config)
-             overlayedConfig[p] = this.config[p];
-         for (var p in cfg)
-             overlayedConfig[p] = cfg[p];
-
-         return overlayedConfig;
+        return cfg;
     },
+
     // ****
     getSandbox: function(unit) {
         unit.principal = this.getPrincipal();
@@ -250,7 +255,9 @@ ModuleLoader.prototype = {
 
     getPrincipal: function() {
         if (!this.principal) {
-            if (this.global && (this.global instanceof Ci.nsIDOMWindow)) {
+            if (this.securityOrigin) {
+                this.principal = this.securityOrigin;
+            } else if (this.global && (this.global instanceof Ci.nsIDOMWindow)) {
                 this.principal = this.global;
             } else {
                 this.principal = ModuleLoader.systemPrincipal;
@@ -261,12 +268,14 @@ ModuleLoader.prototype = {
 
     getModuleLoaderName: function()	{
         if (!this.name)	{
-            if (this.global) {
-                    if (this.global instanceof Ci.nsIDOMWindow) {
-                        this.name = this.safeGetWindowLocation(this.global);
-                    } else {
-                        this.name = (this.global + "" + this.instanceCount).replace(/\s/,'_');
-                    }
+            if (this.config.context) {
+                this.name = this.config.context
+            } else if (this.global) {
+                if (this.global instanceof Ci.nsIDOMWindow) {
+                    this.name = this.safeGetWindowLocation(this.global);
+                } else {
+                    this.name = (this.global + "" + this.instanceCount).replace(/\s/,'_');
+                }
             }
             else {
                 this.name = "ModuleLoader_"+this.instanceCount;
@@ -292,9 +301,6 @@ ModuleLoader.prototype = {
                 return "(no context.window)";
             }
         } catch(exc) {
-            if (FBTrace.DBG_WINDOWS || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("TabContext.getWindowLocation failed "+exc, exc);
-                FBTrace.sysout("TabContext.getWindowLocation failed window:", window);
             return "(getWindowLocation: "+exc+")";
         }
     },
@@ -322,8 +328,7 @@ ModuleLoader.prototype = {
 
             return data;
         } catch (err) {
-            if (FBTrace.DBG_ERRORS || FBTrace.DBG_STORAGE)
-                FBTrace.sysout("mozReadTextFromFile; EXCEPTION", {err:err, pathToFile: pathToFile, moduleLoader: this});
+            return coreRequire.onError(new Error("mozReadTextFromFile; EXCEPTION "+err), {err:err, pathToFile: pathToFile, moduleLoader: this});
         }
     },
 
@@ -360,12 +365,20 @@ coreRequire.load = function (context, moduleName, url) {
     }
 };
 
-coreRequire.chainOnError = coreRequire.onError;
-coreRequire.onError = function (err, object) {
-    FBTrace.sysout(err+"",{errorObject: err, moreInfo: object});
-    coreRequire.chainOnError(err);
+try
+{
+    Components.utils.import("resource://firebug/firebug-trace-service.js");
+    var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
+    coreRequire.chainOnError = coreRequire.onError;
+    coreRequire.onError = function (err, object) {
+        FBTrace.sysout(err+"",{errorObject: err, moreInfo: object});
+        coreRequire.chainOnError(err);
+    }
+}
+catch(exc)
+{
+    var consoleService = Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService);
+    consoleService.logStringMessage("Install Firebug tracing extension for more informative errors");
 }
 
-// Every time we createInstance we will emit a new ModuleLoader
 
-// Prepare our exports, these will eventually be customized by the component createInstance
