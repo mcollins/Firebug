@@ -6,7 +6,7 @@ function runTest()
     Components.utils["import"]("resource://hellomodule/ModuleLoader.js");
 
     // Compute relative path and conctruct module loader.
-    var baseUrl = baseLocalPath + "loader/relativepath/";
+    var baseUrl = baseLocalPath + "loader/paths/";
     var require = (new ModuleLoader(null, {
         context: "foo",
         baseUrl: baseUrl}
