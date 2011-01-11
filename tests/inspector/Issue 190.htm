@@ -1,8 +1,30 @@
 <html>
     <head>
+        <script>
+            function doit() {
+                var log = document.getElementById('log');
+                
+                setInterval(function(){
+                    log.innerHTML = [
+                        'fbProxyElement',
+                        'firebugRuler',
+                        'firebugLayoutLine',
+                        'firebugHighlight',
+                        'firebugLayoutBox'
+                    ].map(function(x){
+                        return x + ': ' + document.getElementsByClassName(x).length;
+                    }).join('<br />') + '<br />style:' + document.getElementsByTagName('style').length;			
+                },300);
+            }
+        </script>
     </head>
-    <body>
-        <input type="text" disabled>
-        <input type="text">
+    <body onload="doit();">
+        <input type="text" disabled>&nbsp;<input type="text"><br /><br />
+        <input type="text" disabled>&nbsp;<input type="text"><br /><br />
+        <input type="text" disabled>&nbsp;<input type="text"><br /><br />
+        <input type="text" disabled>&nbsp;<input type="text"><br /><br />
+        <input type="text" disabled>&nbsp;<input type="text"><br /><br />
+        <input type="text" disabled>&nbsp;<input type="text"><br /><br />
+        <div id='log'>
     </body>
 </html>

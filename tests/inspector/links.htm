@@ -1,22 +1,40 @@
 <html>
     <head>
         <script>
+			var titles = [68, 123, 190, 200, 308, 699, 1168, 1345, 1800, 2188, 2273, 2373, 2804, 3101, 3861],
+                listLen = titles.length, selectedLink, selectedLinkId = -1;
+			
             function createLinks() {
                 var i, frag,
                     s = [],
-                    titles = [68, 123, 190, 200, 308, 699, 1168, 1345, 1800, 2188, 2273, 2373, 2804, 3101, 3861],
-                    listLen = titles.length,
-                    linkFrag = '<a href="#" onclick="linkClicked(this.text);">Issue [[LINKTEXT]]</a><br />';
+                    linkFrag = '<a href="#" onclick="linkClicked(this);" id="[[i]]">Issue [[LINKTEXT]]</a><br />';
                 
                 for(i=0; i<listLen; i++) {
-                    frag = linkFrag.replace("[[LINKTEXT]]", titles[i])
+                    frag = linkFrag.replace("[[LINKTEXT]]", titles[i]).replace("[[i]]", i)
                     s.push(frag);
                 }
                 
                 document.getElementById("linkDiv").innerHTML = s.join("");
             }
-            
-            function linkClicked(linkText) {
+            			
+			function getNext(){
+				selectedLinkId++;
+				if(selectedLinkId >= listLen)
+					selectedLinkId=0;
+				var link = document.getElementById(selectedLinkId+'');
+				linkClicked(link);
+			}
+			
+            function linkClicked(link) {
+				if(selectedLink)
+					selectedLink.style.background = 'lightgreen';
+				var linkText = link.text;
+				selectedLinkId = parseInt(link.id);
+				selectedLink = link;
+				
+				selectedLink.style.background = 'lightblue';
+				(selectedLink.previousElementSibling || selectedLink).scrollIntoView();
+
                 switch(linkText) {
                     case "Issue 2373":
                         top.contentFrame.location.href = linkText + ".xhtm";
@@ -27,10 +45,12 @@
                         top.detailFrame.location.href = linkText + " Desc.htm";
                         break;
                 }
+				
             }
         </script>
     </head>
     <body onload="createLinks();">
+		<button onclick="getNext()" style='position:fixed;right:0'>next</button>
         <div id="linkDiv"></div>
     </body>
 </html>
