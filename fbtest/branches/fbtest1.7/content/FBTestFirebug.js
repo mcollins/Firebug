@@ -1319,8 +1319,6 @@ this.addWatchExpression = function(chrome, expression, callback)
         else
             td = memberValueColumn.querySelector(".memberValueCell");
 
-        FBTrace.sysout("memberValueColumn", memberValueColumn);
-        FBTrace.sysout("td", td);
         callback(td);
     });
 
