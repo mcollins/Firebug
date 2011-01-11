@@ -9,6 +9,8 @@ var Ci = Components.interfaces;
 var Cc = Components.classes;
 var Cu = Components.utils;
 
+// Get ModuleLoader implementation (it's Mozilla JS code module)
+Components.utils["import"]("resource://hellomodule/ModuleLoader.js");
 
 // ********************************************************************************************* //
 // Firebug Panel
@@ -27,50 +29,42 @@ HelloModulePanel.prototype = extend(Firebug.Panel,
     initialize: function()
     {
         Firebug.Panel.initialize.apply(this, arguments);
+
+        this.require = (new ModuleLoader(null, {
+            context:"resource://hellomodule/",
+            baseUrl:"resource://hellomodule/"}
+        )).loadDepsThenCallback;
     },
 
     show: function(state)
     {
-        if (typeof(DomTree) == "undefined")
-            return;
-
-        var domTree = new DomTree(FBL.unwrapObject(this.context.window));
-        domTree.append(this.panelNode);
+        var self = this;
+        this.require(["dom-tree.js"], function(module)
+        {
+            var domTree = new module.DomTree(FBL.unwrapObject(self.context.window));
+            domTree.append(self.panelNode);
+        });
     }
 });
 
 // ********************************************************************************************* //
 
-
-
 Firebug.HelloModuleModel = extend(Firebug.Module,
 {
     onLoadModules: function(context)
     {
-        // Chrome module loader initialization
-
-        // Replace securable module loader (from Jatpack) by a RequireJS.
-        // RequireJS itself is loaded using ModuleLoader.
-        //
-        //var loader = new SecurableModule.Loader({principal: "system",
-        //    rootPath: "resource://hellomodule/modules"});
-        //function require() { return loader.require.apply(loader, arguments); };
-
-        // Get ModuleLoader implementation (it's Mozilla JS code module)
-        Components.utils.import("resource://hellomodule/ModuleLoader.js");
-
         // Create Module Loader implementation for specific path.
-        var loadModules = (new ModuleLoader(null, {context:"resource://hellomodule/"})).loadDepsThenCallback;
+        var require = (new ModuleLoader(null, {
+            context:"resource://hellomodule/",
+            baseUrl:"resource://hellomodule/"}
+        )).loadDepsThenCallback;
 
-        loadModules([
-            "resource://hellomodule/dom-tree.js",
-            "resource://hellomodule/add.js",
-            "resource://hellomodule/subtract.js"],
+        require(["dom-tree.js", "add.js", "subtract.js"],
             function(DomTree, AddModule, SubtractModule)
             {
                 try
                 {
-                    FBTrace.sysout("helloModule; All modules loaded!");
+                    FBTrace.sysout("helloModule; All modules loaded using relative URLs!");
                     FBTrace.sysout("1 + 2 = " + AddModule.add(1, 2));
                     FBTrace.sysout("3 - 1 = " + SubtractModule.subtract(3, 1));
                 }
@@ -79,25 +73,6 @@ Firebug.HelloModuleModel = extend(Firebug.Module,
                     FBTrace.sysout("helloModule; EXCEPTION " + err, err);
                 }
             }
-        );
-
-        // Create Module Loader implementation for specific path.
-        var require = (new ModuleLoader(null, {context:"resource://hellomodule/", baseUrl:"resource://hellomodule/"})).loadDepsThenCallback;
-
-        require(["dom-tree.js", "add.js", "subtract.js"],
-                function(DomTree, AddModule, SubtractModule)
-                {
-                    try
-                    {
-                        FBTrace.sysout("helloModule; All modules loaded using relative URLs!");
-                        FBTrace.sysout("1 + 2 = " + AddModule.add(1, 2));
-                        FBTrace.sysout("3 - 1 = " + SubtractModule.subtract(3, 1));
-                    }
-                    catch (err)
-                    {
-                        FBTrace.sysout("helloModule; EXCEPTION " + err, err);
-                    }
-                }
         );
     }
 });
