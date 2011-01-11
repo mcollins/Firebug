@@ -1,6 +1,7 @@
 var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
 var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 var FF3p5OrLess = versionChecker.compare(appInfo.version, "3.5.*") <= 0;
+var FF4OrHigher = versionChecker.compare(appInfo.version, "4.0b8") >= 0;
 var win;
 
 function runTest()
@@ -12,7 +13,9 @@ function runTest()
     else
         FBTest.ok(false, "No Firebug Window");
 
-    FBTest.progress("Version dependent test, version "+appInfo.version+" is "+(FF3p5OrLess?"3.5 or less":"newer than 3.5")+" ="+versionChecker.compare(appInfo.version, "3.5*"));
+    FBTest.progress("Version dependent test, version "+appInfo.version+" is "+
+        (FF3p5OrLess?"3.5 or less":"newer than 3.5")+" ="+
+        versionChecker.compare(appInfo.version, "3.5*"));
 
     FBTestFirebug.openNewTab(basePath + "script/singleStepping/index.html", function()
     {
@@ -68,7 +71,7 @@ function checkBreakOnNext()
     stepInto();
 }
 
-var stepIntoLineNo = FF3p5OrLess ? 14 : 13;
+var stepIntoLineNo = (FF3p5OrLess || FF4OrHigher) ? 14 : 13;
 
 function stepInto()
 {
@@ -98,7 +101,7 @@ function stepOver()
     FBTestFirebug.clickToolbarButton(FW.Firebug.chrome, "fbStepOverButton");
 }
 
-var stepOverLineNo = FF3p5OrLess ? 15 : 14;
+var stepOverLineNo = (FF3p5OrLess || FF4OrHigher) ? 15 : 14;
 var stepOverFileName = "index.html";
 
 function checkStepOver()
