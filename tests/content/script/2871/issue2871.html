@@ -3,13 +3,14 @@
 <head>
 <title>Test Case for Issue #2871</title>
 <script type="text/javascript">
-function obj()
+function MyObj()
 {
     var _this = this;
     var www = 'asdasd';
     this.ttt = 'asd';
     this.closure = function()
     {
+        var t = {};
         var w = www;
         var t = _this.ttt;
         rrr = 5;
@@ -19,7 +20,7 @@ function obj()
 
 function init()
 {
-    var a = new obj();
+    var a = new MyObj();
 }
 </script>
 </head>

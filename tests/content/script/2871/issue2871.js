@@ -30,7 +30,7 @@ function runTest()
                 // Create a new watch expression and verify the result.
                 FBTest.addWatchExpression(null, "_this", function(valueCol)
                 {
-                    var expected = /Object\s*{\s*ttt=\"asd\"\s*}/;
+                    var expected = /MyObj\s*{\s*ttt=\"asd\"\s*}/;
                     FBTest.compare(expected, valueCol.textContent,
                         "Verify the result value");
 
