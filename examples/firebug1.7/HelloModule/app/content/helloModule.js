@@ -10,7 +10,7 @@ var Cc = Components.classes;
 var Cu = Components.utils;
 
 // Get ModuleLoader implementation (it's Mozilla JS code module)
-Components.utils["import"]("resource://hellomodule/ModuleLoader.js");
+Components.utils["import"]("resource://firebug/moduleLoader.js");
 
 // ********************************************************************************************* //
 // Firebug Panel
