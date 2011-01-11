@@ -8,7 +8,7 @@ function runTest()
     // Compute relative path and conctruct module loader.
     var baseUrl = baseLocalPath + "loader/relativepath/";
     var require = (new ModuleLoader(null, {
-        context: baseUrl,
+        context: "foo",
         baseUrl: baseUrl}
     )).loadDepsThenCallback;
 
