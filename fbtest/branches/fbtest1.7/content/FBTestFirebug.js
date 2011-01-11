@@ -1313,9 +1313,14 @@ this.addWatchExpression = function(chrome, expression, callback)
 
     recognizer.onRecognizeAsync(function(memberValueColumn)
     {
-        // xxxHonza, XXXjjb: why the parameter isn't directly "memberValueCell" <td>
-        // as was specified in the constructor, but rather the parent <table> element?
-        var td = memberValueColumn.querySelector(".memberValueCell");
+        var td;
+        if (FW.FBL.hasClass(memberValueColumn, "memberValueCell"))
+            td = memberValueColumn;
+        else
+            td = memberValueColumn.querySelector(".memberValueCell");
+
+        FBTrace.sysout("memberValueColumn", memberValueColumn);
+        FBTrace.sysout("td", td);
         callback(td);
     });
 

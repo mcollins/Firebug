@@ -153,7 +153,7 @@ FBTestApp.TestRunner = extend(new Firebug.Listener(),
             FBTrace.sysout("fbtest.TestRunner.CANCELED");
 
         // Test is done so, clear the break-timeout.
-        // xxxHonza: all related conmponents should be registerd as listeners.
+        // xxxHonza: all related components should be registerd as listeners.
         FBTestApp.TestRunner.cleanUp();
 
         // If there are tests in the queue, execute them.
