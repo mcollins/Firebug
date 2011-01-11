@@ -3,7 +3,7 @@ function runTest()
     FBTest.sysout("relativepath.START;");
     FBTest.progress(baseLocalPath);
 
-    Components.utils["import"]("resource://hellomodule/ModuleLoader.js");
+    Components.utils["import"]("resource://firebug/moduleLoader.js");
 
     var require = (new ModuleLoader(null, {context: "foo"})).loadDepsThenCallback;
 

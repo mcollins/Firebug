@@ -3,7 +3,7 @@ function runTest()
     FBTest.sysout("relativepath.START;");
     FBTest.progress(baseLocalPath);
 
-    Components.utils["import"]("resource://hellomodule/ModuleLoader.js");
+    Components.utils["import"]("resource://firebug/moduleLoader.js");
 
     // Compute relative path and conctruct module loader.
     var baseUrl = baseLocalPath + "loader/paths/";
