@@ -112,7 +112,7 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
             var lineNum = parseInt(lineNumEl.textContent.replace(/\s/g, ''));
 
             var match = {
-                href: (panel.location ? panel.location.href : undefined) || "default",
+                href: (panel.location ? panel.location.url : undefined) || "default",
                 line: lineNum
             };
 
