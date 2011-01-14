@@ -1,59 +1,46 @@
-function runTest() {
-    FBTestFirebug.openNewTab(basePath + "script/2279/testErrorBreakpoints.html", function(win) {
-        fireTest(win);
-    });
-}
+function runTest()
+{
+    FBTest.openNewTab(basePath + "script/2279/testErrorBreakpoints.html", function(win)
+    {
+        FBTest.enableConsolePanel(function(win)
+        {
+            var config = {tagName: "div", classes: "logRow logRow-errorMessage"};
+            FBTest.waitForDisplayedElement("console", config, function(el)
+            {
+                FBTest.progress("recognized error row: " + el);
 
-function hasClass(el, className) {
-    return (el.getAttribute("class").indexOf(className) != -1);
-}
+                var objBox = el.querySelector("span.objectBox-errorMessage");
+                var errBP = el.querySelector("img.errorBreak");
 
-function fireTest(win) {
+                FBTest.progress("Found Breakpoint button: " + errBP);
 
-    FBTestFirebug.enableConsolePanel(function(win){
-        var panel = FBTestFirebug.selectPanel("console").panelNode;
-        var panelDoc = FBTestFirebug.getPanelDocument();
-        var lookForLogRow = new MutationRecognizer(panelDoc.defaultView, 'div', {"class": "logRow-errorMessage"});
+                // test unchecked
+                FBTest.ok(!hasClass(objBox, "breakForError"), "Must be unchecked");
 
-        var filter = lookForLogRow.onRecognize(function recognize(el) {
-            FBTest.progress("recognized error row: " + el);
-
-            for each (var span in el.getElementsByTagName("span")) {
-                if (hasClass(span, "objectBox-errorMessage")) {
-                    var objBox = span;
-                    break;
-                }
-            }
-
-            if (objBox) {
-                for each ( var img in objBox.getElementsByTagName("img")) {
-                    if (hasClass(img, "errorBreak")) {
-                        var errBP = img;
-                        break;
-                    }
-                }
-            }
-
-            FBTest.progress("Found Breakpoint button: " + errBP);
-
-            // test unchecked
-            FBTest.ok(!hasClass(objBox, "breakForError"));
-
-            FBTest.click(errBP);
-            setTimeout(function() {
-                // test checked
-                FBTest.ok(hasClass(objBox, "breakForError"));
-
+                // toggle breakpoint
                 FBTest.click(errBP);
-                setTimeout(function() {
-                     // test unchecked again
-                    FBTest.ok(!hasClass(objBox, "breakForError"));
-                     FBTestFirebug.testDone();
+
+                setTimeout(function()
+                {
+                    // test checked
+                    FBTest.ok(hasClass(objBox, "breakForError"), "Must be checked");
+
+                    FBTest.click(errBP);
+                    setTimeout(function()
+                    {
+                        // test unchecked again
+                        FBTest.ok(!hasClass(objBox, "breakForError"), "Must be unchecked again");
+                        FBTest.testDone();
+                    });
                 });
             });
-        });
-        FBTest.sysout("waiting for "+lookForLogRow.getDescription());
 
+            FBTest.progress("waiting for an error to appear");
+        });
     });
 }
 
+function hasClass(el, className)
+{
+    return (el.getAttribute("class").indexOf(className) != -1);
+}
