@@ -9,6 +9,7 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 
 Components.utils.import("resource://fbtest/FBTestIntegrate.js")
+
 // ************************************************************************************************
 // Domplate for tests results
 
