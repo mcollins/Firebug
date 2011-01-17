@@ -1,15 +1,87 @@
+<!DOCTYPE html>
 <html>
-<head>
-    <style>
-        div {
-            -moz-transform: rotate(-40deg);
-        }
-    </style>
-</head>
-<body>
-    <p>Try to inspect this:</p>
-    <div style="width:200px; height:200px; border:1px solid #000; margin:30px; -moz-transform:rotate(-10deg);">Can you inspect this rotated div?</div>
-</body>
-</html>
+  <head>
+    <title>Issue 2273: box model shadowing on (css) rotated elements wont work correctly</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      * {
+        position: relative;
+      }
 
- 
+      h1 {
+        font-size: large;
+        font-weight: normal;
+        padding: 1em 0;
+        text-transform: uppercase;
+      }
+
+      #CSSRotated, #JavaScriptRotated, #rotatedCascaded, #rotatedCascaded, #rotatedCascaded div {
+        position: absolute;
+        top: 100px;
+        width: 140px;
+        height: 140px;
+        margin: 10px;
+        padding: 10px;
+        text-align: center;
+        background-color: #ffffff;
+        border: 1px solid #000000;
+        vertical-align: middle;
+      }
+
+      #CSSRotated, #rotatedCascaded, #rotatedCascaded div {
+        -moz-transform: rotate(20deg);
+      }
+
+      #CSSRotated {
+        left: 40px;
+      }
+
+      #JavaScriptRotated {
+        left: 280px;
+      }
+
+      #rotatedCascaded {
+        left: 520px;
+      }
+
+      #rotatedCascaded div {
+        left: 35px;
+        padding: 0;
+        -moz-transform-origin: 10% 25%;
+      }
+
+      #rotatedCascaded > div {
+        top: 25px;
+        width: 80px;
+        height: 80px;
+      }
+
+      #rotatedCascaded > div > div {
+        top: 0;
+        width: 60px;
+        height: 60px;
+      }
+    </style>
+    <script type="text/javascript">
+      <!--
+      function rotate() {
+        document.getElementById('JavaScriptRotated').style.MozTransform = 'rotate(20deg)';
+      }
+
+      window.addEventListener('load',rotate,false);
+      //-->
+    </script>
+  </head>
+  <body>
+    <h1>Try to inspect the following elements:</h1>
+    <div id="CSSRotated">Rotated via CSS</div>
+    <div id="JavaScriptRotated">Rotated via JavaScript</div>
+    <div id="rotatedCascaded">
+      Rotated sub-nodes
+      <div>
+        <div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
