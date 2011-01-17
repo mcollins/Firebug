@@ -70,6 +70,13 @@
             </fileset>
         </copy>
 
+        <!-- Copy modules directory -->
+        <copy todir="${build.dir}/modules">
+            <fileset dir="modules">
+               <include name="**/*.js"/>
+            </fileset>
+        </copy>
+
         <!-- Copy extension installation files and licence.txt -->
         <copy file="chrome.manifest" todir="${build.dir}"/>
         <copy file="install.rdf" todir="${build.dir}"/>
