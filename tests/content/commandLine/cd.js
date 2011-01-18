@@ -14,7 +14,7 @@ function runTest()
                 "span", "objectBox objectBox-array");
 
             tasks.push(executeAndVerify, "$(\"test-iframe-1\")",
-                "<div id=\"test-iframe-1\">",
+                "<div id=\"test-iframe-1\">",
                 "a", "objectLink objectLink-element");
 
             tasks.push(executeAndVerify, "cd(top)",
