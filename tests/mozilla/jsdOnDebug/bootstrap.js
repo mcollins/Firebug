@@ -47,7 +47,7 @@ function createTestDriver(window)
             jsd.off();
     }
     driver.activateJSD = activateJSD;
-    driver.deactiveJSD = deactivateJSD;
+    driver.deactivateJSD = deactivateJSD;
     return driver;
 }
 var testDriver = null;
@@ -79,7 +79,7 @@ function startup(aData, aReason) {
     Components.utils.import("resource://firebug/firebug-trace-service.js");
     var FBTrace = traceConsoleService.getTracer("extensions.firebug");
   FBTrace.sysout("startup "); */
- 
+
   let wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
 
   // Load into any existing windows
