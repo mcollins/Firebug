@@ -1103,11 +1103,10 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
         return;
     }
 
-    // Add a half becaue sendMouseEvent will round off our coordinates to the nearest int
-    // Also make sure that coordinates are always greater than 0. Clicks to hidden parts
-    // of the element doesn't open the context menu.
-    var left = Math.max(0, rect.left) + offsetX + 0.5;
-    var top = Math.max(0, rect.top) + offsetY + 0.5;
+    // Make sure that coordinates are always greater than 0. Hit the middle of the button
+    // (Clicks to hidden parts of the element doesn't open the context menu).
+    var left = Math.max(0, rect.left) + offsetX + 0.5*Math.max(1,rect.width);
+    var top = Math.max(0, rect.top) + offsetY + 0.5*Math.max(1,rect.height);
 
     if (event.type)
     {
