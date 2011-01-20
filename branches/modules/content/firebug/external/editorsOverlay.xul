@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script type="application/x-javascript" src="chrome://firebug/content/external/externalEditors.js"/>
+<script type="application/x-javascript" src="chrome://firebug/content/external/editorToContextMenu.js"/>
+
+    <!-- Firefox page context menu -->
+    <menupopup id="contentAreaContextMenu">
+        <menu label="firebug.OpenWith" id="menu_firebugOpenWithEditor"
+            insertbefore="context-viewsource" class="fbInternational">
+            <menupopup id="menu_firebugOpenWith"
+                onpopupshowing="return Firebug.ExternalEditors.onEditorsShowing(this);">
+                <menuitem id="menu_openFirebugEditors" label="firebug.ConfigureEditors"
+                    command="cmd_openFirebugEditors" class="fbInternational"/>
+            </menupopup>
+        </menu>
+    </menupopup>
+
+    <!-- Basic editing related commands -->
+    <commandset id="mainCommandSet">
+        <command id="cmd_openFirebugEditors" oncommand="Firebug.ExternalEditors.openEditorList()"/>
+        <command id="cmd_openInEditor" oncommand="Firebug.ExternalEditors.openContext(Firebug.currentContext, event.sourceEvent.target.value)"/>
+    </commandset>
+
+    <!-- Firebug icon menu overlay -->
+    <menupopup id="fbFirebugMenuPopup">
+        <menu id="FirebugMenu_OpenWith" label="firebug.OpenWith" insertbefore="menu_openActionsSeparator" class="fbInternational">
+            <menupopup id="fbFirebugMenu_OpenWith"
+                onpopupshowing="return Firebug.ExternalEditors.onEditorsShowing(this);">
+                    <menuitem id="menu_configureEditors" label="firebug.ConfigureEditors"
+                        command="cmd_openFirebugEditors" class="fbInternational"/>
+            </menupopup>
+        </menu>
+    </menupopup>
+
+</overlay>
