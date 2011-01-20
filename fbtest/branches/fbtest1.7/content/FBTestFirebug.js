@@ -1077,10 +1077,37 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
     var button = event.button || 0;
     var clickCount = event.clickCount || 1;
 
-    var rect = node.getBoundingClientRect();
-    // add a half becaue sendMouseEvent will round off our coordinates to the nearest int
-    var left = rect.left + offsetX + 0.5;
-    var top = rect.top + offsetY + 0.5;
+    var rects = node.getClientRects();
+
+    // Return true if at least a portion of the passed rectangle is visible.
+    function isVisible(rect)
+    {
+        return ((rect.top > 0 || rect.bottom > 0) && (rect.left > 0 || rect.right > 0));
+    }
+
+    // A <span> element can have more rectangles, let find the one that is actually
+    // visible so, we can click on it.
+    var rect;
+    for (var i=0; i<rects.length; i++)
+    {
+        if (isVisible(rects[i]))
+        {
+            rect = rects[i];
+            break;
+        }
+    }
+
+    if (!rect)
+    {
+        FBTest.ok(false, "Can't click on an invisible element");
+        return;
+    }
+
+    // Add a half becaue sendMouseEvent will round off our coordinates to the nearest int
+    // Also make sure that coordinates are always greater than 0. Clicks to hidden parts
+    // of the element doesn't open the context menu.
+    var left = Math.max(0, rect.left) + offsetX + 0.5;
+    var top = Math.max(0, rect.top) + offsetY + 0.5;
 
     if (event.type)
     {
