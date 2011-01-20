@@ -18,7 +18,20 @@ function runTest()
 
                 FBTest.progress("script panel toolbar width: " + toolbar.clientWidth +
                     ", step-out button right side: " + rect.right);
-                FBTest.ok(toolbar.clientWidth > rect.right, "Debugger buttons must be visible");
+
+                // The browser window can be so small that even if the bread-crumbs
+                // is shrank there is not enough space to see the buttons. In such
+                // case we need to check the the bread-crumbs is really shrank
+                if (toolbar.clientWidth < rect.right)
+                {
+                    var panelStatus = doc.getElementById("fbPanelStatus");
+                    FBTest.compare(0, panelStatus.width,
+                        "Panel status must have zero width (browser window is small)");
+                }
+                else
+                {
+                    FBTest.ok(true, "Debugger buttons must be visible");
+                }
 
                 // Resume debugger and finish the test.
                 FBTest.clickContinueButton();
