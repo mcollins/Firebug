@@ -44,8 +44,8 @@ function testDomPanel(callback)
     {
         FBTest.progress("Element found");
 
-        var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
-        var nodeTag = nodeLabelBox.querySelector(".nodeTag");
+        var nodeTag = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeText");
+        FBTest.progress(nodeTag.className);
 
         FBTest.executeContextMenuCommand(nodeTag, "InspectIndomTab", function()
         {
