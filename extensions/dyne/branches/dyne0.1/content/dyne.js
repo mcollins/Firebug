@@ -19,19 +19,32 @@ Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 // ************************************************************************************************
 // Front end
 
-Firebug.DyneFront = extend(Firebug.Module,
+Firebug.Dyne = extend(Firebug.Module,
 {
-    dispatchName: "dyneFront",
-    
+    dispatchName: "dyne",
+
     showPanel: function(browser, panel)
     {
-		if ("getCompilationUnit" in panel)
-			this.addEditButton(panel);
+        if (!panel)
+            return;
+
+        collapse(Firebug.Chrome.$('fbToggleDyneEditing'), !("getCompilationUnit" in panel));
     },
-    
-    addEditButton: function(panel)
+
+    /*
+     * Integrate the selected panel with the selected editor
+     */
+    toggleEditing: function()
     {
-    	
+        var panel = Firebug.chrome.getSelectedPanel();
+        if (panel.dynamoEditing)
+            FBTrace.sysout("Retry requested ");
+        else
+        {
+            var location = Firebug.chrome.getSelectedPanelLocation();
+            FBTrace.sysout("Edit requested "+location);
+        }
+
     },
 });
 
@@ -44,7 +57,7 @@ Firebug.DyneFront = extend(Firebug.Module,
 // xxxHonza: what if the stylesheet registration would be as follows:
 //Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 
-Firebug.registerPanel(SelectorPanel);
+Firebug.registerModule(Firebug.Dyne);
 
 // ************************************************************************************************
 }});

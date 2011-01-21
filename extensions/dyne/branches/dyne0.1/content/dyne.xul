@@ -7,44 +7,19 @@
     <script src="chrome://dyne/content/dyne.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_consoleExportAuto" oncommand="Firebug.ConsoleExport.toggleAutoExport(FirebugContext)"/>
+        <command id="cmd_webEditLaunch" oncommand="Firebug.Dyne.editCurrentSource(FirebugContext)"/>
     </commandset>
 
     <toolbar id="fbToolbar">
         <hbox id="fbToolbarInner">
             <hbox id="fbEditButtons" insertafter="fbBonButtons">
-                <toolbarbutton id="dyneEdit" command="cmd_dyneEdit"
-                    tooltiptext="dyneEdit.button.tooltip.Edit" />
-
-                <!-- Console panel export -->
-                <toolbarbutton id="consoleExportMenu"
-                    insertafter="fbToggleProfiling"
-                    label="consoleexport.button.label.Export"
-                    tooltiptext="consoleexport.button.tooltip.Export Console Logs"
-                    type="menu">
-                    <menupopup>
-                        <menuitem id="consoleExportToFile"
-                            insertafter="fbToggleProfiling"
-                            label="consoleexport.menu.label.Save As"
-                            tooltiptext="consoleexport.menu.tooltip.Save As"
-                            oncommand="Firebug.ConsoleExport.onSaveAs(event, FirebugContext)" />
-                    </menupopup>
+                <toolbarbutton id="fbToggleDyneEditing" collapsed="false"
+                    label="Edit"
+                    class="toolbar-text-button fbInternational"
+                    tooltiptext="Edit this source"
+                    command="cmd_toggleDyneEditing"
+                    oncommand="Firebug.Dyne.toggleEditing()">
                 </toolbarbutton>
-
-                <toolbarseparator insertafter="fbToggleProfiling"/>
-
-                <!--
-                <menupopup>
-                    <menuitem id="consoleExportHelp"
-                        label="consoleexport.menu.label.Help"
-                        tooltiptext="consoleexport.menu.tooltip.Help"
-                        oncommand="Firebug.ConsoleExport.onHelp(event)" />
-                    <menuitem id="consoleExportAbout"
-                        label="consoleexport.menu.label.About"
-                        tooltiptext="consoleexport.menu.tooltip.About"
-                        oncommand="Firebug.ConsoleExport.onAbout(event, FirebugContext)" />
-                </menupopup>
-                -->
             </hbox>
         </hbox>
     </toolbar>
