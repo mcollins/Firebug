@@ -2,6 +2,7 @@
 
 <!-- <?xul-overlay href="chrome://fb4cb/content/firebugOverlay.xul"?> -->
 <?xul-overlay href="chrome://browser/content/baseMenuOverlay.xul"?>
+<?xul-overlay href="chrome://firebug/content/start-button/startButtonOverlay.xul"?>
 
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://chromebug/content/fb4cb.css"?>
