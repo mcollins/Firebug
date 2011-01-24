@@ -1,3 +1,7 @@
+// https://developer.mozilla.org/en/Preferences/Mozilla_preferences_for_uber-geeks
+pref("security.ssl.warn_missing_rfc5746", false);
+// Hack for Bug 551001
+pref("browser.cache.memory.enable", false);
 // Don't allow FF4.0 to overwrite your file-proxies
 pref("extensions.update.autoUpdateDefault", false);
 
