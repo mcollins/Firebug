@@ -492,7 +492,7 @@ Apparently this event comes to late to do anything useful with the objects.
                     this.xulWindowTags.splice(mark,1);
                     var outerDOMWindow = this.getDOMWindowByXULWindow(xul_win);
                     FBTrace.sysout("XULAppModule.onclose: removing getXULWindowIndex="+mark+" with outerDOMWindow "+outerDOMWindow);
-                    TabWatcher.unwatchTopWindow(outerDOMWindow);
+                    Firebug.TabWatcher.unwatchTopWindow(outerDOMWindow);
                 }
                 else
                 {

@@ -69,7 +69,7 @@ const statusText = $("cbStatusText");
 
 Firebug.Chromebug = extend(Firebug.Module,
 {
-    // This is our interface to TabWatcher, total hack.
+    // This is our interface to Firebug.TabWatcher, total hack.
     fakeTabBrowser: {browsers: []},
 
     getBrowsers: function()
@@ -167,7 +167,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
-        this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
+        this.fakeTabBrowser.currentURI = browser.currentURI; // allows Firebug.TabWatcher to showContext
         FBTrace.sysout("createBrowser "+browser.tag+" global:"+(global?safeToString(global):"no global")+" for browserName "+browserName+" from "+browserNameFrom);
         return browser;
     },
@@ -175,7 +175,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     selectBrowser: function(browser)
     {
         this.fakeTabBrowser.selectedBrowser = browser;
-        this.fakeTabBrowser.currentURI = browser.currentURI; // allows tabWatcher to showContext
+        this.fakeTabBrowser.currentURI = browser.currentURI; // allows Firebug.TabWatcher to showContext
     },
 
     selectContext: function(context)  // this operation is similar to a user picking a tab in Firefox, but for chromebug
@@ -243,7 +243,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.uid = FBL.getUniqueId();
 
         if (!this.contexts)
-            this.contexts = TabWatcher.contexts;
+            this.contexts = Firebug.TabWatcher.contexts;
 
         window.arguments[0] = {browser: this.fakeTabBrowser};
 
@@ -593,7 +593,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 return null;
 
             var browser = Firebug.Chromebug.createBrowser(global, name);  // I guess this has side effects we need
-            var context = TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
+            var context = Firebug.TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
 
             // we want to write window.console onto the actual window, not the wrapper
             if (global.wrappedJSObject && !global.wrappedJSObject.console)
@@ -614,7 +614,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
         {
             var browser = Firebug.Chromebug.createBrowser(global, name);
-            var context = TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
+            var context = Firebug.TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
         }
 
         if (FBTrace.DBG_ACTIVATION)
@@ -675,14 +675,14 @@ Firebug.Chromebug = extend(Firebug.Module,
     getContextByGlobal: function(global)
     {
         if (!this.contexts)
-            this.contexts = TabWatcher.contexts;
+            this.contexts = Firebug.TabWatcher.contexts;
 
 
         if (global instanceof Window)
         {
             var docShellType = Chromebug.XULAppModule.getDocumentTypeByDOMWindow(global);
             if (docShellType === "Content")
-                return TabWatcher.getContextByWindow(global);
+                return Firebug.TabWatcher.getContextByWindow(global);
         }
 
         for (var i = 0; i < this.contexts.length; ++i)
@@ -764,12 +764,12 @@ Firebug.Chromebug = extend(Firebug.Module,
         if ((currentSelection && currentSelection == context) || (!currentSelection) )
         {
          // Pick a new context to be selected.
-            var contexts = TabWatcher.contexts;
+            var contexts = Firebug.TabWatcher.contexts;
             for (var i = contexts.length; i; i--)
             {
                 nextContext = contexts[i - 1];
                 if (!nextContext)
-                    FBTrace.sysout("Chromebug destroycontext TabWatcher.contexts has an undefined value at i-1 "+(i-1)+"/"+TabWatcher.contexts.length);
+                    FBTrace.sysout("Chromebug destroycontext Firebug.TabWatcher.contexts has an undefined value at i-1 "+(i-1)+"/"+Firebug.TabWatcher.contexts.length);
                 if (nextContext.window && nextContext.window.closed)
                     continue;
                 if (nextContext != context)

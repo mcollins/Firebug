@@ -156,14 +156,14 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
                     Chromebug.XULAppModule.addCloser(xul_win, function delayUntilOnCloseWindow()
                     {
-                        TabWatcher.unwatchTopWindow(domWindow);
+                        Firebug.TabWatcher.unwatchTopWindow(domWindow);
                     });
                     */
                 }
                 else
                 {
                     FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
-                    TabWatcher.unwatchTopWindow(domWindow);
+                    Firebug.TabWatcher.unwatchTopWindow(domWindow);
                 }
 
             }

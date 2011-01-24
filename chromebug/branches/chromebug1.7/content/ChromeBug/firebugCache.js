@@ -97,7 +97,7 @@ Firebug.Chromebug.FBCachePanel.prototype = extend(Firebug.Panel,
 
         // If the current browser window (associated with the context) has TabWatcher
         // display its cache entries. Otherwise bail out.
-        var tabWatcher = this.context.browser.contentWindow.TabWatcher;
+        var tabWatcher = this.context.browser.contentWindow.Firebug.TabWatcher;
         if (!tabWatcher)
         {
             if (FBTrace.DBG_FBCACHE)
