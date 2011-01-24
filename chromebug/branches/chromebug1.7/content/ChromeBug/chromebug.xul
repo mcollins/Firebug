@@ -24,9 +24,32 @@
 
     <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
     <script type="application/x-javascript">
+
     Components.utils.import("resource://firebug/firebug-trace-service.js");
     var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
     FBTrace.setScope(window);
+
+    var releaser = window.arguments[0];  // see chromebug_command_line.js
+
+    function onLoad(event)
+    {
+        window.dump("------------ "+window.location+" load ------------------------\n");
+
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+            .getService(Components.interfaces.nsIWindowMediator);
+
+        var enumerator = wm.getEnumerator(null);
+        while(enumerator.hasMoreElements())
+        {
+            var win = enumerator.getNext();
+            if ( win.location.href === releaser.url)
+            {
+                Components.utils.reportError("Chromebug releasing application thread");
+                releaser.unblock.apply(releaser,[]);
+            }
+        }
+    }
+    window.addEventListener('load', onLoad, false);
     </script>
     <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>

@@ -32,9 +32,9 @@ const trace = false;
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-function chromebugCommandLineHandler(){} // not really a class, but needed for xpcom voodoo
+function ChromebugCommandLineHandler(){} // not really a class, but needed for xpcom voodoo
 
-chromebugCommandLineHandler.prototype = {
+var commandLineHandler = ChromebugCommandLineHandler.prototype = {
 
     debug: false,
 
@@ -50,7 +50,7 @@ chromebugCommandLineHandler.prototype = {
             if ("initWithParams" in win)
                   win.initWithParams(params);
             win.focus();
-            Components.utils.reportError("chromebugCommandLineHandler reused a window");
+            Components.utils.reportError("ChromebugCommandLineHandler reused a window");
         }
         else
         {
@@ -67,10 +67,13 @@ chromebugCommandLineHandler.prototype = {
             var features = "outerWidth="+w+","+"outerHeight="+h;
 
             var winFeatures = "resizable,dialog=no,centerscreen" + (features != "" ? ("," + features) : "");
-            if (chromebugCommandLineHandler.prototype.debug)
+            if (commandLineHandler.debug)
             {
                 Components.utils.reportError("chromebug_command_line opening window with features: "+features);
             }
+            //opener.dump("========= open "+url+" with "+params+"\n");
+            //for (var p in params)
+            //    opener.dump("========= "+p+" = "+params[p]+"\n");
             win = opener.openDialog(url, "_blank", winFeatures, params);
         }
         return win;
@@ -85,10 +88,16 @@ chromebugCommandLineHandler.prototype = {
         var prefedWidth = prefs.getIntPref("extensions.chromebug.outerWidth");
         var prefedHeight = prefs.getIntPref("extensions.chromebug.outerHeight");
 
-        var chromeBugWindow = this.openWindow(window, inType, url, prefedWidth, prefedHeight);
+        var releaser =
+        {
+            url: "chrome://chromebug/content/blocker.xul",
+            unblock: null, // set by blocker.xul, called by chromebug.xul
+        }
+
+        var chromeBugWindow = this.openWindow(window, inType, url, prefedWidth, prefedHeight, releaser);
         chromeBugWindow.document.title = title;
 
-        if (chromebugCommandLineHandler.prototype.debug)
+        if (commandLineHandler.debug)
         {
             var chromeURI = iosvc.newURI(url, null, null);
             var localURI = chromeReg.convertChromeURL(chromeURI);
@@ -96,6 +105,10 @@ chromebugCommandLineHandler.prototype = {
             Components.utils.reportError("ChromeBug x,y,w,h = ["+chromeBugWindow.screenX+","+chromeBugWindow.screenY+","+
                chromeBugWindow.width+","+chromeBugWindow.height+"]");
         }
+
+        var winFeatures = "modal,resizable,dialog=no,centerscreen";
+
+        win = window.openDialog(releaser.url, "_blank", winFeatures, releaser);
 
         return chromeBugWindow;
     },
@@ -130,7 +143,7 @@ chromebugCommandLineHandler.prototype = {
                         prefs.setBoolPref("extensions.firebug.service.filterSystemURLs", false);  // See firebug-service.js
                         prefs.setBoolPref("extensions.chromebug.launch", true);
                         Components.utils.reportError("Chromebug command line sees -chromebug");
-                        chromebugCommandLineHandler.prototype.openChromebug(window);
+                        commandLineHandler.openChromebug(window);
                     }
                     else
                     {
@@ -187,9 +200,9 @@ chromebugCommandLineHandler.prototype = {
 * XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
 */
 if (XPCOMUtils.generateNSGetFactory)
-    var NSGetFactory = XPCOMUtils.generateNSGetFactory([chromebugCommandLineHandler]);
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([ChromebugCommandLineHandler]);
 else
-    var NSGetModule = XPCOMUtils.generateNSGetModule([chromebugCommandLineHandler]);
+    var NSGetModule = XPCOMUtils.generateNSGetModule([ChromebugCommandLineHandler]);
 
 function getStartupObserver()
 {
@@ -227,7 +240,7 @@ function getTmpStream(file)
     return foStream;
 }
 
-var fbs = chromebugCommandLineHandler;
+var fbs = ChromebugCommandLineHandler;
 
 function tmpout(text)
 {

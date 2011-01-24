@@ -281,8 +281,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         this.retryRestoreCounter = 6;
         this.retryRestoreID = setInterval(bind(Firebug.Chromebug.restoreState, this), 500);
 
-        // xxxHonza: what is the purpose of this timeout?
-        setTimeout( function stopTrying()
+        setTimeout( function stopTrying()  // Try to get the state of the UI back to where it was last time we ran
         {
             if(Firebug.Chromebug.stopRestoration())  // if the window is not up by now give up.
             {
@@ -813,45 +812,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
-            var startupObserverClass =  Cc["@getfirebug.com/chromebug-startup-observer;1"];
-            var startupObserverInstance = startupObserverClass.createInstance();
-
-            var startupObserver = startupObserverInstance.wrappedJSObject;
-
-            var jsdState = startupObserver.getJSDState();
-            if (!jsdState || !jsdState._chromebug)
-            {
-                setTimeout(function waitForFBTrace()
-                {
-                    FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
-                }, 1500);
-                return;
-            }
-            //https://developer.mozilla.org/En/Working_with_windows_in_chrome_code TODO after FF2 is history, us Application.storage
-            if (jsdState._chromebug)
-            {
-                // For now just clear the breakpoints, could try to put these into fbs .onX
-                var bps = jsdState._chromebug.breakpointedScripts;
-                for (tag in bps)
-                {
-                   var script = bps[tag];
-                   if (script.isValid)
-                       script.clearBreakpoint(0);
-                }
-                delete     jsdState._chromebug.breakpointedScripts;
-
-                var globals = jsdState._chromebug.globals; // []
-                var globalTagByScriptTag = jsdState._chromebug.globalTagByScriptTag; // globals index by script tag
-                var globalTagByScriptFileName = jsdState._chromebug.globalTagByScriptFileName; // globals index by script fileName
-                var xulScriptsByURL = jsdState._chromebug.xulScriptsByURL;
-                Firebug.Chromebug.buildInitialContextList(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName);
-
-                delete jsdState._chromebug.globalTagByScriptTag;
-                delete jsdState._chromebug.jsContexts;
-            }
-            else
-                FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in startupObserver, maybe the command line handler is broken\n");
-
+            Firebug.Chromebug.transferFromStartup();
         }
         catch(exc)
         {
@@ -862,6 +823,49 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.Chromebug.activated = true;
             FBTrace.sysout("onJSDActivate exit");
         }
+    },
+
+    transferFromStartup: function()
+    {
+        var startupObserverClass =  Cc["@getfirebug.com/chromebug-startup-observer;1"];
+        var startupObserverInstance = startupObserverClass.createInstance();
+
+        var startupObserver = startupObserverInstance.wrappedJSObject;
+
+        var jsdState = startupObserver.getJSDState();
+        if (!jsdState || !jsdState._chromebug)
+        {
+            setTimeout(function waitForFBTrace()
+            {
+                FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
+            }, 1500);
+            return;
+        }
+        //https://developer.mozilla.org/En/Working_with_windows_in_chrome_code TODO after FF2 is history, us Application.storage
+        if (jsdState._chromebug)
+        {
+            // For now just clear the breakpoints, could try to put these into fbs .onX
+            var bps = jsdState._chromebug.breakpointedScripts;
+            for (tag in bps)
+            {
+               var script = bps[tag];
+               if (script.isValid)
+                   script.clearBreakpoint(0);
+            }
+            delete jsdState._chromebug.breakpointedScripts;
+
+            var globals = jsdState._chromebug.globals; // []
+            var globalTagByScriptTag = jsdState._chromebug.globalTagByScriptTag; // globals index by script tag
+            var globalTagByScriptFileName = jsdState._chromebug.globalTagByScriptFileName; // globals index by script fileName
+            var xulScriptsByURL = jsdState._chromebug.xulScriptsByURL;
+            Firebug.Chromebug.buildInitialContextList(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName);
+
+            delete jsdState._chromebug.globalTagByScriptTag;
+            delete jsdState._chromebug.jsContexts;
+        }
+        else
+            FBTrace.sysout("ChromebugPanel.onJSDActivate: no _chromebug in startupObserver, maybe the command line handler is broken\n");
+
     },
 
     isChromebugURL: function(URL)
@@ -1013,6 +1017,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Chromebug.eachContext(function visitContext(anotherContext)
         {
+            return;  // HACK <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             if (anotherContext != context)
             {
                 if (anotherContext.window instanceof nsIDOMWindow)

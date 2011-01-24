@@ -349,9 +349,11 @@ StartupObserver.prototype =
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
-        //Components.utils.reportError("StartupObserver "+topic);
+        Components.utils.reportError("StartupObserver "+topic);
         if (topic == STARTUP_TOPIC) {
             if (trace) Components.utils.reportError("StartupObserver "+topic);
+            var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+            observerService.addObserver(this, "command-line-startup", false);
             var chromebugLaunch = prefs.getBoolPref("extensions.chromebug.launch");
             //if (trace)
 
@@ -366,6 +368,28 @@ StartupObserver.prototype =
             }
 
             return;
+        }
+        else if (topic === "command-line-startup")
+        {
+            return;
+            Components.utils.reportError("Chromebug "+topic+" command-line-startup");
+             if (subject instanceof Ci.nsICommandLine)
+             {
+                 var cmdLine = Cc["@mozilla.org/toolkit/command-line;1"].createInstance(Ci.nsICommandLine);
+                 if (Ci.nsICommandLineRunner)
+                 {
+                     Components.utils.reportError("Chromebug nsICommandLineRunner Exists");
+                     if (cmdLine instanceof Ci.nsICommandLineRunner)
+                         Components.utils.reportError("Chromebug nsICommandLineRunner isa");
+                 }
+                 else
+                     Components.utils.reportError("Chromebug nsICommandLineRunner NOT");
+
+                 for (var p in cmdLine)
+                     Components.utils.reportError("Chromebug cmdLine."+p+"="+ cmdLine[p]);
+                 //subject.preventDefault = true;
+                 Components.utils.reportError("Chromebug subject.preventDefault"+ subject.preventDefault);
+             }
         }
         else if (topic == "quit-application") {
             this.shutdown();
@@ -599,91 +623,6 @@ function analyzeScope(cb, frame, jsdState)
     }
     cb.innerScripts = [];
 }
-
-
-/*
-// ************************************************************************************************
-// Service factory
-
-
-
-var gStartupObserverSingleton = null;
-var StartupObserverFactory =
-{
-    createInstance: function (outer, iid)
-    {
-        if (outer != null)
-            throw Cr.NS_ERROR_NO_AGGREGATION;
-
-        if (iid.equals(Ci.nsISupports) ||
-            iid.equals(Ci.nsIObserverService) ||
-            iid.equals(Ci.nsIObserver))
-        {
-            if (!gStartupObserverSingleton)
-                gStartupObserverSingleton = new StartupObserver();
-            gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
-            return gStartupObserverSingleton.QueryInterface(iid);
-        }
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
-
-    QueryInterface: function(iid)
-    {
-        if (iid.equals(Ci.nsISupports) ||
-            iid.equals(Ci.nsISupportsWeakReference) ||
-            iid.equals(Ci.nsIFactory))
-            return this;
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    }
-};
-
-// ************************************************************************************************
-// Module implementation
-
-var StartupObserverModule =
-{
-    registerSelf: function (compMgr, fileSpec, location, type)
-    {
-        compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.registerFactoryLocation(CLASS_ID, CLASS_NAME,
-            CONTRACT_ID, fileSpec, location, type);
-
-        // For app-startup
-        //categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
-        //    "service," + CONTRACT_ID, true, true);
-        categoryManager.addCategoryEntry(STARTUP_TOPIC, CLASS_NAME,
-                CONTRACT_ID, true, true);
-    },
-
-    unregisterSelf: function(compMgr, fileSpec, location)
-    {
-        compMgr = compMgr.QueryInterface(Ci.nsIComponentRegistrar);
-        compMgr.unregisterFactoryLocation(CLASS_ID, location);
-
-        categoryManager.deleteCategoryEntry(STARTUP_TOPIC, CLASS_NAME, true);
-    },
-
-    getClassObject: function (compMgr, cid, iid)
-    {
-        if (!iid.equals(Ci.nsIFactory))
-            throw Cr.NS_ERROR_NOT_IMPLEMENTED;
-
-        if (cid.equals(CLASS_ID))
-            return StartupObserverFactory;
-
-        throw Cr.NS_ERROR_NO_INTERFACE;
-    },
-
-    canUnload: function(compMgr)
-    {
-        return true;
-    }
-};
-*/
-// ************************************************************************************************
-
 
 /**
 * XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).

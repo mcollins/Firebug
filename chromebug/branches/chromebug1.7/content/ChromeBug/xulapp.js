@@ -54,7 +54,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                return navi;
            }
            else
-               FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDochellTreeItem "+domWindow);
+               FBTrace.sysout("Chromebug getDocShellByDOMWindow, nsIWebNavigation notA nsIDocShellTreeItem "+domWindow);
         }
         else
         {

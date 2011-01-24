@@ -308,7 +308,6 @@ Firebug.Chromebug.TraceConsolePanel.prototype = extend(Firebug.Panel,
         {
             getScrollingNode: function()
             {
-                window.dump("unWrapMessage getScrollingNode self.panelNode "+self.panelNode+"\n");
                 return self.panelNode;
             },
             getTargetNode: function()
