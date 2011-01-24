@@ -28,7 +28,7 @@ Firebug.Dyne = extend(Firebug.Module,
         if (!panel)
             return;
 
-        collapse(Firebug.Chrome.$('fbToggleDyneEditing'), !("getCompilationUnit" in panel));
+        panel.showToolbarButtons("fbEditButtons",  (panel.location instanceof CompilationUnit));
     },
 
     /*
