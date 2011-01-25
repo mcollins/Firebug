@@ -7,7 +7,7 @@
     <script src="chrome://dyne/content/dyne.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_webEditLaunch" oncommand="Firebug.Dyne.editCurrentSource(FirebugContext)"/>
+        <command id="cmd_toggleDyneEditing" oncommand="Firebug.Dyne.toggleEditing()"/>
     </commandset>
 
     <toolbar id="fbToolbar">
@@ -18,7 +18,7 @@
                     class="toolbar-text-button fbInternational"
                     tooltiptext="Edit this source"
                     command="cmd_toggleDyneEditing"
-                    oncommand="Firebug.Dyne.toggleEditing()">
+                    >
                 </toolbarbutton>
             </hbox>
         </hbox>
