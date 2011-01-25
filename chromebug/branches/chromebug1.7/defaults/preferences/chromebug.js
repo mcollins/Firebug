@@ -125,36 +125,55 @@ pref("extensions.chromebug.trace.maxMessageLength", 400);     /*@explore*/
 pref("extensions.chromebug.trace.enableScope", false);     /*@explore*/
 pref("extensions.chromebug.trace.enableJSConsoleLogs", false);     /*@explore*/
 pref("extensions.chromebug.trace.showTime", false);      // /*@explore*/
-pref("extensions.chromebug.DBG_ACTIVATION", false);   // firebug.js and tabWatcher.js      /*@explore*/
-pref("extensions.chromebug.DBG_BP", false);             // debugger.js and firebug-services.js; lots of output   /*@explore*/
-pref("extensions.chromebug.DBG_TOPLEVEL", false);     // top level jsd scripts                     /*@explore*/
-pref("extensions.chromebug.DBG_STACK", false);        // call stack, mostly debugger.js            /*@explore*/
-pref("extensions.chromebug.DBG_UI_LOOP", false);      // debugger.js                               /*@explore*/
-pref("extensions.chromebug.DBG_ERRORS", false);       // error.js                                  /*@explore*/
-pref("extensions.chromebug.DBG_EVENTS", false);       // debugger.js for event handlers, need more /*@explore*/
-pref("extensions.chromebug.DBG_FUNCTION_NAMES", false);  // heuristics for anon functions          /*@explore*/
-pref("extensions.chromebug.DBG_EVAL", false);         // debugger.js and firebug-service.js        /*@explore*/
-pref("extensions.chromebug.DBG_PANELS", false);       // panel selection                           /*@explore*/
-pref("extensions.chromebug.DBG_CACHE", false);        // sourceCache                               /*@explore*/
-pref("extensions.chromebug.DBG_CONSOLE", false);        // console                                   /*@explore*/
-pref("extensions.chromebug.DBG_COMMANDLINE", false);  // command line                              /*@explore*/
-pref("extensions.chromebug.DBG_COMPILATION_UNIT", false);        // sourceCache                               /*@explore*/
-pref("extensions.chromebug.DBG_CSS", false);          //                                             /*@explore*/
-pref("extensions.chromebug.DBG_DBG2FIREBUG", false);  //                                             /*@explore*/
-pref("extensions.chromebug.DBG_DOM", false);  //                                             /*@explore*/
-pref("extensions.chromebug.DBG_DOMPLATE", false);  //                                             /*@explore*/
-pref("extensions.chromebug.DBG_DISPATCH", false);     //                                          /*@explore*/
-pref("extensions.chromebug.DBG_HTML", false);         //                                          /*@explore*/
-pref("extensions.chromebug.DBG_LINETABLE", false);    // /*@explore*/
-pref("extensions.chromebug.DBG_LOCATIONS", false);    // panelFileList
-pref("extensions.chromebug.DBG_LOAD", false);    // panelFileList
-pref("extensions.chromebug.DBG_SOURCEFILES", false);  // debugger and sourceCache                  /*@explore*/
-pref("extensions.chromebug.DBG_WINDOWS", false);      // tabWatcher, dispatch events; very useful for understand modules/panels  /*@explore*/
-pref("extensions.chromebug.DBG_NET", false);          // net.js                                    /*@explore*/
-pref("extensions.chromebug.DBG_INITIALIZE", false);   // registry (modules panels); initialize FB  /*@explore*/
-pref("extensions.chromebug.DBG_INSPECT", false);   // inspector  /*@explore*/
-pref("extensions.chromebug.DBG_OPTIONS", false);      // /*@explore*/
+
 pref("extensions.chromebug.DBG_FBCACHE", false);      // /*@explore*/
 pref("extensions.chromebug.DBG_CBWINDOW", false);      // /*@explore*/
 pref("extensions.chromebug.DBG_EXTENSIONS", false);      // /*@explore*/
 pref("extensions.chromebug.chromebugLaunch", false);
+
+pref("extensions.chromebug.DBG_ACTIVATION", false);   // firebug.js and tabWatcher.js      /*@explore*/
+pref("extensions.chromebug.DBG_BP", false);           // debugger.js and firebug-services.js; lots of output   /*@explore*/
+pref("extensions.chromebug.DBG_COMPILATION_UNITS", false);           // debugger.js and firebug-services.js; lots of output   /*@explore*/
+pref("extensions.chromebug.DBG_TOPLEVEL", false);     // top level jsd scripts                     /*@explore*/
+pref("extensions.chromebug.DBG_STACK", false);        // call stack, mostly debugger.js            /*@explore*/
+pref("extensions.chromebug.DBG_UI_LOOP", false);      // debugger.js                               /*@explore*/
+pref("extensions.chromebug.DBG_ERRORS", false);       // error.js                                  /*@explore*/
+pref("extensions.chromebug.DBG_ERRORLOG", false);       // error.js                                  /*@explore*/
+pref("extensions.chromebug.DBG_FUNCTION_NAMES", false);  // heuristics for anon functions          /*@explore*/
+pref("extensions.chromebug.DBG_EVAL", false);         // debugger.js and firebug-service.js        /*@explore*/
+pref("extensions.chromebug.DBG_PANELS", false);       // panel selection                           /*@explore*/
+pref("extensions.chromebug.DBG_CACHE", false);        // sourceCache                               /*@explore*/
+pref("extensions.chromebug.DBG_CONSOLE", false);      // console                                   /*@explore*/
+pref("extensions.chromebug.DBG_COMMANDLINE", false);  // command line                              /*@explore*/
+pref("extensions.chromebug.DBG_CSS", false);          //                                           /*@explore*/
+pref("extensions.chromebug.DBG_CSS_PARSER", false);          //                                    /*@explore*/
+pref("extensions.chromebug.DBG_DBG2FIREBUG", false);  //                                           /*@explore*/
+pref("extensions.chromebug.DBG_DOM", false);          //                                           /*@explore*/
+pref("extensions.chromebug.DBG_DOMPLATE", false);     // domplate engine                           /*@explore*/
+pref("extensions.chromebug.DBG_DISPATCH", false);     //                                           /*@explore*/
+pref("extensions.chromebug.DBG_HTML", false);         //                                           /*@explore*/
+pref("extensions.chromebug.DBG_LINETABLE", false);    //                                           /*@explore*/
+pref("extensions.chromebug.DBG_LOCATIONS", false);    // panelFileList                             /*@explore*/
+pref("extensions.chromebug.DBG_SOURCEFILES", false);  // debugger and sourceCache                  /*@explore*/
+pref("extensions.chromebug.DBG_WINDOWS", false);      // tabWatcher, dispatch events; very useful for understand modules/panels  /*@explore*/
+pref("extensions.chromebug.DBG_NET", false);          // net.js                                    /*@explore*/
+pref("extensions.chromebug.DBG_NET_EVENTS", false);   // net.js - network events                   /*@explore*/
+pref("extensions.chromebug.DBG_INITIALIZE", false);   // registry (modules panels); initialize FB  /*@explore*/
+pref("extensions.chromebug.DBG_INSPECT", false);      // inspector                                 /*@explore*/
+pref("extensions.chromebug.DBG_OPTIONS", false);      //                                           /*@explore*/
+pref("extensions.chromebug.DBG_FBS_FLUSH", false);    //                                           /*@explore*/
+pref("extensions.chromebug.DBG_HTTPOBSERVER", false); // Centralized HTTP Observer                 /*@explore*/
+pref("extensions.chromebug.DBG_SPY", false);          // spy.js                                    /*@explore*/
+pref("extensions.chromebug.DBG_JSONVIEWER", false);   // json explorer                             /*@explore*/
+pref("extensions.chromebug.DBG_EDITOR", false);       // Inline editors                            /*@explore*/
+pref("extensions.chromebug.DBG_SHORTCUTS", false);    // Keyboard shortcuts.                       /*@explore*/
+pref("extensions.chromebug.DBG_A11Y", false);         // a11y                                      /*@explore*/
+pref("extensions.chromebug.DBG_LOCALE", false);       // localization, missing strings             /*@explore*/
+pref("extensions.chromebug.DBG_INFOTIP", false);      // popup info tip in panels                  /*@explore*/
+pref("extensions.chromebug.DBG_ANNOTATIONS", false);  // Page annotations service                  /*@explore*/
+pref("extensions.chromebug.DBG_XMLVIEWER", false);    // xml explorer                              /*@explore*/
+pref("extensions.chromebug.DBG_SVGVIEWER", false);    // svg explorer                              /*@explore*/
+pref("extensions.chromebug.DBG_ACTIVITYOBSERVER", false);    // Net panel's activity observer      /*@explore*/
+pref("extensions.chromebug.DBG_TOOLTIP", false);      // tooltip debugging      /*@explore*/
+pref("extensions.chromebug.DBG_HISTORY", false);      // panel navigation history                  /*@explore*/
+pref("extensions.chromebug.DBG_STORAGE", false);      // storageService                            /*@explore*/
