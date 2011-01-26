@@ -43,9 +43,69 @@ Firebug.Dyne = extend(Firebug.Module,
         {
             var location = Firebug.chrome.getSelectedPanelLocation();
             FBTrace.sysout("Edit requested "+location);
+            try
+            {
+                var editURL = Firebug.Dyne.getEditURLbyURL(panel.context, location);
+                Firebug.Dyne.beginEditing(editURL);
+            }
+            catch (exc)
+            {
+                Firebug.Console.logFormatted(exc+"", exc);
+                Firebug.chrome.selectPanel("console");
+            }
         }
-
     },
+    // --------------------------------------------------------------------
+
+    beginEditing: function(editURL)
+    {
+        FBL.openNewTab(editURL);
+    },
+
+    // --------------------------------------------------------------------
+    // Extracting edit URL
+    getEditURLbyURL: function(context, url)
+    {
+        var files = context.netProgress.files;
+        for (var i = 0; i < files.length; i++)
+        {
+            if (files[i].href === url)
+                return Firebug.Dyne.getEditURLbyNetFile(files[i]);
+        }
+        throw Firebug.Dyne.noMatchingRequest(url);
+    },
+
+    getEditURLbyNetFile: function(file)
+    {
+        var server = null;
+        var token = null;
+        var headers = file.responseHeaders;
+        for (var i = 0; i < headers.length; i++)
+        {
+            if (headers[i].name.toLowerCase() === "x-edit-server")
+                server = headers[i].value;
+            if (headers[i].name.toLowerCase() === "x-edit-token")
+                token = headers[i].value;
+        }
+        var editURL = server + token;
+        if (editURL)
+            return editURL;
+        else
+            throw Firebug.Dyne.noEditServerHeader(file);
+    },
+
+    noEditServerHeader: function(file)
+    {
+        var msg = "ERROR: The web page has no x-edit-server header: "; // NLS
+        return new Error(msg + file.href);
+    },
+
+    noMatchingRequest: function(url)
+    {
+        var msg = "ERROR: The Net panel has no request matching "; // NLS
+        return new Error(msg + url);
+    },
+
 });
 
 
