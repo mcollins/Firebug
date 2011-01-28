@@ -46,11 +46,12 @@ Firebug.Dyne = extend(Firebug.Module,
             try
             {
                 var editURL = Firebug.Dyne.getEditURLbyURL(panel.context, location);
-                Firebug.Dyne.beginEditing(editURL);
+                if (editURL)
+                    Firebug.Dyne.beginEditing(editURL);
             }
             catch (exc)
             {
-                Firebug.Console.logFormatted(exc+"", exc);
+                Firebug.Console.logFormatted([exc+"", exc], panel.context, "error");
                 Firebug.chrome.selectPanel("console");
             }
         }
@@ -66,6 +67,17 @@ Firebug.Dyne = extend(Firebug.Module,
     // Extracting edit URL
     getEditURLbyURL: function(context, url)
     {
+        if (url.substr(0,4) === "http")
+            return Firebug.Dyne.getEditURLbyWebURL(context, url);
+        else
+            return Firebug.Dyne.getEditURLbyLocalFile(context, url);
+    },
+
+    /*
+     * @param url starts with 'http'
+     */
+    getEditURLbyWebURL: function(context, url)
+    {
         var files = context.netProgress.files;
         for (var i = 0; i < files.length; i++)
         {
@@ -73,6 +85,59 @@ Firebug.Dyne = extend(Firebug.Module,
                 return Firebug.Dyne.getEditURLbyNetFile(files[i]);
         }
         throw Firebug.Dyne.noMatchingRequest(url);
+    },
+
+    getEditURLbyLocalFile: function(context, url)
+    {
+        if (url.substr(0,5) !== "file:")
+        {
+            var uri = FBL.getLocalSystemURI(url);
+            if (uri)
+            	url = uri.spec;
+        }
+        if (!Firebug.Dyne.webEditPath)
+        {
+            var msg = "Need to set Web Edit Path: please open a Web page on your editor for ";
+            var followup = " then click Ok";
+            window.alert(msg+url+followup);
+            Firebug.Dyne.setWebEditPath(url); // assume they navigated to the Web edit for the URL.
+            return;  // user can already edit now
+        }
+
+        var urlSegments = url.split('/');
+        var relativeSegments = urlSegments.splice(0, Firebug.Dyne.webEditPath.urlSegments.length);  // take off the local file part
+        var editSegments = Firebug.Dyne.webEditPath.editSegments.concat(relativeSegments);
+        return editSegments.join('/');
+    },
+
+    setWebEditPath: function(url)
+    {
+        var urlSegments = url.split('/');
+        // Look through all of the windows and find one ending with part of the path from the url
+        FBL.iterateBrowserWindows(null, function compareLocations(win)
+        {
+            var winLocation = win.location.toString();
+            var winSegments = winLocation.split('/');
+            var commonSegments = 0;
+            for (var i = 0; i < urlSegments.length && i < winSegments.length; i++)
+            {
+                if (winSegments[winSegment.length-1+i] === urlSegments[urlSegments.length-1+i])
+                    commonSegments++;
+                else
+                    break;
+            }
+            if (commonSegments)
+            {
+                Firebug.Dyne.webEditPath =
+                {
+                        urlSegments: urlSegments.splice(-commonSegments, commonSegments),
+                        editSegments: winSegments.splice(-commonSegments, commonSegment)
+                };
+                return true;
+            }
+            return false;
+        });
+
     },
 
     getEditURLbyNetFile: function(file)
@@ -96,13 +161,13 @@ Firebug.Dyne = extend(Firebug.Module,
 
     noEditServerHeader: function(file)
     {
-        var msg = "ERROR: The web page has no x-edit-server header: "; // NLS
+        var msg = "The web page has no x-edit-server header: "; // NLS
         return new Error(msg + file.href);
     },
 
     noMatchingRequest: function(url)
     {
-        var msg = "ERROR: The Net panel has no request matching "; // NLS
+        var msg = "The Net panel has no request matching "; // NLS
         return new Error(msg + url);
     },
 
