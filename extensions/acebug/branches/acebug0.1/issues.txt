@@ -1,0 +1,10 @@
+ISSUES
+======
+- <ctrl><enter> does not work as a shortcut to run JS code. This is because the addCommand method in acebug\chrome\content\ace\editor.html does not work. This method is used by acebug\chrome\content\ace\fbace\startup.js to set up the key combination ... seems like the key binding is not set up properly.
+- There are a bunch of errors in the console when Firefox is first started and show chrome errors and messages is selected ... this is a timing issue and doesn't appear to have any side effects. It does not happen if you are running Chromebug :o/
+
+TODO
+====
+- Localisation
+- Migrate script panel
+- Install.rdf ... update directly from svn repo?

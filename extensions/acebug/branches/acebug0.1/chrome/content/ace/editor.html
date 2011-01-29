@@ -1,0 +1,56 @@
+<!DOCTYPE ++html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Editor</title>
+
+    <link rel="stylesheet" href="fbace/styles.css" type="text/css" media="screen" charset="utf-8">
+
+    <script src="fbace/require.js" type="text/javascript" charset="utf-8"></script>
+    <script src="fbace/boot.js" type="text/javascript"></script>
+
+    <script>
+        function addCommand(cmd) {
+            var bindings,
+                env = getAceEditorEnv(),
+                canon = require("pilot/canon"),
+                HashHandler = require("ace/keyboard/hash_handler").HashHandler,
+                ue = require("pilot/useragent");
+
+            canon.addCommand({
+                name: cmd.name,
+                exec: function(env, args, request) {
+                    cmd.exec();
+                }
+            });
+
+            if (ue.isMac)
+                bindings = require("ace/keyboard/keybinding/default_mac").bindings;
+            else
+                bindings = require("ace/keyboard/keybinding/default_win").bindings;
+
+            bindings["execute"] = cmd.key;
+            env.editor.setKeyboardHandler(new HashHandler(bindings));
+        }
+
+        function getAceEditorEnv() {
+            return document.getElementById('fbAceEditor').fbAceEditorEnv;
+        }
+
+        function toggleGutter() {
+            var env = getAceEditorEnv();
+            env.editor.renderer.setShowGutter(!env.editor.renderer.showGutter);
+        }
+    </script>
+</head>
+<body>
+    <div id="jump"></div>
+    <div id="fbAceEditor"></div>
+
+    <script type="text/editor" id="jstext"></script>
+
+    <div id="toggleGutter" onclick="toggleGutter();"></div>
+</body>
+</html>
