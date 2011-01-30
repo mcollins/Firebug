@@ -81,7 +81,11 @@ Firebug.Dyne = extend(Firebug.Module,
         var files = context.netProgress.files;
         for (var i = 0; i < files.length; i++)
         {
-            if (files[i].href === url)
+            var href = files[i].href;
+            href = href.split('?')[0]; // discard query
+            href = href.split('#')[0]; // discard fragment
+
+            if (href === url)
                 return Firebug.Dyne.getEditURLbyNetFile(files[i]);
         }
         throw Firebug.Dyne.noMatchingRequest(url);
@@ -93,7 +97,7 @@ Firebug.Dyne = extend(Firebug.Module,
         {
             var uri = FBL.getLocalSystemURI(url);
             if (uri)
-            	url = uri.spec;
+                url = uri.spec;
         }
         if (!Firebug.Dyne.webEditPath)
         {
