@@ -38,6 +38,13 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
         Firebug.Inspector.removeListener(this);
     },
 
+    show: function(state)
+    {
+        Firebug.Panel.show.apply(this, arguments);
+
+        LinkInspectorPlate.defaultContent.replace({}, this.panelNode);
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Inspector API implementation
 
@@ -115,7 +122,12 @@ var LinkInspectorPlate = domplate(
         ),
 
     linkPreview:
-        IFRAME({"class": "linkPreview"})
+        IFRAME({"class": "linkPreview"}),
+
+    defaultContent:
+        DIV({"class": "defaultContent"},
+            "Use Firebug Inspector and try to inspect a link on the current page."
+        )
 });
 
 // ********************************************************************************************* //

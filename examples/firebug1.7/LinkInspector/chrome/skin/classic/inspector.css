@@ -7,6 +7,12 @@
     overflow: hidden;
 }
 
+.defaultContent {
+    text-align: center;
+    padding-top: 30px;
+    color: gray;
+}
+
 .linkUrl {
     text-align: center;
     padding-top: 30px;
