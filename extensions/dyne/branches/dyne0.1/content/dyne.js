@@ -23,6 +23,11 @@ Firebug.Dyne = extend(Firebug.Module,
 {
     dispatchName: "dyne",
 
+    initialize: function()
+    {
+        Firebug.Dyne.initializeOrionPrefs();
+    },
+
     showPanel: function(browser, panel)
     {
         if (!panel)
@@ -60,7 +65,23 @@ Firebug.Dyne = extend(Firebug.Module,
 
     beginEditing: function(editURL)
     {
-        FBL.openNewTab(editURL);
+        var orionWindow = Firebug.Dyne.Orion.window;
+        if(!orionWindow || orionWindow.closed)
+        {
+            orionWindow = Firebug.Dyne.Orion.window = FBL.openWindow("Orion", "chrome://browser/content/browser.xul");
+            function openEditURL()
+            {
+                FBTrace.sysout("openEditURL "+editURL);
+                orionWindow.gBrowser.selectedTab = orionWindow.gBrowser.addTab(editURL);
+                orionWindow.removeEventListener("load", openEditURL, false);
+            }
+            orionWindow.addEventListener("load", openEditURL, false);
+        }
+        else
+        {
+            FBTrace.sysout("beginEditing "+editURL);
+            orionWindow.gBrowser.selectedTab = orionWindow.gBrowser.addTab(editURL); 
+        }
     },
 
     // --------------------------------------------------------------------
@@ -96,52 +117,12 @@ Firebug.Dyne = extend(Firebug.Module,
         if (url.substr(0,5) !== "file:")
         {
             var uri = FBL.getLocalSystemURI(url);
+            FBTrace.sysout("getLocalSystemURI("+url+")="+uri);
             if (uri)
                 url = uri.spec;
         }
-        if (!Firebug.Dyne.webEditPath)
-        {
-            var msg = "Need to set Web Edit Path: please open a Web page on your editor for ";
-            var followup = " then click Ok";
-            window.alert(msg+url+followup);
-            Firebug.Dyne.setWebEditPath(url); // assume they navigated to the Web edit for the URL.
-            return;  // user can already edit now
-        }
 
-        var urlSegments = url.split('/');
-        var relativeSegments = urlSegments.splice(0, Firebug.Dyne.webEditPath.urlSegments.length);  // take off the local file part
-        var editSegments = Firebug.Dyne.webEditPath.editSegments.concat(relativeSegments);
-        return editSegments.join('/');
-    },
-
-    setWebEditPath: function(url)
-    {
-        var urlSegments = url.split('/');
-        // Look through all of the windows and find one ending with part of the path from the url
-        FBL.iterateBrowserWindows(null, function compareLocations(win)
-        {
-            var winLocation = win.location.toString();
-            var winSegments = winLocation.split('/');
-            var commonSegments = 0;
-            for (var i = 0; i < urlSegments.length && i < winSegments.length; i++)
-            {
-                if (winSegments[winSegment.length-1+i] === urlSegments[urlSegments.length-1+i])
-                    commonSegments++;
-                else
-                    break;
-            }
-            if (commonSegments)
-            {
-                Firebug.Dyne.webEditPath =
-                {
-                        urlSegments: urlSegments.splice(-commonSegments, commonSegments),
-                        editSegments: winSegments.splice(-commonSegments, commonSegment)
-                };
-                return true;
-            }
-            return false;
-        });
-
+        return Firebug.Dyne.getOrionEditURLByFileURL(url);
     },
 
     getEditURLbyNetFile: function(file)
@@ -173,6 +154,35 @@ Firebug.Dyne = extend(Firebug.Module,
     {
         var msg = "The Net panel has no request matching "; // NLS
         return new Error(msg + url);
+    },
+
+    // ********************************************************************************************
+    initializeOrionPrefs: function()
+    {
+        Firebug.Dyne.Orion = {};
+        Firebug.Dyne.Orion.fileURLPrefix = Firebug.getPref(Firebug.prefDomain, "orion.fileURLPrefix");
+        Firebug.Dyne.Orion.projectURLPrefix = Firebug.getPref(Firebug.prefDomain, "orion.projectURLPrefix");
+        FBTrace.sysout("Firebug.Dyne.Orion ", Firebug.Dyne.Orion);
+    },
+
+    updateOption: function(name, value)
+    {
+        FBTrace.sysout("updateOption "+name +" = "+value);
+        if (name === "orion.projectURLPrefix")
+            Firebug.Dyne.Orion.projectURLPrefix = value;
+        if (name === "orion.fileURLPrefix")
+            Firebug.Dyne.Orion.fileURLPrefix = value;
+    },
+
+    getOrionEditURLByFileURL: function(fileURL)
+    {
+        if (!Firebug.Dyne.Orion.fileURLPrefix)
+            throw new Error("No value set in about:config for extensions.firebug.orion.fileURLPrefix");
+        if (!Firebug.Dyne.Orion.projectURLPrefix)
+            throw new Error("No value set in about:config for extensions.firebug.orion.projectURLPrefix");
+
+        FBTrace.sysout("getOrionEditURLByFileURL "+fileURL, Firebug.Dyne.Orion)
+        return fileURL.replace(Firebug.Dyne.Orion.fileURLPrefix, Firebug.Dyne.Orion.projectURLPrefix);
     },
 
 });
