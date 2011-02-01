@@ -355,7 +355,6 @@ StartupObserver.prototype =
             var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
             observerService.addObserver(this, "command-line-startup", false);
             var chromebugLaunch = prefs.getBoolPref("extensions.chromebug.launch");
-            //if (trace)
 
             if (chromebugLaunch)
             {
