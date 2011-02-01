@@ -1181,6 +1181,29 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
 
             if (Firebug.breakOnErrors)
             {
+                var eventOrigin = FBL.unwrapIValue(frame.executionContext.globalObject);
+                if (!eventOrigin)
+                    return 0;
+
+                // Check if the eventOrigin (window) comes from this context.
+                var eventOriginIndex = -1;
+                for (var i=0; i<context.windows.length; i++)
+                {
+                    if (context.windows[i] == eventOrigin) {
+                        eventOriginIndex = i;
+                        break;
+                    }
+                }
+
+                // Bail out if the event that lead the error is not cause by code in this context.
+                if (eventOriginIndex < 0)
+                {
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("debugger.onError; error is not from this context: (" +
+                            eventOriginIndex + ") " + frame.script.tag+"@"+frame.script.fileName);
+                    return 0;
+                }
+
                 var sourceFile = Firebug.SourceFile.getSourceFileByScript(context, frame.script);
                 if (!sourceFile)
                 {

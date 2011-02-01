@@ -432,18 +432,30 @@ var fbs =
 
     enterNestedEventLoop: function(callback)
     {
-        dispatch(netDebuggers, "suspendActivity");
-        this.activitySuspended = true;
+        try
+        {
+            dispatch(netDebuggers, "suspendActivity");
+            this.activitySuspended = true;
 
-        fbs.nestedEventLoopDepth = jsd.enterNestedEventLoop({
-            onNest: function()
+            fbs.nestedEventLoopDepth = jsd.enterNestedEventLoop(
             {
-                callback.onNest();
-            }
-        });
+                onNest: function()
+                {
+                    dispatch(netDebuggers, "resumeActivity");
+                    callback.onNest();
+                }
+            });
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("fbs.enterNestedEventLoop ERROR "+exc, exc);
+        }
+        finally
+        {
+            dispatch(netDebuggers, "resumeActivity");
+            this.activitySuspended = false;
+        }
 
-        dispatch(netDebuggers, "resumeActivity");
-        this.activitySuspended = false;
         return fbs.nestedEventLoopDepth;
     },
 
@@ -451,6 +463,7 @@ var fbs =
     {
         try
         {
+            dispatch(netDebuggers, "suspendActivity");
             return jsd.exitNestedEventLoop();
         }
         catch (exc)
