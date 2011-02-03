@@ -15,7 +15,7 @@ function runTest()
                 var reStack1 = /onExecuteTest\(\)\s*trace.html\s*\(line 34\)/;
                 FBTest.compare(reStack1, stackFrames[0].textContent, "The first stack frame text must match.");
 
-                FBTrace.sysout(stackFrames[1].textContent);
+                FBTest.progress("Found stack frame "+stackFrames[1].textContent);
                 var reStack2 = /onclick\(Object\s*{\s*name=\"event\"}\)1\s*\(line\s*2\)/;  // before R5281
                 var reStack2 = /onclick\(event=click\s*clientX=0,\s*clientY=0\)1\s*\(line\s*2\)/; // after R7281
                 FBTest.compare(reStack2, stackFrames[1].textContent, "The second stack frame text must match.");

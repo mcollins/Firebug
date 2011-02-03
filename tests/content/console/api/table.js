@@ -59,7 +59,6 @@ function executeTest(callback, buttonId, doc, title, expected)
     {
         if (title)
         {
-            FBTrace.sysout("row", row);
             var group = FW.FBL.getAncestorByClass(row, "logRow-group");
             var titleNode = group.querySelector(".logGroupLabel");
             FBTest.ok(titleNode, "Group title must be available.");
