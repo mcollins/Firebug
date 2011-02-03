@@ -64,25 +64,26 @@ function runTest()
 
             FBTest.pressKey(27, "fbCommandLine");  // escape
             FBTest.compare("aa", cmdLine.value, "The command line must display 'aa', the original typing, after escape key");
-            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+            FBTest.pressKey(27, "fbCommandLine");  //  clear by escape
 
             FBTest.typeCommand('a');
             FBTest.typeCommand('a');
             FBTest.pressKey(38, "fbCommandLine");  // up arrow
             FBTest.synthesizeKey("VK_TAB", win);
             FBTest.compare("aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK' after up arrow key");
-            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+            FBTest.pressKey(27, "fbCommandLine");  //  clear by escape
 
             FBTest.typeCommand('a');
             FBTest.typeCommand('a');
             FBTest.pressKey(40, "fbCommandLine");  // down arrow
             FBTest.synthesizeKey("VK_TAB", win);
             FBTest.compare("aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB' after up arrow key");
-            FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
+            FBTest.pressKey(27, "fbCommandLine");  //  clear by escape
 
             FBTest.typeCommand('aa');
             FBTest.pressKey(39, "fbCommandLine"); // right arrow
             FBTest.compare("aaaaaaaaaaaaaaaaZZTop", cmdLine.value,"The command line must display 'aaaaaaaaaaaaaaaaZZTop' after right arrow completion.");
+            FBTest.pressKey(27, "fbCommandLine");  //  clear by escape
 
             FBTest.testDone("issue2934.DONE");
         });
