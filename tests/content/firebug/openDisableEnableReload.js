@@ -30,33 +30,42 @@ function runTest()
             // Enable and verify.
             try
             {
-                enableAndCheck("script", FW.Firebug.Debugger);
                 enableAndCheck("net", FW.Firebug.NetMonitor);
                 enableAndCheck("console", FW.Firebug.Console);
+                enableOnly("script", FW.Firebug.Debugger);
             }
             catch (err)
             {
                 FBTest.sysout("exception", err);
             }
 
-            FBTestFirebug.reload(function ()
-            {
-                FBTest.progress("reloaded, check isEnabled");
-                // All panels must be still enabled.
+            setTimeout(function () {
                 checkIsEnabled("script", FW.Firebug.Debugger);
-                checkIsEnabled("net", FW.Firebug.NetMonitor);
-                checkIsEnabled("console", FW.Firebug.Console);
 
-                FBTestFirebug.testDone("openDisableEnebleReload.DONE");
+                FBTestFirebug.reload(function ()
+                {
+                    FBTest.progress("reloaded, check isEnabled");
+                    // All panels must be still enabled.
+                    checkIsEnabled("script", FW.Firebug.Debugger);
+                    checkIsEnabled("net", FW.Firebug.NetMonitor);
+                    checkIsEnabled("console", FW.Firebug.Console);
+
+                    FBTestFirebug.testDone("openDisableEnebleReload.DONE");
+                });
             });
         });
     });
 }
 
-function enableAndCheck(panelName, module)
+function enableOnly(panelName, module)
 {
     FBTestFirebug.selectPanelTab(panelName);
     FBTestFirebug.setPanelState(module, panelName, null, true);
+}
+
+function enableAndCheck(panelName, module)
+{
+    enableOnly(panelName, module);
     checkIsEnabled(panelName, module);
 }
 
