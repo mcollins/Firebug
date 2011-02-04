@@ -4,37 +4,75 @@ function runTest()
     FBTest.openNewTab(basePath + "dom/appCache/appCache.html", function(win)
     {
         FBTest.openFirebug();
-        var panel = FW.FirebugChrome.selectPanel("dom");
+        FW.FirebugChrome.selectPanel("dom");
 
-        addOfflinePermission(win);
+        var href = win.location.href;
+        var i = href.lastIndexOf(".");
+        var itemURL = href.substr(0, i) + ".js";
 
-        FBTest.reload(function(win)
-        {
-            FBTest.waitForDOMProperty("applicationCache", function(row)
-            {
-                FBTest.compare(
-                    /\s*applicationCache\s*1 items in offline cache\s*/,
-                    row.textContent, "There must be 1 item in the applicationCache.");
+        var tasks = new FBTest.TaskList();
+        tasks.push(testAddOfflinePermission, win);
+        tasks.push(testClearAppCache, win, itemURL);
+        tasks.push(verifyNumberOfItems, win, 0);
+        tasks.push(executeTest, win, itemURL);
+        tasks.push(verifyNumberOfItems, win, 1);
+        tasks.push(testClearOfflinePermission, win);
 
-                //clearAppCache(win);
-                clearOfflinePermission(win);
-                FBTest.testDone("appCache.DONE");
-            });
-
-            var href = win.location.href;
-            var i = href.lastIndexOf(".");
-            var itemURL = href.substr(0, i) + ".js";
-
-            waitForAdd(win, itemURL, function()
-            {
-                FBTest.refreshDOMPanel();
-            });
-
-            FBTest.click(win.document.getElementById("addButton"));
-        });
-
+        tasks.run(function() {
+            FBTest.testDone("appCache.DONE");
+        })
     });
 }
+
+function testAddOfflinePermission(callback, win)
+{
+    FBTest.clearCache();
+    addOfflinePermission(win);
+    FBTest.reload(callback);
+}
+
+function testClearOfflinePermission(callback, win)
+{
+    FBTest.clearCache();
+    clearOfflinePermission(win);
+    FBTest.reload(callback);
+}
+
+function testClearAppCache(callback, win, itemURL)
+{
+    FBTest.clearCache();
+    clearAppCache(win)
+    win.applicationCache.mozRemove(itemURL);
+
+    FBTest.reload(callback);
+}
+
+function executeTest(callback, win, itemURL)
+{
+    FBTest.clearCache();
+
+    waitForAdd(win, itemURL, function()
+    {
+        callback();
+    });
+
+    FBTest.click(win.document.getElementById("addButton"));
+}
+
+function verifyNumberOfItems(callback, win, count)
+{
+    FBTest.waitForDOMProperty("applicationCache", function(row)
+    {
+        var regexp = new RegExp("\s*applicationCache\s*" + count + " items in offline cache\s*");
+        FBTest.compare(regexp, row.textContent,
+            "There must be " + count + " item in the applicationCache.");
+        callback();
+    });
+
+    FBTest.reload();
+}
+
+// ********************************************************************************************* //
 
 function addOfflinePermission(win)
 {
@@ -45,7 +83,7 @@ function addOfflinePermission(win)
       .newURI(win.location.href, null, null);
 
     if (pm.testPermission(uri, "offline-app") != 0)
-      FBTest.progress("Previous test failed to clear offline-app permission!");
+      FBTest.progress("Previous test failed to clear offline-app permission");
 
     pm.add(uri, "offline-app", Ci.nsIPermissionManager.ALLOW_ACTION);
 }
@@ -100,12 +138,14 @@ function waitForAdd(win, itemURL, onFinished)
 
         if (hasItem)
         {
+            FBTest.progress("Wait for add: item is there");
             onFinished();
             return;
         }
 
         if (--numChecks == 0)
         {
+            FBTest.progress("Wait for add: timeout");
             onFinished();
             return;
         }
