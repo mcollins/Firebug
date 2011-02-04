@@ -41,6 +41,9 @@ function test2(callback)
     // Must be still at the bottom after reload.
     reload(function()
     {
+        var panel = FBTestFirebug.getPanel("console");
+        FBTest.progress("top: " + panel.scrollTop + ", offset: " + panel.offsetHeight +
+            ", height: " + panel.scrollHeight);
         FBTest.ok(isScrolledToBottom(), "The Console content must be scrolled to the bottom");
         callback();
     });
