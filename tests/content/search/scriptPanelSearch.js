@@ -111,8 +111,11 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
             var lineNumEl = target.getElementsByClassName("sourceLine")[0];
             var lineNum = parseInt(lineNumEl.textContent.replace(/\s/g, ''));
 
+            var Fx4 = FBTest.compareFirefoxVersion("4.0b8") >= 0;
+            var href = (panel.location ? panel.location[(Fx4 ? "url" : "href")] : undefined);
+
             var match = {
-                href: (panel.location ? panel.location.url : undefined) || "default",
+                href: href || "default",
                 line: lineNum
             };
 
