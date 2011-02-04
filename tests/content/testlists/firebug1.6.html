@@ -43,7 +43,7 @@ var serverURI = driverBaseURI;
  */
 var testList = [
     {group: "firebug", uri: "firebug/allOpenAllClose1.5.js",           desc: "First test: all open and all close", testPage: "firebug/OpenFirebugOnThisPage.html" },
-    {group: "firebug", uri: "firebug/openInNewWindow.js",              desc: "Firebug opened in a new window" },
+    {group: "firebug", uri: "firebug/openInNewWindow.js",              desc: "Firebug opened in a new window", testPage: "script/1483/issue1483.html" },
     {group: "firebug", uri: "firebug/viralActivation.js",              desc: "Links from active pages should be active", testPage: "firebug/OpenFirebugOnThisPage.html" },
     {group: "firebug", uri: "firebug/activeContextAfterReload.js",     desc: "Reloading a FF tab with Firebug open." },
     {group: "firebug", uri: "firebug/openOpenCloseClose.js",           desc: "Opening and Closing Pages and Firebug." },
@@ -65,6 +65,7 @@ var testList = [
     {group: "script",  uri: "script/2871/issue2871.js",                desc: "Issue 2871: Bug in watching variables defined in a javascript closure prior to function execution", testPage: "script/2871/issue2871.html"},
     {group: "script",  uri: "script/3400/issue3400.js",                desc: "Issue 3400: Debugger buttons not visible when long stack trace", testPage: "script/3400/issue3400.html"},
     {group: "script",  uri: "script/3402/issue3402.js",                desc: "Issue 3402: Can't create/remove a breakpoint ", testPage: "script/3402/issue3402.html"},
+    {group: "script",  uri: "script/3716/issue3716.js",                desc: "Issue 3716: Breakpoint in window.onload doesn't trigger.", testPage: "script/3716/issue3716.html"},
     {group: "script/callstack",  uri: "script/callstack/3596/issue3596.js", desc: "Issue 3596: Stack trace forgets where it is", testPage: "script/callstack/3596/issue3596.html"},
     {group: "console", uri: "console/panelContentAfterDisable1.6.js",  desc: "If console panel is disabled command line must be hidden." },
     {group: "console", uri: "console/consoleOnOtherPanels.js",         desc: "Console and command line on other panels.", testPage: "console/consoleOnOtherPanels.html"},
@@ -186,6 +187,7 @@ var testList = [
     {group: "inspector", uri: "inspector/issue68BoxRuler.js", os: "win", desc: "Effect of padding and border on HTML tag (ruler)", testPage: "inspector/InspectorTestIframe.htm?url=Issue68BoxRulerExpected.htm" },
     {group: "commandLine", uri: "commandLine/dom.js",            desc: "Verify command line DOM access.", testPage: "commandLine/dom.html" },
     {group: "commandLine", uri: "commandLine/api.js",            desc: "Verify command line APIs.", testPage: "commandLine/api.html" },
+    {group: "commandLine", uri: "commandLine/cd.js",             desc: "Verify command line cd() method.", testPage: "commandLine/cd.html" },
     {group: "commandLine", uri: "commandLine/debug.js",          desc: "Verify command line debug API.", testPage: "commandLine/debug.html" },
     {group: "commandLine", uri: "commandLine/monitorEvents.js",  desc: "Verify command line monitorEvents API.", testPage: "commandLine/monitorEvents.html" },
     {group: "commandLine", uri: "commandLine/profile.js",        desc: "Verify command line profile & profileEnd API.", testPage: "commandLine/profile.html" },
