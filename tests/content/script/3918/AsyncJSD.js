@@ -9,7 +9,7 @@ function runTest()
     FBTest.sysout("AsyncJSD.START");
     FBTestFirebug.disableAllPanels();
     FBTest.progress("All panels start disabled");
-    FW.Firebug.activateSameOrigin = false;
+    FBTestFirebug.setPref("activateSameOrigin", false);
     FBTest.progress("The Activate Same Origin Option is false for this test");
 
     FBTestFirebug.openNewTab(basePath + "script/3918/AsyncJSDPage.html", function(win)

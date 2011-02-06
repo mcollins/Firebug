@@ -9,7 +9,7 @@ function runTest()
     FBTest.sysout("openDisableEnebleReload.START");
     FBTestFirebug.disableAllPanels();
 
-    FW.Firebug.activateSameOrigin = false;
+    FBTestFirebug.setPref("activateSameOrigin", false);
     FBTest.progress("The Activate Same Origin Option is false for this test");
 
     FBTestFirebug.openNewTab(basePath + "firebug/OpenFirebugOnThisPage.html", function(win)
