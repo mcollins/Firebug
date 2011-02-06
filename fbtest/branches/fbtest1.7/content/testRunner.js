@@ -432,7 +432,7 @@ FBTestApp.TestRunner = extend(new Firebug.Listener(),
             if (win.runTest)
                 win.runTest();
             else
-                throw new Error("FBTest: no runTest() function in "+win.locatioTn);
+                throw new Error("FBTest: no runTest() function in "+win.location);
         }
         catch (exc)
         {
