@@ -111,8 +111,7 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
             var lineNumEl = target.getElementsByClassName("sourceLine")[0];
             var lineNum = parseInt(lineNumEl.textContent.replace(/\s/g, ''));
 
-            var Fx4 = FBTest.compareFirefoxVersion("4.0b8") >= 0;
-            var href = (panel.location ? panel.location[(Fx4 ? "url" : "href")] : undefined);
+            var href = (panel.location ? (panel.location.url || panel.location.href) : undefined);
 
             var match = {
                 href: href || "default",
@@ -120,7 +119,7 @@ function executeSearchTest(text, reverse, caseSensitive, global, callback)
             };
 
             FBTest.sysout("match found for '" + text +"': " + match.href +
-                " (" + match.line + ")");
+                " (" + match.line + ") when panel.location ", panel.location);
 
             var isFirstMatch = false;
 
