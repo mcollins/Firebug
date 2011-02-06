@@ -68,27 +68,14 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
             FBTrace.sysout("link-inspector; stopInspecting(node: " + node.tagName +
                 ", cancelled: " + cancelled + ")");
 
+        if (cancelled)
+            return;
+
         if (node.href.indexOf("http") != 0)
             return;
 
         var preview = LinkInspectorPlate.linkPreview.replace({object: node}, this.panelNode);
         preview.setAttribute("src", node.href);
-    },
-
-    getInspectNode: function(node)
-    {
-        if (node instanceof Element)
-        {
-            while (node)
-            {
-                if (node.tagName.toLowerCase() == "a")
-                    return node;
-
-                node = node.parentNode;
-            }
-        }
-
-        return null;
     },
 
     supportsObject: function(object, type)
