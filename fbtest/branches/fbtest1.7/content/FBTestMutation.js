@@ -22,14 +22,19 @@
  * @param {String} tagName Name of the element.
  * @param {Object} attributes List of attributes that identifies the element.
  * @param {String} text Specific text that should be created. The tagName must be set to
+ * @param {Object} attributes to be watched, defaults to 'attributes'; use for removals
  * <i>Text</i> in this case.
  */
-var MutationRecognizer = function(win, tagName, attributes, text)
+var MutationRecognizer = function(win, tagName, attributes, text, changedAttributes)
 {
    this.win = win;
    this.tagName = tagName;
    this.attributes = attributes;
    this.characterData = text;
+   if (changedAttributes)
+       this.changedAttributes = changedAttributes;
+   else
+       this.changedAttributes = attributes;
 };
 
 MutationRecognizer.prototype.getDescription = function()
@@ -37,7 +42,8 @@ MutationRecognizer.prototype.getDescription = function()
     var obj = {
         tagName: this.tagName,
         attributes: this.attributes,
-        characterData: this.characterData
+        characterData: this.characterData,
+        changedAttributes: this.changedAttributes,
     };
 
     return JSON.stringify(obj);
@@ -92,7 +98,8 @@ MutationRecognizer.prototype.matches = function(elt)
         else
         {
             if (FBTrace.DBG_TESTCASE_MUTATION)
-                FBTrace.sysout("MutationRecognizer no match in Text character data "+this.characterData+" vs "+elt.data,{element: elt, recogizer: this});
+                FBTrace.sysout("MutationRecognizer no match in Text character data "+
+                    this.characterData+" vs "+elt.data,{element: elt, recogizer: this});
             return null;
         }
     }
@@ -108,7 +115,8 @@ MutationRecognizer.prototype.matches = function(elt)
     {
         if (FBTrace.DBG_TESTCASE_MUTATION)
             FBTrace.sysout("MutationRecognizer no match on tagName "+this.tagName+
-                " vs "+elt.tagName.toLowerCase()+" "+FW.FBL.getElementCSSSelector(elt), {element: elt, recogizer: this});
+                " vs "+elt.tagName.toLowerCase()+" "+FW.FBL.getElementCSSSelector(elt),
+                {element: elt, recogizer: this});
         return null;
     }
 
@@ -173,9 +181,10 @@ function MutationEventFilter(recognizer, handler)
     this.onMutateAttr = function handleAttrMatches(event)
     {
         if (window.closed)
-            throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?"closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
+            throw "WINDOW CLOSED watching:: "+(filter.recognizer.win.closed?
+                "closed":filter.recognizer.win.location)+" closed window: "+filter.winName;
 
-        if (!recognizer.attributes)
+        if (!recognizer.changedAttributes)
             return; // we don't care about attribute mutation
 
         if (FBTrace.DBG_TESTCASE_MUTATION)
@@ -183,7 +192,7 @@ function MutationEventFilter(recognizer, handler)
                 " in "+event.target.ownerDocument.location, event.target);
 
         // We care about some attribute mutation.
-        if (!recognizer.attributes.hasOwnProperty(event.attrName))
+        if (!recognizer.changedAttributes.hasOwnProperty(event.attrName))
         {
             if (FBTrace.DBG_TESTCASE_MUTATION)
                 FBTrace.sysout("onMutateAttr not interested in "+event.attrName+"=>"+event.newValue+
