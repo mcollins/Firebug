@@ -1816,7 +1816,7 @@ this.runTestSuite = function(tests, callback, delay)
         function runNext()
         {
             if (tests.length > 0)
-                FBTestFirebug.runTestSuite(tests, callback);
+                FBTestFirebug.runTestSuite(tests, callback, delay);
             else
                 callback();
         }
