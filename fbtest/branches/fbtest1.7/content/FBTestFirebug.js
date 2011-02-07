@@ -1635,6 +1635,34 @@ this.searchInHtmlPanel = function(searchText, callback)
     }, 100);
 }
 
+// ********************************************************************************************* //
+// HTML Panel
+
+this.waitForHtmlMutation = function(chrome, tagName, callback)
+{
+    if (!chrome)
+        chrome = FW.Firebug.chrome;
+
+    var panel = FBTest.selectPanel("html");
+
+    var doc = FBTest.getPanelDocument();
+    var view = doc.defaultView;
+    var attributes = {"class": "mutated"};
+
+    // Wait for mutation event. The HTML panel will set "mutate" class on the
+    // corresponding element.
+    var mutated = new MutationRecognizer(view, tagName, attributes);
+    mutated.onRecognizeAsync(function onMutate(node)
+    {
+        // Now wait till the HTML panel unhighlight the element (removes the mutate class)
+        var unmutated = new MutationRecognizer(view, tagName, null, null, attributes);
+        unmutated.onRecognizeAsync(function onUnMutate(node)
+        {
+            callback(node);
+        });
+    });
+}
+
 // ************************************************************************************************
 // Context menu
 
@@ -1813,12 +1841,8 @@ this.runTestSuite = function(tests, callback, delay)
             return;
         }
 
-        function runNext()
-        {
-            if (tests.length > 0)
-                FBTestFirebug.runTestSuite(tests, callback, delay);
-            else
-                callback();
+        function runNext() {
+            FBTestFirebug.runTestSuite(tests, callback, delay);
         }
 
         try
