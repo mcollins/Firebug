@@ -3,10 +3,9 @@
 <head>
   <title>Test Case for HTML Mutation</title>
   <style type="text/css">
-    body > div {
+    td > div {
       background-color: red;
       min-height: 1em;
-      margin: 25px;
     }
     div > div {
       background-color: green;
@@ -16,41 +15,110 @@
 </head>
 <body>
 
-Mutate Text:
-<div id="mutateText">&nbsp;<div></div></div>
+<h1>HTML Mutation</h1>
 
-Mutate Text Inline:
-<div id="mutateTextInline">Test</div>
+<p>This test-case is intended for HTML panel (testing mutation support).
+<br/>
+</p>
 
-Mutate Node:
-<div id="mutateNode">&nbsp;<div></div></div>
+<ol>
+<li>Open Firebug and select the HTML panel.</li>
+<li>Set <i>Highlight Changes</i> and <i>Scroll Changes in to View</i> options (in the mini tab menu)</li>
+<li>Click the <code>Execute</code> buttons step by step.</li>
+<li>You should see proper highlights in the HTML panel.</li>
+</ol>
 
-Mutate Node Text:
-<div id="mutateNodeText">Test</div>
+<table>
+<tr>
+    <td>Mutate Text: <button id="mutateTextButton" onclick="onMutateText('mutateText');">Execute</button></td>
+    <td><div id="mutateText">&nbsp;<div></div></div></td>
+</tr>
+<tr>
+    <td>Mutate Text Inline: <button id="mutateTextInlineButton" onclick="onMutateText('mutateTextInline');">Execute</button></td>
+    <td><div id="mutateTextInline">Test</div></td>
+</tr>
+<tr>
+    <td>Mutate Node: <button id="mutateNodeButton" onclick="onMutateNode('mutateNode')">Execute</button></td>
+    <td><div id="mutateNode">&nbsp;<div></div></div></td>
+</tr>
+<tr>
+    <td>Mutate Node Text: <button id="mutateNodeTextButton" onclick="onMutateNode('mutateNodeText')">Execute</button></td>
+    <td><div id="mutateNodeText">Test</div></td>
+</tr>
+<tr>
+    <td>Mutate Node Empty: <button id="mutateNodeEmptyButton" onclick="onMutateNode('mutateNodeEmpty')">Execute</button></td>
+    <td><div id="mutateNodeEmpty"></div></td>
+</tr>
+<tr>
+    <td>Remove Node: <button id="removeNodeButton" onclick="onRemoveNode('removeNode', 1)">Execute</button></td>
+    <td><div id="removeNode">&nbsp;<div></div></div></td>
+</tr>
+<tr>
+    <td>Remove Node Text: <button id="removeNodeTextButton" onclick="onRemoveNode('removeNodeText', 0)">Execute</button></td>
+    <td><div id="removeNodeText">Test<div></div></div></td>
+</tr>
+<tr>
+    <td>Remove Node Empty: <button id="removeNodeEmptyButton" onclick="onRemoveNode('removeNodeEmpty', 0)">Execute</button></td>
+    <td><div id="removeNodeEmpty">Test</div></td>
+</tr>
+<tr>
+    <td>Mutate Attr New: <button id="mutateAttrNewButton" onclick="onMutateAttr('mutateAttrNew', 'title', 'boo')">Execute</button></td>
+    <td><div id="mutateAttrNew"><div class="new"></div></div></td>
+</tr>
+<tr>
+    <td>Mutate Attr Set: <button id="mutateAttrSetButton" onclick="onMutateAttr('mutateAttrSet', 'title', (new Date().getTime()))">Execute</button></td>
+    <td><div id="mutateAttrSet"><div class="set" title="test"></div></div></td>
+</tr>
+<tr>
+    <td>Mutate Attr Remove: <button id="mutateAttrRemoveButton" onclick="onMutateAttr('mutateAttrRemove', 'title', undefined)">Execute</button></td>
+    <td><div id="mutateAttrRemove"><div title="test"></div></div></td>
+</tr>
+<tr>
+    <td>Mutate Test Race Condition: <button id="mutateRemovedRaceButton" onclick="onMutateRemovedRace('mutateRemovedRace')">Execute</button></td>
+    <td><div id="mutateRemovedRace">&nbsp;<div></div></div></td>
+</tr>
+</table>
 
-Mutate Node Empty:
-<div id="mutateNodeEmpty"></div>
+<script type="text/javascript">
+function onMutateText(id)
+{
+    var mutateId = document.getElementById(id);
+    mutateId.firstChild.appendData("test");
+}
 
-Remove Node:
-<div id="removeNode">&nbsp;<div></div></div>
+function onMutateAttr(id, attr, value)
+{
+    var mutateId = document.getElementById(id);
+    if (value)
+        mutateId.firstChild.setAttribute(attr, value);
+    else
+        mutateId.firstChild.removeAttribute(attr);
+}
 
-Remove Node Text:
-<div id="removeNodeText">Test<div></div></div>
+function onMutateNode(id)
+{
+    var mutateId = document.getElementById(id);
+    var button = document.createElement("button");
+    mutateId.appendChild(button);
+}
 
-Remove Node Empty:
-<div id="removeNodeEmpty">Test</div>
+function onRemoveNode(id, index)
+{
+    var mutateId = document.getElementById(id);
+    mutateId.removeChild(mutateId.childNodes[index]);
+}
 
-Mutate Attr New:
-<div id="mutateAttrNew"><div></div></div>
+function onMutateRemovedRace(id)
+{
+    var mutateId = document.getElementById(id);
+    var button = document.createElement("button");
 
-Mutate Attr Set:
-<div id="mutateAttrSet"><div title="test"></div></div>
-
-Mutate Attr Remove:
-<div id="mutateAttrRemove"><div title="test"></div></div>
-
-Mutate Test Race Condition:
-<div id="mutateRemovedRace">&nbsp;<div></div></div>
+    mutateId.appendChild(button);
+    mutateId.lastChild.setAttribute("title", "test");
+    mutateId.firstChild.appendData("test");
+    mutateId.innerHTML = "&nbsp;";
+}
+</script>
 
 </body>
 </html>
