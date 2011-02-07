@@ -1780,6 +1780,7 @@ this.compareFirefoxVersion = function(expectedVersion)
  * Support for set of asynchronouse actions within a FBTest.
  * @param {Array} tests List of asynchronous functions to be executed in order.
  * @param {Function} callback A callback that is executed as soon as all fucntions
+ * @param {Number} delay A delay between tasks [ms]
  * in the list are finished.<br/><br/>
  * Example:<br/>
  *  <pre>// A suite of asynchronous tests.
@@ -1799,8 +1800,10 @@ this.compareFirefoxVersion = function(expectedVersion)
  *      FBTestFirebug.testDone("DONE");
  *  });</pre>
  */
-this.runTestSuite = function(tests, callback)
+this.runTestSuite = function(tests, callback, delay)
 {
+    delay = delay || 200;
+
     setTimeout(function()
     {
         var test = tests.shift();
@@ -1826,7 +1829,7 @@ this.runTestSuite = function(tests, callback)
         {
             FBTest.exception("runTestSuite", err);
         }
-    }, 200);
+    }, delay);
 }
 
 // ************************************************************************************************
@@ -1846,9 +1849,9 @@ this.TaskList.prototype =
         this.tasks.push(FW.FBL.bind.apply(this, args));
     },
 
-    run: function(callback)
+    run: function(callback, delay)
     {
-        FBTest.runTestSuite(this.tasks, callback);
+        FBTest.runTestSuite(this.tasks, callback, delay);
     }
 };
 
