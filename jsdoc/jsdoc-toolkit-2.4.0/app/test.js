@@ -356,7 +356,7 @@ var testCases = [
 		is('symbols.getSymbol("Document").params[2].name', "title", 'Name of param with nonspaced dash is found.');
 		is('symbols.getSymbol("Document").params[2].desc', "Specifies the title.", 'Desc of param with non-spaced dash is found.');
 		
-	}/**/
+	}*/
 ];
 
 //// run and print results
