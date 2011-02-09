@@ -13,31 +13,35 @@ function Link() {
 	this.target = function(targetName) {
 		if (defined(targetName)) this.targetName = targetName;
 		return this;
-	}
+	};
 	this.inner = function(inner) {
 		if (defined(inner)) this.innerName = inner;
 		return this;
-	}
+	};
 	this.withText = function(text) {
 		if (defined(text)) this.text = text;
 		return this;
-	}
-	this.toSrc = function(filename) {
+	};
+	this.toSrc = function(filename, lineNumber) { // TODO: xxxpedro line number
 		if (defined(filename)) this.src = filename;
+		
+		// TODO: xxxpedro line number
+		if (lineNumber) this.lineNumber = lineNumber;
+		
 		return this;
-	}
+	};
 	this.toSymbol = function(alias) {
 		if (defined(alias)) this.alias = new String(alias);
 		return this;
-	}
+	};
 	this.toClass = function(alias) {
 		this.classLink = true;
 		return this.toSymbol(alias);
-	}
+	};
 	this.toFile = function(file) {
 		if (defined(file)) this.file = file;
 		return this;
-	}
+	};
 	
 	this.toString = function() {
 		var linkString;
@@ -64,7 +68,7 @@ function Link() {
 		}
 
 		return linkString;
-	}
+	};
 }
 
 /** prefixed for hashes */
@@ -84,7 +88,7 @@ Link.symbolNameToLinkName = function(symbol) {
 		ns = "event:";
 	}
 	return Link.hashPrefix+linker+ns+symbol.name;
-}
+};
 
 Link.getSymbol= function(alias) {
     var symbol= Link.symbolSet.getSymbol(alias);
@@ -112,7 +116,7 @@ Link.getSymbol= function(alias) {
     }
     
     return null;
-}
+};
 
 /** Create a link to another symbol. */
 Link.prototype._makeSymbolLink = function(alias) {
@@ -136,7 +140,7 @@ Link.prototype._makeSymbolLink = function(alias) {
 			linkPath = (Link.filemap)? Link.filemap[linkTo.alias] : escape(linkTo.alias);
 			linkPath += publish.conf.ext;// + (this.classLink? "":"#" + Link.hashPrefix + "constructor");
 		}
-		linkPath = linkBase + linkPath
+		linkPath = linkBase + linkPath;
 	}
         
 	var linkText= this.text || alias;
@@ -148,7 +152,7 @@ Link.prototype._makeSymbolLink = function(alias) {
 	}
 	
 	return "<a href=\""+link.linkPath+link.linkInner+"\""+target+">"+link.linkText+"</a>";
-}
+};
 
 /** Create a link to a source file. */
 Link.prototype._makeSrcLink = function(srcFilePath) {
@@ -157,10 +161,17 @@ Link.prototype._makeSrcLink = function(srcFilePath) {
 	// transform filepath into a filename
 	var srcFile = srcFilePath.replace(/\.\.?[\\\/]/g, "").replace(/[:\\\/]/g, "_");
 	var outFilePath = Link.base + publish.conf.srcDir + srcFile + publish.conf.ext;
-
+	
 	if (!this.text) this.text = FilePath.fileName(srcFilePath);
+	
+	// TODO: xxxpedro line number
+	if (this.lineNumber){
+		this.text += " (line " + this.lineNumber + ")";
+		outFilePath += "#L"+this.lineNumber;
+	}
+
 	return "<a href=\""+outFilePath+"\""+target+">"+this.text+"</a>";
-}
+};
 
 /** Create a link to a source file. */
 Link.prototype._makeFileLink = function(filePath) {
@@ -170,4 +181,4 @@ Link.prototype._makeFileLink = function(filePath) {
 
 	if (!this.text) this.text = filePath;
 	return "<a href=\""+outFilePath+"\""+target+">"+this.text+"</a>";
-}
+};
