@@ -10,7 +10,7 @@ JSDOC.DocComment = function(/**String*/comment) {
 	if (typeof comment != "undefined") {
 		this.parse(comment);
 	}
-}
+};
 
 JSDOC.DocComment.prototype.init = function() {
 	this.isUserComment = true;
@@ -18,7 +18,7 @@ JSDOC.DocComment.prototype.init = function() {
 	this.meta          = "";
 	this.tagTexts      = [];
 	this.tags          = [];
-}
+};
 
 /**
 	@requires JSDOC.DocTag
@@ -48,19 +48,20 @@ JSDOC.DocComment.prototype.parse = function(/**String*/comment) {
 	
 	this.tagTexts = 
 		this.src
-		.split(/(?:^|[\r\n])\s*@/) // hat tip: trev.moz
-		.filter(function($){return $.match(/\S/)});
+		//.split(/(?:^|[\r\n])\s*@/) // hat tip: trev.moz
+		.split(/(?:^|[\r\n]|\s)\s*@/g) // TODO: xxxpedro allow multiple doclets in a single line
+		.filter(function($){return $.match(/\S/);});
 	
 	/**
 		The tags found in the comment.
 		@type JSDOC.DocTag[]
 	 */
-	this.tags = this.tagTexts.map(function($){return new JSDOC.DocTag($)});
+	this.tags = this.tagTexts.map(function($){return new JSDOC.DocTag($);});
 	
 	if (typeof JSDOC.PluginManager != "undefined") {
 		JSDOC.PluginManager.run("onDocCommentTags", this);
 	}
-}
+};
 
 /*t:
 	plan(5, "testing JSDOC.DocComment");
@@ -88,7 +89,7 @@ JSDOC.DocComment.prototype.fixDesc = function() {
 	if (/^\s*[^@\s]/.test(this.src)) {				
 		this.src = "@desc "+this.src;
 	}
-}
+};
 
 /*t:
 	plan(5, "testing JSDOC.DocComment#fixDesc");
@@ -124,7 +125,7 @@ JSDOC.DocComment.unwrapComment = function(/**String*/comment) {
 	if (!comment) return "";
 	var unwrapped = comment.replace(/(^\/\*\*|\*\/$)/g, "").replace(/^\s*\* ?/gm, "");
 	return unwrapped;
-}
+};
 
 /*t:
 	plan(5, "testing JSDOC.DocComment.unwrapComment");
@@ -156,7 +157,7 @@ JSDOC.DocComment.unwrapComment = function(/**String*/comment) {
  */
 JSDOC.DocComment.prototype.toString = function() {
 	return this.src;
-}
+};
 
 /*t:
 	plan(1, "testing JSDOC.DocComment#fixDesc");
@@ -170,12 +171,12 @@ JSDOC.DocComment.prototype.toString = function() {
 	@type JSDOC.DocTag[]
  */
 JSDOC.DocComment.prototype.getTag = function(/**String*/tagTitle) {
-	return this.tags.filter(function($){return $.title == tagTitle});
-}
+	return this.tags.filter(function($){return $.title == tagTitle;});
+};
 
 JSDOC.DocComment.prototype.deleteTag = function(/**String*/tagTitle) {
-	this.tags = this.tags.filter(function($){return $.title != tagTitle})
-}
+	this.tags = this.tags.filter(function($){return $.title != tagTitle;});
+};
 
 /*t:
 	plan(1, "testing JSDOC.DocComment#getTag");
