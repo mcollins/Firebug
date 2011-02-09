@@ -22,6 +22,9 @@ new Namespace(
 	"JSDOC.tagSynonyms",
 	function() {
 		JSDOC.tagSynonyms.synonyms = {
+			"=extend":             "lends", // firebug tag
+			//"=scope":              "closure", // firebug tag
+
 			"=member":             "memberOf",
 			"=memberof":           "memberOf",
 			"=description":        "desc",
