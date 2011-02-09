@@ -1,5 +1,9 @@
 /** Called automatically by JsDoc Toolkit. */
 function publish(symbolSet) {
+  print("");
+  print("");
+  if (LOG.profile) LOG.time("publish()");
+  
 	publish.conf = {  // trailing slash expected for dirs
 		ext:         ".html",
 		outDir:      JSDOC.opt.d || SYS.pwd+"../out/jsdoc/",
@@ -22,6 +26,7 @@ function publish(symbolSet) {
 	Link.symbolSet = symbolSet;
 
 	// create the required templates
+  if (LOG.profile) LOG.time("publish() create the the required templates");	
 	try {
 		var classTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"class.tmpl");
 		var classesTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"allclasses.tmpl");
@@ -30,6 +35,7 @@ function publish(symbolSet) {
 		print("Couldn't create the required templates: "+e);
 		quit();
 	}
+  if (LOG.profile) LOG.timeEnd("publish() create the the required templates");	
 	
 	// some ustility filters
 	function hasNoParent($) {return ($.memberOf == "")}
@@ -40,12 +46,14 @@ function publish(symbolSet) {
 	var symbols = symbolSet.toArray();
 	
 	// create the hilited source code files
+  if (LOG.profile) LOG.time("publish() create the hilited source code files");	
 	var files = JSDOC.opt.srcFiles;
  	for (var i = 0, l = files.length; i < l; i++) {
  		var file = files[i];
  		var srcDir = publish.conf.outDir + "symbols/src/";
 		makeSrcFile(file, srcDir);
  	}
+  if (LOG.profile) LOG.timeEnd("publish() create the hilited source code files");	
  	
  	// get a list of all the classes in the symbolset
  	var classes = symbols.filter(isaClass).sort(makeSortby("alias"));
@@ -66,11 +74,14 @@ function publish(symbolSet) {
 		}
 	}
 	
+  if (LOG.profile) LOG.time("publish() create the create a class index page");	
 	// create a class index, displayed in the left-hand column of every class page
 	Link.base = "../";
  	publish.classesIndex = classesTemplate.process(classes); // kept in memory
+  if (LOG.profile) LOG.timeEnd("publish() create the create a class index page");	
 	
 	// create each of the class pages
+  if (LOG.profile) LOG.time("publish() create pages for all symbols");	
 	for (var i = 0, l = classes.length; i < l; i++) {
 		var symbol = classes[i];
 		
@@ -83,8 +94,10 @@ function publish(symbolSet) {
 		
 		IO.saveFile(publish.conf.outDir+"symbols/", ((JSDOC.opt.u)? Link.filemap[symbol.alias] : symbol.alias) + publish.conf.ext, output);
 	}
+  if (LOG.profile) LOG.timeEnd("publish() create each of the class pages");	
 	
 	// regenerate the index with different relative links, used in the index pages
+  if (LOG.profile) LOG.time("publish() create the class index");
 	Link.base = "";
 	publish.classesIndex = classesTemplate.process(classes);
 	
@@ -97,8 +110,10 @@ function publish(symbolSet) {
 	var classesIndex = classesindexTemplate.process(classes);
 	IO.saveFile(publish.conf.outDir, "index"+publish.conf.ext, classesIndex);
 	classesindexTemplate = classesIndex = classes = null;
+  if (LOG.profile) LOG.timeEnd("publish() create the class index");
 	
 	// create the file index page
+  if (LOG.profile) LOG.time("publish() create the file index");	
 	try {
 		var fileindexTemplate = new JSDOC.JsPlate(publish.conf.templatesDir+"allfiles.tmpl");
 	}
@@ -107,11 +122,11 @@ function publish(symbolSet) {
 	var documentedFiles = symbols.filter(isaFile); // files that have file-level docs
 	var allFiles = []; // not all files have file-level docs, but we need to list every one
 	
-	for (var i = 0; i < files.length; i++) {
+	for (var i = 0, l = files.length; i < l; i++) {
 		allFiles.push(new JSDOC.Symbol(files[i], [], "FILE", new JSDOC.DocComment("/** */")));
 	}
 	
-	for (var i = 0; i < documentedFiles.length; i++) {
+	for (var i = 0, l = documentedFiles.length; i < l; i++) {
 		var offset = files.indexOf(documentedFiles[i].alias);
 		allFiles[offset] = documentedFiles[i];
 	}
@@ -122,8 +137,22 @@ function publish(symbolSet) {
 	var filesIndex = fileindexTemplate.process(allFiles);
 	IO.saveFile(publish.conf.outDir, "files"+publish.conf.ext, filesIndex);
 	fileindexTemplate = filesIndex = files = null;
-}
+  if (LOG.profile) LOG.timeEnd("publish() create the file index");	
+	
+	
+	// xxxpedro
+  if (LOG.profile) LOG.time("publish() copy resources");	
+	var out = publish.conf.outDir, template=publish.conf.templatesDir+"static/",
+    imgOut = out + "images";
+    
+	IO.mkPath((out+"images").split("/"));
+  if (out) {
+		IO.copyFile(template+"code.css", out);
+	}
+  if (LOG.profile) LOG.timeEnd("publish() copy resources");	
 
+  if (LOG.profile) LOG.timeEnd("publish()");	
+}
 
 /** Just the first sentence (up to a full stop). Should not break on dotted variable names. */
 function summarize(desc) {
@@ -199,3 +228,11 @@ function resolveLinks(str, from) {
 	
 	return str;
 }
+
+
+JSDOC.JsPlate.scope.summarize = summarize;
+JSDOC.JsPlate.scope.makeSortby = makeSortby;
+JSDOC.JsPlate.scope.include = include;
+JSDOC.JsPlate.scope.makeSrcFile = makeSrcFile;
+JSDOC.JsPlate.scope.makeSignature = makeSignature;
+JSDOC.JsPlate.scope.resolveLinks = resolveLinks;
