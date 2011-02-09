@@ -229,12 +229,15 @@ JSDOC.SymbolSet.prototype.walk = function(symbol) {
 			//else {
 				var cmethods = contributer.methods;
 				var cproperties = contributer.properties;
+				var isClass = contributer.isClass;
 				
 				for (var ci = 0, cl = cmethods.length; ci < cl; ci++) {
-					if (!cmethods[ci].isStatic) symbol.inherit(cmethods[ci]);
+					// TODO: xxxpedro fix to augments inheritance bug for namespaces
+					if (!isClass || isClass && !cmethods[ci].isStatic) symbol.inherit(cmethods[ci], contributer);
 				}
 				for (var ci = 0, cl = cproperties.length; ci < cl; ci++) {
-					if (!cproperties[ci].isStatic) symbol.inherit(cproperties[ci]);
+					// TODO: xxxpedro fix to augments inheritance bug for namespaces
+					if (!isClass || isClass && !cproperties[ci].isStatic) symbol.inherit(cproperties[ci], contributer);
 				}	
 			//}
 		}
