@@ -1,11 +1,12 @@
 function runTest()
 {
     FBTest.sysout("absolutepath.START;");
-    FBTest.progress(baseLocalPath);
+    FBTest.progress("using baseLocalPath: "+baseLocalPath);
 
     Components.utils["import"]("resource://firebug/moduleLoader.js");
 
-    var require = (new ModuleLoader(null, {context: "foo"})).loadDepsThenCallback;
+    var uid = Math.random();  // to give each test is own loader
+    var require = (new ModuleLoader(null, {context: "foo"+uid})).loadDepsThenCallback;
 
     var baseUrl = baseLocalPath + "loader/paths/";
     require([
