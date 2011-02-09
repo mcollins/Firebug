@@ -1,340 +1,528 @@
 if (typeof JSDOC == "undefined") JSDOC = {};
 
+// TODO: xxxpedro
+JSDOC.FileCache = {};
+
 /**
 	@class Search a {@link JSDOC.TextStream} for language tokens.
 */
-JSDOC.TokenReader = function() {
-	this.keepDocs = true;
-	this.keepWhite = false;
-	this.keepComments = false;
-}
+JSDOC.TokenReader = {
+	keepDocs: true,
+	keepWhite: false,
+	keepComments: false
+};
 
-/**
-	@type {JSDOC.Token[]}
- */
-JSDOC.TokenReader.prototype.tokenize = function(/**JSDOC.TextStream*/stream) {
+JSDOC.TokenReader.getRelevantTokens = function(srcFile)
+{
+	var cache = JSDOC.FileCache[srcFile];
+	
+	if (cache)
+		return cache.relevantTokens;
+	else
+		return JSDOC.TokenReader.parseFile(srcFile);
+};
+
+JSDOC.TokenReader.getAllTokens = function(srcFile)
+{
+	var cache = JSDOC.FileCache[srcFile];
+	
+	if (cache)
+		return cache.tokens;
+	else
+		return JSDOC.TokenReader.parseFile(srcFile, true);
+};
+
+JSDOC.TokenReader.parseFile = function(srcFile, allTokens)
+{
+	if(LOG.profile) LOG.time("JSDOC.TokenReader.prototype.tokenize()");
+
+	var text;
+	
+	try {
+		text = IO.readFile(srcFile);
+	}
+	catch(e) {
+		LOG.warn("Can't read source file '"+srcFile+"': "+e.message);
+	}
+
+	var cursor = 0;
+	var start = 0;
+	var lineNumber = 1;
+	
+	var c;
+	var str;
+	var q;
+	var length = text.length;
+	
+	var varNameChars = "$_.";
+	var puncNames = JSDOC.Lang.punc.names;
+	
 	var tokens = [];
-	/**@ignore*/ tokens.last    = function() { return tokens[tokens.length-1]; }
-	/**@ignore*/ tokens.lastSym = function() {
-		for (var i = tokens.length-1; i >= 0; i--) {
-			if (!(tokens[i].is("WHIT") || tokens[i].is("COMM"))) return tokens[i];
+	var relevantTokens = [];
+	
+	/**@ignore*/
+	tokens.last = relevantTokens.last = function() { return this[this.length-1]; };
+	/**@ignore*/
+	tokens.lastSym = relevantTokens.lastSym = function() {
+		for (var i = this.length-1, e; i >= 0 && (e = this[i]); i--) {
+			if (!(e.type == "WHIT" || e.type == "COMM")) return e;
 		}
-	}
-
-	while (!stream.look().eof) {
-		if (this.read_mlcomment(stream, tokens)) continue;
-		if (this.read_slcomment(stream, tokens)) continue;
-		if (this.read_dbquote(stream, tokens))   continue;
-		if (this.read_snquote(stream, tokens))   continue;
-		if (this.read_regx(stream, tokens))      continue;
-		if (this.read_numb(stream, tokens))      continue;
-		if (this.read_punc(stream, tokens))      continue;
-		if (this.read_newline(stream, tokens))   continue;
-		if (this.read_space(stream, tokens))     continue;
-		if (this.read_word(stream, tokens))      continue;
+	};
+	
+	var look = function(n, considerWhitespace) {
+		if (typeof n == "undefined") n = 0;
+		if (typeof considerWhitespace == "undefined") considerWhitespace = false;
 		
-		// if execution reaches here then an error has happened
-		tokens.push(new JSDOC.Token(stream.next(), "TOKN", "UNKNOWN_TOKEN"));
-	}
-	return tokens;
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_word = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var found = "";
-	while (!stream.look().eof && JSDOC.Lang.isWordChar(stream.look())) {
-		found += stream.next();
-	}
-	
-	if (found === "") {
-		return false;
-	}
-	else {
-		var name;
-		if ((name = JSDOC.Lang.keyword(found))) tokens.push(new JSDOC.Token(found, "KEYW", name));
-		else tokens.push(new JSDOC.Token(found, "NAME", "NAME"));
-		return true;
-	}
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_punc = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var found = "";
-	var name;
-	while (!stream.look().eof && JSDOC.Lang.punc(found+stream.look())) {
-		found += stream.next();
-	}
-	
-	if (found === "") {
-		return false;
-	}
-	else {
-		tokens.push(new JSDOC.Token(found, "PUNC", JSDOC.Lang.punc(found)));
-		return true;
-	}
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_space = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var found = "";
-	
-	while (!stream.look().eof && JSDOC.Lang.isSpace(stream.look())) {
-		found += stream.next();
-	}
-	
-	if (found === "") {
-		return false;
-	}
-	else {
-		if (this.collapseWhite) found = " ";
-		if (this.keepWhite) tokens.push(new JSDOC.Token(found, "WHIT", "SPACE"));
-		return true;
-	}
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_newline = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var found = "";
-	
-	while (!stream.look().eof && JSDOC.Lang.isNewline(stream.look())) {
-		found += stream.next();
-	}
-	
-	if (found === "") {
-		return false;
-	}
-	else {
-		if (this.collapseWhite) found = "\n";
-		if (this.keepWhite) tokens.push(new JSDOC.Token(found, "WHIT", "NEWLINE"));
-		return true;
-	}
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_mlcomment = function(/**JSDOC.TokenStream*/stream, tokens) {
-	if (stream.look() == "/" && stream.look(1) == "*") {
-		var found = stream.next(2);
-		
-		while (!stream.look().eof && !(stream.look(-1) == "/" && stream.look(-2) == "*")) {
-			found += stream.next();
+		if (cursor+n < 0 || cursor+n >= text.length) {
+			var result = new String("");
+			result.eof = true;
+			return result;
 		}
-		
-		// to start doclet we allow /** or /*** but not /**/ or /****
-		if (/^\/\*\*([^\/]|\*[^*])/.test(found) && this.keepDocs) tokens.push(new JSDOC.Token(found, "COMM", "JSDOC"));
-		else if (this.keepComments) tokens.push(new JSDOC.Token(found, "COMM", "MULTI_LINE_COMM"));
-		return true;
-	}
-	return false;
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_slcomment = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var found;
-	if (
-		(stream.look() == "/" && stream.look(1) == "/" && (found=stream.next(2)))
-		|| 
-		(stream.look() == "<" && stream.look(1) == "!" && stream.look(2) == "-" && stream.look(3) == "-" && (found=stream.next(4)))
-	) {
-		
-		while (!stream.look().eof && !JSDOC.Lang.isNewline(stream.look())) {
-			found += stream.next();
-		}
-		
-		if (this.keepComments) {
-			tokens.push(new JSDOC.Token(found, "COMM", "SINGLE_LINE_COMM"));
-		}
-		return true;
-	}
-	return false;
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_dbquote = function(/**JSDOC.TokenStream*/stream, tokens) {
-	if (stream.look() == "\"") {
-		// find terminator
-		var string = stream.next();
-		
-		while (!stream.look().eof) {
-			if (stream.look() == "\\") {
-				if (JSDOC.Lang.isNewline(stream.look(1))) {
-					do {
-						stream.next();
-					} while (!stream.look().eof && JSDOC.Lang.isNewline(stream.look()));
-					string += "\\\n";
+		else if ( considerWhitespace ) {
+			var count = 0;
+			var i = cursor;
+	
+			while (true) {
+				if (text.charAt(n+i).match(/\s/) ) {
+					if (n < 0) i--; else i++;
+					continue;
 				}
 				else {
-					string += stream.next(2);
+					return text.charAt(n+i);
 				}
 			}
-			else if (stream.look() == "\"") {
-				string += stream.next();
- 				if ( stream.look(0, false) == ":" ) {
- 					if ( string.indexOf('.') != -1 ) {
- 						LOG.warn( "The symbol '"+string+"' uses dot notation, but is written as a string literal." );
- 					}
- 					tokens.push(new JSDOC.Token(string.substr(1, string.length-2), "NAME", "NAME"));
- 				}
- 				else {
- 					tokens.push(new JSDOC.Token(string, "STRN", "DOUBLE_QUOTE"));
- 				}
-				return true;
-			}
-			else {
-				string += stream.next();
-			}
-		}
-	}
-	return false; // error! unterminated string
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_snquote = function(/**JSDOC.TokenStream*/stream, tokens) {
-	if (stream.look() == "'") {
-		// find terminator
-		var string = stream.next();
-		
-		while (!stream.look().eof) {
-			if (stream.look() == "\\") { // escape sequence
-				string += stream.next(2);
-			}
-			else if (stream.look() == "'") {
-				string += stream.next();
-				tokens.push(new JSDOC.Token(string, "STRN", "SINGLE_QUOTE"));
-				return true;
-			}
-			else {
-				string += stream.next();
-			}
-		}
-	}
-	return false; // error! unterminated string
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_numb = function(/**JSDOC.TokenStream*/stream, tokens) {
-	if (stream.look() === "0" && stream.look(1) == "x") {
-		return this.read_hex(stream, tokens);
-	}
-	
-	var found = "";
-	
-	while (!stream.look().eof && JSDOC.Lang.isNumber(found+stream.look())){
-		found += stream.next();
-	}
-	
-	if (found === "") {
-		return false;
-	}
-	else {
-		if (/^0[0-7]/.test(found)) tokens.push(new JSDOC.Token(found, "NUMB", "OCTAL"));
-		else tokens.push(new JSDOC.Token(found, "NUMB", "DECIMAL"));
-		return true;
-	}
-}
-/*t:
-	requires("../lib/JSDOC/TextStream.js");
-	requires("../lib/JSDOC/Token.js");
-	requires("../lib/JSDOC/Lang.js");
-	
-	plan(3, "testing JSDOC.TokenReader.prototype.read_numb");
-	
-	//// setup
-	var src = "function foo(num){while (num+8.0 >= 0x20 && num < 0777){}}";
-	var tr = new JSDOC.TokenReader();
-	var tokens = tr.tokenize(new JSDOC.TextStream(src));
-	
-	var hexToken, octToken, decToken;
-	for (var i = 0; i < tokens.length; i++) {
-		if (tokens[i].name == "HEX_DEC") hexToken = tokens[i];
-		if (tokens[i].name == "OCTAL") octToken = tokens[i];
-		if (tokens[i].name == "DECIMAL") decToken = tokens[i];
-	}
-	////
-	
-	is(decToken.data, "8.0", "decimal number is found in source.");
-	is(hexToken.data, "0x20", "hexdec number is found in source (issue #99).");
-	is(octToken.data, "0777", "octal number is found in source.");
-*/
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_hex = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var found = stream.next(2);
-	
-	while (!stream.look().eof) {
-		if (JSDOC.Lang.isHexDec(found) && !JSDOC.Lang.isHexDec(found+stream.look())) { // done
-			tokens.push(new JSDOC.Token(found, "NUMB", "HEX_DEC"));
-			return true;
 		}
 		else {
-			found += stream.next();
+			return text.charAt(cursor+n);
 		}
-	}
-	return false;
-}
-
-/**
-	@returns {Boolean} Was the token found?
- */
-JSDOC.TokenReader.prototype.read_regx = function(/**JSDOC.TokenStream*/stream, tokens) {
-	var last;
-	if (
-		stream.look() == "/"
-		&& 
-		(
-			
-			(
-				!(last = tokens.lastSym()) // there is no last, the regex is the first symbol
-				|| 
-				(
-					   !last.is("NUMB")
-					&& !last.is("NAME")
-					&& !last.is("RIGHT_PAREN")
-					&& !last.is("RIGHT_BRACKET")
-				)
-			)
-		)
-	) {
-		var regex = stream.next();
+	};
+	
+	var next = function(n) {
+		if (typeof n == "undefined") n = 1;
+		if (n < 1) return null;
 		
-		while (!stream.look().eof) {
-			if (stream.look() == "\\") { // escape sequence
-				regex += stream.next(2);
-			}
-			else if (stream.look() == "/") {
-				regex += stream.next();
-				
-				while (/[gmi]/.test(stream.look())) {
-					regex += stream.next();
+		var pulled = "";
+		for (var i = 0; i < n; i++) {
+			if (cursor+i < text.length) {
+			
+				// TODO: xxxpedro line number
+				if (text.charAt(cursor+i) == "\n") {
+					lineNumber++;
 				}
 				
-				tokens.push(new JSDOC.Token(regex, "REGX", "REGX"));
-				return true;
+				pulled += text.charAt(cursor+i);
 			}
 			else {
-				regex += stream.next();
+				var result = new String("");
+				result.eof = true;
+				return result;
 			}
 		}
-		// error: unterminated regex
+	
+		cursor += n;
+		return pulled;
+	};
+	
+	var balance = function(/**String*/start, /**String*/stop) {
+		if (!stop) stop = JSDOC.Lang.matching(start);
+		
+		var token;
+		var depth = 0;
+		var got = [];
+		var started = false;
+		
+		while ((token = look())) {
+			if (token.isa == start) {
+				depth++;
+				started = true;
+			}
+			
+			if (started) {
+				got.push(token);
+			}
+			
+			if (token.isa == stop) {
+				depth--;
+				if (depth == 0) return got;
+			}
+			if (!next()) break;
+		}
+	};
+
+	var createToken = function(data, type, name) {
+	
+		var token = {
+			data: data,
+			type: type,
+			name: name,
+			lineNumber: start
+		};
+		
+		token.is = function(what) {
+			return this.name === what || this.type === what;
+		};
+		
+		tokens.push(token);
+		
+		if (name == "JSDOC")
+		{
+			relevantTokens.push(token);
+		}
+		else if (type != "COMM" && type != "WHIT")
+		{
+			relevantTokens.push(token);
+		}
+		
+		return token;
+	};
+	
+
+	c = text.charAt(cursor);
+	
+
+	while (cursor < length) {
+	
+		start = lineNumber;
+		
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// Whitespace
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		if (c <= " ")
+		{
+			str = c;
+			cursor++;
+			
+			if (c == "\n") lineNumber++;
+			
+			while (true) {
+				c = text.charAt(cursor);
+				if (c == "\n") lineNumber++;
+				
+				if (!c || c > " ")
+				{
+					break;
+				}
+				str += c;
+				cursor++;
+			}
+			
+			createToken(str, "WHIT", "SPACE");
+			
+			continue;
+			
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// names
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+		} else if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || varNameChars.indexOf(c) != -1) {
+				str = c;
+				cursor += 1;
+				for (;;) {
+						c = text.charAt(cursor);
+						if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+								(c >= '0' && c <= '9') || varNameChars.indexOf(c) != -1) {
+							str += c;
+							cursor += 1;
+						} else {
+							break;
+						}
+				}
+				
+				var name;
+				if ((name = JSDOC.Lang.keyword(str))) createToken(str, "KEYW", name);
+				else createToken(str, "NAME", "NAME");
+				
+				continue;
+
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// number
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+		// A number cannot start with a decimal point. It must start with a digit,
+		// possibly '0'.
+
+		} else if (c >= '0' && c <= '9') {
+			str = c;
+			cursor += 1;
+
+			// Look for more digits.
+
+			for (;;) {
+				c = text.charAt(cursor);
+				if (c < '0' || c > '9') {
+					break;
+				}
+				cursor += 1;
+				str += c;
+			}
+
+			// Look for a decimal fraction part.
+
+			if (c === '.') {
+				cursor += 1;
+				str += c;
+				for (;;) {
+					c = text.charAt(cursor);
+					if (c < '0' || c > '9') {
+						break;
+					}
+					cursor += 1;
+					str += c;
+				}
+			}
+
+			// Look for an exponent part.
+
+			if (c === 'e' || c === 'E') {
+				cursor += 1;
+				str += c;
+				c = text.charAt(cursor);
+				if (c === '-' || c === '+') {
+					cursor += 1;
+					str += c;
+					c = text.charAt(cursor);
+				}
+				if (c < '0' || c > '9') {
+					//error("Bad exponent");
+				}
+				do {
+					cursor += 1;
+					str += c;
+					c = text.charAt(cursor);
+				} while (c >= '0' && c <= '9');
+			}
+
+			// Make sure the next character is not a letter.
+
+			if (c >= 'a' && c <= 'z') {
+				str += c;
+				cursor += 1;
+				//error("Bad number");
+			}
+
+			// Convert the string value to a number. If it is finite, then it is a good
+			// token.
+
+			n = +str;
+			if (isFinite(n)) {
+				//result.push(make('number', n));
+				createToken(str, "NUMB", "DECIMAL"); // TODO: xxxpedro add other types HEX OCTAL
+			} else {
+				//error("Bad number");
+			}
+
+			continue;
+
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// multi-line comment
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+		} else if (c == "/" && text.charAt(cursor+1) == "*") {
+		
+			// to start doclet we allow /** or /*** but not /** / or /****
+			var isJSDOC = text.charAt(cursor+3);
+			isJSDOC = text.charAt(cursor+2) == "*" &&
+					(isJSDOC != "*" && isJSDOC != "/" || // allow /** but not /** /
+					isJSDOC == "*" && text.charAt(cursor+4) != "*"); // allow /*** but not /****
+					
+			str = "/*";
+			cursor += 2;
+			
+			while (true) {
+				c = text.charAt(cursor);
+				str += c;
+				if (c == "\n") lineNumber++;
+				
+				if ( c == "*" && text.charAt(cursor+1) == "/")
+				{
+					str += "/";
+					cursor += 2;
+					c = text.charAt(cursor);
+					break;
+				}
+				cursor++;
+			}
+			
+			if (isJSDOC) createToken(str, "COMM", "JSDOC");
+			else createToken(str, "COMM", "MULTI_LINE_COMM");
+			
+			continue;
+			
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// single-line comment
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+		} else if (c === '/' && text.charAt(cursor + 1) === '/') {
+			str = c;
+			
+			for (;;) {
+				cursor++;
+				c = text.charAt(cursor);
+				if (c == "\n") lineNumber++;
+
+				if (c === '\n' || c === '\r' || c === '') {
+					break;
+				}
+				str += c;
+			}
+		
+			createToken(str, "COMM", "SINGLE_LINE_COMM");
+			
+			continue;
+		}
+		
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// string
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+		else if (c === '\'' || c === '"') {
+			str = c;
+			q = c;
+			for (;;) {
+				cursor += 1;
+				c = text.charAt(cursor);
+				str += c;
+				
+				if (c < ' ') {
+					//error(c === '\n' || c === '\r' || c === '' ?
+					//		"Unterminated string." :
+					//		"Control character in string.");
+				}
+
+				// Look for the closing quote.
+
+				if (c === q) {
+					break;
+				}
+
+				// Look for escapement.
+
+				if (c === '\\') {
+					cursor += 1;
+					if (cursor >= length) {
+						//error("Unterminated string");
+					}
+					c = text.charAt(cursor);
+					switch (c) {
+					case 'b':
+						c = '\b';
+						break;
+					case 'f':
+						c = '\f';
+						break;
+					case 'n':
+						c = '\n';
+						break;
+					case 'r':
+						c = '\r';
+						break;
+					case 't':
+						c = '\t';
+						break;
+					case 'u':
+						if (cursor >= length) {
+							//error("Unterminated string");
+						}
+						c = parseInt(text.substr(cursor + 1, 4), 16);
+						if (!isFinite(c) || c < 0) {
+							//error("Unterminated string");
+						}
+						c = String.fromCharCode(c);
+						cursor += 4;
+						break;
+					}
+				}
+			}
+			cursor += 1;
+			
+			createToken(str, "STRN", c === '"' ? "DOUBLE_QUOTE" : "SINGLE_QUOTE");
+			
+			c = text.charAt(cursor);
+			continue;
+		}
+		
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// regular expression
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		
+		else if (c == "/")
+		{
+		
+			//LOG.warn("LAST "+( !(last = tokens.lastSym()) || !last.isa == "NUMB" && !last.isa == "NAME" && !last.isa == "RIGHT_PAREN" && !last.isa == "RIGHT_BRACKET" ));
+			
+			if (
+				!(last = relevantTokens.lastSym()) || // there is no last, the regex is the first symbol
+				!last.is("NUMB") && !last.is("NAME") && !last.is("RIGHT_PAREN") && !last.is("RIGHT_BRACKET")
+				)
+			{
+			
+				str = c;
+				var lastC = c;
+				
+				while(true)
+				{
+					cursor++;
+					c = text.charAt(cursor);
+					str += c;
+					
+					if (c == "/" && lastC != "^" && (lastC != "\\" || (lastC == "\\" && cursor > 2 && text.charAt(cursor-2) == "\\")) )
+					{
+						break;
+					}
+					lastC = c;
+				}
+				
+				createToken(str, "REGX", "REGX");
+							
+				cursor++;
+				c = text.charAt(cursor);
+				
+				continue;
+			}
+		}
+		
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		// punctuations and/or operators
+		// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+		
+		if (puncNames[c])
+		{
+			str = c;
+			 
+			while (true)
+			{
+				cursor++;
+				c = text.charAt(cursor);
+				
+				if (!c || !puncNames[str+c])
+				{
+					break;
+				}
+				
+				str += c;
+			}
+			 
+			createToken(str, "PUNC", puncNames[str]);
+			
+			continue;
+		}
+			
+		LOG.warn("UNKNOWN_TOKEN " + str + ":" + lineNumber + "=" + cursor + "/" + length);
+		
+		// if execution reaches here then an error has happened
+		createToken(next(), "TOKN", "UNKNOWN_TOKEN");
+		
 	}
-	return false;
-}
+	
+	// TODO: xxxpedro performance - cache source
+	JSDOC.FileCache[srcFile] = {
+		text: text,
+		lines: lineNumber,
+		tokens: tokens,
+		relevantTokens: relevantTokens
+	};
+	
+	if(LOG.profile) LOG.timeEnd("JSDOC.TokenReader.prototype.tokenize()");
+	
+	return allTokens ? tokens : relevantTokens;
+};
