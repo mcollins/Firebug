@@ -15,7 +15,7 @@ LOG = {
 	// TODO: xxxpedro performance instrumentation
 	profileTimeStart: new Date().getTime(),
 	profileTimeCounters: [],
-	profile: true,
+	profile: false,
 
 	time: function(name)
 	{
