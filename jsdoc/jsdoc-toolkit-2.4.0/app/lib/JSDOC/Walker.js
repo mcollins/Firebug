@@ -6,7 +6,7 @@ JSDOC.Walker = function(/**JSDOC.TokenStream*/ts) {
 	if (typeof ts != "undefined") {
 		this.walk(ts);
 	}
-}
+};
 
 JSDOC.Walker.prototype.init = function() {
 	this.ts = null;
@@ -24,10 +24,28 @@ JSDOC.Walker.prototype.init = function() {
 		@type Array
 	*/
 	this.namescope = [globalSymbol];
-	this.namescope.last = function(n){ if (!n) n = 0; return this[this.length-(1+n)] || "" };
-}
+	this.namescope.last = function(n){ if (!n) n = 0; return this[this.length-(1+n)] || ""; };
+	
+
+	// TODO: xxxpedro test namespace
+	/*
+	var ns = this.namescope;
+	ns._push = ns.push;
+	ns.push = function(){
+		ns._push.apply(ns, arguments);
+		for (var i=0, l=ns.length, s="ns=["; i<l; i++)
+		{
+			s+=ns[i].name+", ";
+		}
+		
+		//LOG.warn(s+"]");
+	};/**/
+	
+};
 
 JSDOC.Walker.prototype.walk = function(/**JSDOC.TokenStream*/ts) {
+	// TODO: xxxpedro performance instrumentation
+	if (LOG.profile) LOG.time("JSDOC.Walker.prototype.walk()");
 	this.ts = ts;
 	while (this.token = this.ts.look()) {
 		if (this.token.popNamescope) {
@@ -42,7 +60,9 @@ JSDOC.Walker.prototype.walk = function(/**JSDOC.TokenStream*/ts) {
 		this.step();
 		if (!this.ts.next()) break;
 	}
-}
+	// TODO: xxxpedro performance instrumentation
+	if (LOG.profile) LOG.timeEnd("JSDOC.Walker.prototype.walk()");
+};
 
 JSDOC.Walker.prototype.step = function() {
 	if (this.token.is("JSDOC")) { // it's a doc comment
@@ -60,16 +80,47 @@ JSDOC.Walker.prototype.step = function() {
 			if (!n1 && n2) throw "@exports tag requires a value like: 'name as ns.name'";
 			
 			JSDOC.Parser.rename = (JSDOC.Parser.rename || {});	
-			JSDOC.Parser.rename[n1] = n2
+			JSDOC.Parser.rename[n1] = n2;
 		}
 		
-		if (doc.getTag("lends").length > 0) {
+		// TODO: xxxpedro
+		/*
+		if (doc.getTag("this").length > 0) {
+			var scope = this.namescope.last();
+			LOG.warn("......... "+scope.name+", " + scope.alias);
+		}/**/
+		/*
+		if (doc.getTag("ns").length > 0) {
+			var scope = doc.getTag("ns")[0];
+
+			var name = scope.desc
+			if (!name) throw "@scope tag requires a value.";
+			
+			var symbol = new JSDOC.Symbol(name, [], "OBJECT", doc, this.token);
+			
+			symbol.isa = "CONSTRUCTOR";
+			symbol.isNamespace = true;
+			symbol.isScope = true;
+
+			if (!JSDOC.Parser.symbols.getSymbolByName(symbol.name))
+				JSDOC.Parser.addSymbol(symbol);
+
+			this.namescope.push(symbol);
+			
+			var matching = this.ts.getMatchingToken("LEFT_CURLY");
+			if (matching) matching.popNamescope = name;
+			else LOG.warn("Mismatched } character. Can't parse code in file " + symbol.srcFile + ".");
+			
+			this.lastDoc = null;
+			return true;
+		}
+		else /**/ if (doc.getTag("lends").length > 0) {
 			var lends = doc.getTag("lends")[0];
 
-			var name = lends.desc
+			var name = lends.desc;
 			if (!name) throw "@lends tag requires a value.";
 			
-			var symbol = new JSDOC.Symbol(name, [], "OBJECT", doc);
+			var symbol = new JSDOC.Symbol(name, [], "OBJECT", doc, this.token);
 			
 			this.namescope.push(symbol);
 			
@@ -90,7 +141,7 @@ JSDOC.Walker.prototype.step = function() {
 				doc.deleteTag("memberOf");
 			}
 
-			var symbol = new JSDOC.Symbol(virtualName, [], "VIRTUAL", doc);
+			var symbol = new JSDOC.Symbol(virtualName, [], "VIRTUAL", doc, this.token);
 			
 			JSDOC.Parser.addSymbol(symbol);
 			
@@ -108,7 +159,7 @@ JSDOC.Walker.prototype.step = function() {
 			return true;
 		}
 		else if (doc.getTag("overview").length > 0) { // it's a file overview
-			symbol = new JSDOC.Symbol("", [], "FILE", doc);
+			symbol = new JSDOC.Symbol("", [], "FILE", doc, this.token);
 			
 			JSDOC.Parser.addSymbol(symbol);
 			
@@ -129,17 +180,17 @@ JSDOC.Walker.prototype.step = function() {
 			var params = [];
 			
 			// it's subscripted like foo[1]
-			if (this.ts.look(1).is("LEFT_BRACKET")) {
+			if (this.ts.look(1).is("LEFT_BRACKET") && this.namescope.last().is("SCOPE")) {
 				name += JSDOC.TokenStream.tokensToString(this.ts.balance("LEFT_BRACKET"));
 			}
 			
 			if (this.ts.look(1).is("COLON") && this.ts.look(-1).is("LEFT_CURLY") && !(this.ts.look(-2).is("JSDOC") || this.namescope.last().comment.getTag("lends").length || this.ts.look(-2).is("ASSIGN") || this.ts.look(-2).is("COLON"))) {
 				name = "$anonymous";
-				name = this.namescope.last().alias+"-"+name
+				name = this.namescope.last().alias+"-"+name;
 					
 				params = [];
 				
-				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
 
 				JSDOC.Parser.addSymbol(symbol);
 				
@@ -149,6 +200,23 @@ JSDOC.Walker.prototype.step = function() {
 				if (matching) matching.popNamescope = name;
 				else LOG.warn("Mismatched } character. Can't parse code in file " + symbol.srcFile + ".");
 			}
+			// TODO: xxxpedro with scope
+			// with(foo) {}
+			/*
+			else if (this.ts.look(-1).is("LEFT_PAREN") && this.ts.look(-2).is("WITH") && (symbol = JSDOC.Parser.symbols.getSymbol(name))) {
+			
+				//symbol = JSDOC.Parser.symbols.getSymbol(name);
+				
+				var clone = symbol.clone();
+				clone.thisObj = this.namescope.last().thisObj || "_global_";
+				
+				this.namescope.push(clone);
+				
+				var matching = this.ts.getMatchingToken("LEFT_CURLY");
+				if (matching) matching.popNamescope = name;
+				else LOG.warn("Mismatched } character. Can't parse code in file " + symbol.srcFile + ".");
+			}
+			/**/
 			// function foo() {}
 			else if (this.ts.look(-1).is("FUNCTION") && this.ts.look(1).is("LEFT_PAREN")) {
 				var isInner;
@@ -168,7 +236,7 @@ JSDOC.Walker.prototype.step = function() {
 				
 				params = JSDOC.Walker.onParamList(this.ts.balance("LEFT_PAREN"));
 
-				symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc);
+				symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc, this.token);
 				if (isInner) symbol.isInner = true;
 
 				if (this.ts.look(1).is("JSDOC")) {
@@ -215,7 +283,7 @@ JSDOC.Walker.prototype.step = function() {
 				if (this.lastDoc) doc = this.lastDoc;
 				params = JSDOC.Walker.onParamList(this.ts.balance("LEFT_PAREN"));
 				
-				symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc);
+				symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc, this.token);
 
 				if (isInner) symbol.isInner = true;
 				if (isConstructor) symbol.isa = "CONSTRUCTOR";
@@ -238,7 +306,7 @@ JSDOC.Walker.prototype.step = function() {
 			else if (this.ts.look(1).is("ASSIGN") && (this.ts.look(2).is("NEW") || this.ts.look(2).is("LEFT_PAREN")) && this.ts.look(3).is("FUNCTION")) {
 				var isInner;
 				if (this.ts.look(-1).is("VAR") || this.isInner) {
-					name = this.namescope.last().alias+"-"+name
+					name = this.namescope.last().alias+"-"+name;
 					if (!this.namescope.last().is("GLOBAL")) isInner = true;
 				}
 				else if (name.indexOf("this.") == 0) {
@@ -250,7 +318,7 @@ JSDOC.Walker.prototype.step = function() {
 				if (this.lastDoc) doc = this.lastDoc;
 				params = JSDOC.Walker.onParamList(this.ts.balance("LEFT_PAREN"));
 				
-				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
 				if (isInner) symbol.isInner = true;
 				
 				if (this.ts.look(1).is("JSDOC")) {
@@ -281,10 +349,10 @@ JSDOC.Walker.prototype.step = function() {
 					if (name.indexOf("#") > -1) name = name.match(/(^[^#]+)/)[0];
 					else name = this.namescope.last().alias;
 
-					symbol = new JSDOC.Symbol(name, params, "CONSTRUCTOR", doc);
+					symbol = new JSDOC.Symbol(name, params, "CONSTRUCTOR", doc, this.token);
 				}
 				else {
-					symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc);
+					symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc, this.token);
 				}
 				
 				if (this.ts.look(1).is("JSDOC")) {
@@ -304,9 +372,11 @@ JSDOC.Walker.prototype.step = function() {
 			// foo = {}
 			else if (this.ts.look(1).is("ASSIGN") && this.ts.look(2).is("LEFT_CURLY")) {
 				var isInner;
+				var lastScope = this.namescope.last();
+				
 				if (this.ts.look(-1).is("VAR") || this.isInner) {
-					name = this.namescope.last().alias+"-"+name
-					if (!this.namescope.last().is("GLOBAL")) isInner = true;
+					name = lastScope.alias+"-"+name;
+					if (!lastScope.is("GLOBAL")) isInner = true;
 				}
 				else if (name.indexOf("this.") == 0) {
 					name = this.resolveThis(name);
@@ -314,11 +384,15 @@ JSDOC.Walker.prototype.step = function() {
 				
 				if (this.lastDoc) doc = this.lastDoc;
 				
-				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
+				//symbol.isNamespace = true;
+				symbol.isIgnored = false;
+				symbol.isPrivate = false;
 				if (isInner) symbol.isInner = true;
 				
-			
-				if (doc) JSDOC.Parser.addSymbol(symbol);
+				// TODO: xxxpedro
+				if (doc || lastScope.is("SCOPE")) JSDOC.Parser.addSymbol(symbol);
+				///if (doc) JSDOC.Parser.addSymbol(symbol);
 
 				this.namescope.push(symbol);
 				
@@ -331,12 +405,12 @@ JSDOC.Walker.prototype.step = function() {
 				var isInner;
 
 				if (this.ts.look(-1).is("VAR") || this.isInner) {
-					name = this.namescope.last().alias+"-"+name
+					name = this.namescope.last().alias+"-"+name;
 					if (!this.namescope.last().is("GLOBAL")) isInner = true;
 					
 					if (this.lastDoc) doc = this.lastDoc;
 				
-					symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+					symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
 					if (isInner) symbol.isInner = true;
 					
 				
@@ -347,7 +421,7 @@ JSDOC.Walker.prototype.step = function() {
 			else if (this.ts.look(1).is("ASSIGN")) {				
 				var isInner;
 				if (this.ts.look(-1).is("VAR") || this.isInner) {
-					name = this.namescope.last().alias+"-"+name
+					name = this.namescope.last().alias+"-"+name;
 					if (!this.namescope.last().is("GLOBAL")) isInner = true;
 				}
 				else if (name.indexOf("this.") == 0) {
@@ -356,7 +430,7 @@ JSDOC.Walker.prototype.step = function() {
 				
 				if (this.lastDoc) doc = this.lastDoc;
 				
-				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
 				if (isInner) symbol.isInner = true;
 				
 			
@@ -368,7 +442,7 @@ JSDOC.Walker.prototype.step = function() {
 				
 				if (this.lastDoc) doc = this.lastDoc;
 				
-				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
 				
 			
 				if (doc) JSDOC.Parser.addSymbol(symbol);
@@ -385,7 +459,7 @@ JSDOC.Walker.prototype.step = function() {
 				
 				if (this.lastDoc) doc = this.lastDoc;
 				
-				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc);
+				symbol = new JSDOC.Symbol(name, params, "OBJECT", doc, this.token);
 				
 			
 				if (doc) JSDOC.Parser.addSymbol(symbol);
@@ -404,7 +478,7 @@ JSDOC.Walker.prototype.step = function() {
 				
 					JSDOC.PluginManager.run("onFunctionCall", functionCall);
 					if (functionCall.doc) {
-						this.ts.insertAhead(new JSDOC.Token(functionCall.doc, "COMM", "JSDOC"));
+						this.ts.insertAhead(new JSDOC.Token(functionCall.doc, "COMM", "JSDOC", this.token));
 					}
 				}
 			}
@@ -415,14 +489,41 @@ JSDOC.Walker.prototype.step = function() {
 				(!this.ts.look(-1).is("COLON") || !this.ts.look(-1).is("ASSIGN"))
 				&& !this.ts.look(1).is("NAME")
 			) {
-				if (this.lastDoc) doc = this.lastDoc;
-				
-				name = "$anonymous";
-				name = this.namescope.last().alias+"-"+name
-				
+
+				// /**@scope name*/ function () {}
+				// TODO: xxxpedro
+				var last = this.ts.look(-1); 
+				if (last.is("JSDOC"))
+				{
+					doc = new JSDOC.DocComment(last.data);
+					var scopeName = doc.getTag("closure");
+				}
+
+				// TODO: xxxpedro
+				if(scopeName)
+				{
+					name = this.namescope.last().alias+"-"+scopeName;
+				}
+				else
+				{
+					if (this.lastDoc) doc = this.lastDoc;
+					
+					name = "$anonymous";
+					name = this.namescope.last().alias+"-"+name;
+				}
+
 				params = JSDOC.Walker.onParamList(this.ts.balance("LEFT_PAREN"));
 				
-				symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc);
+				symbol = new JSDOC.Symbol(name, params, "FUNCTION", doc, this.token);
+				
+				// TODO: xxxpedro scope
+				if(scopeName)
+				{
+					symbol.isa = "SCOPE";
+					symbol.isNamespace = true;
+					symbol.isScope = true;
+					symbol.thisObj = doc.getTag("this");
+				}
 				
 				JSDOC.Parser.addSymbol(symbol);
 				
@@ -433,9 +534,14 @@ JSDOC.Walker.prototype.step = function() {
 				else LOG.warn("Mismatched } character. Can't parse code in file " + symbol.srcFile + ".");
 			}
 		}
+		/*
+		else if (this.token.is("WITH")) {
+			LOG.warn("withhhhs")
+			LOG.warn(this.ts.look(2));
+		}/**/
 	}
 	return true;
-}
+};
 
 /**
 	Resolves what "this." means when it appears in a name.
@@ -443,15 +549,27 @@ JSDOC.Walker.prototype.step = function() {
 	@returns The name with "this." resolved.
  */
 JSDOC.Walker.prototype.resolveThis = function(name) {
-	name.match(/^this\.(.+)$/)
+
+	name.match(/^this\.(.+)$/);
 	var nameFragment = RegExp.$1;
 	if (!nameFragment) return name;
 	
 	var symbol = this.namescope.last();
+	
+	// TODO: xxxpedro
+	var overrideThis = symbol.thisObj;
+	if (overrideThis)
+		symbol = JSDOC.Parser.symbols.getSymbol(overrideThis+"");
+	
 	var scopeType = symbol.scopeType || symbol.isa;
-
+	
+	//TODO: xxxpedro
+	if (overrideThis) {
+		name = symbol.alias+"."+nameFragment;
+	}
+	
 	// if we are in a constructor function, `this` means the instance
-	if (scopeType == "CONSTRUCTOR") {
+	else if (scopeType == "CONSTRUCTOR") {
 		name = symbol.alias+"#"+nameFragment;
 	}
 	
@@ -477,6 +595,16 @@ JSDOC.Walker.prototype.resolveThis = function(name) {
 			if (parent) name = parentName+(parent.is("CONSTRUCTOR")?"#":".")+nameFragment;
 		}
 		else {
+			// TODO: xxxpedro
+			//LOG.dir(symbol.comment.getTag("x"));
+			//LOG.warn(":::" + typeof symbol.comment.getTag("this")[0]);
+			// TODO: xxxpedro
+			/*
+			var parentName = symbol.comment.getTag("this")[0];
+			var parent = parentName ?
+					JSDOC.Parser.symbols.getSymbol(parentName+"") :
+					this.namescope.last(1);
+			/**/
 			parent = this.namescope.last(1);
 			name = parent.alias+(parent.is("CONSTRUCTOR")?"#":".")+nameFragment;
 		}
@@ -487,7 +615,7 @@ JSDOC.Walker.prototype.resolveThis = function(name) {
 	}
 	
 	return name;
-}
+};
 
 JSDOC.Walker.onParamList = function(/**Array*/paramTokens) {
 	if (!paramTokens) {
@@ -509,4 +637,4 @@ JSDOC.Walker.onParamList = function(/**Array*/paramTokens) {
 		}
 	}
 	return params;
-}
+};
