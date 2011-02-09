@@ -19,7 +19,7 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
     name: panelName,
     title: "Link Inspector",
     inspectable: true,
-    inspectOnlySupportedObjects: true,
+    inspectHighlightColor: "green",
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Initialization
