@@ -1,3 +1,10 @@
+/*
+TODO: xxxpedro. This file fixes the following error in the unit test
+NOT OK 95 - Can borrow an inner function and it is still inner.
+expected: Page-getInnerElements
+     got: undefined
+ */
+
 if (typeof JSDOC == "undefined") JSDOC = {};
 
 /**
@@ -7,7 +14,7 @@ if (typeof JSDOC == "undefined") JSDOC = {};
 JSDOC.Symbol = function() {
 	this.init();
 	if (arguments.length) this.populate.apply(this, arguments);
-}
+};
 
 JSDOC.Symbol.count = 0;
 
@@ -48,7 +55,13 @@ JSDOC.Symbol.prototype.init = function() {
 	this.srcFile = {};
 	this.type = "";
 	this.version = "";
-}
+	
+	// TODO: xxpedro line number
+	this.lineNumber = -1;
+	// TODO: xxpedro scope handling
+	this.scopeFunctions = [];
+	this.scopeVariables = [];
+};
 
 JSDOC.Symbol.prototype.serialize = function() {
 	var keys = [];
@@ -63,14 +76,14 @@ JSDOC.Symbol.prototype.serialize = function() {
 		out += keys[i]+" => "+Dumper.dump(this[keys[i]])+",\n";
 	}
 	return "\n{\n" + out + "}\n";
-}
+};
 
 JSDOC.Symbol.prototype.clone = function() {
 	var clone = new JSDOC.Symbol();
 	clone.populate.apply(clone, this.$args); // repopulate using the original arguments
 	clone.srcFile = this.srcFile; // not the current srcFile, the one when the original was made
 	return clone;
-}
+};
 
 JSDOC.Symbol.prototype.__defineSetter__("name",
 	function(n) { n = n.replace(/^_global_[.#-]/, ""); n = n.replace(/\.prototype\.?/g, '#'); this._name = n; }
@@ -103,7 +116,7 @@ JSDOC.Symbol.prototype.getEvents = function() {
 		}
 	}
 	return events;
-}
+};
 
 JSDOC.Symbol.prototype.getMethods = function() {
 	var nonEvents = [];
@@ -113,15 +126,27 @@ JSDOC.Symbol.prototype.getMethods = function() {
 		}
 	}
 	return nonEvents;
-}
+};
 
 
 JSDOC.Symbol.prototype.populate = function(
 		/** String */ name,
 		/** Object[] */ params,
 		/** String */ isa,
-		/** JSDOC.DocComment */ comment
+		/** JSDOC.DocComment */ comment,
+		/** Token */ token // token
 ) {
+
+	// TODO: xxxpedro line number
+	this.lineNumber = -1;
+	if (token)
+	{
+		if (token.lineNumber)
+			this.lineNumber = token.lineNumber;
+			
+		token.symbolName = name;
+	}
+
 	this.$args = arguments;
 	
 	this.name = name;
@@ -139,7 +164,7 @@ JSDOC.Symbol.prototype.populate = function(
 	if (typeof JSDOC.PluginManager != "undefined") {
 		JSDOC.PluginManager.run("onSymbol", this);
 	}
-}
+};
 
 JSDOC.Symbol.prototype.setTags = function() {
 	// @author
@@ -447,7 +472,7 @@ JSDOC.Symbol.prototype.setTags = function() {
 	var returns = this.comment.getTag("return");
 	if (returns.length) { // there can be many return tags in a single doclet
 		this.returns = returns;
-		this.type = returns.map(function($){return $.type}).join(", ");
+		this.type = returns.map(function($){return $.type;}).join(", ");
 	}
 	
 	/*t:
@@ -464,7 +489,7 @@ JSDOC.Symbol.prototype.setTags = function() {
 	// @requires
 	var requires = this.comment.getTag("requires");
 	if (requires.length) {
-		this.requires = requires.map(function($){return $.desc});
+		this.requires = requires.map(function($){return $.desc;});
 	}
 	
 	/*t:
@@ -564,39 +589,51 @@ JSDOC.Symbol.prototype.setTags = function() {
 	if (JSDOC.PluginManager) {
 		JSDOC.PluginManager.run("onSetTags", this);
 	}
-}
+};
 
 JSDOC.Symbol.prototype.is = function(what) {
 	return this.isa === what;
-}
+};
 
 JSDOC.Symbol.prototype.isBuiltin = function() {
 	return JSDOC.Lang.isBuiltin(this.alias);
-}
+};
 
 JSDOC.Symbol.prototype.setType = function(/**String*/comment, /**Boolean*/overwrite) {
 	if (!overwrite && this.type) return;
 	var typeComment = JSDOC.DocComment.unwrapComment(comment);
 	this.type = typeComment;
-}
+};
 
-JSDOC.Symbol.prototype.inherit = function(symbol) {
-	if (!this.hasMember(symbol.name) && !symbol.isInner) {
+JSDOC.Symbol.prototype.inherit = function(symbol, contributer) {
+	
+	// TODO: xxpedro scope handling
+	if (contributer && contributer.isScope)
+	{
+		if (symbol.is("FUNCTION")) {
+			if (this.scopeFunctions.indexOf(symbol)==-1) this.scopeFunctions.push(symbol);
+		} else if (symbol.is("OBJECT")) {
+			if (this.scopeVariables.indexOf(symbol)==-1) this.scopeVariables.push(symbol);
+		}
+	}
+	else /**/ if (!this.hasMember(symbol.name) && !symbol.isInner
+	//|| contributer && contributer.isScope
+	) {
 		if (symbol.is("FUNCTION"))
 			this.methods.push(symbol);
 		else if (symbol.is("OBJECT"))
 			this.properties.push(symbol);
 	}
-}
+};
 
 JSDOC.Symbol.prototype.hasMember = function(name) {
 	return (this.hasMethod(name) || this.hasProperty(name));
-}
+};
 
 JSDOC.Symbol.prototype.addMember = function(symbol) {
 	if (symbol.is("FUNCTION")) { this.addMethod(symbol); }
 	else if (symbol.is("OBJECT")) { this.addProperty(symbol); }
-}
+};
 
 JSDOC.Symbol.prototype.hasMethod = function(name) {
 	var thisMethods = this.methods;
@@ -605,7 +642,7 @@ JSDOC.Symbol.prototype.hasMethod = function(name) {
 		if (thisMethods[i].alias == name) return true;
 	}
 	return false;
-}
+};
 
 JSDOC.Symbol.prototype.addMethod = function(symbol) {
 	var methodAlias = symbol.alias;
@@ -617,7 +654,7 @@ JSDOC.Symbol.prototype.addMethod = function(symbol) {
 		}
 	}
 	thisMethods.push(symbol); // new method with this alias
-}
+};
 
 JSDOC.Symbol.prototype.hasProperty = function(name) {
 	var thisProperties = this.properties;
@@ -626,7 +663,7 @@ JSDOC.Symbol.prototype.hasProperty = function(name) {
 		if (thisProperties[i].alias == name) return true;
 	}
 	return false;
-}
+};
 
 JSDOC.Symbol.prototype.addProperty = function(symbol) {
 	var propertyAlias = symbol.alias;
@@ -639,6 +676,6 @@ JSDOC.Symbol.prototype.addProperty = function(symbol) {
 	}
 
 	thisProperties.push(symbol); // new property with this alias
-}
+};
 
 JSDOC.Symbol.srcFile = ""; //running reference to the current file being parsed
