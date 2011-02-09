@@ -9,7 +9,39 @@
 /**
  * @namespace Keep track of any messages from the running script.
  */
+
 LOG = {
+    //-------------------------------------------------------------------------- 
+	// TODO: xxxpedro performance instrumentation
+	profileTimeStart: new Date().getTime(),
+	profileTimeCounters: [],
+	profile: true,
+
+	time: function(name)
+	{
+		print("time start... " + name);
+		LOG.profileTimeCounters.push(new Date().getTime()); 
+	},
+	
+	timeEnd: function(name)
+	{
+		print("time end " + ((new Date().getTime() - LOG.profileTimeCounters.pop()) / 1000) + "s :" + name);
+	},
+	
+	dir: function(obj)
+	{
+		var msg = "------------------------------\ndir";
+		
+		for (var name in obj)
+			//msg += "  " + name + ": " + obj[name] +"\n";
+			msg += "\n  "+name+"";
+		
+		if (LOG.out) LOG.out.write(msg);
+		else print(msg);
+	},
+	// TODO: xxxpedro performance instrumentation
+    //-------------------------------------------------------------------------- 
+	
 	warn: function(msg, e) {
 		if (JSDOC.opt.q) return;
 		if (e) msg = e.fileName+", line "+e.lineNumber+": "+msg;
@@ -28,7 +60,7 @@ LOG = {
 	}
 };
 LOG.warnings = [];
-LOG.verbose = false
+LOG.verbose = false;
 LOG.out = undefined;
 
 /**
@@ -43,7 +75,7 @@ function FilePath(absPath, separator) {
 	var parts = absPath.split(/[\\\/]/);
 	if (parts) {
 		if (parts.length) this.root = parts.shift() + this.slash;
-		if (parts.length) this.file =  parts.pop()
+		if (parts.length) this.file =  parts.pop();
 		if (parts.length) this.path = parts;
 	}
 	
@@ -58,27 +90,27 @@ FilePath.prototype.resolvePath = function() {
 		else if (this.path[i] != ".") resolvedPath.push(this.path[i]);
 	}
 	return resolvedPath;
-}
+};
 
 /** Trim off the filename. */
 FilePath.prototype.toDir = function() {
 	if (this.file) this.file = "";
 	return this;
-}
+};
 
 /** Go up a directory. */
 FilePath.prototype.upDir = function() {
 	this.toDir();
 	if (this.path.length) this.path.pop();
 	return this;
-}
+};
 
 FilePath.prototype.toString = function() {
 	return this.root
 		+ this.path.join(this.slash)
 		+ ((this.path.length > 0)? this.slash : "")
 		+ this.file;
-}
+};
 
 /**
  * Turn a path into just the name of the file.
@@ -86,7 +118,7 @@ FilePath.prototype.toString = function() {
 FilePath.fileName = function(path) {
 	var nameStart = Math.max(path.lastIndexOf("/")+1, path.lastIndexOf("\\")+1, 0);
 	return path.substring(nameStart);
-}
+};
 
 /**
  * Get the extension of a filename
@@ -101,7 +133,7 @@ FilePath.fileExtension = function(filename) {
 FilePath.dir = function(path) {
 	var nameStart = Math.max(path.lastIndexOf("/")+1, path.lastIndexOf("\\")+1, 0);
 	return path.substring(0, nameStart-1);
-}
+};
 
 
 importClass(java.lang.System);
@@ -339,7 +371,7 @@ IO = {
 		for (var lib = IO.ls(SYS.pwd+path), i = 0; i < lib.length; i++) 
 			if (/\.js$/i.test(lib[i])) load(lib[i]);
 	}
-}
+};
 
 // now run the application
 IO.include("frame.js");

@@ -3,6 +3,13 @@
  */
 
 function main() {
+	
+	// TODO: xxxpedro performance instrumentation
+	if (LOG.profile) {
+		print("");
+		LOG.time("main()");
+	}
+
 	IO.include("lib/JSDOC.js");
 	IO.includeDir("plugins/");
 	
@@ -130,4 +137,10 @@ function main() {
 		LOG.out.flush();
 		LOG.out.close();
 	}
+
+	// TODO: xxxpedro performance instrumentation
+	if (LOG.profile) LOG.timeEnd("main()");	
+	
+	// TODO: xxxpedro total time feedback
+	print("\nCompleted in " + (new Date().getTime() - LOG.profileTimeStart) / 1000 + " seconds");
 }
