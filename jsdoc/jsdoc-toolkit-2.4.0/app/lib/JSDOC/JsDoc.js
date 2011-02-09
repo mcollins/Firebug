@@ -74,7 +74,7 @@ JSDOC.JsDoc = function(/**object*/ opt) {
 	JSDOC.opt.srcFiles = JSDOC.JsDoc._getSrcFiles();
 	JSDOC.JsDoc._parseSrcFiles();
 	JSDOC.JsDoc.symbolSet = JSDOC.Parser.symbols;
-}
+};
 
 /**
 	Retrieve source file list.
@@ -85,7 +85,7 @@ JSDOC.JsDoc._getSrcFiles = function() {
 	
 	var ext = ["js"];
 	if (JSDOC.opt.x) {
-		ext = JSDOC.opt.x.split(",").map(function($) {return $.toLowerCase()});
+		ext = JSDOC.opt.x.split(",").map(function($) {return $.toLowerCase();});
 	}
 	
 	for (var i = 0; i < JSDOC.opt._.length; i++) {
@@ -110,31 +110,31 @@ JSDOC.JsDoc._getSrcFiles = function() {
 	}
 	
 	return JSDOC.JsDoc.srcFiles;
-}
+};
 
 JSDOC.JsDoc._parseSrcFiles = function() {
 	JSDOC.Parser.init();
+	
+	// TODO: xxxpedro performance instrumentation
+	var delayStart = new Date().getTime();
+	
 	for (var i = 0, l = JSDOC.JsDoc.srcFiles.length; i < l; i++) {
 		var srcFile = JSDOC.JsDoc.srcFiles[i];
 		
 		if (JSDOC.opt.v) LOG.inform("Parsing file: " + srcFile);
 		
-		try {
-			var src = IO.readFile(srcFile);
-		}
-		catch(e) {
-			LOG.warn("Can't read source file '"+srcFile+"': "+e.message);
-		}
-
-		var tr = new JSDOC.TokenReader();
-		var ts = new JSDOC.TokenStream(tr.tokenize(new JSDOC.TextStream(src)));
-
+		// xxxpedro new token reader
+		var tokens = JSDOC.TokenReader.getRelevantTokens(srcFile);
+		var ts = new JSDOC.TokenStream(tokens);
+		
 		JSDOC.Parser.parse(ts, srcFile);
-
 	}
 	JSDOC.Parser.finish();
 
+	// TODO: xxxpedro performance instrumentation
+	if (LOG.profile) LOG.warn("::" + (new Date().getTime() - delayStart) / 1000 + " seconds");
+	
 	if (JSDOC.PluginManager) {
 		JSDOC.PluginManager.run("onFinishedParsing", JSDOC.Parser.symbols);
 	}
-}
+};
