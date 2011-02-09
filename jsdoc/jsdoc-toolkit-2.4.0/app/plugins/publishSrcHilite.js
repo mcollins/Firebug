@@ -2,61 +2,96 @@ JSDOC.PluginManager.registerPlugin(
 	"JSDOC.publishSrcHilite",
 	{
 		onPublishSrc: function(src) {
-			if (src.path in JsHilite.cache) {
+			var path = src.path;
+			if (path in JsHilite.cache) {
 				return; // already generated src code
 			}
-			else JsHilite.cache[src.path] = true;
-		
-			try {
-				var sourceCode = IO.readFile(src.path);
-			}
-			catch(e) {
-				print(e.message);
-				quit();
-			}
-
-			var hiliter = new JsHilite(sourceCode, src.charset);
-			src.hilited = hiliter.hilite();
+			else JsHilite.cache[path] = true;
+			
+			// xxxpedro performance
+			var cache = JSDOC.FileCache[path];
+			
+			var sourceCode = cache.text;
+			var lines = cache.lines;
+			
+			var hiliter = new JsHilite(sourceCode, src.charset, path); // xxxpedro performance - added path param
+			src.hilited = hiliter.hilite(sourceCode, lines); // xxxpedro
 		}
 	}
 );
 
-function JsHilite(src, charset) {
+function JsHilite(src, charset, srcPath) { // xxxpedro performance - added srcPath param
 
-	var tr = new JSDOC.TokenReader();
-	
-	tr.keepComments = true;
-	tr.keepDocs = true;
-	tr.keepWhite = true;
-	
-	this.tokens = tr.tokenize(new JSDOC.TextStream(src));
-	
-	// TODO is redefining toString() the best way?
-	JSDOC.Token.prototype.toString = function() { 
-		return "<span class=\""+this.type+"\">"+this.data.replace(/</g, "&lt;")+"</span>";
-	}
+	// xxxpedro performance
+	this.tokens = JSDOC.TokenReader.getAllTokens(srcPath);
 	
 	if (!charset) charset = "utf-8";
 	
+	// xxxpedro
 	this.header = '<html><head><meta http-equiv="content-type" content="text/html; charset='+charset+'"> '+
-	"<style>\n\
-	.KEYW {color: #933;}\n\
-	.COMM {color: #bbb; font-style: italic;}\n\
-	.NUMB {color: #393;}\n\
-	.STRN {color: #393;}\n\
-	.REGX {color: #339;}\n\
-	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}\n\
-	</style></head><body><pre>";
-	this.footer = "</pre></body></html>";
+		'<link rel=stylesheet href="../../code.css" type="text/css">' +
+		'</head><body>';
+	this.footer = "</body></html>";
 	this.showLinenumbers = true;
 }
 
 JsHilite.cache = {};
 
-JsHilite.prototype.hilite = function() {
-	var hilited = this.tokens.join("");
-	var line = 1;
-	if (this.showLinenumbers) hilited = hilited.replace(/(^|\n)/g, function(m){return m+"<span class='line'>"+((line<10)? " ":"")+((line<100)? " ":"")+(line++)+"</span> "});
+JsHilite.prototype.hilite = function(sourceCode, lines) {
+
+	var result = [];
+	var lineNumber = 1;
 	
-	return this.header+hilited+this.footer;
-}
+	var tokens = this.tokens;
+	
+	// adjust the base location of links to allow source-to-doc references
+	Link.base = "../../";
+	
+	for (var i=0, length = tokens.length, token; i < length; i++)
+	{
+		token = tokens[i];
+		
+		var symbolName = "";
+		var symbolProp = "";
+		if (token.symbolName)
+		{
+			symbolName = token.symbolName;
+			symbolProp = " symbol=\"" + symbolName + "\"";
+		}
+		
+		if (token.type == "NEWLINE")
+			result.push("\n");
+	
+		else if (token.type == "WHIT")
+			result.push(token.data.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+	
+		else if (token.type == "NAME")
+			result.push("<span class=\"NAME\""+symbolProp+">"+new Link().toSymbol(symbolName||token.data).withText(token.data)+"</span>");
+	
+		else
+			result.push("<span class=\""+token.type+"\""+symbolName+">"+token.data.replace(/</g, "&lt;").replace(/>/g, "&gt;")+"</span>");
+	}
+	
+	// restore the default value
+	Link.base = "";
+	
+	var str = result.join("");
+	
+	var html = ['</pre><div class="lineNumbers">'];
+	var hl = 1;
+	
+	// render the line number divs
+	for(var l=1; l<=lines; l++)
+	{
+		html[hl++] = '<div><a name="L';
+		html[hl++] = l;
+		html[hl++] = '" href="#L';
+		html[hl++] = l;
+		html[hl++] = '">';
+		html[hl++] = l;
+		html[hl++] = '</a></div>';
+	}
+	
+	html[hl++] = '</div><div id="sourceSpacer" class="lineNumbers"></div>';
+	return this.header+str+html.join("")+this.footer;
+};
