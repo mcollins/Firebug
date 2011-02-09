@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<project name="crossfire" default="xpi" basedir=".">
+
+    <property name="dist.dir" value="dist/"/>
+    <property name="build.dir" value="build/"/>
+    <property file="version.properties"/>
+
+    <target name="xpi"
+        depends="prepare"
+        description="zip files into firefox XPI">
+        <mkdir dir="${dist.dir}"/>
+
+        <zip
+            destfile="${dist.dir}/${ant.project.name}-${VERSION}${RELEASE}.xpi"
+            basedir="${build.dir}" includes="**/*" />
+
+        <checksum
+            file="${dist.dir}/${ant.project.name}-${VERSION}${RELEASE}.xpi"
+            property="updateHash"
+            algorithm="SHA-1"/>
+
+        <echo>Update hash is ${updateHash}</echo>
+
+        <copy file="update.rdf"
+                tofile="${dist.dir}/update.rdf"
+                overwrite="true">
+                <filterchain>
+                        <replacetokens>
+                             <token key="VERSION" value="${VERSION}"/>
+                             <token key="RELEASE" value="${RELEASE}"/>
+                             <token key="UPDATEHASH" value="${updateHash}"/>
+                        </replacetokens>
+                </filterchain>
+        </copy>
+    	<!-- clean up build artifacts after we are done -->
+    	<delete includeemptydirs="true" failonerror="false" dir="${build.dir}"/>
+    </target>
+
+    <target name="prepare" depends="clean">
+        <mkdir dir="${build.dir}"/>
+        <!-- copy install.rdf and replace tokens -->
+        <copy file="install.rdf"
+                tofile="${build.dir}/install.rdf"
+                overwrite="true">
+                <filterchain>
+                        <replacetokens>
+                             <token key="VERSION" value="${VERSION}"/>
+                             <token key="RELEASE" value="${RELEASE}"/>
+                        </replacetokens>
+                </filterchain>
+        </copy>
+
+        <!-- write chrome.manifest file  -->
+        <echo file="${build.dir}/chrome.manifest">
+content     crossfire   chrome/content/
+skin        crossfire modern/1.0   chrome/content/skin/
+overlay     chrome://firebug/content/firebugOverlay.xul     chrome://crossfire/content/crossfireOverlay.xul
+resource    crossfire   resources/
+
+component   {3AB17C22-D1A6-4FF0-9A66-3DBD42114D61}   components/CommandLineHandler.js
+contract    @almaden.ibm.com/crossfire/command-line-handler;1    {3AB17C22-D1A6-4FF0-9A66-3DBD42114D61}
+category    command-line-handler    m-crossfire-clh    @almaden.ibm.com/crossfire/command-line-handler;1
+        </echo>
+
+        <copy todir="${build.dir}">
+            <fileset dir="${basedir}" includes="chrome/**/*"/>
+            <fileset dir="${basedir}" includes="defaults/**/*"/>
+            <fileset dir="${basedir}" includes="components/**/*"/>
+            <fileset dir="${basedir}/.." includes="resources/**/*,license.txt"/>
+        </copy>
+    </target>
+
+    <target name="clean">
+        <delete includeemptydirs="true" failonerror="false" dir="${build.dir}"/>
+        <delete includeemptydirs="true" failonerror="false" dir="${dist.dir}"/>
+    </target>
+</project>
