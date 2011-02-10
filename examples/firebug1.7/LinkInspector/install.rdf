@@ -17,7 +17,7 @@
     </em:targetApplication>
 
     <em:name>Link Inspector</em:name>
-    <em:description>How to create a custom Firebug inspctor</em:description>
+    <em:description>How to create a custom Firebug inspector</em:description>
     <em:creator>Jan Odvarko</em:creator>
     <em:homepageURL>http://www.janodvarko.cz</em:homepageURL>
 </Description>
