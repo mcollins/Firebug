@@ -62,13 +62,13 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
         LinkInspectorPlate.linkUrl.replace({object: node}, this.panelNode);
     },
 
-    stopInspecting: function(node, cancelled)
+    stopInspecting: function(node, canceled)
     {
         if (FBTrace.DBG_LINKINSPECTOR)
             FBTrace.sysout("link-inspector; stopInspecting(node: " + node.tagName +
-                ", cancelled: " + cancelled + ")");
+                ", canceled: " + canceled + ")");
 
-        if (cancelled)
+        if (canceled)
             return;
 
         if (node.href.indexOf("http") != 0)
@@ -106,12 +106,12 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
                 context.getTitle() + ", node: " + node.tagName + ")");
     },
 
-    onStopInspecting: function(context, node, cancelled)
+    onStopInspecting: function(context, node, canceled)
     {
         if (FBTrace.DBG_LINKINSPECTOR)
             FBTrace.sysout("link-inspector; Listener.onStopInspecting(context: " +
-                context.getTitle() + ", node: " + node.tagName + ", cancelled: " +
-                cancelled + ")");
+                context.getTitle() + ", node: " + node.tagName + ", canceled: " +
+                canceled + ")");
     },
 });
 
