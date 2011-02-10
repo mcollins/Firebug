@@ -74,17 +74,13 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
         if (node.href.indexOf("http") != 0)
             return;
 
-        var preview = LinkInspectorPlate.linkPreview.replace({object: node}, this.panelNode);
-        preview.setAttribute("src", node.href);
+        LinkInspectorPlate.linkPreview.replace({object: node}, this.panelNode);
     },
 
     supportsObject: function(object, type)
     {
-        if (object instanceof Element)
-        {
-            if (object.tagName.toLowerCase() == "a")
-                return 1;
-        }
+        if (object.tagName.toLowerCase() == "a")
+            return 1;
 
         return 0;
     },
@@ -125,7 +121,7 @@ var LinkInspectorPlate = domplate(
         ),
 
     linkPreview:
-        IFRAME({"class": "linkPreview"}),
+        IFRAME({"class": "linkPreview", "src": "$object.href"}),
 
     defaultContent:
         DIV({"class": "defaultContent"},
