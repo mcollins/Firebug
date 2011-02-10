@@ -22,10 +22,11 @@ Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 Firebug.Dyne = extend(Firebug.Module,
 {
     dispatchName: "dyne",
+    editors: {},
 
     initialize: function()
     {
-        Firebug.Dyne.initializeOrionPrefs();
+
     },
 
     showPanel: function(browser, panel)
@@ -34,6 +35,42 @@ Firebug.Dyne = extend(Firebug.Module,
             return;
 
         panel.showToolbarButtons("fbEditButtons",  (panel.location instanceof CompilationUnit));
+    },
+
+    updateOption: function(name, value)
+    {
+        FBL.dispatch(this.editors, 'updateOption', arguments);
+    },
+
+    // **********************************************************************************************
+    registerEditor: function(editor)
+    {
+        if (!editor.getName || !editor.initialize)
+            throw new Error("registerEditor: editor needs a getName");
+
+        this.editors[editor.getName()] = editor;
+        editor.initialize();
+    },
+
+    unregisterEditor: function(editor)
+    {
+        if (!editor.getName)
+            throw new Error("registerEditor: editor needs a getName");
+
+        editor.destory();
+        delete this.editors[editor.getName()];
+    },
+
+    // **********************************************************************************************
+
+    toggleCSSEditing: function()
+    {
+        if (!Firebug.Dyne.toggleEditing()) // then we did not have web edit ide
+        {
+            // fall back to panel editor, mimic cmd_toggleCSSEditing in firebugOverlay.xul
+            var panel = Firebug.currentContext.getPanel('stylesheet');
+            Firebug.CSSStyleSheetPanel.prototype.toggleEditing.apply(panel, []);
+        }
     },
 
     /*
@@ -50,9 +87,17 @@ Firebug.Dyne = extend(Firebug.Module,
             FBTrace.sysout("Edit requested "+location);
             try
             {
-                var editURL = Firebug.Dyne.getEditURLbyURL(panel.context, location);
-                if (editURL)
-                    Firebug.Dyne.beginEditing(editURL);
+                var editor = this.getBestEditorSupportingLocation(Firebug.currentContext, location);
+                if (editor)
+                {
+                    editor.beginEditing(Firebug.currentContext, location);
+                    return true;
+                }
+                else
+                {
+                    // TODO some help UI
+                    return false;
+                }
             }
             catch (exc)
             {
@@ -61,9 +106,122 @@ Firebug.Dyne = extend(Firebug.Module,
             }
         }
     },
-    // --------------------------------------------------------------------
+    // ********************************************************************************************
+    getBestEditorSupportingLocation: function(context, location)
+    {
+        var bestLevel = 0;
+        var bestEditor = null;
 
-    beginEditing: function(editURL)
+        var editors = Firebug.Dyne.editors; // array of registered editors
+        for (var i = 0; i < editors.length; ++i)
+        {
+            var editor = editors[i];
+            var level = editor.supportsLocation(location);
+            if (!bestLevel || (level && (level > bestLevel) ))
+            {
+                bestLevel = level;
+                bestEditor = editor;
+            }
+            if (FBTrace.DBG_EDITORS)
+                FBTrace.sysout("Firebug.Dyne.getBestEditorSupportingLocation level: "+level+" bestEditor: "+ bestEditor+" bestLevel: "+bestLevel);
+        }
+
+        return bestEditor;
+    },
+
+});
+
+Firebug.Dyne.Editors =
+{
+    // API
+    initialize: function()
+    {
+        // called after register
+    },
+
+    supportsLocation: function(context, location)
+    {
+        // return an integer. 0 means No. 1 means sure I guess. 100 means pick me pick me!
+    },
+
+    getName: function()
+    {
+        // return a string unique for this editor.
+    },
+
+    beginEditing: function(editor)
+    {
+
+    },
+
+    getEditURLByFileURL: function(url)
+    {
+        // url if this editor can deal with files else null
+    },
+
+    destory: function()
+    {
+       // called after unregister
+    },
+
+    // Common code
+    // --------------------------------------------------------------------
+    // Extracting edit URL
+    getEditURLbyURL: function(context, url)
+    {
+        if (url.substr(0,4) === "http")
+            return this.getEditURLbyWebURL(context, url);
+        else
+            return this.getEditURLNotHTTP(url);
+    },
+
+
+    getEditURLNotHTTP: function(context, url)
+    {
+        if (url.substr(0,5) !== "file:")
+        {
+            var uri = FBL.getLocalSystemURI(url);
+            FBTrace.sysout("getLocalSystemURI("+url+")="+uri);
+            if (uri)
+                url = uri.spec;
+        }
+
+        return this.getEditURLByFileURL(url);
+    },
+
+
+
+};
+
+Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
+{
+    initialize: function()
+    {
+        Firebug.Dyne.initializeOrionPrefs();
+    },
+
+    supportsLocation: function(context, location)
+    {
+        // return an integer. 0 means No. 1 means 'sure', 100 means 'pick me pick me!'
+    },
+
+    getName: function()
+    {
+        return "Orion";
+    },
+
+    beginEdit: function(context, location)
+    {
+        var editURL = Firebug.Dyne.getEditURLNotHTTP(context, location);
+
+    },
+
+    destroy: function()
+    {
+
+    },
+
+    open: function(editURL)
     {
         var orionWindow = Firebug.Dyne.Orion.window;
         if(!orionWindow || orionWindow.closed)
@@ -79,19 +237,9 @@ Firebug.Dyne = extend(Firebug.Module,
         }
         else
         {
-            FBTrace.sysout("beginEditing "+editURL);
-            orionWindow.gBrowser.selectedTab = orionWindow.gBrowser.addTab(editURL); 
+            FBTrace.sysout("beginWebEditing "+editURL);
+            orionWindow.gBrowser.selectedTab = orionWindow.gBrowser.addTab(editURL);
         }
-    },
-
-    // --------------------------------------------------------------------
-    // Extracting edit URL
-    getEditURLbyURL: function(context, url)
-    {
-        if (url.substr(0,4) === "http")
-            return Firebug.Dyne.getEditURLbyWebURL(context, url);
-        else
-            return Firebug.Dyne.getEditURLbyLocalFile(context, url);
     },
 
     /*
@@ -107,22 +255,9 @@ Firebug.Dyne = extend(Firebug.Module,
             href = href.split('#')[0]; // discard fragment
 
             if (href === url)
-                return Firebug.Dyne.getEditURLbyNetFile(files[i]);
+                return this.getEditURLbyNetFile(files[i]);
         }
-        throw Firebug.Dyne.noMatchingRequest(url);
-    },
-
-    getEditURLbyLocalFile: function(context, url)
-    {
-        if (url.substr(0,5) !== "file:")
-        {
-            var uri = FBL.getLocalSystemURI(url);
-            FBTrace.sysout("getLocalSystemURI("+url+")="+uri);
-            if (uri)
-                url = uri.spec;
-        }
-
-        return Firebug.Dyne.getOrionEditURLByFileURL(url);
+        throw this.noMatchingRequest(url);
     },
 
     getEditURLbyNetFile: function(file)
@@ -153,9 +288,9 @@ Firebug.Dyne = extend(Firebug.Module,
     noMatchingRequest: function(url)
     {
         var msg = "The Net panel has no request matching "; // NLS
-        return new Error(msg + url);
+        var err = new Error(msg + url);
+        err.kind = "noMatchingRequest";
     },
-
     // ********************************************************************************************
     initializeOrionPrefs: function()
     {
@@ -185,9 +320,10 @@ Firebug.Dyne = extend(Firebug.Module,
         return fileURL.replace(Firebug.Dyne.Orion.fileURLPrefix, Firebug.Dyne.Orion.projectURLPrefix);
     },
 
+
+
+
 });
-
-
 
 // ************************************************************************************************
 // ************************************************************************************************
