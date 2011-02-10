@@ -79,7 +79,7 @@ LinkInspectorPanel.prototype = extend(Firebug.Panel,
 
     supportsObject: function(object, type)
     {
-        if (type instanceof Element)
+        if (object instanceof Element)
         {
             if (object.tagName.toLowerCase() == "a")
                 return 1;
