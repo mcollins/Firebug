@@ -86,7 +86,7 @@ Firebug.Dyne = extend(Firebug.Module,
                 var editor = this.getBestEditorSupportingLocation(Firebug.currentContext, location);
                 if (editor)
                 {
-                    editor.beginEditing(Firebug.currentContext, location);
+                    editor.beginEditing(Firebug.currentContext, panel, location);
                     return true;
                 }
                 else
@@ -145,7 +145,7 @@ Firebug.Dyne.Editors =
         // return a string unique for this editor.
     },
 
-    beginEditing: function(context, location)
+    beginEditing: function(context, panel, location)
     {
 
     },
@@ -206,10 +206,13 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         return "Orion";
     },
 
-    beginEditing: function(context, location)
+    beginEditing: function(context, panel, location)
     {
         var editURL = this.getEditURLbyURL(context, location);
-        this.open(editURL);
+        if (this.openInNewWindow)
+            this.openInWindow(editURL);
+        else
+            this.openInPanel(panel, editURL);
     },
 
     destroy: function()
@@ -217,7 +220,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 
     },
 
-    open: function(editURL)
+    openInWindow: function(editURL)
     {
         var orionWindow = Firebug.Dyne.Orion.window;
         if(!orionWindow || orionWindow.closed)
@@ -238,6 +241,12 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         }
     },
 
+    openInPanel: function(panel, editURL)
+    {
+        var source = FBL.getResource(editURL);
+        this.inPanel(panel, source);
+    },
+
     /*
      * @param url starts with 'http'
      */
@@ -253,7 +262,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
             if (href === url)
                 return this.getEditURLbyNetFile(files[i]);
         }
-        throw this.noMatchingRequest(url);
+        return url; // no save
     },
 
     getEditURLbyNetFile: function(file)
@@ -317,6 +326,55 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 
         FBTrace.sysout("getOrionEditURLByFileURL "+fileURL, Firebug.Dyne.Orion)
         return fileURL.replace(Firebug.Dyne.Orion.fileURLPrefix, Firebug.Dyne.Orion.projectURLPrefix);
+    },
+
+    addEditor: function(panel)
+    {
+        var orionBox = panel.document.getElementById('orionEditor');
+        if (orionBox)
+            return orionBox;
+
+        // append script tag with eclipse source
+        if (this.useCompressed)
+        {
+            var src = FBL.getResource("http://download.eclipse.org/e4/orion/js/org.eclipse.orion.client.editor/orion-editor.js");
+            FBL.addScript(panel.document, 'orionEditorScript', src);
+        }
+        else
+        {
+            var editorFiles = ["editor.js", "model.js", "rulers.js", "styler.js",];
+            for (var i = 0; i < editorFiles.length; i++)
+            {
+                var url = "chrome://dyne/content/orion/"+editorFiles[i];
+                var src = FBL.getResource(url);
+                FBL.addScript(panel.document, 'oriontEditorScript_'+i, src);
+            }
+        }
+
+        // append div to contain lines
+        orionBox = panel.document.createElement("div");
+        FBL.setClass(orionBox, 'orionEditor');  // mark for orionInPanel to see
+        panel.panelNode.appendChild(orionBox);
+
+        // append script tag linking eclipse source to div with lines
+        src = FBL.getResource("chrome://dyne/content/orionInPanel.js");
+        FBL.addScript(panel.document, 'orionEditConnection', src);
+        return orionBox;
+    },
+
+    inPanel: function(panel, source)
+    {
+        var orionBox = this.addEditor(panel);
+        var win = panel.document.defaultView;
+        win.orion.editText = source; // see orionInPanel.js
+        this.dispatch('orionEdit', orionBox);
+    },
+
+    dispatch: function(eventName, elt)
+    {
+         var ev = elt.ownerDocument.createEvent("Events");
+         ev.initEvent(eventName, true, false);
+         elt.dispatchEvent(ev);
     },
 
 
