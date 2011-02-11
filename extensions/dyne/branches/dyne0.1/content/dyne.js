@@ -22,7 +22,7 @@ Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 Firebug.Dyne = extend(Firebug.Module,
 {
     dispatchName: "dyne",
-    editors: {},
+    editors: [],
 
     initialize: function()
     {
@@ -45,20 +45,14 @@ Firebug.Dyne = extend(Firebug.Module,
     // **********************************************************************************************
     registerEditor: function(editor)
     {
-        if (!editor.getName || !editor.initialize)
-            throw new Error("registerEditor: editor needs a getName");
-
-        this.editors[editor.getName()] = editor;
+        this.editors.push(editor);
         editor.initialize();
     },
 
     unregisterEditor: function(editor)
     {
-        if (!editor.getName)
-            throw new Error("registerEditor: editor needs a getName");
-
         editor.destory();
-        delete this.editors[editor.getName()];
+        FBL.remove(editors, editor);
     },
 
     // **********************************************************************************************
@@ -80,7 +74,9 @@ Firebug.Dyne = extend(Firebug.Module,
     {
         var panel = Firebug.chrome.getSelectedPanel();
         if (panel.dynamoEditing)
+        {
             FBTrace.sysout("Retry requested ");
+        }
         else
         {
             var location = Firebug.chrome.getSelectedPanelLocation();
@@ -144,12 +140,12 @@ Firebug.Dyne.Editors =
         // return an integer. 0 means No. 1 means sure I guess. 100 means pick me pick me!
     },
 
-    getName: function()
+    toString: function()
     {
         // return a string unique for this editor.
     },
 
-    beginEditing: function(editor)
+    beginEditing: function(context, location)
     {
 
     },
@@ -172,7 +168,7 @@ Firebug.Dyne.Editors =
         if (url.substr(0,4) === "http")
             return this.getEditURLbyWebURL(context, url);
         else
-            return this.getEditURLNotHTTP(url);
+            return this.getEditURLNotHTTP(context, url);
     },
 
 
@@ -197,7 +193,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 {
     initialize: function()
     {
-        Firebug.Dyne.initializeOrionPrefs();
+        Firebug.Dyne.OrionEditor.initializeOrionPrefs();
     },
 
     supportsLocation: function(context, location)
@@ -205,15 +201,15 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         // return an integer. 0 means No. 1 means 'sure', 100 means 'pick me pick me!'
     },
 
-    getName: function()
+    toString: function()
     {
         return "Orion";
     },
 
-    beginEdit: function(context, location)
+    beginEditing: function(context, location)
     {
-        var editURL = Firebug.Dyne.getEditURLNotHTTP(context, location);
-
+        var editURL = this.getEditURLbyURL(context, location);
+        this.open(editURL);
     },
 
     destroy: function()
@@ -276,13 +272,15 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         if (editURL)
             return editURL;
         else
-            throw Firebug.Dyne.noEditServerHeader(file);
+            throw this.noEditServerHeader(file);
     },
 
     noEditServerHeader: function(file)
     {
         var msg = "The web page has no x-edit-server header: "; // NLS
-        return new Error(msg + file.href);
+        var err = new Error(msg + file.href);
+        err.kind = "noEditServerHeader";
+        return err;
     },
 
     noMatchingRequest: function(url)
@@ -290,6 +288,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         var msg = "The Net panel has no request matching "; // NLS
         var err = new Error(msg + url);
         err.kind = "noMatchingRequest";
+        return err;
     },
     // ********************************************************************************************
     initializeOrionPrefs: function()
@@ -321,8 +320,6 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
     },
 
 
-
-
 });
 
 // ************************************************************************************************
@@ -333,6 +330,8 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 //Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 
 Firebug.registerModule(Firebug.Dyne);
+
+Firebug.Dyne.registerEditor(Firebug.Dyne.OrionEditor);
 
 // ************************************************************************************************
 }});

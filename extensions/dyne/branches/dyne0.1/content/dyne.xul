@@ -8,6 +8,8 @@
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleDyneEditing" oncommand="Firebug.Dyne.toggleEditing()"/>
+        <!-- takeover CSS editing, with fallback -->
+        <command id="cmd_toggleCSSEditing" oncommand="Firebug.Dyne.toggleCSSEditing()"/>
     </commandset>
 
     <toolbar id="fbToolbar">
@@ -25,3 +27,4 @@
     </toolbar>
 
 </overlay>
+
