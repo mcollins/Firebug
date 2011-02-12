@@ -5,7 +5,7 @@
                 listLen = titles.length, selectedLink, selectedLinkId = -1;
 			
             function createLinks() {
-                var i, frag, test, testLinkId,
+                var i, frag,
                     s = [],
                     linkFrag = '<a href="#" onclick="linkClicked(this);" id="[[i]]">Issue [[LINKTEXT]]</a><br />';
                 
@@ -15,13 +15,22 @@
                 }
                 
                 document.getElementById("linkDiv").innerHTML = s.join("");
-                
-                test = getParams("test");
+                selectTestFromParam();
+            }
+            
+            function selectTestFromParam() {
+                var test = getParams("test");
                 if (test) {
-                    testLinkId = titles.indexOf(parseInt(test, 10));
+                    var testLinkId = titles.indexOf(parseInt(test, 10));
                     
-                    if (typeof testLinkId === "number")
-                        simulateClick(testLinkId.toString());
+                    if (typeof testLinkId === "number") {
+                        var elt = document.getElementById(testLinkId.toString());
+                    
+                        if(elt) {
+                            elt.scrollIntoView();
+                            simulateClick(testLinkId.toString());
+                        }
+                    }
                 }
             }
             			
