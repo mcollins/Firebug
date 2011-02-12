@@ -208,11 +208,17 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 
     beginEditing: function(context, panel, location)
     {
-        var editURL = this.getEditURLbyURL(context, location);
-        if (this.openInNewWindow)
+        var saveURL = this.getEditURLbyURL(context, location);
+
+        var editURL = saveURL || location
+
+        FBTrace.sysout('dyne.beginEditing this.openInNewWindow: '+Firebug.Dyne.OrionEditor.openInNewWindow+" url "+editURL);
+        if (Firebug.Dyne.OrionEditor.openInNewWindow)
             this.openInWindow(editURL);
         else
-            this.openInPanel(panel, editURL);
+            this.openInPanel(panel, location);
+
+        // TODO if (saveURL) save
     },
 
     destroy: function()
@@ -222,10 +228,10 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 
     openInWindow: function(editURL)
     {
-        var orionWindow = Firebug.Dyne.Orion.window;
+        var orionWindow = this.orionWindow;
         if(!orionWindow || orionWindow.closed)
         {
-            orionWindow = Firebug.Dyne.Orion.window = FBL.openWindow("Orion", "chrome://browser/content/browser.xul");
+            orionWindow = this.orionWindow = FBL.openWindow("Orion", "chrome://browser/content/browser.xul");
             function openEditURL()
             {
                 FBTrace.sysout("openEditURL "+editURL);
@@ -262,7 +268,6 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
             if (href === url)
                 return this.getEditURLbyNetFile(files[i]);
         }
-        return url; // no save
     },
 
     getEditURLbyNetFile: function(file)
@@ -278,10 +283,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
                 token = headers[i].value;
         }
         var editURL = server + token;
-        if (editURL)
-            return editURL;
-        else
-            throw this.noEditServerHeader(file);
+        return editURL; // maybe null
     },
 
     noEditServerHeader: function(file)
@@ -302,35 +304,20 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
     // ********************************************************************************************
     initializeOrionPrefs: function()
     {
-        Firebug.Dyne.Orion = {};
-        Firebug.Dyne.Orion.fileURLPrefix = Firebug.getPref(Firebug.prefDomain, "orion.fileURLPrefix");
-        Firebug.Dyne.Orion.projectURLPrefix = Firebug.getPref(Firebug.prefDomain, "orion.projectURLPrefix");
-        FBTrace.sysout("Firebug.Dyne.Orion ", Firebug.Dyne.Orion);
+        Firebug.Dyne.OrionEditor.openInNewWindow = Firebug.getPref(Firebug.prefDomain, "orion.openInNewWindow");
+        FBTrace.sysout("Firebug.Dyne.OrionEditor ", Firebug.Dyne.OrionEditor);
     },
 
     updateOption: function(name, value)
     {
         FBTrace.sysout("updateOption "+name +" = "+value);
-        if (name === "orion.projectURLPrefix")
-            Firebug.Dyne.Orion.projectURLPrefix = value;
-        if (name === "orion.fileURLPrefix")
-            Firebug.Dyne.Orion.fileURLPrefix = value;
-    },
-
-    getOrionEditURLByFileURL: function(fileURL)
-    {
-        if (!Firebug.Dyne.Orion.fileURLPrefix)
-            throw new Error("No value set in about:config for extensions.firebug.orion.fileURLPrefix");
-        if (!Firebug.Dyne.Orion.projectURLPrefix)
-            throw new Error("No value set in about:config for extensions.firebug.orion.projectURLPrefix");
-
-        FBTrace.sysout("getOrionEditURLByFileURL "+fileURL, Firebug.Dyne.Orion)
-        return fileURL.replace(Firebug.Dyne.Orion.fileURLPrefix, Firebug.Dyne.Orion.projectURLPrefix);
+        if (name === "orion.openInNewWindow")
+            Firebug.Dyne.OrionEditor.openInNewWindow = value;
     },
 
     addEditor: function(panel)
     {
-        var orionBox = panel.document.getElementById('orionEditor');
+        var orionBox = panel.document.getElementsByClassName('orionEditor')[0];
         if (orionBox)
             return orionBox;
 
@@ -342,12 +329,14 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         }
         else
         {
-            var editorFiles = ["editor.js", "model.js", "rulers.js", "styler.js",];
+            var editorFiles = ["js/editor.js", "js/model.js", "samples/rulers.js", "samples/styler.js",];
             for (var i = 0; i < editorFiles.length; i++)
             {
-                var url = "chrome://dyne/content/orion/"+editorFiles[i];
+                var baseUrl = "http://localhost:8080/file/org.eclipse.orion.client.editor/web/";
+                // var baseUrl = "chrome://dyne/content/orion/"
+                var url = baseUrl + editorFiles[i];
                 var src = FBL.getResource(url);
-                FBL.addScript(panel.document, 'oriontEditorScript_'+i, src);
+                FBL.addScript(panel.document, 'orionEditorScript_'+i, src);
             }
         }
 
@@ -367,7 +356,9 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         var orionBox = this.addEditor(panel);
         var win = panel.document.defaultView;
         win.orion.editText = source; // see orionInPanel.js
+        win.FBTrace = FBTrace;
         this.dispatch('orionEdit', orionBox);
+        FBL.collapse(panel.selectedSourceBox, true);
     },
 
     dispatch: function(eventName, elt)

@@ -1,0 +1,48 @@
+<html>
+<head>
+<title>Dyne Architecture</title>
+<style>
+.arch {
+    text-align: center;
+    border-spacing: 5px;
+    font-family: sans-serif, arial;
+    font-variant: small-caps;
+}
+.arch td {
+    border-style: solid;
+    border-width: 2px;
+    font-size: 30px;
+    padding: 10px;
+    font-family: arial,sans-serif;
+}
+td.internet {
+   border-style: hidden;
+   padding: 0px;
+   font-size: 15px;
+}
+td.api {
+    font-size: 15px;
+    padding: 0px;
+}
+td.place {
+    border-style:hidden;
+    font-variant: normal;
+    color: gray;
+}
+</style>
+</head>
+<body>
+<table class="arch">
+<tbody>
+<tr><td colspan="4" style="padding: 20px; background-color:greenYellow">Target Web App</td><td rowspan='2' class="place" >Web Browser</td></tr>
+<tr><td style="border-style:hidden">&uarr;</td><td style="background-color: #FF9933;">Firebug</td><td style="border-style:hidden; font-style:oblique">Crossfire</td><td style="background-color: #CCCCFF">Orion Editor</td></tr>
+<tr><td colspan="4" class="internet">Internet</td></tr>
+<tr><td colspan="4" class="api">REST API</td><td class="place" rowspan="3">Cloud</td></tr>
+<tr><td colspan="4" style="background-color: #CCCCFF">Orion Server</td></tr>
+<tr><td colspan="4" style="background-color: #FFE9B7">git</td></tr>
+<tr><td colspan="4" class="internet">Internet</td></tr>
+</tbody>
+</table>
+</body>
+
+</html>
