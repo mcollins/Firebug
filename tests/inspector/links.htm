@@ -1,11 +1,11 @@
 <html>
     <head>
         <script>
-			var titles = [68, 123, 190, 200, 308, 699, 1168, 1345, 1800, 2188, 2273, 2373, 2574, 2804, 3101, 3861, 3900],
+			var titles = [68, 123, 190, 200, 308, 699, 1168, 1345, 1800, 2188, 2273, 2373, 2574, 2804, 3101, 3861, 3900, 4064],
                 listLen = titles.length, selectedLink, selectedLinkId = -1;
 			
             function createLinks() {
-                var i, frag,
+                var i, frag, test, testLinkId,
                     s = [],
                     linkFrag = '<a href="#" onclick="linkClicked(this);" id="[[i]]">Issue [[LINKTEXT]]</a><br />';
                 
@@ -15,6 +15,14 @@
                 }
                 
                 document.getElementById("linkDiv").innerHTML = s.join("");
+                
+                test = getParams("test");
+                if (test) {
+                    testLinkId = titles.indexOf(parseInt(test, 10));
+                    
+                    if (typeof testLinkId === "number")
+                        simulateClick(testLinkId.toString());
+                }
             }
             			
 			function getNext(){
@@ -47,6 +55,30 @@
                 }
 				
             }
+            
+            function getParams(name)
+            {
+                name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+                
+                var regexS = "[\\?&]" + name + "=([^&#]*)";
+                var regex = new RegExp( regexS );
+                var results = regex.exec(top.location.href);
+                
+                if (results == null)
+                    return "";
+                else
+                    return results[1];
+            }
+            
+            function simulateClick(eltId) {
+                var evt = document.createEvent("MouseEvents");
+                evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                var elt = document.getElementById(eltId);
+
+                if(elt)
+                    elt.dispatchEvent(evt);
+            }
+
         </script>
     </head>
     <body onload="createLinks();">
