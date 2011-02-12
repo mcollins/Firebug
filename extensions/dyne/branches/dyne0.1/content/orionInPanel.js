@@ -24,15 +24,12 @@ try
             // use javascript styler for now, there is no html/xml syntax highlighting yet
             orion.styler = new eclipse.TextStyler(orion.editor, "js");
             // add a ruler with line numbers to the left side
-           // orion.lines = new eclipse.LineNumberRuler("left", {styleClass: "ruler_lines"}, {styleClass: "ruler_lines_odd"}, {styleClass: "ruler_lines_even"});
+            orion.lines = new eclipse.LineNumberRuler("left", {styleClass: "ruler_lines"}, {styleClass: "ruler_lines_odd"}, {styleClass: "ruler_lines_even"});
 
-          //  orion.editor.addRuler(orion.lines);
+            orion.editor.addRuler(orion.lines);
 
             var text = orion.editText;  // set by firebug
             orion.editor.setText(text);
-            //fix the height of the containing div
-            orion.parent.style.height = (orion.editor.getLineHeight() * (orion.editor.getModel().getLineCount() + 1)) + 2 + 'px';
-
             window.FBTrace.sysout("orion.editor.setText ", orion.editor);
         }
         catch(exc)

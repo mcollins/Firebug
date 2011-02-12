@@ -354,6 +354,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
     inPanel: function(panel, source)
     {
         var orionBox = this.addEditor(panel);
+        orionBox.style.height = panel.panelNode.clientHeight +"px"
         var win = panel.document.defaultView;
         win.orion.editText = source; // see orionInPanel.js
         win.FBTrace = FBTrace;
