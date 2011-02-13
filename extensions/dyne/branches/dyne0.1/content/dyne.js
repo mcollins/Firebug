@@ -252,6 +252,7 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
     {
         var source = FBL.getResource(editURL);
         var editorPanel = Firebug.chrome.selectPanel("editor");
+        editorPanel.location = editURL;
         this.inPanel(editorPanel, source);
     },
 
@@ -409,9 +410,19 @@ Firebug.Dyne.EditorPanel.prototype = extend(Firebug.Panel,
     {
     },
 
+    //*******************************************************************************************************
+    getLocationList: function()
+    {
+        return [this.location];
+    },
+
+
+    //*******************************************************************************************************
     show: function(state)
     {
         this.showToolbarButtons("fbEditorButtons", true);
+        this.showToolbarButtons("fbLocationSeparator", true);
+        this.showToolbarButtons("fbLocationButtons", true);
 
         //this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
 
@@ -420,6 +431,10 @@ Firebug.Dyne.EditorPanel.prototype = extend(Firebug.Panel,
 
     hide: function()
     {
+        this.showToolbarButtons("fbEditorButtons", false);
+        this.showToolbarButtons("fbLocationSeparator", false);
+        this.showToolbarButtons("fbLocationButtons", false);
+
         delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
         this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
     },

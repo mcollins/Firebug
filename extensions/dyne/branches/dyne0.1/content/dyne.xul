@@ -23,7 +23,7 @@
                     >
                 </toolbarbutton>
             </hbox>
-            <hbox id="fbEditorButtons">
+            <hbox id="fbEditorButtons" insertbefore="fbLocationButtons">
                 <toolbarbutton id="fbToggleDyneSaveClear" collapsed="false"
                     label="No Changes"
                     class="toolbar-text-button fbInternational"
