@@ -47,12 +47,10 @@ Firebug.Dyne = extend(Firebug.Module,
     registerEditor: function(editor)
     {
         this.editors.push(editor);
-        editor.initialize();
     },
 
     unregisterEditor: function(editor)
     {
-        editor.destroy();
         FBL.remove(editors, editor);
     },
 
@@ -81,150 +79,80 @@ Firebug.Dyne = extend(Firebug.Module,
         else
         {
             var location = Firebug.chrome.getSelectedPanelLocation();
+            var link = new Firebug.EditLink(panel.context, location, panel);
+            Firebug.chrome.select(link);
             FBTrace.sysout("Edit requested "+location);
-            try
-            {
-                var editor = this.getBestEditorSupportingLocation(Firebug.currentContext, location);
-                if (editor)
-                {
-                    editor.beginEditing(Firebug.currentContext, panel, location);
-                    return true;
-                }
-                else
-                {
-                    // TODO some help UI
-                    return false;
-                }
-            }
-            catch (exc)
-            {
-                Firebug.Console.logFormatted([exc+"", exc], panel.context, "error");
-                Firebug.chrome.selectPanel("console");
-            }
         }
-    },
-    // ********************************************************************************************
-    getBestEditorSupportingLocation: function(context, location)
-    {
-        var bestLevel = 0;
-        var bestEditor = null;
-
-        var editors = Firebug.Dyne.editors; // array of registered editors
-        for (var i = 0; i < editors.length; ++i)
-        {
-            var editor = editors[i];
-            var level = editor.supportsLocation(location);
-            if (!bestLevel || (level && (level > bestLevel) ))
-            {
-                bestLevel = level;
-                bestEditor = editor;
-            }
-            if (FBTrace.DBG_EDITORS)
-                FBTrace.sysout("Firebug.Dyne.getBestEditorSupportingLocation level: "+level+" bestEditor: "+ bestEditor+" bestLevel: "+bestLevel);
-        }
-
-        return bestEditor;
     },
 
 });
 
-Firebug.Dyne.Editors =
+Firebug.EditLink = function EditLink(context, location, panel)
 {
-    // API
-    initialize: function()
+    this.context = context;
+    this.originLocation = location;
+    this.originPanel = panel; // may be null
+}
+
+Firebug.Dyne.OrionPanel = function dynePanel() {};
+
+Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
+{
+    name: "orion",
+    title: "Orion",
+    searchable: false, // TODO
+    breakable: false,
+    enableA11y: false, // TODO
+    order: 70,
+
+    initialize: function(context, doc)
     {
-        // called after register
+        this.location = null;
+        this.initializeOrionPrefs();
+        Firebug.Panel.initialize.apply(this, arguments);
     },
 
-    supportsLocation: function(context, location)
+    initializeNode: function(oldPanelNode)
     {
-        // return an integer. 0 means No. 1 means sure I guess. 100 means pick me pick me!
+        this.onResizer = bind(this.onResize, this);
+        this.resizeEventTarget = Firebug.chrome.$('fbContentBox');
+        this.resizeEventTarget.addEventListener("resize", this.onResizer, true);
+
+        Firebug.Panel.initializeNode.apply(this, arguments);
     },
 
-    toString: function()
+    destroyNode: function()
     {
-        // return a string unique for this editor.
+        this.resizeEventTarget.removeEventListener("resize", this.onResizer, true);
+
+        Firebug.Panel.destroyNode.apply(this, arguments);
     },
 
-    beginEditing: function(context, panel, location)
+    onResize: function()
     {
-
     },
 
-    getEditURLByFileURL: function(url)
+    //*******************************************************************************************************
+    supportsObject: function(object, type)
     {
-        // url if this editor can deal with files else null
+        return (object instanceof Firebug.EditLink) ? 10 : false;  // TODO examine location to see if it is Orion
     },
 
-    destroy: function()
+    updateSelection: function(editLink)
     {
-       // called after unregister
-    },
-
-    // Common code
-    // --------------------------------------------------------------------
-    // Extracting edit URL
-    getEditURLbyURL: function(context, url)
-    {
-        if (url.substr(0,4) === "http")
-            return this.getEditURLbyWebURL(context, url);
-        else
-            return this.getEditURLNotHTTP(context, url);
-    },
-
-
-    getEditURLNotHTTP: function(context, url)
-    {
-        if (url.substr(0,5) !== "file:")
+        if (Firebug.Dyne.OrionPanel.openInNewWindow)
         {
-            var uri = FBL.getLocalSystemURI(url);
-            FBTrace.sysout("getLocalSystemURI("+url+")="+uri);
-            if (uri)
-                url = uri.spec;
+            var saveURL = this.getEditURLbyURL(editLink.context, editLink.originLocation);
+            if (saveURL)
+                this.openInWindow(editLink);
+            else
+                Firebug.Console.logFormatted(["No editing url for "+editLink.originLocation, editLink]);
         }
-
-        return this.getEditURLByFileURL(url);
-    },
-
-
-
-};
-
-Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
-{
-    initialize: function()
-    {
-        Firebug.Dyne.OrionEditor.initializeOrionPrefs();
-    },
-
-    supportsLocation: function(context, location)
-    {
-        // return an integer. 0 means No. 1 means 'sure', 100 means 'pick me pick me!'
-    },
-
-    toString: function()
-    {
-        return "Orion";
-    },
-
-    beginEditing: function(context, panel, location)
-    {
-        var saveURL = this.getEditURLbyURL(context, location);
-
-        var editURL = saveURL || location
-
-        FBTrace.sysout('dyne.beginEditing this.openInNewWindow: '+Firebug.Dyne.OrionEditor.openInNewWindow+" url "+editURL);
-        if (Firebug.Dyne.OrionEditor.openInNewWindow)
-            this.openInWindow(editURL);
         else
-            this.openInPanel(panel, location);
-
-        // TODO if (saveURL) save
-    },
-
-    destroy: function()
-    {
-
+        {
+            // Assume the server supports PUT
+            this.navigate(editLink.originLocation);
+        }
     },
 
     openInWindow: function(editURL)
@@ -248,12 +176,129 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         }
     },
 
+    // location is something we can PUT to
+    updateLocation: function(editURL)
+    {
+        if (!editURL)
+            return;
+
+        this.editInPanel();
+    },
+
+    editInPanel: function ()
+    {
+        var orionBox = this.addEditor();
+
+        var win = this.document.defaultView;
+        var source = FBL.getResource(this.location);
+        win.orion.editText = source; // see orionInPanel.js
+        win.FBTrace = FBTrace;
+        this.dispatch('orionEdit', orionBox);
+    },
+
+    addEditor: function()
+    {
+        var orionBox = this.document.getElementsByClassName('orionEditor')[0];
+        if (orionBox)
+            return orionBox;
+
+        // append script tag with eclipse source
+        if (this.useCompressed)
+        {
+            var src = FBL.getResource("http://download.eclipse.org/e4/orion/js/org.eclipse.orion.client.editor/orion-editor.js");
+            FBL.addScript(this.document, 'orionEditorScript', src);
+        }
+        else
+        {
+            var editorFiles = ["js/editor.js", "js/model.js", "samples/rulers.js", "samples/styler.js",];
+            for (var i = 0; i < editorFiles.length; i++)
+            {
+                var baseUrl = "http://localhost:8080/file/org.eclipse.orion.client.editor/web/";
+                // var baseUrl = "chrome://dyne/content/orion/"
+                var url = baseUrl + editorFiles[i];
+                var src = FBL.getResource(url);
+                FBL.addScript(this.document, 'orionEditorScript_'+i, src);
+            }
+        }
+
+        // append div to contain lines
+        orionBox = this.panelNode;
+        FBL.setClass(orionBox, 'orionEditor');  // mark for orionInPanel to see
+
+        // append script tag linking eclipse source to div with lines
+        src = FBL.getResource("chrome://dyne/content/orionInPanel.js");
+        FBL.addScript(this.document, 'orionEditorCode', src);
+
+        return orionBox;
+    },
+
+    dispatch: function(eventName, elt)
+    {
+         var ev = elt.ownerDocument.createEvent("Events");
+         ev.initEvent(eventName, true, false);
+         elt.dispatchEvent(ev);
+    },
+
+
+    getLocationList: function()
+    {
+        return [this.location];
+    },
+
+
+    //*******************************************************************************************************
+    show: function(state)
+    {
+        this.showToolbarButtons("fbEditorButtons", true);
+        this.showToolbarButtons("fbLocationSeparator", true);
+        this.showToolbarButtons("fbLocationButtons", true);
+
+        //this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
+
+        // restore state
+    },
+
+    hide: function()
+    {
+        this.showToolbarButtons("fbEditorButtons", false);
+        this.showToolbarButtons("fbLocationSeparator", false);
+        this.showToolbarButtons("fbLocationButtons", false);
+
+        delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
+        this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
+    },
+
+
+    //*******************************************************************************************************
+
+    getEditURLbyURL: function(context, url)
+    {
+        if (url.substr(0,4) === "http")
+            return this.getEditURLbyWebURL(context, url);
+        else
+            return this.getEditURLNotHTTP(context, url);
+    },
+
+
+    getEditURLNotHTTP: function(context, url)
+    {
+        if (url.substr(0,5) !== "file:")
+        {
+            var uri = FBL.getLocalSystemURI(url);
+            FBTrace.sysout("getLocalSystemURI("+url+")="+uri);
+            if (uri)
+                url = uri.spec;
+        }
+
+        return this.getEditURLByFileURL(url);
+    },
+
+
     openInPanel: function(panel, editURL)
     {
-        var source = FBL.getResource(editURL);
-        var editorPanel = Firebug.chrome.selectPanel("editor");
-        editorPanel.location = editURL;
-        this.inPanel(editorPanel, source);
+        var editorPanel = panel.context.getPanel("orion");
+        editorPanel.navigate(editURL);
+
     },
 
     /*
@@ -307,138 +352,16 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
     // ********************************************************************************************
     initializeOrionPrefs: function()
     {
-        Firebug.Dyne.OrionEditor.openInNewWindow = Firebug.getPref(Firebug.prefDomain, "orion.openInNewWindow");
-        FBTrace.sysout("Firebug.Dyne.OrionEditor ", Firebug.Dyne.OrionEditor);
+        Firebug.Dyne.OrionPanel.openInNewWindow = Firebug.getPref(Firebug.prefDomain, "orion.openInNewWindow");
+        FBTrace.sysout("Firebug.Dyne.OrionPanel ", Firebug.Dyne.OrionPanel);
     },
 
     updateOption: function(name, value)
     {
         FBTrace.sysout("updateOption "+name +" = "+value);
         if (name === "orion.openInNewWindow")
-            Firebug.Dyne.OrionEditor.openInNewWindow = value;
+            Firebug.Dyne.OrionPanel.openInNewWindow = value;
     },
-
-    addEditor: function(panel)
-    {
-        var orionBox = panel.document.getElementsByClassName('orionEditor')[0];
-        if (orionBox)
-            return orionBox;
-
-        // append script tag with eclipse source
-        if (this.useCompressed)
-        {
-            var src = FBL.getResource("http://download.eclipse.org/e4/orion/js/org.eclipse.orion.client.editor/orion-editor.js");
-            FBL.addScript(panel.document, 'orionEditorScript', src);
-        }
-        else
-        {
-            var editorFiles = ["js/editor.js", "js/model.js", "samples/rulers.js", "samples/styler.js",];
-            for (var i = 0; i < editorFiles.length; i++)
-            {
-                var baseUrl = "http://localhost:8080/file/org.eclipse.orion.client.editor/web/";
-                // var baseUrl = "chrome://dyne/content/orion/"
-                var url = baseUrl + editorFiles[i];
-                var src = FBL.getResource(url);
-                FBL.addScript(panel.document, 'orionEditorScript_'+i, src);
-            }
-        }
-
-        // append div to contain lines
-        orionBox = panel.panelNode;
-        FBL.setClass(orionBox, 'orionEditor');  // mark for orionInPanel to see
-
-        // append script tag linking eclipse source to div with lines
-        src = FBL.getResource("chrome://dyne/content/orionInPanel.js");
-        FBL.addScript(panel.document, 'orionEditorCode', src);
-
-        return orionBox;
-    },
-
-    inPanel: function(editorPanel, source)
-    {
-        var orionBox = this.addEditor(editorPanel);
-        var win = editorPanel.document.defaultView;
-        win.orion.editText = source; // see orionInPanel.js
-        win.FBTrace = FBTrace;
-        this.dispatch('orionEdit', orionBox);
-    },
-
-    dispatch: function(eventName, elt)
-    {
-         var ev = elt.ownerDocument.createEvent("Events");
-         ev.initEvent(eventName, true, false);
-         elt.dispatchEvent(ev);
-    },
-
-
-});
-
-Firebug.Dyne.EditorPanel = function dynePanel() {};
-
-Firebug.Dyne.EditorPanel.prototype = extend(Firebug.Panel,
-{
-    name: "editor",
-    title: "Orion",
-    searchable: false, // TODO
-    breakable: false,
-    enableA11y: false, // TODO
-    order: 70,
-
-    initialize: function(context, doc)
-    {
-        this.location = null;
-        Firebug.Panel.initialize.apply(this, arguments);
-    },
-
-    initializeNode: function(oldPanelNode)
-    {
-        this.onResizer = bind(this.onResize, this);
-        this.resizeEventTarget = Firebug.chrome.$('fbContentBox');
-        this.resizeEventTarget.addEventListener("resize", this.onResizer, true);
-
-        Firebug.Panel.initializeNode.apply(this, arguments);
-    },
-
-    destroyNode: function()
-    {
-        this.resizeEventTarget.removeEventListener("resize", this.onResizer, true);
-
-        Firebug.Panel.destroyNode.apply(this, arguments);
-    },
-
-    onResize: function()
-    {
-    },
-
-    //*******************************************************************************************************
-    getLocationList: function()
-    {
-        return [this.location];
-    },
-
-
-    //*******************************************************************************************************
-    show: function(state)
-    {
-        this.showToolbarButtons("fbEditorButtons", true);
-        this.showToolbarButtons("fbLocationSeparator", true);
-        this.showToolbarButtons("fbLocationButtons", true);
-
-        //this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
-
-        // restore state
-    },
-
-    hide: function()
-    {
-        this.showToolbarButtons("fbEditorButtons", false);
-        this.showToolbarButtons("fbLocationSeparator", false);
-        this.showToolbarButtons("fbLocationButtons", false);
-
-        delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
-        this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
-    },
-
 
 
 });
@@ -451,9 +374,9 @@ Firebug.Dyne.EditorPanel.prototype = extend(Firebug.Panel,
 Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 
 Firebug.registerModule(Firebug.Dyne);
-Firebug.registerPanel(Firebug.Dyne.EditorPanel);
+Firebug.registerPanel(Firebug.Dyne.OrionPanel);
 
-Firebug.Dyne.registerEditor(Firebug.Dyne.OrionEditor);
+Firebug.Dyne.registerEditor(Firebug.Dyne.OrionPanel);
 
 // ************************************************************************************************
 }});
