@@ -10,6 +10,7 @@
         <command id="cmd_toggleDyneEditing" oncommand="Firebug.Dyne.toggleEditing()"/>
         <!-- takeover CSS editing, with fallback -->
         <command id="cmd_toggleCSSEditing" oncommand="Firebug.Dyne.toggleCSSEditing()"/>
+        <command id="cmd_saveDyneEditing" oncommand="Firebug.Dyne.saveEditing()"/>
     </commandset>
 
     <toolbar id="fbToolbar">
@@ -25,10 +26,10 @@
             </hbox>
             <hbox id="fbEditorButtons" insertbefore="fbLocationButtons">
                 <toolbarbutton id="fbToggleDyneSaveClear" collapsed="false"
-                    label="No Changes"
+                    label="Save"
                     class="toolbar-text-button fbInternational"
                     tooltiptext="Edit this source"
-                    command="cmd_toggleDyneEditing"
+                    command="cmd_saveDyneEditing"
                     >
                 </toolbarbutton>
             </hbox>

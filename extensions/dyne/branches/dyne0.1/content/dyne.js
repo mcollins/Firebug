@@ -54,6 +54,11 @@ Firebug.Dyne = extend(Firebug.Module,
         FBL.remove(editors, editor);
     },
 
+    noActiveEditor: function()
+    {
+        Firebug.Console.logFormatted(["No active editor for save operation"]);
+        Firebug.chrome.selectPanel('console');
+    },
     // **********************************************************************************************
 
     toggleCSSEditing: function()
@@ -187,13 +192,15 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     editInPanel: function ()
     {
-        var orionBox = this.addEditor();
+        this.orion = this.addEditor();  // an object in the panel window scope
 
-        var win = this.document.defaultView;
+        this.setSaveAvailable(false);
+
         var source = FBL.getResource(this.location);
-        win.orion.editText = source; // see orionInPanel.js
-        win.FBTrace = FBTrace;
-        this.dispatch('orionEdit', orionBox);
+        this.orion.editText = source; // see orionInPanel.js
+        this.dispatch('orionEdit', this.orion.box);
+
+        this.onOrionReady(); // TODO async event
     },
 
     addEditor: function()
@@ -229,7 +236,11 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         src = FBL.getResource("chrome://dyne/content/orionInPanel.js");
         FBL.addScript(this.document, 'orionEditorCode', src);
 
-        return orionBox;
+        var win = this.document.defaultView;
+        win.FBTrace = FBTrace;
+        win.orion.box = orionBox;
+
+        return win.orion;
     },
 
     dispatch: function(eventName, elt)
@@ -239,6 +250,28 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
          elt.dispatchEvent(ev);
     },
 
+    onOrionReady: function(event)
+    {
+        var model = this.orion.editor.getModel();
+        model.addListener(this);
+    },
+
+    // eclipse.TextModel listener
+    onChanged: function()
+    {
+        FBTrace.sysout("dyne eclipse.TextModel onchanged "+this);
+        this.setSaveAvailable(true);
+    },
+
+    setSaveAvailable: function(isAvailable)
+    {
+        $('fbToggleDyneSaveClear').disabled = !isAvailable;
+    },
+
+    saveEditing: function()
+    {
+        FBTrace.sysout("saveEditing "+this.location); // TODO need PUT
+    },
 
     getLocationList: function()
     {
@@ -253,6 +286,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.showToolbarButtons("fbLocationSeparator", true);
         this.showToolbarButtons("fbLocationButtons", true);
 
+        Firebug.Dyne.saveEditing = bind(this.saveEditing, this);;
+
         //this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
 
         // restore state
@@ -263,6 +298,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.showToolbarButtons("fbEditorButtons", false);
         this.showToolbarButtons("fbLocationSeparator", false);
         this.showToolbarButtons("fbLocationButtons", false);
+
+        Firebug.Dyne.saveEditing = Firebug.Dyne.noActiveEditor;
 
         delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
         this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
