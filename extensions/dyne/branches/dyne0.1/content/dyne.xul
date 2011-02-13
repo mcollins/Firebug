@@ -23,7 +23,17 @@
                     >
                 </toolbarbutton>
             </hbox>
+            <hbox id="fbEditorButtons">
+                <toolbarbutton id="fbToggleDyneSaveClear" collapsed="false"
+                    label="No Changes"
+                    class="toolbar-text-button fbInternational"
+                    tooltiptext="Edit this source"
+                    command="cmd_toggleDyneEditing"
+                    >
+                </toolbarbutton>
+            </hbox>
         </hbox>
+
     </toolbar>
 
 </overlay>

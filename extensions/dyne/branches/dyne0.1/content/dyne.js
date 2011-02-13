@@ -19,6 +19,7 @@ Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 // ************************************************************************************************
 // Front end
 
+// Deals with global UI sync
 Firebug.Dyne = extend(Firebug.Module,
 {
     dispatchName: "dyne",
@@ -51,7 +52,7 @@ Firebug.Dyne = extend(Firebug.Module,
 
     unregisterEditor: function(editor)
     {
-        editor.destory();
+        editor.destroy();
         FBL.remove(editors, editor);
     },
 
@@ -155,7 +156,7 @@ Firebug.Dyne.Editors =
         // url if this editor can deal with files else null
     },
 
-    destory: function()
+    destroy: function()
     {
        // called after unregister
     },
@@ -250,7 +251,8 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
     openInPanel: function(panel, editURL)
     {
         var source = FBL.getResource(editURL);
-        this.inPanel(panel, source);
+        var editorPanel = Firebug.chrome.selectPanel("editor");
+        this.inPanel(editorPanel, source);
     },
 
     /*
@@ -341,25 +343,23 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
         }
 
         // append div to contain lines
-        orionBox = panel.document.createElement("div");
+        orionBox = panel.panelNode;
         FBL.setClass(orionBox, 'orionEditor');  // mark for orionInPanel to see
-        panel.panelNode.appendChild(orionBox);
 
         // append script tag linking eclipse source to div with lines
         src = FBL.getResource("chrome://dyne/content/orionInPanel.js");
-        FBL.addScript(panel.document, 'orionEditConnection', src);
+        FBL.addScript(panel.document, 'orionEditorCode', src);
+
         return orionBox;
     },
 
-    inPanel: function(panel, source)
+    inPanel: function(editorPanel, source)
     {
-        var orionBox = this.addEditor(panel);
-        orionBox.style.height = panel.panelNode.clientHeight +"px"
-        var win = panel.document.defaultView;
+        var orionBox = this.addEditor(editorPanel);
+        var win = editorPanel.document.defaultView;
         win.orion.editText = source; // see orionInPanel.js
         win.FBTrace = FBTrace;
         this.dispatch('orionEdit', orionBox);
-        FBL.collapse(panel.selectedSourceBox, true);
     },
 
     dispatch: function(eventName, elt)
@@ -372,14 +372,71 @@ Firebug.Dyne.OrionEditor = FBL.extend(Firebug.Dyne.Editors,
 
 });
 
+Firebug.Dyne.EditorPanel = function dynePanel() {};
+
+Firebug.Dyne.EditorPanel.prototype = extend(Firebug.Panel,
+{
+    name: "editor",
+    title: "Orion",
+    searchable: false, // TODO
+    breakable: false,
+    enableA11y: false, // TODO
+    order: 70,
+
+    initialize: function(context, doc)
+    {
+        this.location = null;
+        Firebug.Panel.initialize.apply(this, arguments);
+    },
+
+    initializeNode: function(oldPanelNode)
+    {
+        this.onResizer = bind(this.onResize, this);
+        this.resizeEventTarget = Firebug.chrome.$('fbContentBox');
+        this.resizeEventTarget.addEventListener("resize", this.onResizer, true);
+
+        Firebug.Panel.initializeNode.apply(this, arguments);
+    },
+
+    destroyNode: function()
+    {
+        this.resizeEventTarget.removeEventListener("resize", this.onResizer, true);
+
+        Firebug.Panel.destroyNode.apply(this, arguments);
+    },
+
+    onResize: function()
+    {
+    },
+
+    show: function(state)
+    {
+        this.showToolbarButtons("fbEditorButtons", true);
+
+        //this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
+
+        // restore state
+    },
+
+    hide: function()
+    {
+        delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
+        this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
+    },
+
+
+
+});
+
 // ************************************************************************************************
 // ************************************************************************************************
 // Registration
 
 // xxxHonza: what if the stylesheet registration would be as follows:
-//Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
+Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 
 Firebug.registerModule(Firebug.Dyne);
+Firebug.registerPanel(Firebug.Dyne.EditorPanel);
 
 Firebug.Dyne.registerEditor(Firebug.Dyne.OrionEditor);
 
