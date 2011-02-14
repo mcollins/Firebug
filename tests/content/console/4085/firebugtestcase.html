@@ -12,8 +12,8 @@ silently </p>
 
     <script type="text/javascript">
         window.onerror = function(msg, url, lno) {
-            window.onerror = function() {return false;};
-            alert("There's an error: " + msg);
+            if (window.console)
+                console.log("window.onerror got called with "+msg);
             return false;
         }
 
