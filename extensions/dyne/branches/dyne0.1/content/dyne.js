@@ -87,6 +87,7 @@ Firebug.Dyne = extend(Firebug.Module,
             var link = new Firebug.EditLink(panel.context, location, panel);
             Firebug.chrome.select(link);
             FBTrace.sysout("Edit requested "+location);
+            return true;
         }
     },
 
@@ -465,7 +466,6 @@ Firebug.Dyne.Saver.prototype =
 // ************************************************************************************************
 // Registration
 
-// xxxHonza: what if the stylesheet registration would be as follows:
 Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 
 Firebug.registerModule(Firebug.Dyne);
