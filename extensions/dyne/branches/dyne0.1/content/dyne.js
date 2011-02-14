@@ -250,9 +250,14 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
          elt.dispatchEvent(ev);
     },
 
+    getModel: function()
+    {
+        return this.orion.editor.getModel();
+    },
+
     onOrionReady: function(event)
     {
-        var model = this.orion.editor.getModel();
+        var model = this.getModel();
         model.addListener(this);
     },
 
@@ -271,6 +276,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     saveEditing: function()
     {
         FBTrace.sysout("saveEditing "+this.location); // TODO need PUT
+        var saver = new Firebug.Dyne.Saver();
+        var src = this.getModel().getText();
+        saver.save(this.location, src);
     },
 
     getLocationList: function()
@@ -400,8 +408,58 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             Firebug.Dyne.OrionPanel.openInNewWindow = value;
     },
 
-
 });
+
+Firebug.Dyne.Saver = function dyneSaver(onSaveSuccess)
+{
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function(event)
+    {
+        FBTrace.sysout("Saver onreadystatechange "+request.readyState, event);
+        if (request.readyState === 4)
+        {
+            if (request.status === 200)
+            {
+                // onSaveSuccess();
+            }
+        }
+    }
+    request.addEventListener("progress", function updateProgress(event)
+    {
+        if (event.lengthComputable)
+        {
+            var percentComplete = event.loaded / event.total;
+            FBTrace.sysout("Save progress "+percentComplete, event);
+        }
+
+    }, false);
+
+    request.addEventListener("load", function transferComplete(event)
+    {
+        FBTrace.sysout("Save load", event);
+    }, false);
+
+    request.addEventListener("error", function transferFailed(event)
+    {
+        FBTrace.sysout("Save error", event);
+    }, false);
+
+    request.addEventListener("abort", function transferCanceled(event)
+    {
+        FBTrace.sysout("Save abort", event);
+    }, false);
+
+    this.request = request;
+}
+
+Firebug.Dyne.Saver.prototype =
+{
+    save: function(url, src)
+    {
+        this.request.open("PUT", url, true);
+        this.request.send(src);
+    }
+}
 
 // ************************************************************************************************
 // ************************************************************************************************
