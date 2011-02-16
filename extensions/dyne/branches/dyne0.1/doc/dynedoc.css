@@ -14,15 +14,18 @@
     padding: 10px;
     font-family: arial,sans-serif;
 }
+
 td.internet {
    border-style: hidden;
    padding: 0px;
    font-size: 15px;
 }
+
 td.api {
     font-size: 15px;
     padding: 0px;
 }
+
 td.place {
     border-style:hidden;
     font-variant: normal;

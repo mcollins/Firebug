@@ -1,1 +1,1 @@
-pref("extensions.firebug.orion.openInNewWindow", true);
+pref("extensions.firebug.orion.openInNewWindow", false);

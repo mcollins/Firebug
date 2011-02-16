@@ -148,8 +148,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     {
         if (Firebug.Dyne.OrionPanel.openInNewWindow)
         {
-            var saveURL = this.getEditURLbyURL(editLink.context, editLink.originLocation);
-            if (saveURL)
+            editLink.saveURL = this.getEditURLbyURL(editLink.context, editLink.originLocation);
+            if (editLink.saveURL)
                 this.openInWindow(editLink);
             else
                 Firebug.Console.logFormatted(["No editing url for "+editLink.originLocation, editLink]);
@@ -161,8 +161,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         }
     },
 
-    openInWindow: function(editURL)
+    openInWindow: function(editLink)
     {
+        var editURL = editLink.saveURL;
         var orionWindow = this.orionWindow;
         if(!orionWindow || orionWindow.closed)
         {
@@ -174,6 +175,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
                 orionWindow.removeEventListener("load", openEditURL, false);
             }
             orionWindow.addEventListener("load", openEditURL, false);
+            Firebug.chrome.selectPanel(editLink.originPanel.name);
         }
         else
         {
