@@ -61,6 +61,14 @@
         width: 60px;
         height: 60px;
       }
+
+      #warning {
+          position: absolute;
+          left: 10px;
+          top: 350px;
+          font-weight: bold;
+          font-size: 150%;
+      }
     </style>
     <script type="text/javascript">
       <!--
@@ -82,6 +90,11 @@
         <div>
         </div>
       </div>
+    </div>
+    <div id="warning">
+        Note that the box model of a transformed element is the same as the box model as if it was not transformed.
+        <br /><br />
+        IMPORTANT: The inspection of the children of the Rotated sub-nodes div is expected to fail as Firefox currently provides no way to get the coordinate information (we will use element.getQuads() when it is implemented).
     </div>
   </body>
 </html>

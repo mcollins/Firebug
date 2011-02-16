@@ -5,12 +5,6 @@
     <title>Issue 3101: Unable to select and inspect elements obscured by blue rectangles</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style type="text/css">
-      body {
-        background: #ffffff;
-        font: small arial, sans-serif;
-        margin: 5px auto;
-        width: 815px;
-      }
       div {
         min-width: 250px;
         max-width: 300px;
@@ -57,17 +51,13 @@
     </style>
   </head>
   <body>
-    <h1>Issue 3101: Unable to select and inspect elements obscured by blue rectangles</h1>
+    <h1>Issue 3101: Issues with max-width and max-height</h1>
     <div id="content">
-      <div></div>
       <ol>
         <li>Click on the Inspect button</li>
-        <li>Hover this DIV</li>
+        <li>Hover this blue DIV</li>
+        <li>The size of the highlighter should match the DIV</li>
       </ol>
-      <ul>
-        <li><strong>Observed:</strong> The size of the borders of the Inspector frame are influenced by <em>min-width</em>, <em>max-width</em>, <em>min-height</em> and <em>max-height</em></li>
-        <li><strong>Expected:</strong> The display of the Inspector should not be influenced by these styles</li>
-      </ul>
     </div>
   </body>
 </html>
