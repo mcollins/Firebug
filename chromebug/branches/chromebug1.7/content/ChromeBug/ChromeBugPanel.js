@@ -680,6 +680,8 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (global instanceof Window)
         {
+            if (global.closed)
+                return null;
             var docShellType = Chromebug.XULAppModule.getDocumentTypeByDOMWindow(global);
             if (docShellType === "Content")
                 return Firebug.TabWatcher.getContextByWindow(global);

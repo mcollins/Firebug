@@ -47,7 +47,8 @@ Chromebug.XULAppModule = extend(Firebug.Module,
            }
            catch (exc)
            {
-               FBTrace.sysout("Chromebug getDocShellByDOMWindow, domWindow.getInterface FAILS "+exc, exc);
+               FBTrace.sysout("Chromebug getDocShellByDOMWindow, domWindow.getInterface FAILS "+exc, {exc: exc, domWindow: domWindow});
+               return; 
            }
            if (navi instanceof Ci.nsIDocShellTreeItem)
            {
