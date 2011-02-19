@@ -195,28 +195,55 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     editInPanel: function ()
     {
-        this.orion = this.addEditor();  // an object in the panel window scope
+        if (!Firebug.Dyne.orion)  // a ref to an object in the main panel scope
+            this.addOrionSource();
+        else
+            this.onOrionReady();
+    },
 
+    onOrionReady: function()
+    {
         this.setSaveAvailable(false);
 
         var source = FBL.getResource(this.location);
-        this.orion.editText = source; // see orionInPanel.js
-        this.dispatch('orionEdit', this.orion.box);
+        Firebug.Dyne.orion.editText = source; // see orionInPanel.js
 
-        this.onOrionReady(); // TODO async event
+        FBTrace.sysout("dyne.onOrionReady orionEdit dispatch");
+
+        this.dispatch('orionEdit', Firebug.Dyne.orionInPanel);
+        this.onEditorReady();
     },
 
-    addEditor: function()
+    addOrionSource: function()
     {
-        var orionBox = this.document.getElementsByClassName('orionEditor')[0];
-        if (orionBox)
-            return orionBox;
+        var win = this.document.defaultView;
+
+        win.FBTrace = FBTrace;
+
+        Firebug.Dyne.orionInPanel = this.insertEditorScripts();
+        // the element is available synchronously, but the outer script runs async
+        var self = this;
+        Firebug.Dyne.orionInPanel.addEventListener("orionReady", function oneTime()
+        {
+            Firebug.Dyne.orion = win.orion;
+            self.onOrionReady();
+            Firebug.Dyne.orionInPanel.removeEventListener('orionReady', oneTime, true);
+            FBTrace.sysout("dyne.addOrionSource orionReady handled");
+        }, true);
+        FBTrace.sysout("dyne.addOrionSource orionReady listener added");
+    },
+
+    insertEditorScripts: function()
+    {
+        var orionInPanel = this.document.getElementById('orionInPanel');
+        if (orionInPanel)
+            return orionInPanel;
 
         // append script tag with eclipse source
         if (this.useCompressed)
         {
-            var src = FBL.getResource("http://download.eclipse.org/e4/orion/js/org.eclipse.orion.client.editor/orion-editor.js");
-            FBL.addScript(this.document, 'orionEditorScript', src);
+            var url = "http://download.eclipse.org/e4/orion/js/org.eclipse.orion.client.editor/orion-editor.js";
+            var elt = this.insertScriptTag(this.document, 'orionEditorScript',url);
         }
         else
         {
@@ -226,25 +253,51 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
                 var baseUrl = "http://localhost:8080/file/org.eclipse.orion.client.editor/web/";
                 // var baseUrl = "chrome://dyne/content/orion/"
                 var url = baseUrl + editorFiles[i];
-                var src = FBL.getResource(url);
-                FBL.addScript(this.document, 'orionEditorScript_'+i, src);
+                var elt = this.insertScriptTag(this.document, 'orionEditorScript_'+i, url);
             }
         }
 
-        // append div to contain lines
-        orionBox = this.panelNode;
-        FBL.setClass(orionBox, 'orionEditor');  // mark for orionInPanel to see
-
         // append script tag linking eclipse source to div with lines
-        src = FBL.getResource("chrome://dyne/content/orionInPanel.js");
-        FBL.addScript(this.document, 'orionEditorCode', src);
-
-        var win = this.document.defaultView;
-        win.FBTrace = FBTrace;
-        win.orion.box = orionBox;
-
-        return win.orion;
+        var url = "chrome://dyne/content/orionInPanel.js";
+        this.insertScriptTag(this.document, 'orionInPanel', url);
+        var orionInPanel = this.document.getElementById('orionInPanel');
+        return orionInPanel;
     },
+
+    insertScriptTag: function(doc, id, url)
+    {
+        var element = doc.createElementNS("http://www.w3.org/1999/xhtml", "html:script");
+        element.setAttribute("type", "text/javascript");
+        element.setAttribute("id", id);
+        if (!FBTrace.DBG_CONSOLE)
+            FBL.unwrapObject(element).firebugIgnore = true;
+
+        element.setAttribute("src", url);
+        this.appendToHead(doc, element);
+
+        return element;
+    },
+
+    appendToHead: function(doc, child)
+    {
+        var heads = doc.getElementsByTagName("head");
+        if (heads.length)
+        {
+            heads[0].appendChild(child);
+        }
+        else
+        {
+            if (doc.documentElement)
+                doc.documentElement.appendChild(element);
+            else
+            {
+                // See issue 1079, the svg test case gives this error
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("lib.addScript doc has no documentElement:", doc);
+            }
+        }
+    },
+
 
     dispatch: function(eventName, elt)
     {
@@ -255,10 +308,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     getModel: function()
     {
-        return this.orion.editor.getModel();
+        return Firebug.Dyne.orion.editor.getModel();
     },
 
-    onOrionReady: function(event)
+    onEditorReady: function(event)
     {
         var model = this.getModel();
         model.addListener(this);

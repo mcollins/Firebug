@@ -8,13 +8,15 @@
         - use the given stylesheet  */
 try
 {
-
     window.orion = {};
-    orion.parent = document.getElementsByClassName('orionEditor')[0];
-    orion.parent.addEventListener('orionEdit', function updateText(event)
+
+    var orionInPanel = document.getElementById('orionInPanel');
+    orionInPanel.addEventListener('orionEdit', function updateText(event)
     {
         try
         {
+            orion.parent = document.getElementsByClassName('panelNode-orion')[0];
+
             orion.editor = new eclipse.Editor({
                 parent: orion.parent,
                 readonly: false,
@@ -30,7 +32,7 @@ try
 
             var text = orion.editText;  // set by firebug
             orion.editor.setText(text);
-            window.FBTrace.sysout("orion.editor.setText ", orion.editor);
+            window.FBTrace.sysout("orionInPanel.orion.editor.setText ", orion.editor);
         }
         catch(exc)
         {
@@ -38,6 +40,17 @@ try
             window.FBTrace("orion.editor.setText ERROR "+exc, exc);
         }
     }, true);
+
+    orion.dispatch = function(eventName, elt)
+    {
+         var ev = elt.ownerDocument.createEvent("Events");
+         ev.initEvent(eventName, true, false);
+         window.FBTrace.sysout("orionInPanel.orion.dispatch "+eventName);
+         elt.dispatchEvent(ev);
+    },
+    orion.dispatch("orionReady", orionInPanel);
+
+    window.FBTrace.sysout("orionInPanel outer function ends", {orion: orion, orionInPanel: orionInPanel});
 }
 catch (exc)
 {
