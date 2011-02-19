@@ -83,10 +83,10 @@ Firebug.Dyne = extend(Firebug.Module,
         }
         else
         {
-            var location = Firebug.chrome.getSelectedPanelLocation();
-            var link = new Firebug.EditLink(panel.context, location, panel);
+            var url = Firebug.chrome.getSelectedPanelURL();
+            var link = new Firebug.EditLink(panel.context, url, panel);
             Firebug.chrome.select(link);
-            FBTrace.sysout("Edit requested "+location);
+            FBTrace.sysout("Edit requested "+url);
             return true;
         }
     },
@@ -96,7 +96,7 @@ Firebug.Dyne = extend(Firebug.Module,
 Firebug.EditLink = function EditLink(context, location, panel)
 {
     this.context = context;
-    this.originLocation = location;
+    this.originURL = location;
     this.originPanel = panel; // may be null
 }
 
@@ -148,16 +148,16 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     {
         if (Firebug.Dyne.OrionPanel.openInNewWindow)
         {
-            editLink.saveURL = this.getEditURLbyURL(editLink.context, editLink.originLocation);
+            editLink.saveURL = this.getEditURLbyURL(editLink.context, editLink.originURL);
             if (editLink.saveURL)
                 this.openInWindow(editLink);
             else
-                Firebug.Console.logFormatted(["No editing url for "+editLink.originLocation, editLink]);
+                Firebug.Console.logFormatted(["No editing url for "+editLink.originURL, editLink]);
         }
         else
         {
             // Assume the server supports PUT
-            this.navigate(editLink.originLocation);
+            this.navigate(editLink.originURL);
         }
     },
 
@@ -342,6 +342,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         return [this.location];
     },
 
+    getObjectDescription: function(url)
+    {
+        return FBL.splitURLBase(url);
+    },
 
     //*******************************************************************************************************
     show: function(state)
