@@ -120,9 +120,13 @@ JSDOC.JsDoc._parseSrcFiles = function() {
 	
 	for (var i = 0, l = JSDOC.JsDoc.srcFiles.length; i < l; i++) {
 		var srcFile = JSDOC.JsDoc.srcFiles[i];
-		
+		srcFile = srcFile.replace(/\\/g, "/"); // normalize directory
+		JSDOC.JsDoc.srcFiles[i] = srcFile;
+
 		if (JSDOC.opt.v) LOG.inform("Parsing file: " + srcFile);
-		
+		print();
+		print("Parsing file: " + srcFile);
+
 		// xxxpedro new token reader
 		var tokens = JSDOC.TokenReader.getRelevantTokens(srcFile);
 		var ts = new JSDOC.TokenStream(tokens);

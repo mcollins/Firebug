@@ -23,7 +23,7 @@ new Namespace(
 	function() {
 		JSDOC.tagSynonyms.synonyms = {
 			"=extend":             "lends", // firebug tag
-			//"=scope":              "closure", // firebug tag
+			"=scope":              "closure", // firebug tag
 
 			"=member":             "memberOf",
 			"=memberof":           "memberOf",
@@ -39,7 +39,7 @@ new Namespace(
 			"=classdescription":   "class",
 			"=link":               "see",
 			"=borrows":            "inherits",
-			"=scope":              "lends",
+			//"=scope":              "lends",
 			"=construct":          "constructor"
 		}
 	}

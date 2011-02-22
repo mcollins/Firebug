@@ -17,7 +17,7 @@ JSDOC.SymbolSet.prototype.hasSymbol = function(alias) {
 
 JSDOC.SymbolSet.prototype.addSymbol = function(symbol) {
 	if (JSDOC.opt.a && this.hasSymbol(symbol.alias)) {
-		LOG.warn("Overwriting symbol documentation for: " + symbol.alias + ".");
+		LOG.warn("Overwriting symbol doc for: \"" + symbol.alias + "\".", symbol);
 		this.deleteSymbol(symbol.alias);
 	}
 	this._index.set(symbol.alias, symbol);
@@ -183,11 +183,35 @@ JSDOC.SymbolSet.prototype.resolveMemberOf = function() {
 		// add to parent's methods or properties list
 		if (symbol.memberOf) {
 
+
+			// xxxpedro scope
+			// ---------------------------------------------------------------
+
+			/*
+			var last = symbol.namescope[symbol.namescope.length-1];
+			if (last != "_global_" && symbol.memberOf.indexOf(last) == -1)
+			{
+				var xups = last + "-" + symbol.memberOf;
+				if (this.getSymbol(xups))
+				{
+					symbol.memberOf = xups;
+				}
+			}
+			print("FU " + symbol.memberOf + " " + symbol.name + " -- " + symbol.alias + " >>> " + last);
+			/**/
+
+
+			symbol.memberOf = symbol.resolveName(symbol.memberOf);
+			symbol.memberOfDisplay = this.resolveMemberOfDisplay(symbol);
+			/**/
+			// ---------------------------------------------------------------
+
+
 			var container = this.getSymbol(symbol.memberOf);
 			if (!container) {
 				if (JSDOC.Lang.isBuiltin(symbol.memberOf)) container = JSDOC.Parser.addBuiltin(symbol.memberOf);
 				else {
-					LOG.warn("Trying to document "+symbol.name +" as a member of undocumented symbol "+symbol.memberOf+".");
+					LOG.warn("\""+symbol.name +"\" refers to undoc symbol \""+symbol.memberOf+"\".", symbol);
 				}
 			}
 			
@@ -195,6 +219,36 @@ JSDOC.SymbolSet.prototype.resolveMemberOf = function() {
 		}
 	}
 }
+
+JSDOC.SymbolSet.prototype.resolveMemberOfDisplay = function(symbol)
+{
+	var memberOf = symbol.memberOf;
+	var scopeChain = symbol.scopeChain;
+	var length = symbol.scopeChain.length;
+
+	if (length > 0)
+	{
+		var item;
+		var last;
+
+		for (var i=length-1; i>=0; i--)
+		{
+			item = scopeChain[i];
+			if (item.isScope && !item.isWith)
+			{
+				last = item;
+				break;
+			}
+		}
+
+		if (last)
+		{
+			memberOf = memberOf.replace(last.alias + "-", "");
+		}
+	}
+
+	return memberOf;
+};
 
 JSDOC.SymbolSet.prototype.resolveAugments = function() {
 	for (var p = this._index.first(); p; p = this._index.next()) {
@@ -208,9 +262,11 @@ JSDOC.SymbolSet.prototype.resolveAugments = function() {
 JSDOC.SymbolSet.prototype.walk = function(symbol) {
 	var augments = symbol.augments;
 	for(var i = 0; i < augments.length; i++) {
-		var contributer = this.getSymbol(augments[i]);
-		if (!contributer && JSDOC.Lang.isBuiltin(''+augments[i])) {
-			contributer = new JSDOC.Symbol("_global_."+augments[i], [], augments[i], new JSDOC.DocComment("Built in."));
+	
+		var augment = symbol.resolveName(augments[i]);
+		var contributer = this.getSymbol(augment);
+		if (!contributer && JSDOC.Lang.isBuiltin(''+augment)) {
+			contributer = new JSDOC.Symbol("_global_."+augment, [], augment, new JSDOC.DocComment("Built in."));
 			contributer.isNamespace = true;
 			contributer.srcFile = "";
 			contributer.isPrivate = false;

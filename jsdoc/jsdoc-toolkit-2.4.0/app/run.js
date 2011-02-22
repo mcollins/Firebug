@@ -44,9 +44,15 @@ LOG = {
 	
 	warn: function(msg, e) {
 		if (JSDOC.opt.q) return;
-		if (e) msg = e.fileName+", line "+e.lineNumber+": "+msg;
+		if (e)
+    {
+        var fileName = e.fileName || "";
+        var lineNumber = e.lineNumber ? "line " + e.lineNumber : "";
+        var separator = fileName && lineNumber ? ", " : "";
+        msg = fileName + separator + lineNumber + ": "+msg;
+    }
 		
-		msg = ">> WARNING: "+msg;
+		msg = ">> "+msg;
 		LOG.warnings.push(msg);
 		if (LOG.out) LOG.out.write(msg+"\n");
 		else print(msg);

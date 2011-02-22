@@ -91,31 +91,31 @@ Link.symbolNameToLinkName = function(symbol) {
 };
 
 Link.getSymbol= function(alias) {
-    var symbol= Link.symbolSet.getSymbol(alias);
-    
-    if (symbol)
-        return symbol;
-        
-    if ('#'!==alias.charAt(0) || !Link.currentSymbol)
-        return null;
-    
-    //  resolve relative name
-    var container= Link.currentSymbol;
-    
-    while (container)
-    {
-        symbol= Link.symbolSet.getSymbol(container.alias + alias);
-        if (symbol)
-            return symbol;
-        
-        //  No superclass
-        if (!container.augments.length)
-            return null;
-        
-        container= Link.symbolSet.getSymbol(container.augments[0].desc);
-    }
-    
-    return null;
+	var symbol= Link.symbolSet.getSymbol(alias);
+
+	if (symbol)
+		return symbol;
+
+	if ('#'!==alias.charAt(0) || !Link.currentSymbol)
+		return null;
+
+	//	resolve relative name
+	var container= Link.currentSymbol;
+
+	while (container)
+	{
+		symbol= Link.symbolSet.getSymbol(container.alias + alias);
+		if (symbol)
+			return symbol;
+
+		//	No superclass
+		if (!container.augments.length)
+			return null;
+
+		container= Link.symbolSet.getSymbol(container.augments[0].desc);
+	}
+
+	return null;
 };
 
 /** Create a link to another symbol. */
@@ -127,13 +127,13 @@ Link.prototype._makeSymbolLink = function(alias) {
 
 	// if there is no symbol by that name just return the name unaltered
 	if (!linkTo)
-	    return this.text || alias;
+		return this.text || alias;
 	
 	// it's a symbol in another file
 	else {
 		if (!linkTo.is("CONSTRUCTOR") && !linkTo.isNamespace) { // it's a method or property
 			linkPath= (Link.filemap) ? Link.filemap[linkTo.memberOf] :
-				      escape(linkTo.memberOf) || "_global_";
+						escape(linkTo.memberOf) || "_global_";
 				linkPath += publish.conf.ext + "#" + Link.symbolNameToLinkName(linkTo);
 		}
 		else {
@@ -142,9 +142,9 @@ Link.prototype._makeSymbolLink = function(alias) {
 		}
 		linkPath = linkBase + linkPath;
 	}
-        
+
 	var linkText= this.text || alias;
-    
+
 	var link = {linkPath: linkPath, linkText: linkText, linkInner: (this.innerName? "#"+this.innerName : "")};
 	
 	if (typeof JSDOC.PluginManager != "undefined") {
@@ -162,22 +162,25 @@ Link.prototype._makeSrcLink = function(srcFilePath) {
 	var srcFile = srcFilePath.replace(/\.\.?[\\\/]/g, "").replace(/[:\\\/]/g, "_");
 	var outFilePath = Link.base + publish.conf.srcDir + srcFile + publish.conf.ext;
 	
-	if (!this.text) this.text = FilePath.fileName(srcFilePath);
-	
 	// TODO: xxxpedro line number
+	var lineNumberText = "";
+	var LineNumberPath = "";
 	if (this.lineNumber){
-		this.text += " (line " + this.lineNumber + ")";
-		outFilePath += "#L"+this.lineNumber;
+		lineNumberText = " (line " + this.lineNumber + ")";
+		LineNumberPath = "#L"+this.lineNumber;
 	}
 
-	return "<a href=\""+outFilePath+"\""+target+">"+this.text+"</a>";
+	if (!this.text)
+		this.text = FilePath.fileName(srcFilePath) + lineNumberText;
+
+	return "<a href=\""+outFilePath+LineNumberPath+"\""+target+">"+this.text+"</a>";
 };
 
 /** Create a link to a source file. */
 Link.prototype._makeFileLink = function(filePath) {
 	var target = (this.targetName)? " target=\""+this.targetName+"\"" : "";
 		
-	var outFilePath =  Link.base + filePath;
+	var outFilePath = Link.base + filePath;
 
 	if (!this.text) this.text = filePath;
 	return "<a href=\""+outFilePath+"\""+target+">"+this.text+"</a>";

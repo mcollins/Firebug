@@ -38,11 +38,16 @@ JSDOC.TokenReader.parseFile = function(srcFile, allTokens)
 
 	var text;
 	
+	var basePath = JSDOC.opt.b ? JSDOC.opt.b : "";
+	basePath = basePath.replace(/\\/g, "/"); // normalize directory
+
+	var fullPath = basePath + srcFile;
+	
 	try {
-		text = IO.readFile(srcFile);
+		text = IO.readFile(fullPath);
 	}
 	catch(e) {
-		LOG.warn("Can't read source file '"+srcFile+"': "+e.message);
+		LOG.warn("Can't read source file '"+fullPath+"': "+e.message);
 	}
 
 	var cursor = 0;

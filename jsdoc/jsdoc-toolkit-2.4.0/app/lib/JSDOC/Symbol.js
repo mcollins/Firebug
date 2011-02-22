@@ -2,7 +2,7 @@
 TODO: xxxpedro. This file fixes the following error in the unit test
 NOT OK 95 - Can borrow an inner function and it is still inner.
 expected: Page-getInnerElements
-     got: undefined
+		 got: undefined
  */
 
 if (typeof JSDOC == "undefined") JSDOC = {};
@@ -59,8 +59,8 @@ JSDOC.Symbol.prototype.init = function() {
 	// TODO: xxpedro line number
 	this.lineNumber = -1;
 	// TODO: xxpedro scope handling
-	this.scopeFunctions = [];
-	this.scopeVariables = [];
+	//this.namescope = [];
+	this.scopeChain = [];
 };
 
 JSDOC.Symbol.prototype.serialize = function() {
@@ -128,24 +128,25 @@ JSDOC.Symbol.prototype.getMethods = function() {
 	return nonEvents;
 };
 
-
 JSDOC.Symbol.prototype.populate = function(
 		/** String */ name,
 		/** Object[] */ params,
 		/** String */ isa,
 		/** JSDOC.DocComment */ comment,
-		/** Token */ token // token
+		/** Token */ token,
+		 namescope
 ) {
 
 	// TODO: xxxpedro line number
-	this.lineNumber = -1;
+	this.lineNumber = token && token.lineNumber ? token.lineNumber : -1;
+
+	// xxxpedro scope
 	if (token)
-	{
-		if (token.lineNumber)
-			this.lineNumber = token.lineNumber;
-			
-		token.symbolName = name;
-	}
+		token.isDeclaration = (token.type == "NAME");
+
+	// xxxpedro scope
+	this.updateScope(namescope);
+
 
 	this.$args = arguments;
 	
@@ -160,7 +161,7 @@ JSDOC.Symbol.prototype.populate = function(
 	if (this.is("FILE") && !this.alias) this.alias = this.srcFile;
 
 	this.setTags();
-	
+
 	if (typeof JSDOC.PluginManager != "undefined") {
 		JSDOC.PluginManager.run("onSymbol", this);
 	}
@@ -607,17 +608,7 @@ JSDOC.Symbol.prototype.setType = function(/**String*/comment, /**Boolean*/overwr
 
 JSDOC.Symbol.prototype.inherit = function(symbol, contributer) {
 	
-	// TODO: xxpedro scope handling
-	if (contributer && contributer.isScope)
-	{
-		if (symbol.is("FUNCTION")) {
-			if (this.scopeFunctions.indexOf(symbol)==-1) this.scopeFunctions.push(symbol);
-		} else if (symbol.is("OBJECT")) {
-			if (this.scopeVariables.indexOf(symbol)==-1) this.scopeVariables.push(symbol);
-		}
-	}
-	else /**/ if (!this.hasMember(symbol.name) && !symbol.isInner
-	//|| contributer && contributer.isScope
+	if (!this.hasMember(symbol.name) && !symbol.isInner
 	) {
 		if (symbol.is("FUNCTION"))
 			this.methods.push(symbol);
@@ -676,6 +667,146 @@ JSDOC.Symbol.prototype.addProperty = function(symbol) {
 	}
 
 	thisProperties.push(symbol); // new property with this alias
+};
+
+
+
+
+
+JSDOC.Symbol.prototype.getParam = function(name) {
+	var params = this._params;
+	var param;
+	for (var i = 0, l = params.length; i < l; i++) {
+		param = params[i];
+		if (param.name == name) return param;
+	}
+	return null;
+};
+
+JSDOC.Symbol.prototype.getMember = function(name) {
+	if (!this.memberMap)
+		this.cacheMembers();
+
+	return this.memberMap.hasOwnProperty(name) ? this.memberMap[name] : null;
+};
+
+JSDOC.Symbol.prototype.getProtoMember = function(name) {
+	if (!this.protoMemberMap)
+		this.cacheMembers();
+
+	return this.protoMemberMap.hasOwnProperty(name) ? this.protoMemberMap[name] : null;
+};
+
+JSDOC.Symbol.prototype.getScopeMember = function(name) {
+	if (!this.scopeMemberMap)
+		this.cacheMembers();
+
+	return this.scopeMemberMap.hasOwnProperty(name) ? this.scopeMemberMap[name] : null;
+};
+
+JSDOC.Symbol.prototype.cacheMembers = function() {
+
+	this.memberMap = {};
+	this.scopeMemberMap = {};
+	this.protoMemberMap = {};
+
+	var methods = this.methods;
+	var properties = this.properties;
+	var params = this._params;
+	
+	for (var i = 0, l = params.length, param; i < l; i++) {
+		param = params[i];
+		param.isParam = true;
+		this.scopeMemberMap[param.name] = param;
+	}
+	
+	for (var i = 0, l = methods.length, method; i < l; i++) {
+		method = methods[i];
+		method.isMethod = true;
+		if (method.isInner)
+		{
+			print("-------------------------------- SCOPE MEMBER " + this.alias + " . " + method.name);
+			this.scopeMemberMap[method.name] = method;
+		}
+		else if (method.isStatic)
+		{
+			print("-------------------------------- STATIC MEMBER " + this.alias + " . " + method.name);
+			this.memberMap[method.name] = method;
+		}
+		else
+		{
+			print("-------------------------------- PROTO MEMBER " + this.alias + " . " + method.name);
+			this.protoMemberMap[method.name] = method;
+		}
+	}
+	
+	for (var i = 0, l = properties.length, property; i < l; i++) {
+		property = properties[i];
+		property.isProperty = true;
+		if (property.isInner)
+		{
+			this.scopeMemberMap[property.name] = property;
+		}
+		else if (property.isStatic)
+		{
+			this.memberMap[property.name] = property;
+		}
+		else
+		{
+			this.protoMemberMap[property.name] = property;
+		}
+	}
+};
+
+// xxxpedro
+JSDOC.Symbol.prototype.updateScope = function(namescope)
+{
+	if (namescope)
+	{
+		var item;
+
+		this.scopeChain = [];
+		for (var i=0, l=namescope.length; i<l; i++)
+		{
+			item = namescope[i];
+			this.scopeChain.push(item);
+		}
+	}
+};
+
+// xxxpedro
+JSDOC.Symbol.prototype.resolveName = function(namespace)
+{
+	var resolvedName;
+
+	var symbols = JSDOC.Parser.symbols;
+	var scopeChain = this.scopeChain;
+	var scopeIndex = this.scopeChain.length-1;
+
+	if (scopeIndex < 0) return namespace;
+
+	var scope;
+	var newName;
+
+	do
+	{
+			scope = scopeChain[scopeIndex];
+
+			if (scope.isScope)
+			{
+				var separator = scope.isWith ? "." : "-";
+				newName = scope.alias + separator + namespace;
+				if (symbols.getSymbol(newName))
+				{
+					resolvedName = newName;
+					break;
+				}
+			}
+
+			scopeIndex--;
+	} while(scopeIndex >= 0);
+
+	return resolvedName ? resolvedName : namespace;
 };
 
 JSDOC.Symbol.srcFile = ""; //running reference to the current file being parsed
