@@ -2,35 +2,23 @@
 <html>
 <title>The Firebug Swarm: Index Page</title>
 <script type="text/javascript">
-function geckoVersion()
+function getFirefoxVersion()
 {
     if (navigator.product != 'Gecko')
         return false;
- 
+
     var ua = navigator.userAgent.toLowerCase();
-    var reVersion = /rv:(\d*)\.(\d*)\.(\d*)/;
+
+    var reVersion = /irefox\/(\d*)\.(\d*)/;
+
     var m = ua.match(reVersion);
     if (window.console) console.log("User Agent ", ua, m);
-    if(m)
-        return m.slice(1,4).join('.');
-}
-function getFirefoxVersionByGeckoVersion(geckoVersion)
-{
-    if (window.console) console.log("Gecko Version", geckoVersion);
-
-    if (!geckoVersion)
-        return null;
-
-    var map = 
-    {
-         '1.9.2': '3.6', '2.0.0': '4.0',
-    };
-    return map[geckoVersion];
+    return m[1]+'.'+m[2];
 }
 
 function redirect()
 {
-   var FF = getFirefoxVersionByGeckoVersion(geckoVersion());
+   var FF = getFirefoxVersion();
    if (window.console)console.log("Firefox Version", FF);
 
     var branch = "";
@@ -38,11 +26,17 @@ function redirect()
     for (var i = 0; i < parts.length; i++)
     {
        if (parts[i] == "swarms")
-           branch = parts[i+1]+'/';
+           break;
+       branch += parts[i]+'/';
     }
-    
-   if (FF)
-       window.location = "http://getfirebug.com/releases/swarms/"+branch+"Firefox-"+FF+"/";
+
+    branch += "swarms"+'/';
+    branch += "Firefox-"+FF+'/';
+
+    if (window.console)console.log("Redirect to "+branch);
+
+    if (FF)
+       window.location =  branch;
 }
 window.addEventListener('load', redirect, true);
 </script>
@@ -53,6 +47,7 @@ window.addEventListener('load', redirect, true);
 <h2>The supported browsers:</h2>
 <ul>
 <li><a href="Firefox-3.6">Firefox 3.6</a></li>
+<li><a href="Firefox-4.0">Firefox 4.0</a></li>
 </ul>
 </body>
 </html>
