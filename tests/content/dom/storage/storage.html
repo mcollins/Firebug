@@ -30,20 +30,41 @@
 <script type="text/javascript">
 function initStorage()
 {
-    for (var i=0; i<10; i++)
-        localStorage.setItem("item"+i, i);
+    try
+    {
+        for (var i=0; i<10; i++)
+            localStorage.setItem("item"+i, i);
 
-    sessionStorage.name = "item1";
-    sessionStorage.issue = "value1";
+        if (window.console)
+            console.log("localStorage: ", localStorage);
+
+        sessionStorage.name = "item1";
+        sessionStorage.issue = "value1";
+
+        if (window.console)
+            console.log("sessionStorage: ", sessionStorage);
+    }
+    catch(exc)
+    {
+        window.dump(">>!! storage exception "+exc+"\n");
+    }
 }
 
 function clearStorage()
 {
     localStorage.clear();
+
+    if (window.console)
+        console.log("localStorage: ", localStorage);
+
     sessionStorage.clear();
+
+    if (window.console)
+        console.log("sessionStorage: ", sessionStorage);
+
 }
 
 </script>
-  
+
 </body>
 </html>
