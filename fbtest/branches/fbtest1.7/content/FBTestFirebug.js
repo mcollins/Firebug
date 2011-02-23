@@ -2006,7 +2006,12 @@ this.waitForDOMProperty = function(propName, callback, checkAvailability)
     recognizer.onRecognizeAsync(function(element)
     {
         var row = FW.FBL.getAncestorByClass(element, "memberRow");
-        callback(row);
+
+        // If the memberRow isn't there, the mutation comes from different panel (console?).
+        if (!row)
+            FBTest.waitForDOMProperty(propName, callback, checkAvailability);
+        else
+            callback(row);
     });
 }
 
