@@ -1,6 +1,9 @@
 function runTest()
 {
     FBTest.sysout("issue3309.START");
+    FBTestFirebug.setPref("filterSystemURLs", true);
+    FBTest.progress("The filterSystemURLs Option is true for this test");
+
     FBTest.openNewTab(basePath + "script/3309/issue3309.html", function(win)
     {
         FBTest.openFirebug();
