@@ -30,8 +30,6 @@
 <script type="text/javascript">
 function initStorage()
 {
-    try
-    {
         for (var i=0; i<10; i++)
             localStorage.setItem("item"+i, i);
 
@@ -43,11 +41,6 @@ function initStorage()
 
         if (window.console)
             console.log("sessionStorage: ", sessionStorage);
-    }
-    catch(exc)
-    {
-        window.dump(">>!! storage exception "+exc+"\n");
-    }
 }
 
 function clearStorage()
