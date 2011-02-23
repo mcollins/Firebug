@@ -18,6 +18,9 @@ function getFirefoxVersion()
 
 function redirect()
 {
+    if (window.location.protocol === 'chrome')
+        return;
+
    var FF = getFirefoxVersion();
    if (window.console)console.log("Firefox Version", FF);
 

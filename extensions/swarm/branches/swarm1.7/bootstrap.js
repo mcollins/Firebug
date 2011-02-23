@@ -11,22 +11,45 @@ function startup(aData, aReason)
 {
     try
     {
-        Cu.reportError("swarm.bootstrap startup ");
 
         Components.utils.import("resource://gre/modules/Services.jsm");
-        doSwarmThing(aData);
+
+        var state = getTestingPhase();
+
+        Cu.reportError("swarm.bootstrap startup phase "+state);
+
+        if (state ==  'opened') // then the install just began
+        {
+            return;
+        }
+        else if (state === 'restarting') // then we came back after the install, yay
+        {
+            Cu.reportError("ready to start testing");
+            setTestingPhase("done");
+            return;
+        }
+        else // then we are not testing, just using.
+        {
+            // no-op
+        }
     }
     catch(exc)
     {
-         Cu.reportError("bootstrap ERROR "+exc);
+        var jsonString = JSON.stringify(exc);
+         Cu.reportError("bootstrap ERROR "+jsonString);
     }
 }
 
 function shutdown(aData, aReason)
 {
-
+    var state = getTestingPhase();
+    if (state ==  "installing") // then hopefully we are restarting to complete swarm install
+    {
+        setTestingPhase('restarting');
+        Services.prefs.savePrefFile(null);
+        return;
+    }
 }
-
 
 function install(aData, aReason)
 {
@@ -47,7 +70,7 @@ function doSwarmThing(aData)
     if (swarms) // then we are set up to test a swarm
     {
         // Set flags for the startup phase
-        setDefaultPrefs('extensions.firebugSwarm', {testAll: true});
+        setTestingPhase("opening");
         Cu.reportError("swarm.bootstrap setPref, now install "+swarms.path);
         installSwarms(swarms);
     }
@@ -59,7 +82,7 @@ function doSwarmThing(aData)
 
 function uninstall(aData, aReason)
 {
-    setDefaultPrefs('extensions.firebugSwarm', {testAll: false});
+    setTestingPhase(null);
 }
 
 // ***************************************************************************************
@@ -80,25 +103,45 @@ function getSwarmsDirectory(aData)
 }
 
 
-//http://starkravingfinkle.org/blog/2011/01/restartless-add-ons-%e2%80%93-default-preferences/
-// retrieved Feb 21, 2011
-// setDefaultPrefs("extensions.firebug.", {anInt: 1, aString: "some"}
-
-function setDefaultPrefs(branch, preferenceKeyValues) {
-  let branch = Services.prefs.getDefaultBranch(branch);
-  for (let [key, val] in Iterator(preferenceKeyValues)) {
-    switch (typeof val) {
-      case "boolean":
-        branch.setBoolPref(key, val);
-        break;
-      case "number":
-        branch.setIntPref(key, val);
-        break;
-      case "string":
-        branch.setCharPref(key, val);
-        break;
+function setPrefs(branch, preferenceKeyValues) {
+    let branch = Services.prefs.getBranch(branch);
+    if (preferenceKeyValues)
+    {
+        var jsonString = JSON.stringify(preferenceKeyValues);
+        branch.setCharPref('json', jsonString);
     }
-  }
+    else
+    {
+        branch.clearUserPref('json');
+    }
+}
+
+function getPrefs(branch)
+{
+    var branch = Services.prefs.getBranch(branch);
+    var type = branch.getPrefType('json');
+    if (type == Ci.nsIPrefBranch.PREF_STRING)
+    {
+        var jsonString = branch.getCharPref('json');
+        var jsObject = JSON.parse(jsonString);
+        return jsObject;
+    }
+}
+
+function setTestingPhase(phase)
+{
+    Cu.reportError("setTestingPhase "+phase+"\n");
+    if (phase)
+        setPrefs('extensions.firebugSwarm.', {testing: phase});
+    else
+        setPrefs('extensions.firebugSwarm.', null);
+}
+
+function getTestingPhase()
+{
+    var prefs = getPrefs('extensions.firebugSwarm.');
+    if (prefs)
+        return prefs.testing;
 }
 
 function hookXULWindows(onLoadXULWindow)
@@ -109,7 +152,7 @@ function hookXULWindows(onLoadXULWindow)
 
     //Load into any existing windows
     var firefoxen = windowMediator.getEnumerator("navigator:browser");
-    while (firefoxen.hasMoreElements()) {
+    while (firefoxen.hasMoreElements() && !ourJobIsDone) {
       var win = firefoxen.getNext().QueryInterface(Ci.nsIDOMWindow);
       ourJobIsDone = onLoadXULWindow(win);
     }
@@ -121,7 +164,7 @@ function hookXULWindows(onLoadXULWindow)
     {
             onOpenWindow: function(aWindow)
             {
-                // Wait for the window to finish loading
+                // Wait for the XUL window's nsIDOMWindow to finish loading
                 var domWindow = aWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowInternal);
                 domWindow.addEventListener("load", function()
                 {
@@ -163,20 +206,77 @@ function installSwarms(swarms)
         Cu.reportError("registered "+chromeManifest.path);
     }
 
-    hookXULWindows(function openSwarmPageAndInstall(win)
-    {
-        var url = win.location+"";
-        if (url !== "chrome://browser/content/browser.xul")
-            return;
+    hookXULWindows(openSwarmPageAndInstall);
+}
 
-        Cu.reportError("swarm.bootstrap win "+win+" isDOM "+(win instanceof Ci.nsIDOMWindow)+" win.location "+win.location);
+// Called only when we are a tester
 
-        var tab = win.gBrowser.getBrowserForTab(win.gBrowser.addTab("chrome://swarms/content/index.html"));
+function openSwarmPageAndInstall(win)
+{
+    var url = win.location+"";
+    if (url !== "chrome://browser/content/browser.xul")
+        return;
 
-        tab.addEventListener("load", function onSwarmPageLoaded(event) {
-            dump("------------------ Wow -------------------------------\n");
-        }, true);
+    Cu.reportError("swarm.bootstrap win "+win+" isDOM "+(win instanceof Ci.nsIDOMWindow)+" win.location "+win.location);
 
-        return true;
-    });
+    // We can't use in-page redirection from the chrome url, so we have to compute the correct URL here.
+    var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
+    var FF = appInfo.version;
+    var reVersion = /(\d*)\.(\d*)/;
+    var m = FF.match(reVersion);
+    var directory = "Firefox-"+m[1]+'.'+m[2];
+
+    var url = "chrome://swarms/content/"+directory+"/index.html?installAll=true";
+
+    Cu.reportError("swarm.bootstrap directory "+directory+" gives "+url);
+    var swarmTab = win.gBrowser.addTab(url);
+    var browserElement = win.gBrowser.getBrowserForTab(swarmTab);
+
+    browserElement.addEventListener("load", function onSwarmPageLoaded(event) {
+        Cu.reportError("swarm load "+event.target.location+"\n");
+        browserElement.removeEventListener('load', onSwarmPageLoaded, true);
+
+        win.gBrowser.selectedTab = swarmTab;
+
+        setTestingPhase("opened");
+
+        var doInstall = event.target.getElementById('installSelected');
+        if (doInstall)
+        {
+            dispatch("click", doInstall);
+            setTestingPhase("installing");
+        }
+        else
+        {
+            setTestingPhase('failed');
+            Cu.reportError("swarm load cannot find installSelected ");
+        }
+
+    }, true);
+
+    Cu.reportError("swarm.bootstrap added browserElement "+browserElement.contentDocument.location);
+
+    return true;
+}
+
+
+function dispatch(eventName, elt)
+{
+    if (eventName === 'click')
+        return dispatchClick(elt);
+
+     var ev = elt.ownerDocument.createEvent("Events");
+     ev.initEvent(eventName, true, false);
+     elt.dispatchEvent(ev);
+}
+
+function dispatchClick(elt)
+{
+    var doc = elt.ownerDocument;
+    var event = doc.createEvent("MouseEvents");
+    var win = doc.defaultView;
+    event.initMouseEvent("click", true, true, win,
+      0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+    elt.dispatchEvent(event);
 }
