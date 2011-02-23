@@ -61,6 +61,7 @@ function install(aData, aReason)
     catch(exc)
     {
          Cu.reportError("swarm.bootstrap ERROR "+exc);
+         setTestingPhase(null);
     }
 }
 
@@ -71,7 +72,7 @@ function doSwarmThing(aData)
     {
         // Set flags for the startup phase
         setTestingPhase("opening");
-        Cu.reportError("swarm.bootstrap setPref, now install "+swarms.path);
+        Cu.reportError("swarm.bootstrap install "+swarms.path);
         installSwarms(swarms);
     }
     else  // then we are set up to use a swarm
@@ -152,8 +153,13 @@ function hookXULWindows(onLoadXULWindow)
 
     //Load into any existing windows
     var firefoxen = windowMediator.getEnumerator("navigator:browser");
-    while (firefoxen.hasMoreElements() && !ourJobIsDone) {
+    while (firefoxen.hasMoreElements() && !ourJobIsDone)
+    {
       var win = firefoxen.getNext().QueryInterface(Ci.nsIDOMWindow);
+      var url = win.location+"";
+      if (url !== "chrome://browser/content/browser.xul")
+          continue;
+
       ourJobIsDone = onLoadXULWindow(win);
     }
 
@@ -169,6 +175,10 @@ function hookXULWindows(onLoadXULWindow)
                 domWindow.addEventListener("load", function()
                 {
                     domWindow.removeEventListener("load", arguments.callee, false);
+                    var url = domWindow.location+"";
+                    if (url !== "chrome://browser/content/browser.xul")
+                        return;
+
                     ourJobIsDone = onLoadXULWindow(domWindow);
                     if (ourJobIsDone)
                         windowMediator.removeListener(listener);
@@ -188,7 +198,17 @@ function openSwarms()
     Cu.reportError("swarm.bootstrap open swarms hooking windows ");
     hookXULWindows(function openSwarmPage(win)
     {
-        win.gBrowser.selectedTab = win.gBrowser.addTab("http://getfirebug.com/releases/swarms");
+        var url = win.location+"";
+        if (url !== "chrome://browser/content/browser.xul")
+            return;
+
+        var url = "http://getfirebug.com/releases/swarms/index.html";
+
+        openSwarmTab(url, win, function allowUserAction(document)
+        {
+            Cu.reportError("openSwarms ready "+url);
+        });
+
         return true;
     });
 }
@@ -209,26 +229,9 @@ function installSwarms(swarms)
     hookXULWindows(openSwarmPageAndInstall);
 }
 
-// Called only when we are a tester
-
-function openSwarmPageAndInstall(win)
+function openSwarmTab(url, win, onSwarmTabReady)
 {
-    var url = win.location+"";
-    if (url !== "chrome://browser/content/browser.xul")
-        return;
-
-    Cu.reportError("swarm.bootstrap win "+win+" isDOM "+(win instanceof Ci.nsIDOMWindow)+" win.location "+win.location);
-
-    // We can't use in-page redirection from the chrome url, so we have to compute the correct URL here.
-    var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
-    var FF = appInfo.version;
-    var reVersion = /(\d*)\.(\d*)/;
-    var m = FF.match(reVersion);
-    var directory = "Firefox-"+m[1]+'.'+m[2];
-
-    var url = "chrome://swarms/content/"+directory+"/index.html?installAll=true";
-
-    Cu.reportError("swarm.bootstrap directory "+directory+" gives "+url);
+    Cu.reportError("swarm.bootstrap opeSwarmTab "+url);
     var swarmTab = win.gBrowser.addTab(url);
     var browserElement = win.gBrowser.getBrowserForTab(swarmTab);
 
@@ -238,23 +241,25 @@ function openSwarmPageAndInstall(win)
 
         win.gBrowser.selectedTab = swarmTab;
 
-        setTestingPhase("opened");
-
-        var doInstall = event.target.getElementById('installSelected');
-        if (doInstall)
-        {
-            dispatch("click", doInstall);
-            setTestingPhase("installing");
-        }
-        else
-        {
-            setTestingPhase('failed');
-            Cu.reportError("swarm load cannot find installSelected ");
-        }
-
+        onSwarmTabReady(event.target);
     }, true);
 
-    Cu.reportError("swarm.bootstrap added browserElement "+browserElement.contentDocument.location);
+}
+
+// Called only when we are a tester
+
+function openSwarmPageAndInstall(win)
+{
+    Cu.reportError("swarm.bootstrap win "+win+" isDOM "+(win instanceof Ci.nsIDOMWindow)+" win.location "+win.location);
+
+    var chromeURI = "chrome://swarms/content/index.html";
+    var url = convertToFile(chromeURI) + "?installAll=true";
+
+    openSwarmTab(url, win, function installAll(document)
+    {
+        setTestingPhase("installing");
+        Cu.reportError("swarm openSwarmTab installing ");
+    });
 
     return true;
 }
@@ -279,4 +284,11 @@ function dispatchClick(elt)
       0, 0, 0, 0, 0, false, false, false, false, 0, null);
 
     elt.dispatchEvent(event);
+}
+
+function convertToFile(chromeURL)
+{
+    var chromeURI = Services.io.newURI(chromeURL, "UTF-8", null);
+    var chromeRegistry = Cc["@mozilla.org/chrome/chrome-registry;1"].getService(Ci.nsIChromeRegistry);
+    return chromeRegistry.convertChromeURL(chromeURI).spec;
 }

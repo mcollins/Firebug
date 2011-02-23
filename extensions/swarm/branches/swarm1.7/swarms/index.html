@@ -21,25 +21,29 @@ function redirect()
     if (window.location.protocol === 'chrome')
         return;
 
-   var FF = getFirefoxVersion();
-   if (window.console)console.log("Firefox Version", FF);
+    var FF = getFirefoxVersion();
+    if (window.console)console.log("Firefox Version", FF);
 
-    var branch = "";
+    var branch = [];
+    var root = [];
+    var addToBranch = false;
     var parts = window.location.toString().split('/');
     for (var i = 0; i < parts.length; i++)
     {
-       if (parts[i] == "swarms")
-           break;
-       branch += parts[i]+'/';
+        if (parts[i-1] == "swarms")
+            addToBranch = true;
+        if (addToBranch)
+            branch.push(parts[i]);
+        else
+            root.push(parts[i]);
     }
 
-    branch += "swarms"+'/';
-    branch += "Firefox-"+FF+'/';
+    var url = root.join('/') + "/Firefox-"+FF+'/'+branch.join('/');
 
-    if (window.console)console.log("Redirect to "+branch);
+    if (window.console)console.log("Redirect to "+url);
 
     if (FF)
-       window.location =  branch;
+       window.location =  url;
 }
 window.addEventListener('load', redirect, true);
 </script>
