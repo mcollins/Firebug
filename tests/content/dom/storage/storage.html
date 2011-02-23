@@ -15,12 +15,14 @@
 <li>Verify following property:<br/>
 <code>localStorage</code> should display <code>0 items in Storage</code><br/>
 <code>sessionStorage</code> should display <code>0 items in Storage</code><br/>
+<code>globalStorage</code> should display <code>0 items in Storage</code><br/>
 <br/>
 </li>
 <li>Click on the <code style="color:green">Init Storage</code> button below and refresh the page.</li>
 <li>Verify following property:<br/>
 <code>localStorage</code> should display <code>10 items in Storage item6="6", item3="3", more...</code><br/>
 <code>sessionStorage</code> should display <code>2 items in Storage issue="value1", name="item1"</code><br/>
+<code>globalStorage</code> should display <code>1 item in Storage test1="Hello1"</code><br/>
 </li>
 </ol>
 
@@ -30,17 +32,25 @@
 <script type="text/javascript">
 function initStorage()
 {
-        for (var i=0; i<10; i++)
-            localStorage.setItem("item"+i, i);
+    // Initialize local storage
+    for (var i=0; i<10; i++)
+        localStorage.setItem("item"+i, i);
 
-        if (window.console)
-            console.log("localStorage: ", localStorage);
+    if (window.console)
+        console.log("localStorage: ", localStorage);
 
-        sessionStorage.name = "item1";
-        sessionStorage.issue = "value1";
+    // Initialize session storage
+    sessionStorage.name = "item1";
+    sessionStorage.issue = "value1";
 
-        if (window.console)
-            console.log("sessionStorage: ", sessionStorage);
+    if (window.console)
+        console.log("sessionStorage: ", sessionStorage);
+
+    // Initialize global storage
+    globalStorage[location.hostname].test1 = "Hello1";
+
+    if (window.console)
+        console.log("globalStorage: ", globalStorage);
 }
 
 function clearStorage()
@@ -55,6 +65,10 @@ function clearStorage()
     if (window.console)
         console.log("sessionStorage: ", sessionStorage);
 
+    delete globalStorage[location.hostname].test1;
+
+    if (window.console)
+        console.log("globalStorage: ", sessionStorage);
 }
 
 </script>

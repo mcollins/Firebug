@@ -10,17 +10,44 @@ function runTest()
     FBTest.openNewTab(basePath + "dom/storage/storage.html", function(win)
     {
         FBTest.openFirebug();
-
-        var tasks = new FBTest.TaskList();
-        tasks.push(testEmptySessionStorage, win);
-        tasks.push(testEmptyLocalStorage, win);
-        tasks.push(testSessionStorageData, win);
-        tasks.push(testLocalStorageData, win);
-
-        tasks.run(function()
+        FBTest.enableConsolePanel(function(win)
         {
-            FBTest.testDone("storage.DONE");
-        })
+            var tasks = new FBTest.TaskList();
+            tasks.push(testEmptySessionStorage, win);
+            tasks.push(executeAndVerify, "sessionStorage",
+                /\s*0 items in Storage\s*/,
+                "a", "objectLink-Storage");
+
+            tasks.push(testEmptyLocalStorage, win);
+            tasks.push(executeAndVerify, "localStorage",
+                /\s*0 items in Storage\s*/,
+                "a", "objectLink-Storage");
+
+            tasks.push(testEmptyGlobalStorage, win);
+            tasks.push(executeAndVerify, "globalStorage",
+                /\s*0 items in Storage\s*/,
+                "a", "objectLink-StorageList");
+
+            tasks.push(testSessionStorageData, win);
+            tasks.push(executeAndVerify, "sessionStorage",
+                /\s*2 items in Storage\s*issue=\"value1\",\s*name=\"item1\"\s*/,
+                "a", "objectLink-Storage");
+
+            tasks.push(testLocalStorageData, win);
+            tasks.push(executeAndVerify, "localStorage",
+                "10 items in Storage item6=\"6\", item3=\"3\", item8=\"8\", item0=\"0\", item5=\"5\", item2=\"2\", item7=\"7\", item4=\"4\", item9=\"9\", item1=\"1\"",
+                "a", "objectLink-Storage");
+
+            tasks.push(testGlobalStorageData, win);
+            tasks.push(executeAndVerify, "globalStorage",
+                /\s*1 item in Storage\s*test1=\"Hello1\"\s*/,
+                "a", "objectLink-StorageList");
+
+            tasks.run(function()
+            {
+                FBTest.testDone("storage.DONE");
+            });
+        });
     });
 }
 
@@ -44,7 +71,22 @@ function testEmptyLocalStorage(callback, win)
     FBTest.waitForDOMProperty("localStorage", function(row)
     {
         FBTest.compare(/\s*0 items in Storage\s*/, row.textContent,
-            "The locale storage must be empty now");
+            "The local storage must be empty now");
+        callback();
+    });
+
+    // Clear storage and refresh panel content.
+    FBTest.click(win.document.getElementById("clearStorage"));
+    var panel = FBTest.selectPanel("dom");
+    panel.rebuild(true);
+}
+
+function testEmptyGlobalStorage(callback, win)
+{
+    FBTest.waitForDOMProperty("localStorage", function(row)
+    {
+        FBTest.compare(/\s*0 items in Storage\s*/, row.textContent,
+            "The global storage must be empty now");
         callback();
     });
 
@@ -84,4 +126,47 @@ function testLocalStorageData(callback, win)
     FBTest.click(win.document.getElementById("initStorage"));
     var panel = FBTest.selectPanel("dom");
     panel.rebuild(true);
+}
+
+function testGlobalStorageData(callback, win)
+{
+    FBTest.waitForDOMProperty("globalStorage", function(row)
+    {
+        FBTest.compare(
+            /\s*1 item in Storage\s*test1=\"Hello1\"\s*/,
+            row.textContent, "The local storage must have proper data");
+        callback();
+    });
+
+    // Clear storage and refresh panel content.
+    FBTest.click(win.document.getElementById("initStorage"));
+    var panel = FBTest.selectPanel("dom");
+    panel.rebuild(true);
+}
+
+// ********************************************************************************************* //
+// xxxHonza: could be part of FBTest namespace.
+
+/**
+ * Helper function for executing expression on the command line.
+ * @param {Function} callback Appended by the test harness.
+ * @param {String} expression Expression to be executed.
+ * @param {String} expected Expected value displayed.
+ * @param {String} tagName Name of the displayed element.
+ * @param {String} class Class of the displayed element.
+ */
+function executeAndVerify(callback, expression, expected, tagName, classes)
+{
+    var config = {tagName: tagName, classes: classes};
+    FBTest.waitForDisplayedElement("console", config, function(row)
+    {
+        FBTest.compare(expected, row.textContent, "Verify: " +
+            expression + " SHOULD BE " + expected);
+
+        FBTest.clickToolbarButton(null, "fbConsoleClear");
+        callback();
+    });
+
+    FBTest.selectPanel("console");
+    FBTest.executeCommand(expression);
 }
