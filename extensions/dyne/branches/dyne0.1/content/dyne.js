@@ -115,6 +115,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     {
         this.location = null;
         this.initializeOrionPrefs();
+        this.onOrionError = bind(this.onOrionError, this);
         Firebug.Panel.initialize.apply(this, arguments);
     },
 
@@ -130,6 +131,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     destroyNode: function()
     {
         this.resizeEventTarget.removeEventListener("resize", this.onResizer, true);
+
+        if (Firebug.Dyne.orionInPanel)
+            Firebug.Dyne.orionInPanel.removeEventListener("orionError", this.onOrionError, true);
 
         Firebug.Panel.destroyNode.apply(this, arguments);
     },
@@ -227,9 +231,13 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         {
             Firebug.Dyne.orion = win.orion;
             self.onOrionReady();
+
+            Firebug.Dyne.orionInPanel.addEventListener("orionError", self.onOrionError, true);
+
             Firebug.Dyne.orionInPanel.removeEventListener('orionReady', oneTime, true);
             FBTrace.sysout("dyne.addOrionSource orionReady handled");
         }, true);
+
         FBTrace.sysout("dyne.addOrionSource orionReady listener added");
     },
 
@@ -309,6 +317,15 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     getModel: function()
     {
         return Firebug.Dyne.orion.editor.getModel();
+    },
+
+
+    //**************************************************************************************
+    onOrionError: function(event)
+    {
+        var exc = Firebug.Dyne.orion.error;
+        Firebug.Console.logFormatted(["Orion exception "+exc, exc]);
+        Firebug.chrome.selectPanel('console');
     },
 
     onEditorReady: function(event)

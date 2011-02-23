@@ -36,6 +36,8 @@ try
         }
         catch(exc)
         {
+            orion.error = exc;
+            orion.dispatch("orionError", orionInPanel);
             window.dump("orion.editor.setText ERROR "+exc+"\n");
             window.FBTrace("orion.editor.setText ERROR "+exc, exc);
         }
