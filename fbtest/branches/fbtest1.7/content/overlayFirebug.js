@@ -25,7 +25,7 @@ this.initialize = function()
     if (winURL == "chrome://chromebug/content/chromebug.xul")
         return;
 
-    // Open console if the command line says so of if the pref says so.
+    // Open console if the command line says so or if the pref says so.
     var cmd = cmdLineHandler.wrappedJSObject;
     if (cmd.runFBTests)
         FBTestFirebugOverlay.open(cmd.testListURI);

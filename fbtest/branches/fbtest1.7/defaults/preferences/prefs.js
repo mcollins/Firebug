@@ -14,6 +14,13 @@ pref("extensions.fbtest.testCaseHistory", "https://getfirebug.com/tests/content/
 pref("extensions.fbtest.testDriverHistory", "");
 pref("extensions.fbtest.enableTestLogger", false);
 
+// Default browser window (with Firebug) size & position
+pref("extensions.fbtest.defaultOuterWidth", 1024);
+pref("extensions.fbtest.defaultOuterHeight", 768);
+pref("extensions.fbtest.defaultScreenX", 0);
+pref("extensions.fbtest.defaultScreenY", 0);
+
+
 // Support for tracing console
 pref("extensions.firebug.DBG_FBTEST", false);            // Tracing from FBTest internal framework.
 pref("extensions.firebug.DBG_TESTCASE", false);          // Tracing from actual unit-test files.

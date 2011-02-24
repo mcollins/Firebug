@@ -479,6 +479,14 @@ FBTestApp.TestConsole =
         // The auto run is done just the first time the test-console is opened.
         cmdLineHandler.wrappedJSObject.runFBTests = false;
 
+        // Set Browser window (with Firebug) size and position. All can be spcified
+        // in preferences.
+        var firebugWindow = FBTestApp.FBTest.FirebugWindow;
+        firebugWindow.screenX = Firebug.getPref(FBTestApp.prefDomain, "defaultScreenY");
+        firebugWindow.screenY = Firebug.getPref(FBTestApp.prefDomain, "defaultScreenY");
+        firebugWindow.outerWidth = Firebug.getPref(FBTestApp.prefDomain, "defaultOuterWidth");
+        firebugWindow.outerHeight = Firebug.getPref(FBTestApp.prefDomain, "defaultOuterHeight");
+
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.autoRun; defaultTestList: " + FBTestApp.defaultTestList +
                 ", defaultTest: " + FBTestApp.defaultTest);
