@@ -26,26 +26,32 @@ FBTestApp.TestCouchUploader =
         }
 
         // Get header document...
-        var header = this.getHeaderDoc(true);
+        var header = this.getHeaderDoc();
 
-        // ...and store it into the DB to get ID.
+        // Since Gecko 2.0 installed extensions must be collected asynchronously
         var self = this;
-        var options =
+        this.getExtensions(function(extensions)
         {
-            success: function(headerResp)
-            {
-                self.onHeaderUploaded(headerResp, header);
-            },
-            error: function(status, error, reason)
-            {
-                if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("fbtest.TestCouchUploader.onUpload; ERROR Can't upload test results" +
-                        status + ", " + error + ", " + reason);
+            header["Extensions"] = extensions;
 
-                alert("Can't upload test results! " + error + ", " + reason);
+            // ...and store it into the DB to get ID.
+            var options =
+            {
+                success: function(headerResp)
+                {
+                    self.onHeaderUploaded(headerResp, header);
+                },
+                error: function(status, error, reason)
+                {
+                    if (FBTrace.DBG_FBTEST || FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("fbtest.TestCouchUploader.onUpload; ERROR Can't upload test results" +
+                            status + ", " + error + ", " + reason);
+
+                    alert("Can't upload test results! " + error + ", " + reason);
+                }
             }
-        }
-        CouchDB.saveDoc(header, options);
+            CouchDB.saveDoc(header, options);
+        })
     },
 
     onHeaderUploaded: function(headerResp, header)
@@ -109,12 +115,11 @@ FBTestApp.TestCouchUploader =
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    getHeaderDoc: function(extInfo)
+    getHeaderDoc: function()
     {
         var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
         var currLocale = Firebug.getPref("general.useragent", "locale");
         var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
-        var application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.fuelIApplication);
 
         var header = {type: "user-header"};
         header["App Build ID"] = appInfo.appBuildID;
@@ -133,28 +138,49 @@ FBTestApp.TestCouchUploader =
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
         header["Total Tests"] = this.getTotalTests().toString();
 
-        if (extInfo && application.extensions)
+        return header;
+    },
+
+    getExtensions: function(callback)
+    {
+        var application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.extIApplication);
+
+        function collectExtensions(extensions)
         {
             // Put together a list of installed extensions.
-            var extensions = [];
-            for (var i=0; i<application.extensions.all.length; i++)
+            var result = [];
+            for (var i=0; i<extensions.all.length; i++)
             {
-                var ext = application.extensions.all[i];
-                extensions.push({
+                var ext = extensions.all[i];
+                result.push({
                     name: ext.name,
                     id: ext.id,
                     enabled: ext.enabled
                 });
             }
-            header["Extensions"] = extensions;
+            callback(result);
         }
 
-        return header;
+        if (application.extensions)
+        {
+            collectExtensions(application.extensions);
+        }
+        else if (application.getExtensions)
+        {
+            application.getExtensions(function(extensions)
+            {
+                collectExtensions(extensions);
+            });
+        }
+        else
+        {
+            callback([]);
+        }
     },
 
     getResultDoc: function(test)
     {
-        var result = extend(this.getHeaderDoc(false), {type: "user-result"});
+        var result = extend(this.getHeaderDoc(), {type: "user-result"});
 
         result.description = test.desc;
         result.file = test.testPage ? test.testPage : test.uri;
