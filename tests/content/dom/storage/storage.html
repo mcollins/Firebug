@@ -51,8 +51,13 @@ function initStorage()
     for (var i=0; i<10; i++)
         localStorage.setItem("item"+i, i);
 
+
     if (window.console)
+    {
+        console.log('length of '+localStorage.length);
         console.log("localStorage: ", localStorage);
+    }
+
 
     // Initialize session storage
     sessionStorage.name = "item1";
