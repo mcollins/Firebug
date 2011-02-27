@@ -140,7 +140,7 @@ var commandLineHandler = ChromebugCommandLineHandler.prototype = {
                     var launchChromebug = cmdLine.handleFlag("chromebug", false);
                     if (launchChromebug)
                     {
-                        prefs.setBoolPref("extensions.firebug.service.filterSystemURLs", false);  // See firebug-service.js
+                        prefs.setBoolPref("extensions.firebug.filterSystemURLs", false);  // See firebug-service.js
                         prefs.setBoolPref("extensions.chromebug.launch", true);
                         Components.utils.reportError("Chromebug command line sees -chromebug");
                         commandLineHandler.openChromebug(window);
