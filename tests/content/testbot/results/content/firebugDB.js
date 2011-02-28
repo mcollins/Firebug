@@ -16,8 +16,11 @@ CDB.FirebugDB = extend(CDB.Module,
 {
     initialize: function()
     {
-        $.couch.urlPrefix = "http://brasstacks.mozilla.com/couchdb";
-        //$.couch.urlPrefix = "http://legoas/couchdb";
+        var url = CDB.getURLParameter("db");
+        if (!url)
+            url = "http://brasstacks.mozilla.com/couchdb";
+
+        $.couch.urlPrefix = url;
         this.db = $.couch.db("firebug");
     },
 
