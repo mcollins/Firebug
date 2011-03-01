@@ -92,8 +92,23 @@ MutationRecognizer.prototype.matches = function(elt)
         if (elt.data && elt.data.indexOf(this.characterData) != -1)
         {
             if (FBTrace.DBG_TESTCASE_MUTATION)
-                FBTrace.sysout("MutationRecognizer matches Text character data "+this.characterData);
-            return elt.parentNode;
+                FBTrace.sysout("MutationRecognizer matches Text character data: " +
+                    this.characterData, elt.parentNode);
+
+            var parentNode = elt.parentNode;
+
+            // If a class is specified the parent of the text node must match.
+            if (this.changedAttributes && this.changedAttributes["class"] &&
+                !FW.FBL.hasClass.apply(FW.FBL, [parentNode, this.changedAttributes["class"]]))
+            {
+                if (FBTrace.DBG_TESTCASE_MUTATION)
+                    FBTrace.sysout("MutationRecognizer no match for class " +
+                        this.attributes[p]+" vs "+eltP+" p==class: "+(p=='class') +
+                        " indexOf: "+eltP.indexOf(this.changedAttributes[p]));
+                return null;
+            }
+
+            return parentNode;
         }
         else
         {
