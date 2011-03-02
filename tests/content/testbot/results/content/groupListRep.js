@@ -120,7 +120,11 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
 
     getPermaLink: function(group)
     {
-        return "?" + this.viewName + "=" + group.value.doc._id;
+        var link = "?" + this.viewName + "=" + group.value.doc._id;
+        var dburi = CDB.getURLParameter("db");
+        if (dburi)
+            link += "&db=" + dburi;
+        return link;
     },
 
     onClick: function(event)
