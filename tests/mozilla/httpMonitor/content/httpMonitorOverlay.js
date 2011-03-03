@@ -62,6 +62,9 @@ var HttpRequestObserver =
                     var tee = CCIN("@mozilla.org/network/stream-listener-tee;1", "nsIStreamListenerTee");
                     tee = tee.QueryInterface(Ci.nsIStreamListenerTee);
 
+                    if (Ci.nsIStreamListenerTee_1_9_2)
+                        tee = tee.QueryInterface(Ci.nsIStreamListenerTee_1_9_2);
+
                     request.QueryInterface(Ci.nsITraceableChannel);
                     var originalListener = request.setNewListener(tee);
 
@@ -70,7 +73,10 @@ var HttpRequestObserver =
 
                     // Initialize tee.
                     var outputStream = myListener.sink.outputStream;
-                    tee.init(originalListener, outputStream, myListener);
+                    if (tee.initWithObserver)
+                        tee.initWithObserver(originalListener, outputStream, myListener);
+                    else
+                        tee.init(originalListener, outputStream, myListener);
                 }
                 catch (err)
                 {
