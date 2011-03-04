@@ -21,7 +21,7 @@
     <em:name>ChromeBug</em:name>
     <em:description>ChromeBug: Firebug for Chrome</em:description>
     <em:creator>johnjbarton@johnjbarton.com</em:creator>
-    <em:homepageURL>http://getfirebug.com/chromebug/index.html</em:homepageURL>
+    <em:homepageURL>http://getfirebug.com/wiki/index.php/Chromebug_User_Guide</em:homepageURL>
     <em:updateURL>https://getfirebug.com/releases/chromebug/update.rdf</em:updateURL>
     <em:updateKey>@PUBLICKEY@</em:updateKey>
   </Description>
