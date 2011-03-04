@@ -16,12 +16,21 @@ CDB.FirebugDB = extend(CDB.Module,
 {
     initialize: function()
     {
-        var url = CDB.getURLParameter("db");
-        if (!url)
-            url = "http://brasstacks.mozilla.com/couchdb";
+        var dbURI = CDB.getURLParameter("dburi");
+        var dbName = CDB.getURLParameter("dbname");
 
-        $.couch.urlPrefix = url;
-        this.db = $.couch.db("firebug");
+        // For backward compatibility
+        if (!dbURI)
+            dbURI = CDB.getURLParameter("db");
+
+        if (!dbURI)
+            dbURI = "http://brasstacks.mozilla.com/couchdb";
+
+        if (!dbName)
+            dbName = "firebug";
+
+        $.couch.urlPrefix = dbURI;
+        this.db = $.couch.db(dbName);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
