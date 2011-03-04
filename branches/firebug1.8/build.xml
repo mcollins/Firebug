@@ -1,0 +1,225 @@
+<?xml version="1.0" ?>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+* 1) In order to build Firebug (including tracing) xpi run: $ant
+  The final xpi + update.rdf file will be located in 'release' sub directory.
+
+  If GETFIREBUG is properly specified in content/firebug/branch.properties
+  (it assumes you have fbug and getfirebug.com directories at the same level)
+  The xpi + update.rdf will be also deployed for you there and so, you can just commit.
+
+  The release directory should contain two files:
+  - firebug<version>.xpi (including updateURL) for getfirebug.com
+  - firebug<version>-amo.xpi (disabled update) for AMO
+
+* 2) In order to build Firebug final release (no tracing) run: $ant release
+  Again xpi files will be located in the 'release' directory.
+
+* 3) To check GETFIREBUG value run: ant echo
+
+* 4)To build xpi and generate JS doc (from source comments) run: $ant jsdoc
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<project name="firebug" basedir="." default="build">
+
+    <!-- Properties -->
+    <property file="content/firebug/branch.properties"/>
+
+    <!-- Directories -->
+    <property name="build.dir" value="./build"/>
+    <property name="release.dir" value="./release"/>
+    <property name="deploy-xpi.dir" value="${GETFIREBUG}/releases/firebug/${VERSION}"/>
+    <property name="deploy-jsdoc.dir" value="${GETFIREBUG}/developer/api/firebug${VERSION}"/>
+
+    <available file="${GETFIREBUG}" property="deploy.dir.available"/>
+
+    <!-- echo -->
+    <target name="echo">
+        <echo message="Build directory: ${build.dir}"/>
+        <echo message="Deploy directory ${GETFIREBUG} available: ${deploy.dir.available}"/>
+    </target>
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${release.dir}"/>
+    </target>
+
+    <!-- Build Debug (X) -->
+    <target name="build" depends="clean">
+        <antcall target="prepare-build" />
+
+        <!-- Create XPI for getfirebug.com -->
+        <antcall target="createFirebugXPI">
+            <param name="file-name" value="firebug-${VERSION}${RELEASE}.xpi"/>
+        </antcall>
+
+        <antcall target="disableUpdate" />
+
+        <!-- Create XPI for AMO -->
+        <antcall target="createFirebugXPI">
+            <param name="file-name" value="firebug-${VERSION}${RELEASE}-amo.xpi"/>
+        </antcall>
+
+        <delete dir="${build.dir}"/>
+        <antcall target="deploy" />
+
+        <echo message="Firebug version: ${VERSION}${RELEASE} in ${release.dir}"/>
+    </target>
+
+    <!-- Build Release -->
+    <target name="release" depends="clean">
+        <antcall target="prepare-build" />
+        <antcall target="disableTracingConsole" />
+
+        <!-- Create XPI for getfirebug.com -->
+        <antcall target="createFirebugXPI">
+            <param name="file-name" value="firebug-${VERSION}${RELEASE}.xpi"/>
+        </antcall>
+
+        <antcall target="disableUpdate" />
+
+        <!-- Create XPI for AMO -->
+        <antcall target="createFirebugXPI">
+            <param name="file-name" value="firebug-${VERSION}${RELEASE}-amo.xpi"/>
+        </antcall>
+
+        <delete dir="${build.dir}"/>
+        <antcall target="deploy" />
+
+        <echo message="Firebug Release version: ${VERSION}${RELEASE} in ${release.dir}"/>
+    </target>
+
+    <!-- Build AMO Release -->
+    <target name="release-amo" depends="clean">
+        <antcall target="prepare-build" />
+        <antcall target="disableTracingConsole" />
+        <antcall target="disableUpdate" />
+        <antcall target="createFirebugXPI" />
+        <echo message="Firebug Release version: ${VERSION}${RELEASE} in ${release.dir}"/>
+    </target>
+
+    <!-- Prepare build files -->
+    <target name="prepare-build">
+
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${release.dir}" />
+
+        <!-- Copy all files -->
+        <copy todir="${build.dir}">
+            <fileset dir=".">
+               <include name="**/*.js"/>
+               <include name="**/*.xul"/>
+               <include name="**/*.properties"/>
+               <include name="**/*.css"/>
+               <include name="**/*.html"/>
+               <include name="**/*.xml"/>
+               <include name="**/*.dtd"/>
+               <include name="**/*.png"/>
+               <include name="**/*.gif"/>
+               <include name="**/*.ico"/>
+               <include name="**/*.manifest"/>
+               <include name="**/*.txt"/>
+               <include name="**/*.html"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy install.rdf with updated release version info -->
+        <copy file="install.rdf.tpl.xml" tofile="${build.dir}/install.rdf"/>
+        <replace file="${build.dir}/install.rdf" propertyFile="content/firebug/branch.properties">
+            <replacefilter token="@VERSION@" property="VERSION"/>
+            <replacefilter token="@RELEASE@" property="RELEASE"/>
+        </replace>
+
+        <!-- Remove unnecessary *.xml files in the root directory (like e.g. this build file),
+            but not from sub directories. -->
+        <delete dir="${build.dir}" includes="*.xml" />
+
+        <!-- Remove template for manifest file that is used for Babelzilla builds -->
+        <delete file="${build.dir}/chrome.bz.tpl.manifest"/>
+    </target>
+
+    <!-- Create final firebug.xpi file -->
+    <target name="createFirebugXPI">
+
+        <!-- Compress files (ZIP) -->
+        <zip destfile="${release.dir}/${file-name}"
+            basedir="${build.dir}" update="true" />
+
+        <!-- Copy update.rdf file with updated release version info -->
+        <copy file="update.rdf.tpl.xml" tofile="${release.dir}/update.rdf"/>
+        <replace file="${release.dir}/update.rdf" propertyFile="content/firebug/branch.properties">
+            <replacefilter token="@VERSION@" property="VERSION"/>
+            <replacefilter token="@RELEASE@" property="RELEASE"/>
+            <replacefilter token="@LEAF@" value="firebug-${VERSION}${RELEASE}.xpi"/>
+        </replace>
+    </target>
+
+    <!-- Deploy xpi & update.rdf files - if target available -->
+    <target name="deploy" if="deploy.dir.available">
+        <copy file="${release.dir}/update.rdf" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <copy file="${release.dir}/firebug-${VERSION}${RELEASE}.xpi" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <echo message="XPI deployed to: ${VERSION}${RELEASE} to ${deploy-xpi.dir}"/>
+    </target>
+
+    <!-- Deploy if target available -->
+    <target name="deploy-jsdoc" if="deploy.dir.available">
+
+        <!-- Deploy jsdoc -->
+        <copy todir="${deploy-jsdoc.dir}">
+            <fileset dir="${release.dir}/jsdoc"/>
+        </copy>
+
+        <echo message="JSDoc deployed to: ${VERSION}${RELEASE} to ${deploy-xpi.dir}"/>
+    </target>
+
+    <!-- Support for generating docs from Firebug source code using js-doc-toolkit
+        See the output in $svn/jsdoc/out directory -->
+    <target name="jsdoc" depends="build" description="Generate documentation">
+
+        <property name="jsdoc.dir" value="../../jsdoc/"/>
+        <property name="jsdoc-toolkit.dir" value="${jsdoc.dir}/jsdoc-toolkit-2.3.0/"/>
+        <property name="jsdoc-output.dir" value="${release.dir}/jsdoc/"/>
+
+        <path id="jsdoctoolkit">
+            <!-- Rhino js.jar 1.7.R2 must be used with jsdoctoolkit-ant-task-1.0.1.jar -->
+            <fileset dir="${jsdoc.dir}" includes="*.jar"/>
+        </path>
+
+        <taskdef name="jsdoctoolkit"
+            classpathref="jsdoctoolkit"
+            classname="uk.co.darrenhurley.ant.tasks.JsDocToolkit"/>
+
+        <echo message="Generate doc from Firebug source."/>
+
+        <!-- Clean the output direcotory -->
+        <delete dir="${jsdoc-output.dir}"/>
+
+        <!-- Parse all source files -->
+        <jsdoctoolkit jsdochome="${jsdoc-toolkit.dir}"
+            template="firebug"
+            outputdir="${jsdoc-output.dir}"
+            inputdir="." />
+
+        <!-- Deploy -->
+        <antcall target="deploy-jsdoc" />
+    </target>
+
+    <!-- Remove (ie comment out) Firebug tracing console overlay from the chrome.manifest file.
+         The console is not available in the final releases. -->
+    <target name="disableTracingConsole">
+        <replaceregexp file="${build.dir}/chrome.manifest"
+            match="(.*)tracingConsoleOverlay\.xul"
+            replace="# \1tracingConsoleOverlay\.xul"
+            byline="true" />
+        <echo message="${build.dir}/chrome.manifest - Tracing Console Disabled" />
+    </target>
+
+    <!-- Remove update URL, this is necessary for AMO -->
+    <target name="disableUpdate">
+        <replaceregexp file="${build.dir}/install.rdf"
+            match="(.*)https://getfirebug.com/releases/firebug/${VERSION}/update.rdf(.*)"
+            replace=""
+            byline="true" />
+    </target>
+
+</project>
