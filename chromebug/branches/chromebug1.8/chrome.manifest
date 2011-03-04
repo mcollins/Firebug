@@ -1,0 +1,30 @@
+content chromebug content/ChromeBug/
+skin    chromebug classic/1.0 skin/classic/
+locale  chromebug en-US       locale/en-US/
+
+content fb4cb fb4cb/content/firebug/
+
+resource fb4cb modules/
+
+# Add Firebug command set to ChromeBug, but because we use fb4cb we don't allow Firebug overlays on us.
+overlay chrome://chromebug/content/chromebug.xul        chrome://fb4cb/content/firebugOverlay.xul
+# Add Modify Firebug UI
+overlay  chrome://chromebug/content/chromebug.xul        chrome://chromebug/content/firebugOverlayOverlay.xul
+
+# Add ChromeBug menu items to Firebug Menu in FF Tools
+overlay chrome://firebug/content/browserOverlay.xul 	chrome://chromebug/content/ChromeBugMenuOverlay.xul
+
+overlay chrome://explorer/content/tools/extension-project.xul chrome://chromebug/content/overlays/extension-project.xul
+
+
+
+component {B5D5631C-4FE1-11DB-8373-B622A1EF5492} components/chromebug_command_line.js
+contract @mozilla.org/commandlinehandler/general-startup;1?type=chromebug {B5D5631C-4FE1-11DB-8373-B622A1EF5492}
+category command-line-handler  aaa-chromebug @mozilla.org/commandlinehandler/general-startup;1?type=chromebug
+
+component {287716D2-140B-11DE-912E-E0FC55D89593} components/chromebug-startup-observer.js
+contract  @getfirebug.com/chromebug-startup-observer;1 {287716D2-140B-11DE-912E-E0FC55D89593}
+category profile-after-change @@@Chromebug_Startup_Observer_Service @getfirebug.com/chromebug-startup-observer;1
+
+#contract @mozilla.org/commandlinehandler/general-startup;1?type=chromebug {287716D2-140B-11DE-912E-E0FC55D89593}
+#category command-line-handler m-chromebug @mozilla.org/commandlinehandler/general-startup;1?type=chromebug

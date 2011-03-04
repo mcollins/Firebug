@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE window [
+]>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        id="blocker"
+        windowtype="blocker:ui"
+        title="Block JavaScript"
+        width="600" height="480"
+        persist="screenX,screenY,width,height">
+
+    <script type="application/x-javascript">
+    function armOnLoad(event)
+    {
+        window.dump("------------ "+window.location+" load ------------------------\n");
+        var releaser = window.arguments[0];
+        releaser.unblock = function()
+        {
+            window.dump("------------ "+window.location+" unblock ------------------------\n");
+            window.close();
+            window.dump("------------ "+window.closed+" unblock done ------------------------\n");
+        }
+    }
+    window.addEventListener('load', armOnLoad, false);
+    </script>
+    <vbox>
+        <browser id="content" flex="2" disablehistory="true" src="" />
+    </vbox>
+</window>
