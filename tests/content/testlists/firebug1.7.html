@@ -5,12 +5,6 @@
     <title>Firebug 1.7 Test List</title>
     <script type="text/javascript" src="testListUtils.js"></script>
     <link rel="stylesheet" href="testList.css" type="text/css"/>
-<!--
-        // Some CSS from Firebug namespace.
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/dom.css"));
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug-os/skin/panel.css"));
-        addStyleSheet(doc, createStyleSheet(doc, "chrome://firebug/skin/console.css"));
- -->
     <link rel="stylesheet" href="styles/testConsole.css" type="text/css"/>
     <link rel="stylesheet" href="styles/testList.css" type="text/css"/>
     <link rel="stylesheet" href="styles/testResult.css" type="text/css"/>
@@ -23,7 +17,7 @@
  * Root directory of the test tree. If it's empty, the parent directory of this file
  * is used as the test root directory.
  */
-var driverBaseURI = getDriverBaseURI();
+var driverBaseURI = getDriverBaseURI() + "/branches/1.7/";
 var serverURI = driverBaseURI;
 
 /**
