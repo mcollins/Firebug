@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+    <title>Console Error Reporting Test Page</title>
+</head>
+<body>
+<h1>Errors Tests</h1>
+
+<ol>
+    <li>Open Firebug and enable Console panel</li>
+    <li>Step by step click on each button.</li>
+    <li>Every button generates an error that must be displayed within the Console panel.</li>
+</ol>
+
+<button id="syntaxError" onclick="2BeOrNot2Be(40)">Syntax Error</button>
+<button id="shallowError" onclick="foops()">Shallow Error</button>
+<button id="deepError" onclick="deepError()">Deep Error</button>
+<button id="throw" onclick="throwit()">Throw</button>
+<button id="thousandErrors" onclick="explode()">A Thousand Errors</button>
+<button id="uncaughtException1891" onclick="test1891()">Uncaught Exception</button>
+<br/>
+<button id="clickClick" onclick="clickClick()">Fire two errors via events</button>
+<br/>
+
+<script type="application/x-javascript">
+function deepError()
+{
+    badStuff();
+}
+
+function badStuff()
+{
+/*foo*/                    B3();
+}
+
+function throwit()
+{
+    try {
+        throw "hi";
+    } catch (exc) {}
+
+    throw "hi";
+}
+
+function explode()
+{
+    for (var i = 0; i < 1000; ++i)
+        setTimeout(new Function("b" + i + "();"), 0);
+}
+function clickClick()
+{
+    var deepError = document.getElementById('deepError');
+    var shallowError = document.getElementById('shallowError');
+
+    click(shallowError);
+    click(deepError);
+}
+function click(node)
+{
+        var doc = node.ownerDocument, event = doc.createEvent("MouseEvents");
+        event.initMouseEvent("click", true, true, doc.defaultView, 0, 0, 0, 0, 0,
+            false, false, false, false, 0, null);
+        return node.dispatchEvent(event);
+}
+function test1891()
+{
+    var myDocument = document.implementation.createDocument("","",null);
+    myDocument.createElement("0");
+}
+</script>
+</body>
+</html>
