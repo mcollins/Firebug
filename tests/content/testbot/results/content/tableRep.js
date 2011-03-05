@@ -20,8 +20,9 @@ var TableRep = domplate(CDB.Rep,
                     TR({"class": "headerRow focusRow profileRow subFocusRow", "role": "row",
                         onclick: "$onClickHeader"},
                         FOR("column", "$columns",
-                            TH({"class": "headerCell headerCol a11yFocus", "role": "columnheader",
-                                $alphaValue: "$column.alphaValue"},
+                            TH({"class": "headerCell headerCol a11yFocus",
+                                "role": "columnheader",
+                                $alphaValue: "$column.alphaValue", _repObject: "$column"},
                                 DIV({"class": "headerCellBox"},
                                     "$column.label"
                                 )
@@ -34,7 +35,8 @@ var TableRep = domplate(CDB.Rep,
                         TR({"class": "focusRow profileRow subFocusRow", "role": "row",
                             _repObject: "$row"},
                             FOR("column", "$row|getColumns",
-                                TD({"class": "a11yFocus profileCell", "role": "gridcell"},
+                                TD({"class": "a11yFocus profileCell $column|getColClass",
+                                    "role": "gridcell"},
                                     TAG("$column|getValueTag", {object: "$column|getValue"})
                                 )
                             )
@@ -48,6 +50,11 @@ var TableRep = domplate(CDB.Rep,
     {
         var rep = object.rep ? object.rep : CDB.Reps.String;
         return rep.shortTag || rep.tag;
+    },
+
+    getColClass: function(column)
+    {
+        return column.colClass ? column.colClass : "";
     },
 
     getValue: function(object)
@@ -71,8 +78,9 @@ var TableRep = domplate(CDB.Rep,
         var cols = [];
         for (var i=0; i<this.columns.length; i++)
         {
-            var value = getObjectProperty(row, this.columns[i].property);
-            cols.push({value: value, rep: this.columns[i].rep});
+            var column = this.columns[i];
+            var value = getObjectProperty(row, column.property);
+            cols.push({value: value, rep: column.rep, colClass: column.colClass});
         }
 
         return cols;
@@ -223,7 +231,8 @@ CDB.Reps.Table.prototype =
                 property: (typeof(col.property) != "undefined") ? col.property : col.toString(),
                 label: (typeof(col.label) != "undefined") ? col.label : col.toString(),
                 rep: (typeof(col.rep) != "undefined") ? col.rep : null,
-                alphaValue: true
+                alphaValue: (typeof(col.alphaValue) != "undefined") ? col.alphaValue : true,
+                colClass: col.colClass
             });
         }
 
@@ -258,12 +267,29 @@ CDB.Reps.Table.prototype =
         return this.table;
     },
 
-    sort: function(column, desc)
+    sort: function(property, desc)
     {
-        // xxxHonza: hack
-        TableRep.sort(this.table, 1, false);
+        var colIndex = -1;
+        var numerical = false;
+
+        var cols = this.table.querySelectorAll(".headerCol");
+        for (var i=0; i<cols.length; i++)
+        {
+            var column = cols[i].repObject;
+            if (column.property == property)
+            {
+                colIndex = i;
+                numerical = !hasClass(cols[i], "alphaValue");
+                break;
+            }
+        }
+
+        if (colIndex == -1)
+            return;
+
+        TableRep.sort(this.table, colIndex, numerical);
         if (desc)
-            TableRep.sort(this.table, 1, false);
+            TableRep.sort(this.table, colIndex, numerical);
     }
 };
 

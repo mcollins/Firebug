@@ -176,9 +176,11 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
             var list = tabFailuresBody.querySelector(".failureList");
             var table = new Reps.Table([
                 {property: "key", label: "Test", rep: Reps.Link},
-                {property: "value", label: "Failures"},
+                {property: "value", label: "Failures", alphaValue: false,
+                    colClass: "failuresCountCol"},
             ]);
             table.render(data, list);
+            table.sort("value", true);
         });
     },
 

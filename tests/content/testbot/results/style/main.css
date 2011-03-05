@@ -43,3 +43,14 @@
     text-align: left;
     padding-left: 10px;
 }
+
+/*************************************************************************************************/
+/* Failures */
+
+.failuresCountCol {
+    text-align: right;
+}
+
+.failuresCountCol > SPAN {
+    padding-right: 15px;
+}
