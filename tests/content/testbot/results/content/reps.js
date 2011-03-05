@@ -108,7 +108,7 @@ this.Link = domplate(this.Rep,
     getTargetUrl: function(object)
     {
         //xxxHonza: the test list info should be pulled out from the database.
-        return "https://getfirebug.com/tests/content/" + this.getTitle(object);
+        return "https://getfirebug.com/tests/content/branches/1.7/" + this.getTitle(object);
     }
 });
 

@@ -201,7 +201,7 @@ var TableRep = domplate(CDB.Rep,
 CDB.Reps.Table = function(columns, options)
 {
     this.columns = columns;
-    this.options = options;
+    this.options = options || {};
 }
 
 CDB.Reps.Table.prototype =

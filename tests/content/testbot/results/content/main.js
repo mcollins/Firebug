@@ -29,9 +29,13 @@ CDB.Main = extend(CDB.Module,
         }
         else
         {
+            var defaultTab = "Home";
+            if (window.location.hash)
+                defaultTab = window.location.hash.substring(1);
+
             // Render basic page content (tab view) and select the Input tab by default.
             var tabViewNode = this.TabView.render(content);
-            this.TabView.selectTabByName(tabViewNode, "Home");
+            this.TabView.selectTabByName(tabViewNode, defaultTab);
         }
     }
 });
@@ -54,6 +58,20 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
             )
         ),
 
+    rangeTag:
+        DIV({"class": "tabHomeHeader", style: "display: none"},
+            SPAN("Show failing test for past "),
+            SELECT({"class": "failuresLimit", onchange: "$onFailuresLimitChange"},
+                OPTION("1"),
+                OPTION("2"),
+                OPTION("3"),
+                OPTION("5"),
+                OPTION("6"),
+                OPTION("10")
+            ),
+            SPAN(" week(s).")
+        ),
+
     defaultContentTag:
         DIV({"class": "groupBodyDefault"}),
 
@@ -65,6 +83,9 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
                 ),
                 A({"class": "UsersTab tab", view: "Users"},
                     $STR("Users")
+                ),
+                A({"class": "FailuresTab tab", view: "Failures"},
+                    $STR("Failures")
                 )
             ),
             DIV({"class": "tabHomeBody tabBody"},
@@ -78,6 +99,12 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
                 DIV({"class": "groupList"},
                     TAG("$defaultContentTag")
                 )
+            ),
+            DIV({"class": "tabFailuresBody tabBody"},
+                TAG("$rangeTag"),
+                DIV({"class": "failureList", style: "width: 500px"},
+                    TAG("$defaultContentTag")
+                )
             )
         ),
 
@@ -87,6 +114,36 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
         var viewBody = getAncestorByClass(e.target, "tabViewBody");
         var view = viewBody.selectedTab.getAttribute("view");
         this.updateTabBody(viewBody, view, null);
+    },
+
+    onFailuresLimitChange: function(event)
+    {
+        var e = fixEvent(event);
+        var viewBody = getAncestorByClass(e.target, "tabViewBody");
+        this.updateTabBody(viewBody, "Failures", null);
+    },
+
+    updateTabBody: function(viewBody, view, object)
+    {
+        var tab = viewBody.selectedTab;
+
+        var tabHomeBody = getElementByClass(viewBody, "tabHomeBody");
+        if (hasClass(tab, "HomeTab"))
+        {
+            this.refreshGroupList(tabHomeBody, "headers");
+        }
+
+        var tabUsersBody = getElementByClass(viewBody, "tabUsersBody");
+        if (hasClass(tab, "UsersTab"))
+        {
+            this.refreshGroupList(tabUsersBody, "user-headers");
+        }
+
+        var tabFailuresBody = getElementByClass(viewBody, "tabFailuresBody");
+        if (hasClass(tab, "FailuresTab"))
+        {
+            this.refreshFailuresList(tabFailuresBody);
+        }
     },
 
     refreshGroupList: function(tabHomeBody, viewName)
@@ -107,21 +164,22 @@ CDB.Main.TabView = domplate(CDB.Reps.TabView,
         });
     },
 
-    updateTabBody: function(viewBody, view, object)
+    refreshFailuresList: function(tabFailuresBody)
     {
-        var tab = viewBody.selectedTab;
+        var weeks = tabFailuresBody.querySelector(".failuresLimit").value;
+        var now = (new Date()).getTime();
+        var dateFrom = new Date(now - (weeks*24*60*60*1000));
+        var dateTo = new Date();
 
-        var tabHomeBody = getElementByClass(viewBody, "tabHomeBody");
-        if (hasClass(tab, "HomeTab"))
+        FirebugDB.getFailures(dateFrom, dateTo, function (data)
         {
-            this.refreshGroupList(tabHomeBody, "headers");
-        }
-
-        var tabUsersBody = getElementByClass(viewBody, "tabUsersBody");
-        if (hasClass(tab, "UsersTab"))
-        {
-            this.refreshGroupList(tabUsersBody, "user-headers");
-        }
+            var list = tabFailuresBody.querySelector(".failureList");
+            var table = new Reps.Table([
+                {property: "key", label: "Test", rep: Reps.Link},
+                {property: "value", label: "Failures"},
+            ]);
+            table.render(data, list);
+        });
     },
 
     render: function(parentNode)

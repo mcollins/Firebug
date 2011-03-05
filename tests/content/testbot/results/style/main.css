@@ -13,12 +13,13 @@
 /*************************************************************************************************/
 /* Tab View */
 
-.tabHomeBody, .tabUsersBody {
+.tabHomeBody,
+.tabUsersBody,
+.tabFailuresBody {
     padding: 7px;
 }
 
 .tabHomeHeader {
-    font-size: 13px;
     padding-bottom: 7px;
 }
 

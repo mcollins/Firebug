@@ -124,6 +124,18 @@ CDB.FirebugDB = extend(CDB.Module,
         }
     },
 
+    getFailures: function(dateFrom, dateTo, callback)
+    {
+        var options = {
+            group: true,
+            success: function(data) {
+                callback(data);
+            }
+        };
+
+        this.db.list("resultviews/allfailures", "json", options);
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Just for debugging purposes.
 

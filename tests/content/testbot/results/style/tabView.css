@@ -58,6 +58,7 @@
     background-color: #FFFFFF;
     overflow: auto;
     z-index: -1;
+    font-size: 13px;
 }
 
 .tabBody[selected="true"],
