@@ -1,3 +1,6 @@
 .orionEditor {
     overflow: hidden; /* Orion has its own scroll bar */
     }
+.panelNode-orion {
+    overflow: hidden;
+}

@@ -224,21 +224,31 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
         win.FBTrace = FBTrace;
 
-        Firebug.Dyne.orionInPanel = this.insertEditorScripts();
+        this.orion = this.insertOrionScripts();
         // the element is available synchronously, but the outer script runs async
-        var self = this;
-        Firebug.Dyne.orionInPanel.addEventListener("orionReady", function oneTime()
+        var panel = this;
+        Firebug.Dyne.orionInPanel.addEventListener("load", function orionFrameLoad()
         {
-            Firebug.Dyne.orion = win.orion;
-            self.onOrionReady();
-
-            Firebug.Dyne.orionInPanel.addEventListener("orionError", self.onOrionError, true);
-
-            Firebug.Dyne.orionInPanel.removeEventListener('orionReady', oneTime, true);
-            FBTrace.sysout("dyne.addOrionSource orionReady handled");
+            Firebug.Dyne.orionInPanel.removeEventListener('load', orionFrameLoad, true);
+            FBTrace.sysout("dyne.addOrionSource orion frame load");
         }, true);
 
         FBTrace.sysout("dyne.addOrionSource orionReady listener added");
+    },
+
+    insertOrionScripts: function()
+    {
+        var orionWrapper = "http://localhost:8080/coding.html#";
+        var url =orionWrapper + this.location;
+        var width = this.panelNode.clientWidth + 1;
+        var height = this.panelNode.clientHeight + 1;
+        this.panelNode.innerHTML = "<iframe src='"+url+"' id='orionFrame' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
+
+        var iframes = this.panelNode.getElementsByTagName('iframe');
+        if (iframes.length === 1)
+            return iframes[0];
+
+        FBTrace.sysout("dyne insertOrionScripts ERROR "+iframes.length+" frames!");
     },
 
     insertEditorScripts: function()
@@ -247,6 +257,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         if (orionInPanel)
             return orionInPanel;
 
+    },
+
+    insertEditorScriptIndividually: function()
+    {
         // append script tag with eclipse source
         if (this.useCompressed)
         {
@@ -255,7 +269,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         }
         else
         {
-            var editorFiles = ["js/editor.js", "js/model.js", "samples/rulers.js", "samples/styler.js",];
+            var editorFiles = ["js/editor.js", "js/model.js", "samples/rulers.js", "samples/styler.js","samples/undoStack.js"];
             for (var i = 0; i < editorFiles.length; i++)
             {
                 var baseUrl = "http://localhost:8080/file/org.eclipse.orion.client.editor/web/";
