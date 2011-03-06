@@ -567,9 +567,9 @@ Apparently this event comes to late to do anything useful with the objects.
                 FBTrace.sysout("Firebug.Chromebug.reloadWindow FAILS with browser.sessionstore.enabled= "+ssEnabled, exc);
             }
 
-            FBTrace.sysout("ChromeBug reloadWindow closing outerDOMWindow\n");
+            FBTrace.sysout("Chromebug reloadWindow closing outerDOMWindow\n");
             outerDOMWindow.close();
-            FBTrace.sysout("ChromeBug reloadWindow opening new window\n");
+            FBTrace.sysout("Chromebug reloadWindow opening new window\n");
             var ff = window.open();
             return ff;
         }

@@ -15,7 +15,7 @@ var ChromebugOverrides = {
     // Override FirebugChrome
     syncTitle: function()
     {
-        window.document.title = "ChromeBug";
+        window.document.title = "Chromebug";
         if (window.Application)
             window.document.title += " in " + Application.name + " " +Application.version;
         if(FBTrace.DBG_CHROMEBUG)
@@ -138,7 +138,7 @@ var ChromebugOverrides = {
             }
 
             if (FBTrace.DBG_LOCATIONS)
-                FBTrace.sysout("ChromeBugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
+                FBTrace.sysout("ChromebugPanel.supportsWindow win.location.href: "+((win && win.location) ? win.location.href:"null")+ " context:"+context+"\n");
             this.breakContext = context;
             return !!context;
         }
@@ -487,7 +487,7 @@ function overrideFirebugFunctions()
 
         top.Firebug.showBar = function() {
             if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("ChromeBugPanel.showBar NOOP\n");
+                FBTrace.sysout("ChromebugPanel.showBar NOOP\n");
         }
 
         Firebug.Spy.skipSpy = ChromebugOverrides.skipSpy;

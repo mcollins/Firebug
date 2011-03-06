@@ -16,8 +16,8 @@
       </Description>
     </em:targetApplication>
 
-    <em:name>ChromeBug - Multi-XPI</em:name>
-    <em:description>ChromeBug: Firebug for Chrome + Firebug </em:description>
+    <em:name>Chromebug - Multi-XPI</em:name>
+    <em:description>Chromebug: Firebug for Chrome + Firebug </em:description>
     <em:creator>johnjbarton@johnjbarton.com</em:creator>
     <em:homepageURL>http://www.almaden.ibm.com/u/bartonjj/fireclipse/index.html</em:homepageURL>
   </Description>

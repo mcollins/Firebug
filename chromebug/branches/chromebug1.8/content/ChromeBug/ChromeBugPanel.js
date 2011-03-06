@@ -112,7 +112,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
     },
 
-    // Browsers in ChromeBug hold our context info
+    // Browsers in Chromebug hold our context info
 
     createBrowser: function(global, fileName)
     {
@@ -546,7 +546,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     shutdown: function()
     {
-        if(Firebug.getPref("extensions.chromebug", 'defaultPanelName')=='ChromeBug')
+        if(Firebug.getPref("extensions.chromebug", 'defaultPanelName')=='Chromebug')
             Firebug.setPref("extensions.chromebug", 'defaultPanelName','console');
         prefs.setIntPref("extensions.chromebug.outerWidth", window.outerWidth);
         prefs.setIntPref("extensions.chromebug.outerHeight", window.outerHeight);
@@ -558,13 +558,13 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.shutdown();
         if(FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("ChromeBugPanel.shutdown EXIT\n");
+            FBTrace.sysout("ChromebugPanel.shutdown EXIT\n");
     },
 
     showPanel: function(browser, panel)
     {
         try {
-            if (panel && panel.name == "ChromeBug")
+            if (panel && panel.name == "Chromebug")
             {
                 panel.showPanel();
 
@@ -734,13 +734,13 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         // this is called after the chromebug window has opened.
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromeBugPanel. reattachContext for context:"+context.uid+" isChromeBug:"+context.isChromeBug+"\n");
+            FBTrace.sysout("ChromebugPanel. reattachContext for context:"+context.uid+" isChromebug:"+context.isChromebug+"\n");
     },
 
     unwatchWindow: function(context, win)
     {
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromeBugPanel.unwatchWindow for context:"+context.getName()+"(uid="+context.uid+") isChromeBug:"+context.isChromeBug+"\n");
+            FBTrace.sysout("ChromebugPanel.unwatchWindow for context:"+context.getName()+"(uid="+context.uid+") isChromebug:"+context.isChromebug+"\n");
 
     },
 
@@ -781,9 +781,9 @@ Firebug.Chromebug = extend(Firebug.Module,
            if (FBTrace.DBG_CHROMEBUG)
            {
                if (nextContext)
-                   FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" nextContext: "+nextContext.getName());
+                   FBTrace.sysout("ChromebugPanel.destroyContext " +context.getName()+" nextContext: "+nextContext.getName());
                else
-                   FBTrace.sysout("ChromeBugPanel.destroyContext " +context.getName()+" null nextContext with contexts.length: "+contexts.length);
+                   FBTrace.sysout("ChromebugPanel.destroyContext " +context.getName()+" null nextContext with contexts.length: "+contexts.length);
            }
 
             Firebug.Chromebug.selectContext(nextContext);
@@ -811,7 +811,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             return;
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromeBug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
+            FBTrace.sysout("Chromebug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
         try
         {
             Firebug.Chromebug.transferFromStartup();
@@ -839,7 +839,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             setTimeout(function waitForFBTrace()
             {
-                FBTrace.sysout("ChromeBug onJSDActivate NO jsdState! startupObserver:", startupObserver);
+                FBTrace.sysout("Chromebug onJSDActivate NO jsdState! startupObserver:", startupObserver);
             }, 1500);
             return;
         }
@@ -1000,7 +1000,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         var stopName = getExecutionStopNameFromType(type);
         if (FBTrace.DBG_UI_LOOP)
-            FBTrace.sysout("ChromeBugPanel.onStop type: "+stopName+ " context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+            FBTrace.sysout("ChromebugPanel.onStop type: "+stopName+ " context.getName():"+context.getName() + " context.stopped:"+context.stopped );
 
         try
         {
@@ -1010,7 +1010,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
 
         if (FBTrace.DBG_UI_LOOP)
-            FBTrace.sysout("ChromeBugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc+" in "+frame.script.fileName, "source:"+src);
+            FBTrace.sysout("ChromebugPanel.onStop script.tag: "+frame.script.tag+" @"+frame.line+":"+frame.pc+" in "+frame.script.fileName, "source:"+src);
 
         var cbContextList = document.getElementById('cbContextList');
         cbContextList.setAttribute("highlight", "true");
@@ -1027,7 +1027,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                     if ( !Firebug.Chromebug.isChromebugURL(anotherContext.getName()) )
                     {
                         if (FBTrace.DBG_UI_LOOP)
-                            FBTrace.sysout("ChromeBugPanel.onStop suppressing context: "+(anotherContext?anotherContext.getName():null));
+                            FBTrace.sysout("ChromebugPanel.onStop suppressing context: "+(anotherContext?anotherContext.getName():null));
                         try
                         {
                             Firebug.Debugger.suppressEventHandling(anotherContext);
@@ -1037,7 +1037,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                         catch(exc)
                         {
                             if(FBTrace.DBG_ERRORS)
-                                FBTrace.sysout("ChromeBugPanel.onStop suppressing context FAILED:"+exc, exc);
+                                FBTrace.sysout("ChromebugPanel.onStop suppressing context FAILED:"+exc, exc);
                         }
                     }
                 }
@@ -1052,7 +1052,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (callingContext && !callingContext.stopped)
             {
                 if (FBTrace.DBG_UI_LOOP)
-                    FBTrace.sysout("ChromeBugPanel.onStop marking context: "+(callingContext?callingContext.getName():null));
+                    FBTrace.sysout("ChromebugPanel.onStop marking context: "+(callingContext?callingContext.getName():null));
                 callingContext.stopped = true;
                 callingContext.stoppedFrame = calledFrame;
             }
@@ -1081,7 +1081,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             //prefService.savePrefFile(null);
 
             if (FBTrace.DBG_INITIALIZE)
-                FBTrace.sysout("ChromeBugPanel.onResume previousContext:"+ location);
+                FBTrace.sysout("ChromebugPanel.onResume previousContext:"+ location);
         }
 
         Firebug.Chromebug.eachContext(function clearStopped(anotherContext)
@@ -1093,7 +1093,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             delete anotherContext.suppressed;
         });
 
-        FBTrace.sysout("ChromeBugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
+        FBTrace.sysout("ChromebugPanel.onResume context.getName():"+context.getName() + " context.stopped:"+context.stopped );
 
     },
 
@@ -1109,7 +1109,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     onFunctionConstructor: function(context, frame, ctor_script, url)
     {
-        FBTrace.sysout("ChromeBug onFunctionConstructor");
+        FBTrace.sysout("Chromebug onFunctionConstructor");
     },
 
     onSourceFileCreated: function(context, sourceFile)
@@ -1410,7 +1410,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     dumpStackToConsole: function(context, title)
     {
-        if (FBTrace.DBG_STACK) FBTrace.sysout("ChromeBugPanel.dumpStackToConsole for: ", title);
+        if (FBTrace.DBG_STACK) FBTrace.sysout("ChromebugPanel.dumpStackToConsole for: ", title);
         var trace = FBL.getCurrentStackTrace(context);  // halt(), getCurrentStackTrace(), dumpStackToConsole(), =>3
         if (trace)
         {
@@ -1421,7 +1421,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             Firebug.Console.closeGroup(context, true);
         }
         else
-            if (FBTrace.DBG_STACK) FBTrace.sysout("ChromeBugPanel.dumpStackToConsole FAILS for "+title, " context:"+context.getName());
+            if (FBTrace.DBG_STACK) FBTrace.sysout("ChromebugPanel.dumpStackToConsole FAILS for "+title, " context:"+context.getName());
     },
 
     openAboutDialog: function()
@@ -1934,7 +1934,7 @@ function getFrameWindow(frame)
     catch (exc)
     {
         if (FBTrace.DBG_ERRORS && FBTrace.DBG_WINDOWS)
-            FBTrace.sysout("ChromeBugPanel getFrameWindow fails: ", exc);  // FBS.DBG_WINDOWS
+            FBTrace.sysout("ChromebugPanel getFrameWindow fails: ", exc);  // FBS.DBG_WINDOWS
         return null;
     }
 }
@@ -1971,13 +1971,13 @@ function remove(list, item)
         list.splice(index, 1);
 }
 
-function ChromeBugOnLoad(event)
+function ChromebugOnLoad(event)
 {
-    FBTrace.sysout("ChromeBugOnLoad "+event.originalTarget.documentURI+"\n");
+    FBTrace.sysout("ChromebugOnLoad "+event.originalTarget.documentURI+"\n");
 }
-function ChromeBugOnDOMContentLoaded(event)
+function ChromebugOnDOMContentLoaded(event)
 {
-    FBTrace.sysout("ChromeBugOnDOMContentLoaded "+event.originalTarget.documentURI+"\n");
+    FBTrace.sysout("ChromebugOnDOMContentLoaded "+event.originalTarget.documentURI+"\n");
 }
 
 // ************************************************************************************************

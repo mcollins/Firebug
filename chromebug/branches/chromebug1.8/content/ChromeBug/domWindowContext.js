@@ -19,7 +19,7 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
              this[n] = tabContext[n];
     }
 
-    this.isChromeBug = true;
+    this.isChromebug = true;
     this.loaded = true;
     this.detached = window;  // the window containing firebug for the context is chromebug window
     this.originalChrome = null;
@@ -108,9 +108,9 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             var oldName = context.getName();
             this.clearName();  // remove name cache
             if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("ChromeBugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
+                FBTrace.sysout("ChromebugPanel.domWindowWatcher found context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
             if (FBTrace.DBG_CHROMEBUG)
-                FBTrace.sysout("ChromeBugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" to "+context.getName()+"\n");
+                FBTrace.sysout("ChromebugPanel.domWindowWatcher rename context with id="+context.uid+" from "+oldName+" to "+context.getName()+"\n");
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("loadHandler found context with sourceFileMap ", context.sourceFileMap);
         }
@@ -122,7 +122,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
                 context.onUnload = bind(context.unloadHandler, context)
             domWindow.addEventListener("unload", context.onUnload, true);
 
-            if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromeBugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
+            if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromebugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
         }
     },
 
@@ -136,13 +136,13 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
             if (!domWindow)
             {
-                FBTrace.sysout("ChromeBug unloadHandler found no DOMWindow for event.target", event.target);
+                FBTrace.sysout("Chromebug unloadHandler found no DOMWindow for event.target", event.target);
                 return;
             }
 
             if (! domWindow instanceof Ci.nsIDOMWindow)
             {
-                FBTrace.sysout("ChromeBug unloadHandler domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
+                FBTrace.sysout("Chromebug unloadHandler domWindow not nsIDOMWindow event.currentTarget.location"+event.currentTarget.location, domWindow);
                 return;
             }
 
@@ -170,7 +170,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             else
             {
                 // Seems like the outer XUL window DOMWindow is cleaned up by onCloseWindow in xulapp
-                FBTrace.sysout("ChromeBug unloadHandler found no context for domWindow:"+domWindow.location);
+                FBTrace.sysout("Chromebug unloadHandler found no context for domWindow:"+domWindow.location);
             }
         }
         catch(exc)

@@ -13,7 +13,7 @@ const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 
 top.Chromebug = {}; // utility functions for Chromebug modules and ui
 
-this.namespaceName = "ChromeBug";
+this.namespaceName = "Chromebug";
 
 //*******************************************************************************
 

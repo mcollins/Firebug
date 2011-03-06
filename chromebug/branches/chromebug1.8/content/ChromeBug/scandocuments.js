@@ -120,7 +120,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         try
         {
             if (FBTrace.DBG_INSPECT)
-                FBTrace.sysout("ChromeBug startScanning with "+context?context.getName():"NULL CONTEXT!"+" in "+window.location);
+                FBTrace.sysout("Chromebug startScanning with "+context?context.getName():"NULL CONTEXT!"+" in "+window.location);
             if (this.scanningDocuments)
                 this.stopScanningDocuments();
             else
@@ -138,7 +138,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         this.scanningContext = context;
 
         if (FBTrace.DBG_INSPECT)
-            FBTrace.sysout("ChromeBug startScanning with "+context?context.getName():"NULL CONTEXT!"+" in "+window.location);
+            FBTrace.sysout("Chromebug startScanning with "+context?context.getName():"NULL CONTEXT!"+" in "+window.location);
         Firebug.chrome.setGlobalAttribute("cmd_toggleScanningDocuments", "checked", "true");
         Firebug.chrome.setGlobalAttribute("cmd_toggleInspecting", "checked", "true");
 
@@ -164,7 +164,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     stopScanningDocuments: function(cancelled, waitForClick)
     {
         if (FBTrace.DBG_INSPECT)
-            FBTrace.sysout("ChromeBug stopScanning  scanning:"+this.scanningDocuments+"\n");
+            FBTrace.sysout("Chromebug stopScanning  scanning:"+this.scanningDocuments+"\n");
         if (!this.scanningDocuments)
             return;
 

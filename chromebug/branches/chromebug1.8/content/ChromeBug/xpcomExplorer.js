@@ -283,7 +283,7 @@ XPCOMExplorer.jsContextList = {
             catch(e)
             {
                 //? Exception... "Unexpected error arg 0 [nsIDOMWindowInternal.location]"
-                FBTrace.sysout("ChromeBugPanel.getContextByLocation: ignoring ", e);
+                FBTrace.sysout("ChromebugPanel.getContextByLocation: ignoring ", e);
             }
         }
     },

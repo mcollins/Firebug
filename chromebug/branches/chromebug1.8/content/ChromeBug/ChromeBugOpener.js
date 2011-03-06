@@ -6,7 +6,7 @@ const prefs = PrefService.getService(nsIPrefBranch2);
 const nsIPrefService = Components.interfaces.nsIPrefService;
 const prefService = PrefService.getService(nsIPrefService);
 
-var ChromeBugOpener =
+var ChromebugOpener =
 {
     openNow: function()
     {
@@ -14,23 +14,23 @@ var ChromeBugOpener =
         if (opener)
             return opener.openNow(window);
         else
-            window.dump("ChromeBugOpener: no wrappedJSObject in command line handler\n");
+            window.dump("ChromebugOpener: no wrappedJSObject in command line handler\n");
     },
 
     getCommandLineHandler: function()
     {
-        if (!this.ChromeBugCommandLineHandler)
+        if (!this.ChromebugCommandLineHandler)
         {
-            this.ChromeBugCommandLineHandler = Components.classes['@mozilla.org/commandlinehandler/general-startup;1?type=chromebug'].
+            this.ChromebugCommandLineHandler = Components.classes['@mozilla.org/commandlinehandler/general-startup;1?type=chromebug'].
                 getService(Components.interfaces.nsICommandLineHandler);
         }
 
-        return this.ChromeBugCommandLineHandler;
+        return this.ChromebugCommandLineHandler;
     },
 
     setMenuByPref: function()
     {
-        var menuitem = document.getElementById("menu_OpenChromeBugAlways");
+        var menuitem = document.getElementById("menu_OpenChromebugAlways");
         if (menuitem)
         {
             var openalways = Boolean(prefs.getBoolPref("extensions.chromebug.openalways"));
@@ -38,21 +38,21 @@ var ChromeBugOpener =
             //alert("set menuitem.checked to "+menuitem.getAttribute("checked"));
         }
         else
-            window.dump("ChromeBugOpener: no element with id='menu_OpenChromeBugAlways'\n");
+            window.dump("ChromebugOpener: no element with id='menu_OpenChromebugAlways'\n");
     },
 
     observe: function(subject, topic, data)
     {
         if (data == "extensions.chromebug.openalways")
-            ChromeBugOpener.setMenuByPref();
+            ChromebugOpener.setMenuByPref();
     }
 }
 
-function ChromeBugOpenerOnLoad(event)
+function ChromebugOpenerOnLoad(event)
 {
-    ChromeBugOpener.setMenuByPref();
-    prefs.addObserver("extensions.chromebug", ChromeBugOpener, false);
-    window.removeEventListener("load", ChromeBugOpenerOnLoad, false);
+    ChromebugOpener.setMenuByPref();
+    prefs.addObserver("extensions.chromebug", ChromebugOpener, false);
+    window.removeEventListener("load", ChromebugOpenerOnLoad, false);
 }
 
-window.addEventListener("load", ChromeBugOpenerOnLoad, false);
+window.addEventListener("load", ChromebugOpenerOnLoad, false);

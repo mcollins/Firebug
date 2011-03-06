@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <r:RDF xmlns:r="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
        xmlns="http://www.mozilla.org/2004/em-rdf#">
-<!-- ChromeBug MultiExtension Package -->
+<!-- Chromebug MultiExtension Package -->
 <r:Description about="urn:mozilla:extension:chromebug@johnjbarton.com">
   <updates>
     <r:Seq>

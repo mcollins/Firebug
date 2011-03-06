@@ -87,7 +87,7 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>
 
     <script type="application/x-javascript"  src="chrome://chromebug/content/Chromebug.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromeBugPanel.js"/>
+    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugPanel.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/globalObserver.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
 

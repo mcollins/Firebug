@@ -83,7 +83,7 @@ var commandLineHandler = ChromebugCommandLineHandler.prototype = {
     {
         var inType = "chromebug:ui"; // MUST BE windowType on chromebug.xul
         var url = "chrome://chromebug/content/chromebug.xul";
-        var title = "ChromeBug";
+        var title = "Chromebug";
 
         var prefedWidth = prefs.getIntPref("extensions.chromebug.outerWidth");
         var prefedHeight = prefs.getIntPref("extensions.chromebug.outerHeight");
@@ -102,7 +102,7 @@ var commandLineHandler = ChromebugCommandLineHandler.prototype = {
             var chromeURI = iosvc.newURI(url, null, null);
             var localURI = chromeReg.convertChromeURL(chromeURI);
             Components.utils.reportError(title+" maps "+url+' to '+localURI.spec);
-            Components.utils.reportError("ChromeBug x,y,w,h = ["+chromeBugWindow.screenX+","+chromeBugWindow.screenY+","+
+            Components.utils.reportError("Chromebug x,y,w,h = ["+chromeBugWindow.screenX+","+chromeBugWindow.screenY+","+
                chromeBugWindow.width+","+chromeBugWindow.height+"]");
         }
 
