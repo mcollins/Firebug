@@ -110,8 +110,6 @@ var ChromebugOverrides = {
 
     getParentNode: function(node)
     {
-        if (this.embeddedBrowserParents && this.embeddedBrowserParents[node])
-            return this.embeddedBrowserParents[node];
         // the Mozilla XBL tree walker fails for parentNode
         var parent = inIDOMUtils.getParentForNode(node, true);
         if (FBTrace.DBG_HTML)
