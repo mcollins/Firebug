@@ -18,7 +18,7 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="chromebug"
         windowtype="chromebug:ui"
-        title="Chromebug 1.6"
+        title="Chromebug 1.8"
         width="600" height="400"
         persist="screenX,screenY,width,height">
 
@@ -51,6 +51,7 @@
     }
     window.addEventListener('load', onLoad, false);
     </script>
+    <script type="application/x-javascript" src="chrome://fb4cb/content/loader.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
 
@@ -62,13 +63,11 @@
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceFile.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/sourceBox.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabWatcher.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/traceModule.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/activation.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/tabContext.js"/>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/tabCache.js"/>
 
@@ -97,8 +96,6 @@
     <script type="application/x-javascript" src="chrome://fb4cb/content/css.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/layout.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/debuggerHalter.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/debugger.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/script.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/callstack.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/navigationHistory.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/dom.js"/>
