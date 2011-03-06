@@ -84,7 +84,8 @@ var ChromebugOverrides = {
 
                 if (child === null)   // then we did not find our selves in our parents children
                 {
-                    if (this.embeddedBrowserParents && this.embeddedBrowserParents[node] === parent) // then we are an embedded browser
+                    var tag = node.ownerDocument.location + "";
+                    if (this.embeddedBrowserParents && this.embeddedBrowserParents[tag] === parent) // then we are an embedded browser
                     {
                          var walker = this.getTreeWalker(parent);
                          nextSibling = walker.firstChild();  // it's a lie we are repeating here.
@@ -110,8 +111,6 @@ var ChromebugOverrides = {
 
     getParentNode: function(node)
     {
-        if (this.embeddedBrowserParents && this.embeddedBrowserParents[node])
-            return this.embeddedBrowserParents[node];
         // the Mozilla XBL tree walker fails for parentNode
         var parent = inIDOMUtils.getParentForNode(node, true);
         if (FBTrace.DBG_HTML)
