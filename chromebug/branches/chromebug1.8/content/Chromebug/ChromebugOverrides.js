@@ -219,10 +219,10 @@ var ChromebugOverrides = {
 
     showThisCompilationUnit: function(compilationUnit)
     {
-        if (compilationUnit.getKind() === CompilationUnit.EVAL && !this.showEvals)
+        if (compilationUnit.getKind() === Firebug.ToolsInterface.CompilationUnit.EVAL && !this.showEvals)
             return false;
 
-        if (compilationUnit.getKind() === CompilationUnit.BROWSER_GENERATED && !this.showEvents)
+        if (compilationUnit.getKind() === Firebug.ToolsInterface.CompilationUnit.BROWSER_GENERATED && !this.showEvents)
             return false;
 
         var description = Chromebug.parseURI(compilationUnit.getURL());
