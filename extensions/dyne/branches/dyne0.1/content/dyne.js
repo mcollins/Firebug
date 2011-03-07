@@ -1,6 +1,10 @@
 /* See license.txt for terms of usage */
 FBL.ns(function() { with (FBL) {
 
+
+if (Firebug.ToolsInterface) // 1.8
+    var CompilationUnit = Firebug.ToolsInterface.CompilationUnit;
+
 // ************************************************************************************************
 // Constants
 
@@ -117,6 +121,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.initializeOrionPrefs();
         this.onOrionError = bind(this.onOrionError, this);
         Firebug.Panel.initialize.apply(this, arguments);
+        context.orionBoxes = {}; // divs by location
     },
 
     initializeNode: function(oldPanelNode)
@@ -126,6 +131,15 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.resizeEventTarget.addEventListener("resize", this.onResizer, true);
 
         Firebug.Panel.initializeNode.apply(this, arguments);
+
+        this.loadingBox = this.document.getElementById('orionLoadingBox');
+        if (!this.loadingBox)
+        {
+            this.loadingBox = this.document.createElement('div');
+            this.loadingBox.setAttribute('id', 'orionLoadingBox');
+            this.loadingBox.innerHTML = "Loading Orion...";
+            this.panelNode.parentNode.insertBefore(this.loadingBox, this.panelNode);
+        }
     },
 
     destroyNode: function()
@@ -194,15 +208,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         if (!editURL)
             return;
 
-        this.editInPanel();
-    },
-
-    editInPanel: function ()
-    {
-        if (!Firebug.Dyne.orion)  // a ref to an object in the main panel scope
-            this.addOrionSource();
-        else
-            this.onOrionReady();
+        this.selectOrionBox(this.location);
     },
 
     onOrionReady: function()
@@ -218,33 +224,53 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.onEditorReady();
     },
 
-    addOrionSource: function()
+    selectOrionBox: function(location)
     {
-        var win = this.document.defaultView;
+        if (this.selectedOrionBox)
+            collapse(this.selectedOrionBox, true);
 
-        win.FBTrace = FBTrace;
+        this.selectedOrionBox = this.context.orionBoxes[location];
 
-        this.orion = this.insertOrionScripts();
-        // the element is available synchronously, but the outer script runs async
-        var panel = this;
-        Firebug.Dyne.orionInPanel.addEventListener("load", function orionFrameLoad()
-        {
-            Firebug.Dyne.orionInPanel.removeEventListener('load', orionFrameLoad, true);
-            FBTrace.sysout("dyne.addOrionSource orion frame load");
-        }, true);
-
-        FBTrace.sysout("dyne.addOrionSource orionReady listener added");
+        if (this.selectedOrionBox)
+            collapse(this.selectedOrionBox, false);
+        else
+            this.createOrionBox(location);
     },
 
-    insertOrionScripts: function()
+    createOrionBox: function(location)
+    {
+        var win = this.document.defaultView;
+        win.FBTrace = FBTrace;
+
+        collapse(this.loadingBox, false);
+
+        this.selectedOrionBox = this.document.createElement('div');  // DOM calls always seem easier than domplate...at first.
+        this.selectedOrionBox.setAttribute("class", "orionBox");
+        this.panelNode.appendChild(this.selectedOrionBox);
+        var iframe = this.insertOrionScripts(this.selectedOrionBox, location);
+        //this.context.orionBoxes[location] = this.selectedOrionBox;
+
+        // the element is available synchronously, but orion still needs to load
+        var panel = this;
+        iframe.contentWindow.addEventListener("load", function orionFrameLoad()
+        {
+            iframe.contentWindow.removeEventListener('load', orionFrameLoad, true);
+            collapse(panel.loadingBox, true);
+            FBTrace.sysout("dyne.createOrionBox orion frame load");
+        }, true);
+
+        FBTrace.sysout("dyne.createOrionBox orionReady listener added");
+    },
+
+    insertOrionScripts: function(parentElement, location)
     {
         var orionWrapper = "http://localhost:8080/coding.html#";
-        var url =orionWrapper + this.location;
-        var width = this.panelNode.clientWidth + 1;
-        var height = this.panelNode.clientHeight + 1;
-        this.panelNode.innerHTML = "<iframe src='"+url+"' id='orionFrame' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
+        var url =orionWrapper + location;
+        var width = parentElement.clientWidth + 1;
+        var height = parentElement.clientHeight + 1;
+        parentElement.innerHTML = "<iframe src='"+url+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
 
-        var iframes = this.panelNode.getElementsByTagName('iframe');
+        var iframes = parentElement.getElementsByTagName('iframe');
         if (iframes.length === 1)
             return iframes[0];
 
@@ -385,10 +411,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.showToolbarButtons("fbLocationSeparator", true);
         this.showToolbarButtons("fbLocationButtons", true);
 
-        Firebug.Dyne.saveEditing = bind(this.saveEditing, this);;
-
-        //this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
-
+        Firebug.Dyne.saveEditing = bind(this.saveEditing, this);
         // restore state
     },
 

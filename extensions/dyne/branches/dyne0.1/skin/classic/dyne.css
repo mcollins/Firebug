@@ -1,6 +1,25 @@
 .orionEditor {
     overflow: hidden; /* Orion has its own scroll bar */
     }
+
 .panelNode-orion {
     overflow: hidden;
+}
+
+.orionBox {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#orionLoadingBox {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    padding: 20px;
+    overflow: hidden;
+    background-color: lightgrey;
+    font-size: large;
+    text-align: center;
 }
