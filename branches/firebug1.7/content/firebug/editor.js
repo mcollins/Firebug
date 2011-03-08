@@ -1288,7 +1288,7 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         var showTop = 0;
         var showBottom = candidates.length;
 
-        if(candidates.length > commandCompletionLineLimit)
+        if (candidates.length > commandCompletionLineLimit)
         {
             var showBottom = commandCompletionLineLimit;
 
