@@ -138,6 +138,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             this.loadingBox = this.document.createElement('div');
             this.loadingBox.setAttribute('id', 'orionLoadingBox');
             this.loadingBox.innerHTML = "Loading Orion...";
+            collapse(this.loadingBox, true);
             this.panelNode.parentNode.insertBefore(this.loadingBox, this.panelNode);
         }
     },
