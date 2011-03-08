@@ -456,10 +456,21 @@ Firebug.BaseEditor = extend(Firebug.MeasureBox,
     getContextMenuItems: function(target)
     {
         var items = [];
-        items.push({label: "Cut", commandID: "cmd_cut"});
-        items.push({label: "Copy", commandID: "cmd_copy"});
-        items.push({label: "Paste", commandID: "cmd_paste"});
+        items.push({label: "Cut", command: bind(this.onCommand, this, "cmd_cut")});
+        items.push({label: "Copy", command: bind(this.onCommand, this, "cmd_copy")});
+        items.push({label: "Paste", command: bind(this.onCommand, this, "cmd_paste")});
         return items;
+    },
+
+    onCommand: function(command, cmdId)
+    {
+        var browserWindow = Firebug.chrome.window;
+
+        // Use the right browser window to get the current command controller (issue 4177).
+        var controller = browserWindow.document.commandDispatcher.getControllerForCommand(cmdId);
+        var enabled = controller.isCommandEnabled(cmdId);
+        if (controller && enabled)
+            controller.doCommand(cmdId);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
