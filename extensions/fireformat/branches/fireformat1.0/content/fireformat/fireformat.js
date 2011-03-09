@@ -86,7 +86,8 @@ var Fireformat = FBL.ns(function() {
     var len = value.length;
     if (tabSize > 1) {
       tabSize--;
-      while (/\t/g.exec(value)) {
+      var TAB_COUNT = /\t/g;
+      while (TAB_COUNT.exec(value)) {
         len += tabSize;
       }
     }
