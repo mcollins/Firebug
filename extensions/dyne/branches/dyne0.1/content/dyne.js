@@ -258,6 +258,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             iframe.contentWindow.removeEventListener('load', orionFrameLoad, true);
             collapse(panel.loadingBox, true);
             FBTrace.sysout("dyne.createOrionBox orion frame load");
+            panel.integrateOrion(iframe.contentWindow);
         }, true);
 
         FBTrace.sysout("dyne.createOrionBox orionReady listener added");
@@ -355,12 +356,30 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
          elt.dispatchEvent(ev);
     },
 
+    integrateOrion: function(win)
+    {
+    	this.currentEclipse = win.frames[0].eclipse;
+    	FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
+    },
+    
     getModel: function()
     {
         return Firebug.Dyne.orion.editor.getModel();
     },
 
-
+    prepCSSChanges: function()
+    {
+        var stylesheet = getStyleSheetByHref(this.location, this.context);
+        if (stylesheet)
+        {
+            var panel = context.getPanel("stylesheet");
+            if (panel)
+            {
+            	var rule = panel.getRuleByLine(stylesheet, line);
+            }
+        }
+    },
+    
     //**************************************************************************************
     onOrionError: function(event)
     {
