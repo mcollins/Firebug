@@ -25,7 +25,7 @@ var Crossfire = Crossfire || {};
     if (commandLine.getServerPort()) {
         FirebugLoadManager.arch = "remoteServer";
     }
-    else if ( (commandLine.getHost() && commandLine.getPort()) || CrossfireRemote) {
+    else if ( (commandLine.getHost() && commandLine.getPort()) || typeof(CrossfireRemote) != "undefined" ) {
         FirebugLoadManager.arch = "remoteClient";
     }
 
@@ -181,7 +181,8 @@ var Crossfire = Crossfire || {};
         window.openDialog("chrome://crossfire/content/connect-dialog.xul", "crossfire-connect","chrome,modal,dialog", params);
         if (params.host && params.port) {
             FBTrace.sysout( "Firebug.loader",  Firebug.loader);
-            Firebug["CrossfireClient"].connectClient(params.host, parseInt(params.port));
+            // Firebug.ToolsInterface should be CrossfireClient in our case
+            Firebug.ToolsInterface.connectClient(params.host, parseInt(params.port));
         }
     };
 

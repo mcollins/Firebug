@@ -2,24 +2,29 @@
 
 define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], function (CrossfireModule, CrossfireStatus) {
 
+    function CrossfireClient() {
+        this.contexts = {};
+        this.listeners = [];
+    }
     /**
      * @name CrossfireClient
      * @description Firebug Module for Client-side Crossfire functions.
      */
-    var CrossfireClient = FBL.extend(Firebug.Module, {
+    CrossfireClient.prototype = FBL.extend(Firebug.Module, {
 
-        contexts: [],
+        //contexts: [],
         dispatchName: "CrossfireClient",
         toolName: "all", // receive all packets, regardless of 'tool' header
+        //listeners: [],
 
-        /**
+        /*
          * @name initialize
          * @description Initializes Crossfire
          * @function
          * @private
          * @memberOf CrossfireModule
          * @extends Firebug.Module
-         */
+         *
         initialize: function() {
             var host, port;
             var commandLine = Components.classes["@almaden.ibm.com/crossfire/command-line-handler;1"].getService().wrappedJSObject;
@@ -29,19 +34,11 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
             this.contexts = {};
 
 
-            // Begin transitional code
-            var import = Components.utils.import;
-            import("resource://firebug/bti/browser.js");
-            import("resource://firebug/bti/browsercontext.js");
-            import("resource://firebug/bti/compilationunit.js");
-            // End transitional code
-
-            this.btiBrowser = new Browser();
 
             if (host && port) {
                 this.connectClient(host, port);
             }
-        },
+        },*/
 
 
         /**
@@ -54,7 +51,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
          * @param {Number} port the remote port number.
          */
         connectClient: function(host, port) {
-            if (FBTrace.DBG_CROSSFIRE) {
+            if (FBTrace.DBG_CROSSFIRE_CLIENT) {
                 FBTrace.sysout("CROSSFIRE connect: host => " + host + " port => " + port);
             }
 
@@ -67,7 +64,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
                 this.transport.open(host, port);
             }
             catch(e) {
-                if (FBTrace.DBG_CROSSFIRE) FBTrace.sysout(e);
+                if (FBTrace.DBG_CROSSFIRE_CLIENT) FBTrace.sysout(e);
             }
         },
 
@@ -93,13 +90,13 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
          */
         fireEvent: function(event)
         {
-            if (FBTrace.DBG_CROSSFIRE)
-                FBTrace.sysout("fireEvent: " + event);
+            if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                FBTrace.sysout("CrossfireClient fireEvent: " + event);
 
             var contextId = event.context_id,
                 eventName = event.event,
                 data = event.data;
-
+/*
             if (eventName == "onContextCreated") {
                 var btiContext = new BrowserContext();
                 this.contexts[contextId] = btiContext;
@@ -109,13 +106,15 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
                 var ccu = new CompilationUnit(data.href, browserContext); //CrossfireClient.CrossfireCompilationUnit(data.href, contextId);
                 browserContext._addCompilationUnit(ccu);
             }
-
+*/
             //FBL.dispatch(this.fbListeners, "onExecute", [packet]);
+
+            this.Browser.dispatch(eventName, data);
         },
 
 
         handleResponse: function( response) {
-            if (FBTrace.DBG_CROSSFIRE)
+            if (FBTrace.DBG_CROSSFIRE_CLIENT)
                 FBTrace.sysout("CrossfireClient handleResponse => " + response);
             if (response.command == "listcontexts") {
                 //TODO: create BTI BrowserContexts?
@@ -151,6 +150,253 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
             }
         })
         */
+
+        // ----- Browser Interface -----
+        Browser: function() {
+            return CrossfireClient;
+        },
+
+        getTools: function() {
+
+        },
+
+        getTool: function( name) {
+
+        },
+
+        getBrowserContext: function(id) {
+
+        },
+
+        addListener: function( listener) {
+            this.listeners.push(listener);
+        },
+
+        removeListener: function( listener) {
+            this.listeners.splice(this.listeners.indexOf(listener), 1);
+        },
+
+        dispatch: function(eventName, args) {
+            if (FBTrace.DBG_CROSSFIRE_DISPATCH)
+                FBTrace.sysout("dispatching " + eventName + " to " + this.listeners.length + "listeners");
+            for (var listener in this.listeners) {
+                try {
+                    listener[eventName].apply(listener, args);
+                } catch (e) {
+                    if (FBTrace.DBG_CROSSFIRE_DISPATCH)
+                        FBTrace.sysout("failed to dispatch " + eventName + " to " + listener + ": " + e);
+                }
+            }
+        },
+
+        onDebug: function()
+        {
+            FBTrace.sysout.apply(FBTrace, arguments);
+        },
+
+        // ----- Javascript Tool Interface -----
+        JavaScript: {
+            /**
+             * @name breakOnNext
+             */
+            breakOnNext : function(context, enable)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient breakOnNext");
+            /*
+                if (enable)
+                    Firebug.Debugger.suspend(context);
+                else
+                    Firebug.Debugger.unSuspend(context);
+                    */
+            },
+
+            /**
+             * @name setBreakpoint
+             */
+            setBreakpoint : function(context, url, lineNumber)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient setBreakpoint");
+                /*
+                // TODO we should be sending urls over not compilation units
+                var compilationUnit = context.getCompilationUnit(url);
+                Firebug.Debugger.setBreakpoint(compilationUnit, lineNumber);
+                */
+            },
+
+            /**
+             * @name clearBreakpoint
+             */
+            clearBreakpoint : function(context, url, lineNumber)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient clearBreakpoint");
+                /*
+                // This is more correct, but bypasses Debugger
+                Firebug.Debugger.fbs.clearBreakpoint(url, lineNumber);
+                */
+            },
+
+            /**
+             * @name enableBreakpoint
+             */
+            enableBreakpoint : function(context, url, lineNumber)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient enableBreakpoint");
+                /*
+                Firebug.Debugger.fbs.enableBreakpoint(url, lineNumber);
+                */
+            },
+
+            /**
+             * @name disableBreakpoint
+             */
+            disableBreakpoint : function(context, url, lineNumber)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient disableBreakpoint");
+                /*
+                Firebug.Debugger.fbs.disableBreakpoint(url, lineNumber);
+                */
+            },
+
+            /**
+             * @name isBreakpointDisabled
+             */
+            isBreakpointDisabled : function(context, url, lineNumber)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient isBreakpointDisabled");
+                /*
+                Firebug.Debugger.fbs.isBreakpointDisabled(url, lineNumber);
+                */
+            },
+
+            // xxx mcollins stolen comment from jjb's inProcess javascripttool
+            // These functions should be on stack instead
+
+            /**
+             * @name resumeJavascript
+             */
+            resumeJavaScript : function(context)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient resumeJavaScript");
+                /*
+                Firebug.Debugger.resume(context);
+                */
+            },
+
+            /**
+             * @name stepOver
+             */
+            stepOver : function(context)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient stepOver");
+                /*
+                Firebug.Debugger.stepOver(context);
+                */
+            },
+
+            /**
+             * @name stepInto
+             */
+            stepInto : function(context)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient stepInto");
+                /*
+                Firebug.Debugger.stepInto(context);
+                */
+            },
+
+            /**
+             * @name stepOut
+             */
+            stepOut : function(context)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient stepOut");
+                /*
+                Firebug.Debugger.stepOut(context);
+                */
+            },
+
+            /**
+             * @name runUntil
+             */
+            runUntil : function(compilationUnit, lineNumber)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient runUntil");
+                /*
+                Firebug.Debugger.runUntil(compilationUnit.getBrowserContext(), compilationUnit, lineNumber, Firebug.Debugger);
+                */
+            },
+
+            // Events
+            // mcollins FIXME: listen to something here...
+            //ToolsInterface.browser.addListener(ToolsInterface.JavaScript);  // This is how we get events
+
+            /**
+             * @name onActivateTool
+             * @description A previously enabled tool becomes active and sends us an event.
+             */
+            onActivateTool : function(toolname, active)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient onActivateTool");
+                /*
+                if (FBTrace.DBG_ACTIVATION)
+                    FBTrace.sysout("onActivateTool "+toolname+" = "+active);
+
+                if (toolname === 'script')
+                {
+                    Firebug.ScriptPanel.prototype.onJavaScriptDebugging(active);
+                    ToolsInterface.browser.eachContext(function refresh(context)
+                    {
+                        context.invalidatePanels('script');
+                    });
+                }
+                */
+            },
+
+            /**
+             * @name onStartDebugging
+             */
+            onStartDebugging : function(context, frame)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient onStartDebugging");
+                /*
+                Firebug.selectContext(context);
+                var panel = Firebug.chrome.selectPanel("script");
+                panel.onStartDebugging(frame);
+                */
+            },
+
+            /**
+             * @name onStopDebugging
+             */
+            onStopDebugging : function(context)
+            {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient onStopDebugging");
+                /*
+                var panel = context.getPanel("script", true);
+                if (panel && panel === Firebug.chrome.getSelectedPanel())  // then we are looking at the script panel
+                    panel.showNoStackFrame(); // unhighlight and remove toolbar-status line
+
+                if (panel)
+                {
+                    panel.onStopDebugging();
+                }
+                */
+            }
+        }
     });
 
     // register module
