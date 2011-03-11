@@ -358,13 +358,21 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     integrateOrion: function(win)
     {
-    	this.currentEclipse = win.frames[0].eclipse;
-    	FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
+        this.currentEclipse = win;
+        FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
+        var topContainer = win.dijit.byId('topContainer');
+        FBTrace.sysout("dyne.integrateOrion topContainer"+topContainer);
+        var editor = topContainer._editorContainer._editor;
+        FBTrace.sysout("dyne.integrateOrion editor "+editor);
+        this.currentEditor = editor;
+
+        var model = this.getModel();
+        model.addListener(this);
     },
-    
+
     getModel: function()
     {
-        return Firebug.Dyne.orion.editor.getModel();
+        return this.currentEditor.getModel();
     },
 
     prepCSSChanges: function()
@@ -375,11 +383,11 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             var panel = context.getPanel("stylesheet");
             if (panel)
             {
-            	var rule = panel.getRuleByLine(stylesheet, line);
+                var rule = panel.getRuleByLine(stylesheet, line);
             }
         }
     },
-    
+
     //**************************************************************************************
     onOrionError: function(event)
     {
