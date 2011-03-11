@@ -212,19 +212,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.selectOrionBox(this.location);
     },
 
-    onOrionReady: function()
-    {
-        this.setSaveAvailable(false);
-
-        var source = FBL.getResource(this.location);
-        Firebug.Dyne.orion.editText = source; // see orionInPanel.js
-
-        FBTrace.sysout("dyne.onOrionReady orionEdit dispatch");
-
-        this.dispatch('orionEdit', Firebug.Dyne.orionInPanel);
-        this.onEditorReady();
-    },
-
     selectOrionBox: function(location)
     {
         if (this.selectedOrionBox)
@@ -366,8 +353,24 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         FBTrace.sysout("dyne.integrateOrion editor "+editor);
         this.currentEditor = editor;
 
+        this.attachUpdater();
+    },
+
+    attachUpdater: function()
+    {
         var model = this.getModel();
-        model.addListener(this);
+        if (this.selection instanceof Firebug.EditLink)
+        {
+            var fromPanel = this.selection.originPanel;
+            if (fromPanel.name === "stylesheet")
+            {
+                var updater = new Firebug.Dyne.CSSStylesheetUpdater(model, fromPanel);
+                model.addListener(updater);
+                return;
+            }
+              // TODO a different listener for each kind of file
+        }
+        FBTrace.sysout("Dyne onEditorReady ERROR no match "+this.selection, this.selection);
     },
 
     getModel: function()
@@ -394,22 +397,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var exc = Firebug.Dyne.orion.error;
         Firebug.Console.logFormatted(["Orion exception "+exc, exc]);
         Firebug.chrome.selectPanel('console');
-    },
-
-    onEditorReady: function(event)
-    {
-        var model = this.getModel();
-        model.addListener(this);
-    },
-
-    // eclipse.TextModel listener
-    onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
-    {
-        var model = this.getModel();
-        var changedLineIndex = model.getLineAtOffset(start);
-        var lineText = model.getLine(changedLineIndex);
-        FBTrace.sysout("dyne eclipse.TextModel onchanged "+changedLineIndex+" "+lineText);
-
     },
 
     setSaveAvailable: function(isAvailable)
@@ -554,6 +541,48 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     },
 
 });
+
+Firebug.Dyne.CSSStylesheetUpdater = function(model, cssPanel)
+{
+    this.model = model;
+    this.cssPanel = cssPanel;
+    this.stylesheet = cssPanel.location;
+}
+var rePriority = /(.*?)\s*(!important)?$/;
+
+
+Firebug.Dyne.CSSStylesheetUpdater.prototype =
+{
+    reNameValue: /\s*([^:]*)\s*:\s*(.*?)\s*(!important)?\s*;/,
+    // eclipse.TextModel listener
+    onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
+    {
+        var changedLineIndex = this.model.getLineAtOffset(start);
+        var lineText = this.model.getLine(changedLineIndex);
+        FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged "+changedLineIndex+" "+lineText);
+        FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
+
+        var rule = this.cssPanel.getRuleByLine(this.stylesheet, changedLineIndex);
+        FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater getRuleByLine("+this.stylesheet+", "+changedLineIndex+"=>"+rule, rule);
+
+        var m = this.reNameValue.exec(lineText);
+        if (m)
+        {
+            var propName = m[1];
+            var propValue = m[2];
+            var priority = m[3] ? "important" : "";
+            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater parsed: "+propName+" :"+propValue+(priority? " !"+priority : "") );
+            Firebug.CSSModule.setProperty(rule, propName, propValue, priority);
+        }
+        else
+        {
+            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater ERROR no match on "+lineText);
+        }
+
+    },
+
+},
+
 
 Firebug.Dyne.Saver = function dyneSaver(onSaveSuccess)
 {
