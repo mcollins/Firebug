@@ -236,7 +236,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.selectedOrionBox.setAttribute("class", "orionBox");
         this.panelNode.appendChild(this.selectedOrionBox);
         var iframe = this.insertOrionScripts(this.selectedOrionBox, location);
-        //this.context.orionBoxes[location] = this.selectedOrionBox;
 
         // the element is available synchronously, but orion still needs to load
         var panel = this;
@@ -264,41 +263,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             return iframes[0];
 
         FBTrace.sysout("dyne insertOrionScripts ERROR "+iframes.length+" frames!");
-    },
-
-    insertEditorScripts: function()
-    {
-        var orionInPanel = this.document.getElementById('orionInPanel');
-        if (orionInPanel)
-            return orionInPanel;
-
-    },
-
-    insertEditorScriptIndividually: function()
-    {
-        // append script tag with eclipse source
-        if (this.useCompressed)
-        {
-            var url = "http://download.eclipse.org/e4/orion/js/org.eclipse.orion.client.editor/orion-editor.js";
-            var elt = this.insertScriptTag(this.document, 'orionEditorScript',url);
-        }
-        else
-        {
-            var editorFiles = ["js/editor.js", "js/model.js", "samples/rulers.js", "samples/styler.js","samples/undoStack.js"];
-            for (var i = 0; i < editorFiles.length; i++)
-            {
-                var baseUrl = "http://localhost:8080/file/org.eclipse.orion.client.editor/web/";
-                // var baseUrl = "chrome://dyne/content/orion/"
-                var url = baseUrl + editorFiles[i];
-                var elt = this.insertScriptTag(this.document, 'orionEditorScript_'+i, url);
-            }
-        }
-
-        // append script tag linking eclipse source to div with lines
-        var url = "chrome://dyne/content/orionInPanel.js";
-        this.insertScriptTag(this.document, 'orionInPanel', url);
-        var orionInPanel = this.document.getElementById('orionInPanel');
-        return orionInPanel;
     },
 
     insertScriptTag: function(doc, id, url)
@@ -346,11 +310,14 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     integrateOrion: function(win)
     {
         this.currentEclipse = win;
-        FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
         var topContainer = win.dijit.byId('topContainer');
-        FBTrace.sysout("dyne.integrateOrion topContainer"+topContainer);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.integrateOrion topContainer"+topContainer);
         var editor = topContainer._editorContainer._editor;
-        FBTrace.sysout("dyne.integrateOrion editor "+editor);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
         this.currentEditor = editor;
 
         this.attachUpdater();
@@ -376,19 +343,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     getModel: function()
     {
         return this.currentEditor.getModel();
-    },
-
-    prepCSSChanges: function()
-    {
-        var stylesheet = getStyleSheetByHref(this.location, this.context);
-        if (stylesheet)
-        {
-            var panel = context.getPanel("stylesheet");
-            if (panel)
-            {
-                var rule = panel.getRuleByLine(stylesheet, line);
-            }
-        }
     },
 
     //**************************************************************************************
@@ -559,11 +513,17 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
     {
         var changedLineIndex = this.model.getLineAtOffset(start);
         var lineText = this.model.getLine(changedLineIndex);
-        FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged "+changedLineIndex+" "+lineText);
-        FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
+        if (FBTrace.DBG_DYNE)
+        {
+            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged "+changedLineIndex+" "+lineText);
+            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
+        }
 
-        var rule = this.cssPanel.getRuleByLine(this.stylesheet, changedLineIndex);
-        FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater getRuleByLine("+this.stylesheet+", "+changedLineIndex+"=>"+rule, rule);
+        var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
+        var rule = this.cssPanel.getRuleByLine(this.stylesheet, changedLineNumber);
+
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater getRuleByLine("+this.stylesheet+", "+changedLineNumber+"=>"+rule, rule);
 
         var m = this.reNameValue.exec(lineText);
         if (m)
@@ -571,7 +531,8 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
             var propName = m[1];
             var propValue = m[2];
             var priority = m[3] ? "important" : "";
-            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater parsed: "+propName+" :"+propValue+(priority? " !"+priority : "") );
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater parsed: "+propName+" :"+propValue+(priority? " !"+priority : "") );
             Firebug.CSSModule.setProperty(rule, propName, propValue, priority);
         }
         else
@@ -582,7 +543,6 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
     },
 
 },
-
 
 Firebug.Dyne.Saver = function dyneSaver(onSaveSuccess)
 {
