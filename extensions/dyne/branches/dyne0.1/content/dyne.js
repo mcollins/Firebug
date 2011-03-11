@@ -403,10 +403,13 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     },
 
     // eclipse.TextModel listener
-    onChanged: function()
+    onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
     {
-        FBTrace.sysout("dyne eclipse.TextModel onchanged "+this);
-        this.setSaveAvailable(true);
+        var model = this.getModel();
+        var changedLineIndex = model.getLineAtOffset(start);
+        var lineText = model.getLine(changedLineIndex);
+        FBTrace.sysout("dyne eclipse.TextModel onchanged "+changedLineIndex+" "+lineText);
+
     },
 
     setSaveAvailable: function(isAvailable)
