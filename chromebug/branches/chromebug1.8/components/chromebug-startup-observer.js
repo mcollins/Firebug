@@ -10,6 +10,7 @@ const CONTRACT_ID = "@getfirebug.com/chromebug-startup-observer;1";
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
+const Cu = Components.utils;
 
 const STARTUP_TOPIC = "profile-after-change";
 
@@ -26,13 +27,13 @@ const prefs = PrefService.getService(nsIPrefBranch2);
 
 // ************************************************************************************************
 // Startup Request Observer implementation
-//Components.utils.reportError("Chromebug startup observer start top level");
+//Cu.reportError("Chromebug startup observer start top level");
 function StartupObserver()
 {
     this.observers = [];
 }
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var gStartupObserverSingleton = null;
 
@@ -82,7 +83,7 @@ StartupObserver.prototype =
 
     startJSD: function()
     {
-        if (trace) Components.utils.reportError("chromebug starting jsd");
+        if (trace) Cu.reportError("chromebug starting jsd");
         var DebuggerService = Cc["@mozilla.org/js/jsd/debugger-service;1"];
         var jsdIDebuggerService = Ci["jsdIDebuggerService"];
         jsd = DebuggerService.getService(jsdIDebuggerService);
@@ -114,7 +115,7 @@ StartupObserver.prototype =
 
         self.hookJSDContexts(jsd,  self.getJSDState());
 
-        Components.utils.reportError("FYI: Chromebug onDebuggerActivated jsd engine; JIT will be disabled ");
+        Cu.reportError("FYI: Chromebug onDebuggerActivated jsd engine; JIT will be disabled ");
     },
 
    setJSDFilters: function(jsd)
@@ -157,7 +158,7 @@ StartupObserver.prototype =
        {
            jsd.enumerateFilters({ enumerateFilter: function(filter)
            {
-               Components.utils.reportError("gStartupObserverSingleton filter "+filter.urlPattern+" "+filter.flags+"\n");
+               Cu.reportError("gStartupObserverSingleton filter "+filter.urlPattern+" "+filter.flags+"\n");
            }});
        }
    },
@@ -289,7 +290,7 @@ StartupObserver.prototype =
                    if (frame.scope)
                        analyzeScope(cb, frame, jsdState);
                    else // no scope, looks like this is where command line handlers end up
-                       if (trace) Components.utils.reportError("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
+                       if (trace) Cu.reportError("no callingFrame and no executionContext for "+frame.script.fileName+"\n");
                }
 
                return Ci.jsdIExecutionHook.RETURN_CONTINUE;
@@ -300,7 +301,7 @@ StartupObserver.prototype =
        {
            onError: function(message, fileName, lineNo, pos, flags, errnum, exc)
            {
-               Components.utils.reportError("errorHook: "+message+"@"+ fileName +"."+lineNo+"\n");
+               Cu.reportError("errorHook: "+message+"@"+ fileName +"."+lineNo+"\n");
                return true;
            }
        };
@@ -335,7 +336,7 @@ StartupObserver.prototype =
         {
             gStartupObserverSingleton = new StartupObserver();
             gStartupObserverSingleton.wrappedJSObject = gStartupObserverSingleton;
-            //Components.utils.reportError("StartupObserver created singleton "+gStartupObserverSingleton.wrappedJSObject);
+            //Cu.reportError("StartupObserver created singleton "+gStartupObserverSingleton.wrappedJSObject);
         }
 
         gStartupObserverSingleton.startJSDOnce();
@@ -349,21 +350,22 @@ StartupObserver.prototype =
     /* nsIObserve */
     observe: function(subject, topic, data)
     {
-        Components.utils.reportError("StartupObserver "+topic);
+        Cu.reportError("StartupObserver "+topic);
         if (topic == STARTUP_TOPIC) {
-            if (trace) Components.utils.reportError("StartupObserver "+topic);
+            if (trace) Cu.reportError("StartupObserver "+topic);
             var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
             observerService.addObserver(this, "command-line-startup", false);
+
             var chromebugLaunch = prefs.getBoolPref("extensions.chromebug.launch");
 
             if (chromebugLaunch)
             {
-                Components.utils.reportError("Chromebug "+topic+" extensions.chromebug.launch: "+chromebugLaunch);
+                Cu.reportError("Chromebug "+topic+" extensions.chromebug.launch: "+chromebugLaunch);
                 this.initialize();
             }
             else
             {
-                Components.utils.reportError("Chromebug "+topic+" extensions.chromebug.launch: "+chromebugLaunch);
+                Cu.reportError("Chromebug "+topic+" extensions.chromebug.launch: "+chromebugLaunch);
             }
 
             return;
@@ -371,23 +373,23 @@ StartupObserver.prototype =
         else if (topic === "command-line-startup")
         {
             return;
-            Components.utils.reportError("Chromebug "+topic+" command-line-startup");
+            Cu.reportError("Chromebug "+topic+" command-line-startup");
              if (subject instanceof Ci.nsICommandLine)
              {
                  var cmdLine = Cc["@mozilla.org/toolkit/command-line;1"].createInstance(Ci.nsICommandLine);
                  if (Ci.nsICommandLineRunner)
                  {
-                     Components.utils.reportError("Chromebug nsICommandLineRunner Exists");
+                     Cu.reportError("Chromebug nsICommandLineRunner Exists");
                      if (cmdLine instanceof Ci.nsICommandLineRunner)
-                         Components.utils.reportError("Chromebug nsICommandLineRunner isa");
+                         Cu.reportError("Chromebug nsICommandLineRunner isa");
                  }
                  else
-                     Components.utils.reportError("Chromebug nsICommandLineRunner NOT");
+                     Cu.reportError("Chromebug nsICommandLineRunner NOT");
 
                  for (var p in cmdLine)
-                     Components.utils.reportError("Chromebug cmdLine."+p+"="+ cmdLine[p]);
+                     Cu.reportError("Chromebug cmdLine."+p+"="+ cmdLine[p]);
                  //subject.preventDefault = true;
-                 Components.utils.reportError("Chromebug subject.preventDefault"+ subject.preventDefault);
+                 Cu.reportError("Chromebug subject.preventDefault"+ subject.preventDefault);
              }
         }
         else if (topic == "quit-application") {
@@ -602,11 +604,11 @@ function analyzeScope(cb, frame, jsdState)
     {
         //gStartupObserverSingleton.trackFiles.drop(frame.script.fileName, scopeName);
 
-        if (trace) Components.utils.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
+        if (trace) Cu.reportError("dropping "+frameGlobalTag+" with location "+scopeName+"\n");
     }
     else
     {
-        if (trace) Components.utils.reportError("assigning "+frameGlobalTag+" to "+frame.script.fileName+"\n");
+        if (trace) Cu.reportError("assigning "+frameGlobalTag+" to "+frame.script.fileName+"\n");
 
         cb.globalTagByScriptTag[frame.script.tag] = frameGlobalTag;
         cb.globalTagByScriptFileName[frame.script.fileName] = frameGlobalTag;
@@ -615,7 +617,7 @@ function analyzeScope(cb, frame, jsdState)
         {
             var script = cb.innerScripts[i];
             if (script.fileName != frame.script.fileName)  // so what frameGlobalTag then?
-                if (trace) Components.utils.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
+                if (trace) Cu.reportError("innerscript "+script.fileName+" mismatch "+frame.script.fileName+"\n");
             cb.globalTagByScriptTag[script.tag] = frameGlobalTag;
         }
         //gStartupObserverSingleton.trackFiles.def(frame.script.fileName, scopeName+" with "+cb.innerScripts.length, frame.script.tag, cb.globalTagByScriptTag[frame.script.tag]);
@@ -639,7 +641,7 @@ function getTmpFile()
         get("TmpD", Components.interfaces.nsIFile);
     file.append("gstartup.tmp");
     file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0666);
-    if (trace) Components.utils.reportError("chromebug-startup-observer opened tmp file "+file.path+"\n");
+    if (trace) Cu.reportError("chromebug-startup-observer opened tmp file "+file.path+"\n");
     return file;
 }
 
@@ -657,4 +659,4 @@ function getTmpStream(file)
 
     return foStream;
 }
-//Components.utils.reportError("Chromebug startup observer top level");
+//Cu.reportError("Chromebug startup observer top level");

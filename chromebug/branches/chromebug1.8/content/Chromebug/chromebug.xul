@@ -29,6 +29,10 @@
     var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
     FBTrace.setScope(window);
 
+    // This value causes loader.js to pull in firebug source from fb4cb directory for the chromebug instance
+    window._firebugLoadConfig = {baseUrl: "resource://fb4cb/", prefDomain: "extensions.chromebug"};
+
+
     var releaser = window.arguments[0];  // see chromebug_command_line.js
 
     function onLoad(event)
@@ -57,7 +61,6 @@
 
     <!-- BEGIN add scripts -->
     <script type="application/x-javascript" src="chrome://fb4cb/content/lib.js"/>
-
     <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
 

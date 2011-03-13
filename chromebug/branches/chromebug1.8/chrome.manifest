@@ -4,7 +4,10 @@ locale  chromebug en-US       locale/en-US/
 
 content fb4cb fb4cb/content/firebug/
 
-resource fb4cb modules/
+resource chromebug modules/
+
+# require js modules
+resource fb4cb fb4cb/content/firebug/
 
 # Add Firebug command set to Chromebug, but because we use fb4cb we don't allow Firebug overlays on us.
 overlay chrome://chromebug/content/chromebug.xul        chrome://fb4cb/content/firebugOverlay.xul
