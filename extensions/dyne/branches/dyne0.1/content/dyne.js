@@ -87,6 +87,7 @@ Firebug.Dyne = extend(Firebug.Module,
         }
         else
         {
+            FBTrace.sysout("dyne.toggleEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
             var url = Firebug.chrome.getSelectedPanelURL();
             var link = new Firebug.EditLink(panel.context, url, panel);
             Firebug.chrome.select(link);
@@ -212,6 +213,14 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.selectOrionBox(this.location);
     },
 
+    editLocalFile: function()
+    {
+        this.setSaveAvailable(false);
+
+        var source = FBL.getResource(this.location);
+        this.currentEditor.setText(source);
+    },
+
     selectOrionBox: function(location)
     {
         if (this.selectedOrionBox)
@@ -235,6 +244,11 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.selectedOrionBox = this.document.createElement('div');  // DOM calls always seem easier than domplate...at first.
         this.selectedOrionBox.setAttribute("class", "orionBox");
         this.panelNode.appendChild(this.selectedOrionBox);
+
+        var editLocation = location;
+        if (this.isLocalURI(location))
+            editLocation = "";  // set editLocal
+
         var iframe = this.insertOrionScripts(this.selectedOrionBox, location);
 
         // the element is available synchronously, but orion still needs to load
@@ -243,17 +257,17 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         {
             iframe.contentWindow.removeEventListener('load', orionFrameLoad, true);
             collapse(panel.loadingBox, true);
-            FBTrace.sysout("dyne.createOrionBox orion frame load");
+            FBTrace.sysout("dyne.createOrionBox orion frame load Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
             panel.integrateOrion(iframe.contentWindow);
         }, true);
 
-        FBTrace.sysout("dyne.createOrionBox orionReady listener added");
+        FBTrace.sysout("dyne.createOrionBox load listener added Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
     },
 
     insertOrionScripts: function(parentElement, location)
     {
         var orionWrapper = "http://localhost:8080/coding.html#";
-        var url =orionWrapper + location;
+        var url = orionWrapper + (location || "");
         var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
         parentElement.innerHTML = "<iframe src='"+url+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
@@ -328,6 +342,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var model = this.getModel();
         if (this.selection instanceof Firebug.EditLink)
         {
+            if (this.isLocalURI(this.location)){
+                this.editLocalFile();
+            }
             var fromPanel = this.selection.originPanel;
             if (fromPanel.name === "stylesheet")
             {
@@ -345,6 +362,11 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         return this.currentEditor.getModel();
     },
 
+    reLocalURI: /^chrome:|^file:|^resource:/,
+    isLocalURI: function(location)
+    {
+        return this.reLocalURI.test(location);
+    },
     //**************************************************************************************
     onOrionError: function(event)
     {
@@ -360,7 +382,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     saveEditing: function()
     {
-        FBTrace.sysout("saveEditing "+this.location); // TODO need PUT
+        FBTrace.sysout("saveEditing "+this.location);
         var saver = new Firebug.Dyne.Saver();
         var src = this.getModel().getText();
         saver.save(this.location, src);
