@@ -48,7 +48,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
            catch (exc)
            {
                FBTrace.sysout("Chromebug getDocShellByDOMWindow, domWindow.getInterface FAILS "+exc, {exc: exc, domWindow: domWindow});
-               return; 
+               return;
            }
            if (navi instanceof Ci.nsIDocShellTreeItem)
            {
@@ -341,24 +341,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         {
             FBTrace.sysout("xulapp unwatchXULWindow.observe xul-window-destroyed == "+topic, {subject: subject, data: data});
             // The subject is null, the window is gone, see http://mxr.mozilla.org/mozilla-central/source/xpfe/appshell/src/nsXULWindow.cpp#556
-/*
-Apparently this event comes to late to do anything useful with the objects.
-            for (var i = 0; i < Chromebug.XULAppModule.closed_xul_windows.length; i++)
-            {
-                var xul_win = Chromebug.XULAppModule.closed_xul_windows[i];
-                var outerDOMWindow =  Chromebug.XULAppModule.closerDOMWindows[i];
-                FBTrace.sysout("unwatchXULWindow "+i+") "+outerDOMWindow);
-                if (outerDOMWindow && outerDOMWindow.closed)
-                {
-                    var closers = Chromebug.XULAppModule.closers[xul_win];
-
-                    while(closers.length)
-                        (closers.pop())();
-
-                    delete Chromebug.XULAppModule.closers[xul_win];
-                }
-            }
-*/
+            /* Apparently this event comes to late to do anything useful with the objects. */
         },
     },
 
@@ -366,9 +349,67 @@ Apparently this event comes to late to do anything useful with the objects.
     {
         observe: function(subject, topic, data)
         {
-            FBTrace.sysout("xulapp unwatchXULWindow.observe xul-window-registered == "+topic, {subject: subject, data: data});
+            FBTrace.sysout("xulapp watchXULWindow.observe xul-window-registered == "+topic, {subject: subject, data: data});
 
         },
+    },
+
+    getWindowId: function(win)
+    {
+          var util = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+          var innerWindowID = "(none)";
+          try
+          {
+              var outerWindowID = util.outerWindowID;
+              innerWindowID = util.currentInnerWindowID;
+          }
+          catch(exc)
+          {
+              // no - op
+          }
+           return [outerWindowID, innerWindowID];
+    },
+
+    watchChromeWindow:
+    {
+        observe: function(subject, topic, data)
+        {
+            if (subject instanceof Ci.nsIDOMWindow)
+            {
+                var id = Chromebug.XULAppModule.getWindowId(subject).join('.');
+                FBTrace.sysout("watchChromeWindow data: "+data+" location: "+subject.location+" id: "+id);
+            }
+        }
+    },
+
+    watchContentWindow:
+    {
+        observe: function(subject, topic, data)
+        {
+            if (subject instanceof Ci.nsIDOMWindow)
+            {
+                var id = Chromebug.XULAppModule.getWindowId(subject).join('.');
+                FBTrace.sysout("watchContentWindow data: "+data+" location: "+subject.location+" id: "+id);
+            }
+        }
+    },
+
+    unwatchInnerWindow:
+    {
+        observe: function(subject, topic, data)
+        {
+            var id = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64).data
+            FBTrace.sysout("unwatchInnerWindow data: "+data+" location: "+subject.location+" id: "+id, {subject: subject, topic: topic, data: data});
+        }
+    },
+
+    unwatchOuterWindow:
+    {
+        observe: function(subject, topic, data)
+        {
+            var id = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64).data
+            FBTrace.sysout("unwatchOuterWindow data: "+data+" location: "+subject.location+" id: "+id, {subject: subject, topic: topic, data: data});
+        }
     },
 
     //***********************************************************************************
@@ -588,6 +629,10 @@ Apparently this event comes to late to do anything useful with the objects.
 
         this.xulWindowTagSeed = FBL.getUniqueId();
         windowWatcher.registerNotification(this);
+
+        observerService.addObserver(Chromebug.XULAppModule.unwatchXULWindow, "xul-window-destroyed", false);
+        observerService.addObserver(Chromebug.XULAppModule.watchXULWindow, "xul-window-registered", false);
+        this.watchDOMWindows();
     },
 
     initializeUI: function()
@@ -618,12 +663,27 @@ Apparently this event comes to late to do anything useful with the objects.
         }
     },
 
+    watchDOMWindows: function()
+    {
+        observerService.addObserver(Chromebug.XULAppModule.watchChromeWindow, "chrome-document-global-created", false);
+        observerService.addObserver(Chromebug.XULAppModule.watchContentWindow, "content-document-global-created", false);
+        observerService.addObserver(Chromebug.XULAppModule.unwatchInnerWindow, "inner-window-destroyed", false);
+        observerService.addObserver(Chromebug.XULAppModule.unwatchOuterWindow, "outer-window-destroyed", false);
+    },
+
     shutdown: function()
     {
         try
         {
             windowWatcher.unregisterNotification(this);
             windowMediator.removeListener(this);  // added in this.initialize()
+            observerService.removeObserver(Chromebug.XULAppModule.unwatchXULWindow, "xul-window-destroyed", false);
+            observerService.removeObserver(Chromebug.XULAppModule.watchXULWindow, "xul-window-registered", false);
+            observerService.removeObserver(Chromebug.XULAppModule.watchChromeWindow, "chrome-document-global-created", false);
+            observerService.removeObserver(Chromebug.XULAppModule.watchContentWindow, "content-document-global-created", false);
+            observerService.removeObserver(Chromebug.XULAppModule.unwatchInnerWindow, "inner-window-destroyed", false);
+            observerService.removeObserver(Chromebug.XULAppModule.unwatchOuterWindow, "outer-window-destroyed", false);
+
         }
         catch (exc)
         {
@@ -1075,8 +1135,6 @@ Chromebug.XULAppModule.CacheEntry = function(url, lines)
 // ************************************************************************************************
 // Registration
 
-observerService.addObserver(Chromebug.XULAppModule.unwatchXULWindow, "xul-window-destroyed", false);
-observerService.addObserver(Chromebug.XULAppModule.watchXULWindow, "xul-window-registered", false);
 
 Firebug.registerModule(Chromebug.XULAppModule);
 Firebug.registerPanel(Chromebug.XULAppPanel);
