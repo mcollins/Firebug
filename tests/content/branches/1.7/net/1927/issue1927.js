@@ -48,7 +48,7 @@ function verifyNetResponse()
         return;
 
     FBTest.compare("TEST",
-        responseBody.textContent, "Test response must match.");
+        responseBody.textContent, "Test response must match: '" + responseBody.textContent + "'");
 }
 
 // ********************************************************************************************* //
