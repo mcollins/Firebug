@@ -1428,6 +1428,16 @@ this.selectPanelLocationByName = function(panel, name)
 };
 
 /**
+ * Returns current location in the current panel. For example, if the Script panel
+ * is selected the return value might be: myScript.js
+ */
+this.getCurrentLocation = function()
+{
+    var locationList = FW.document.getElementById("fbLocationList");
+    return locationList.label;
+};
+
+/**
  * Jump to a file@line.<br/><br/>
  * Example:<br/>
  * <code>FBTest.Firebug.selectSourceLine(sourceFile.href, 1143, "js")</code>
