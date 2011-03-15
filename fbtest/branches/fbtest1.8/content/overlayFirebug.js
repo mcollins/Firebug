@@ -33,6 +33,29 @@ this.initialize = function()
         FBTestFirebugOverlay.open();
 };
 
+this.onToggleOption = function(target)
+{
+    FirebugChrome.onToggleOption(target);
+
+    // Open automatically if set to "always open", close otherwise.
+    if (Firebug.getPref(Firebug.prefDomain, "alwaysOpenTestConsole"))
+        this.open();
+    else
+        this.close();
+};
+
+this.close = function()
+{
+    var consoleWindow = null;
+    FBL.iterateBrowserWindows("FBTestConsole", function(win) {
+        consoleWindow = win;
+        return true;
+    });
+
+    if (consoleWindow)
+        consoleWindow.close();
+}
+
 this.open = function(testListURI)
 {
     var consoleWindow = null;

@@ -32,7 +32,7 @@
                 <menuitem id="FirebugMenu_Options_alwaysOpenTestConsole"
                     insertbefore="menu_optionsSeparator"
                     type="checkbox" label="Always Open Test Console"
-                    oncommand="FirebugChrome.onToggleOption(this)"
+                    oncommand="FBTestFirebugOverlay.onToggleOption(this)"
                     option="alwaysOpenTestConsole"/>
             </menupopup>
         </menu>
