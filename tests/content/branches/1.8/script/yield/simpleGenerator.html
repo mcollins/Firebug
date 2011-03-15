@@ -1,0 +1,25 @@
+<html>
+<head>
+<script type="application/javascript;version=1.7">
+function simpleGenerator(){
+  yield "first";
+  yield "second";
+  yield "third";
+  for (var i = 0; i < 3; i++)
+    yield i;
+}
+
+var g = simpleGenerator();
+console.log(g.next()); // prints "first"
+console.log(g.next()); // prints "second"
+console.log(g.next()); // prints "third"
+console.log(g.next()); // prints 0
+console.log(g.next()); // prints 1
+console.log(g.next()); // prints 2
+console.log(g.next()); // StopIteration is thrown
+</script>
+</head>
+<body>
+<h1>Generators: a better way to build Iterators</h1>
+</body>
+</html>
