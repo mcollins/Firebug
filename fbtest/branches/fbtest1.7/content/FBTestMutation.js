@@ -89,7 +89,9 @@ MutationRecognizer.prototype.matches = function(elt)
     // Note Text nodes have no tagName
     if (this.tagName == "Text")
     {
-        if (elt.data && elt.data.indexOf(this.characterData) != -1)
+        // The content must be exactly the same to avoid coincidental matches.
+        // Yet better way is to specify classes of the parent element (changedAttributes).
+        if (elt.data && elt.data == this.characterData)
         {
             if (FBTrace.DBG_TESTCASE_MUTATION)
                 FBTrace.sysout("MutationRecognizer matches Text character data: " +
