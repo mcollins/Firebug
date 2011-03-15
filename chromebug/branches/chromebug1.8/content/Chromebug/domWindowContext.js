@@ -28,7 +28,11 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
     this.global = global;
 
     if (global instanceof Ci.nsIDOMWindow)
+    {
         this.window = global;
+        var id = FBL.getWindowId(global);
+        this.setName(safeGetWindowLocation(global)+"("+id+")")
+    }
     else
     {
         delete this.window;
