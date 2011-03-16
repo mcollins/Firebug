@@ -1665,9 +1665,6 @@ var highlighterCache =
                 if (highlighter && highlighter.parentNode)
                     highlighter.parentNode.removeChild(highlighter);
             }
-
-            if(arr[0])
-                arr.length = 1;
         };
 
         var clearBoxModelCache = function(arr) {
@@ -1694,9 +1691,6 @@ var highlighterCache =
                     }
                 }
             }
-
-            if(arr[0])
-                arr.length = 1;
         };
 
         clearBoxModelCache(this.highlighters.boxModelArr);

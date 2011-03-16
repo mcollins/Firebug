@@ -1345,7 +1345,16 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
         if (completionPopup.state == "closed")
             return false;
 
-        completionPopup.hidePopup();
+        try
+        {
+            completionPopup.hidePopup();
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("Firebug.editor; EXCEPTION " + err, err);
+        }
+
         return true;
     };
 

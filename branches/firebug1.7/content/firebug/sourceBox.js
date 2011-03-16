@@ -508,6 +508,19 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
             this.showSourceBox(sourceBox, lineNo);
         }
 
+        if (!this.skipScrolling(lineNo))
+        {
+            var viewRange = this.getViewRangeFromTargetLine(this.selectedSourceBox, lineNo);
+            this.selectedSourceBox.newScrollTop = this.getScrollTopFromViewRange(this.selectedSourceBox, viewRange);
+
+            if (FBTrace.DBG_COMPILATION_UNITS)
+                FBTrace.sysout("SourceBoxPanel.scrollTimeout: newScrollTop "+
+                    this.selectedSourceBox.newScrollTop+" vs old "+
+                    this.selectedSourceBox.scrollTop+" for "+this.selectedSourceBox.repObject.href);
+
+            this.selectedSourceBox.scrollTop = this.selectedSourceBox.newScrollTop; // *may* cause scrolling
+        }
+
         this.context.scrollTimeout = this.context.setTimeout(bindFixed(function()
         {
             if (!this.selectedSourceBox)
@@ -517,47 +530,45 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
                 return;
             }
 
-            // At this time we know which sourcebox is selected but the viewport is not selected.
-            // We need to scroll, let the scroll handler set the viewport, then highlight any lines visible.
-            var skipScrolling = false;
-            if (this.selectedSourceBox.firstViewableLine && this.selectedSourceBox.lastViewableLine)
-            {
-                var linesFromTop = lineNo - this.selectedSourceBox.firstViewableLine;
-                var linesFromBot = this.selectedSourceBox.lastViewableLine - lineNo;
-                skipScrolling = (linesFromTop > 3 && linesFromBot > 3);
-                if (FBTrace.DBG_COMPILATION_UNITS)
-                    FBTrace.sysout("SourceBoxPanel.scrollTimeout: skipScrolling: "+skipScrolling+
-                        " fromTop:"+linesFromTop+" fromBot:"+linesFromBot);
-            }
-            else  // the selectedSourceBox has not been built
-            {
-                if (FBTrace.DBG_COMPILATION_UNITS)
-                    FBTrace.sysout("SourceBoxPanel.scrollTimeout, no viewable lines", this.selectedSourceBox);
-            }
-
-            if (!skipScrolling)
-            {
-                var viewRange = this.getViewRangeFromTargetLine(this.selectedSourceBox, lineNo);
-                this.selectedSourceBox.newScrollTop = this.getScrollTopFromViewRange(this.selectedSourceBox, viewRange);
-
-                if (FBTrace.DBG_COMPILATION_UNITS)
-                    FBTrace.sysout("SourceBoxPanel.scrollTimeout: newScrollTop "+
-                        this.selectedSourceBox.newScrollTop+" vs old "+
-                        this.selectedSourceBox.scrollTop+" for "+this.selectedSourceBox.repObject.href);
-
-                this.selectedSourceBox.scrollTop = this.selectedSourceBox.newScrollTop; // *may* cause scrolling
-
-                if (FBTrace.DBG_COMPILATION_UNITS)
-                    FBTrace.sysout("SourceBoxPanel.scrollTimeout: scrollTo "+lineNo+" scrollTop:"+
-                        this.selectedSourceBox.scrollTop+ " lineHeight: "+this.selectedSourceBox.lineHeight);
-            }
-
             if (this.selectedSourceBox.highlighter)
                 this.applyDecorator(this.selectedSourceBox); // may need to highlight even if we don't scroll
 
+            if (FBTrace.DBG_COMPILATION_UNITS)
+                FBTrace.sysout("SourceBoxPanel.scrollTimeout: scrollTo "+lineNo+
+                        " this.selectedSourceBox.highlighter: "+this.selectedSourceBox.highlighter);
         }, this));
 
         this.selectedSourceBox.highlighter = highlighter;  // clears if null
+    },
+
+    skipScrolling: function(lineNo)
+    {
+        var skipScrolling = false;
+        var firstViewRangeElement = this.selectedSourceBox.getLineNode(this.selectedSourceBox.firstViewableLine);
+        var scrollTopOffset = this.selectedSourceBox.scrollTop - firstViewRangeElement.offsetTop;
+
+        if (FBTrace.DBG_COMPILATION_UNITS)
+            FBTrace.sysout("SourceBoxPanel.skipScrolling scrollTopOffset "+Math.abs(scrollTopOffset) + " > " + firstViewRangeElement.offsetHeight);
+
+        if (Math.abs(scrollTopOffset) > firstViewRangeElement.offsetHeight)
+            return skipScrolling;
+
+        if (this.selectedSourceBox.firstViewableLine && this.selectedSourceBox.lastViewableLine)
+        {
+            var linesFromTop = lineNo - this.selectedSourceBox.firstViewableLine;
+            var linesFromBot = this.selectedSourceBox.lastViewableLine - lineNo;
+            skipScrolling = (linesFromTop > 3 && linesFromBot > 3);
+            if (FBTrace.DBG_COMPILATION_UNITS)
+                FBTrace.sysout("SourceBoxPanel.skipScrolling: skipScrolling: "+skipScrolling+
+                    " fromTop:"+linesFromTop+" fromBot:"+linesFromBot);
+        }
+        else  // the selectedSourceBox has not been built
+        {
+            if (FBTrace.DBG_COMPILATION_UNITS)
+                FBTrace.sysout("SourceBoxPanel.skipScrolling, no viewable lines", this.selectedSourceBox);
+        }
+
+        return skipScrolling;
     },
 
     /*
@@ -983,15 +994,14 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
         view.previousSibling.firstChild.firstChild.style.height = topPadding + "px";
         view.nextSibling.firstChild.firstChild.style.height = bottomPadding + "px";
 
-        // Finally adjust the scrollTop to position the viewRange.firstLine at the top of the view
-        var firstViewRangeElement = sourceBox.getLineNode(viewRange.firstLine);
-        sourceBox.scrollTop = firstViewRangeElement.offsetTop;
 
         if(FBTrace.DBG_COMPILATION_UNITS)
         {
+            var firstViewRangeElement = sourceBox.getLineNode(viewRange.firstLine);
+            var scrollTopOffset = sourceBox.scrollTop - firstViewRangeElement.offsetTop;
             FBTrace.sysout("setViewportPadding viewport offsetHeight: "+sourceBox.viewport.offsetHeight+", clientHeight "+sourceBox.viewport.clientHeight);
             FBTrace.sysout("setViewportPadding sourceBox, offsetHeight: "+sourceBox.offsetHeight+", clientHeight "+sourceBox.clientHeight+", scrollHeight: "+sourceBox.scrollHeight);
-            FBTrace.sysout("setViewportPadding scrollTop: "+sourceBox.scrollTop+" firstLine "+viewRange.firstLine+" bottom: "+bottomPadding+" top: "+topPadding);
+            FBTrace.sysout("setViewportPadding scrollTopOffset: "+scrollTopOffset+" firstLine "+viewRange.firstLine+" bottom: "+bottomPadding+" top: "+topPadding);
         }
 
     },
@@ -1023,7 +1033,7 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
             bindFixed(this.asyncHighlighting, this, sourceBox));
 
         if (FBTrace.DBG_COMPILATION_UNITS)
-            FBTrace.sysout("applyDecorator "+sourceBox.repObject.url, sourceBox);
+            FBTrace.sysout("applyDecorator "+sourceBox.repObject.url+" sourceBox.highlighter "+sourceBox.highlighter, sourceBox);
     },
 
     asyncDecorating: function(sourceBox)
@@ -1049,8 +1059,13 @@ Firebug.SourceBoxPanel = extend(SourceBoxPanelBase,
     {
         try
         {
+            if (FBTrace.DBG_COMPILATION_UNITS)
+                FBTrace.sysout("asyncHighlighting "+sourceBox.repObject.url+" sourceBox.highlighter "+sourceBox.highlighter, sourceBox);
+
             if (sourceBox.highlighter)
             {
+                // If the sticky flag is false, the highlight is removed, eg the search and sourcelink highlights.
+                // else the highlight must be removed by the caller, eg breakpoint hit executable line.
                 var sticky = sourceBox.highlighter(sourceBox);
                 if (FBTrace.DBG_COMPILATION_UNITS)
                     FBTrace.sysout("asyncHighlighting highlighter sticky:"+sticky,

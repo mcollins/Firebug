@@ -1234,6 +1234,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
         context.breakingCause =
         {
             title: $STR("debugger keyword"),
+            skipActionTooltip: $STR("firebug.bon.tooltip.disableDebuggerKeyword2"),
             message: $STR("firebug.bon.cause.disableDebuggerKeyword2"),
             skipAction: function addSkipperAndGo()
             {
@@ -1244,10 +1245,6 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
                     FBTrace.sysout("debugger.onBreak converted to disabled bp "+sourceFile.href+
                         "@"+lineNo+" tag: "+frame.script.tag, bp);
 
-                Firebug.Debugger.resume(context);
-            },
-            okAction: function justGo()
-            {
                 Firebug.Debugger.resume(context);
             },
         };
@@ -1447,11 +1444,6 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
                                 FBTrace.sysout("debugger.breakon Errors set "+sourceFile.href+"@"+
                                     lineNo+" tag: "+frame.script.tag, bp);
 
-                            Firebug.Debugger.resume(context);
-                        },
-
-                        okAction: function justGo()
-                        {
                             Firebug.Debugger.resume(context);
                         },
                     };

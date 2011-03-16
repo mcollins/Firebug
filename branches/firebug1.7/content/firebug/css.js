@@ -418,6 +418,14 @@ Firebug.CSSModule = extend(Firebug.Module,
             this.cleanupSheets(target.ownerDocument, context);
         }
     },
+    // ****************************************************************************************************
+    // Module functions
+
+    initialize: function()
+    {
+           this.cssEditors = {};
+    },
+
     watchWindow: function(context, win)
     {
         var cleanupSheets = bind(this.cleanupSheets, this),
@@ -434,6 +442,39 @@ Firebug.CSSModule = extend(Firebug.Module,
         {
             self.cleanupSheets(subwin.document, context);
         });
+    },
+    initContext: function(context)
+    {
+        context.dirtyListener = new Firebug.CSSDirtyListener(context);
+        this.addListener(context.dirtyListener);
+    },
+    destroyContext: function(context)
+    {
+        this.removeListener(context.dirtyListener);
+    },
+
+    // *****************************************************************
+    registerEditor: function(name, editor)
+    {
+        this.cssEditors[name] = editor;
+    },
+    unregisterEditor: function(name, editor)
+    {
+        delete this.cssEditors[name];
+    },
+    getEditorByName: function(name)
+    {
+        return this.cssEditors[name];
+    },
+    getEditorsNames: function()
+    {
+        var names = [];
+        for (var p in this.cssEditors)
+        {
+            if (this.cssEditors.hasOwnProperty(p))
+                names.push(p);
+        }
+        return names;
     }
 });
 
@@ -454,7 +495,7 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
                 )
     }),
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     refresh: function()
     {
@@ -464,13 +505,78 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
             this.updateSelection(this.selection);
     },
 
-    toggleEditing: function()
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // CSS Editing
+
+    updateEditButton: function()
+    {
+        // Update lable of the edit button according to the preferences.
+        var mode = Firebug.getPref(Firebug.prefDomain, "cssEditMode");
+        var label = Firebug.chrome.$("menu_css" + mode + "Edit").label;
+        var command = Firebug.chrome.$("cmd_toggleCSSEditing");
+        command.setAttribute("label", label);
+    },
+
+    startBuiltInEditing: function(css)
     {
         if (!this.stylesheetEditor)
             this.stylesheetEditor = new StyleSheetEditor(this.document);
 
-        if (this.editing)
+        var styleSheet = this.location.editStyleSheet
+            ? this.location.editStyleSheet.sheet
+            : this.location;
+
+        this.stylesheetEditor.styleSheet = this.location;
+        Firebug.Editor.startEditing(this.panelNode, css, this.stylesheetEditor);
+
+        //this.stylesheetEditor.scrollToLine(topmost.line, topmost.offset);
+        this.stylesheetEditor.input.scrollTop = this.panelNode.scrollTop;
+    },
+
+    startLiveEditing: function(styleSheet, context)
+    {
+        var css = getStyleSheetCSS(styleSheet, context);
+        this.startBuiltInEditing(css);
+    },
+
+    startSourceEditing: function(styleSheet, context)
+    {
+        if (Firebug.CSSDirtyListener.isDirty(styleSheet, context))
+        {
+            var prompts = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
+            var proceedToEdit = prompts.confirm(null, "Your existing CSS edits will be lost if you edit source", "Are you sure?");
+
+            if (!proceedToEdit)
+            {
+                this.stopEditing();
+                return;
+            }
+        }
+
+        var css = getOriginalStyleSheetCSS(styleSheet, context);
+        this.startBuiltInEditing(css);
+    },
+
+    stopEditing: function()
+    {
+        if (this.currentCSSEditor)
+        {
+            this.currentCSSEditor.stopEditing();
+            delete this.currentCSSEditor;
+        }
+        else
+        {
             Firebug.Editor.stopEditing();
+        }
+    },
+
+    toggleEditing: function()
+    {
+        if (this.editing)
+        {
+            this.stopEditing();
+            dispatch(this.fbListeners, 'onStopCSSEditing', [this.context]);
+        }
         else
         {
             if (!this.location)
@@ -480,15 +586,48 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
                 ? this.location.editStyleSheet.sheet
                 : this.location;
 
-            var css = getStyleSheetCSS(styleSheet, this.context);
-            //var topmost = getTopmostRuleLine(this.panelNode);
-
-            this.stylesheetEditor.styleSheet = this.location;
-            Firebug.Editor.startEditing(this.panelNode, css, this.stylesheetEditor);
-            //this.stylesheetEditor.scrollToLine(topmost.line, topmost.offset);
-            this.stylesheetEditor.input.scrollTop = this.panelNode.scrollTop;
+            var mode = Firebug.getPref(Firebug.prefDomain, "cssEditMode");
+            this.currentCSSEditor = Firebug.CSSModule.getEditorByName(mode);
+            try
+            {
+                this.currentCSSEditor.startEditing(styleSheet, this.context);
+                dispatch(this.fbListeners, 'onStartCSSEditing', [styleSheet, this.context]);
+            }
+            catch(exc)
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("editor.startEditing ERROR "+exc, {name: mode, currentEditor: this.currentCSSEditor, styleSheet: styleSheet, CSSModule:Firebug.CSSModule});
+            }
         }
     },
+
+    onEditMode: function(event, menuitem)
+    {
+        var mode = menuitem.getAttribute("mode");
+        if (mode)
+            Firebug.setPref(Firebug.prefDomain, "cssEditMode", mode);
+
+        this.updateEditButton();
+        cancelEvent(event);
+    },
+
+    onOptionsShowing: function(popup)
+    {
+        var mode = Firebug.getPref(Firebug.prefDomain, "cssEditMode");
+
+        for (var child = popup.firstChild; child; child = child.nextSibling)
+        {
+            if (child.localName == "menuitem")
+            {
+                if (child.id == "menu_css" + mode + "Edit")
+                    child.setAttribute("checked", true);
+                else
+                    child.removeAttribute("checked");
+            }
+        }
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     loadOriginalSource: function()
     {
@@ -521,11 +660,17 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         for (var i = 0; i < cssRules.length; ++i)
         {
             var rule = cssRules[i];
+            var previousRule;
             if (rule instanceof CSSStyleRule)
             {
-                var ruleLine = domUtils.getRuleLine(rule);
-                if (ruleLine >= line)
+                var selectorLine = domUtils.getRuleLine(rule);
+                // The declarations are on lines equal or greater than the selectorLine
+                if (selectorLine === line) // then the line requested is a selector line
                     return rule;
+                if (selectorLine > line) // then we passed the rule for the requested line
+                    return previousRule;
+                // else the requested line is still ahead
+                previousRule = rule;
             }
         }
     },
@@ -593,7 +738,7 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
                 }
                 else
                 {
-                    if (FBTrace.DBG_ERRORS || FBTrace.DBG_CSS)
+                    if (FBTrace.DBG_ERRORS && FBTrace.DBG_CSS)
                         FBTrace.sysout("css getStyleSheetRules failed to classify a rule ", rule);
                 }
             }
@@ -895,6 +1040,14 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         this.onMouseDown = bind(this.onMouseDown, this);
         this.onClick = bind(this.onClick, this);
 
+        this.startLiveEditing = bind(this.startLiveEditing, this);
+        this.stopLiveEditing = bind(Firebug.Editor.stopEditing, Firebug.Editor);
+        Firebug.CSSModule.registerEditor('Live', {startEditing: this.startLiveEditing, stopEditing: this.stopLiveEditing});
+
+        this.startSourceEditing = bind(this.startSourceEditing, this);
+        this.stopSourceEditing = bind(Firebug.Editor.stopEditing, Firebug.Editor);
+        Firebug.CSSModule.registerEditor('Source', {startEditing: this.startSourceEditing, stopEditing: this.stopSourceEditing});
+
         Firebug.SourceBoxPanel.initialize.apply(this, arguments);
     },
 
@@ -904,7 +1057,11 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
 
         persistObjects(this, state);
 
-        Firebug.Editor.stopEditing();
+        this.stopEditing();
+
+        Firebug.CSSModule.unregisterEditor('Live');
+        Firebug.CSSModule.unregisterEditor('Source');
+
         Firebug.Panel.destroy.apply(this, arguments);
     },
 
@@ -929,6 +1086,8 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
         Firebug.Inspector.stopInspecting(true);
 
         this.showToolbarButtons("fbCSSButtons", true);
+
+        this.updateEditButton();
 
         if (this.context.loaded && !this.location) // wait for loadedContext to restore the panel
         {
@@ -1005,7 +1164,7 @@ Firebug.CSSStyleSheetPanel.prototype = extend(Firebug.SourceBoxPanel,
             this.editing = null;
 
             // Stop the current editing.
-            Firebug.Editor.stopEditing();
+            this.stopEditing();
 
             // ... and open the editor again.
             this.toggleEditing();
@@ -1486,6 +1645,7 @@ CSSElementPanel.prototype = extend(Firebug.CSSStyleSheetPanel.prototype,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // All calls to this method must call cleanupSheets first
+
     updateCascadeView: function(element)
     {
         var result, warning, inheritLabel;
@@ -1617,7 +1777,7 @@ CSSElementPanel.prototype = extend(Firebug.CSSStyleSheetPanel.prototype,
             while (i<rules.length)
             {
                 var props = rules[i].props;
-  
+
                 var j=0;
                 while (j<props.length)
                 {
@@ -1626,7 +1786,7 @@ CSSElementPanel.prototype = extend(Firebug.CSSStyleSheetPanel.prototype,
                     else
                         ++j;
                 }
-  
+
                 if (props.length == 0)
                     rules.splice(i, 1);
                 else
@@ -1672,8 +1832,11 @@ CSSElementPanel.prototype = extend(Firebug.CSSStyleSheetPanel.prototype,
 
     initialize: function()
     {
-        Firebug.CSSStyleSheetPanel.prototype.initialize.apply(this, arguments);
+        // We only need the basic panel initialize, not the intermeditate objects
+        Firebug.Panel.initialize.apply(this, arguments);
 
+        this.onMouseDown = bind(this.onMouseDown, this);
+        this.onClick = bind(this.onClick, this);
         this.onStateChange = bindFixed(this.contentStateCheck, this);
         this.onHoverChange = bindFixed(this.contentStateCheck, this, STATE_HOVER);
         this.onActiveChange = bindFixed(this.contentStateCheck, this, STATE_ACTIVE);
@@ -1841,11 +2004,12 @@ function safeGetContentState(selection)
 {
     try
     {
-        return domUtils.getContentState(selection);
+        if (selection && selection.ownerDocument)
+            return domUtils.getContentState(selection);
     }
     catch (e)
     {
-        if (FBTrace.DBG_ERRORS)
+        if (FBTrace.DBG_ERRORS && FBTrace.DBG_CSS)
             FBTrace.sysout("css.safeGetContentState; EXCEPTION "+e, e);
     }
 }
@@ -1899,7 +2063,7 @@ CSSComputedElementPanel.prototype = extend(CSSElementPanel.prototype,
         if (Firebug.computedStylesDisplay == "alphabetical")
         {
             var props = [];
-            
+
             for (var groupName in styleGroups)
             {
                 var groupProps = styleGroups[groupName];
@@ -1922,13 +2086,13 @@ CSSComputedElementPanel.prototype = extend(CSSElementPanel.prototype,
         else
         {
             var groups = [];
-    
+
             for (var groupName in styleGroups)
             {
                 var title = $STR("StyleGroup-" + groupName);
                 var group = {title: title, props: []};
                 groups.push(group);
-    
+
                 var props = styleGroups[groupName];
                 for (var i = 0; i < props.length; ++i)
                 {
@@ -1942,7 +2106,7 @@ CSSComputedElementPanel.prototype = extend(CSSElementPanel.prototype,
                 }
                 group.opened = this.groupOpened[title];
             }
-    
+
             var result = this.template.computedTag.replace({groups: groups}, this.panelNode);
         }
 
@@ -1958,7 +2122,7 @@ CSSComputedElementPanel.prototype = extend(CSSElementPanel.prototype,
 
     initialize: function()
     {
-        Firebug.CSSStyleSheetPanel.prototype.initialize.apply(this, arguments);
+        Firebug.Panel.initialize.apply(this, arguments);
 
         this.groupOpened = [];
         for (var groupName in styleGroups)
@@ -1967,6 +2131,7 @@ CSSComputedElementPanel.prototype = extend(CSSElementPanel.prototype,
             this.groupOpened[title] = true;
         }
 
+        this.onClick = bind(this.onClick, this);
         this.onMouseDown = bind(this.onMouseDown, this);
     },
 
@@ -2418,6 +2583,52 @@ StyleSheetEditor.prototype = domplate(Firebug.BaseEditor,
         this.input.scrollTop = (line * lineHeight) + offset;
     }
 });
+
+Firebug.CSSDirtyListener = function(context)
+{
+    this.context = context;
+    this.context.dirtyStyleSheets = [];
+}
+
+Firebug.CSSDirtyListener.isDirty = function(styleSheet, context)
+{
+    var index = context.dirtyStyleSheets.indexOf(styleSheet);
+    return (index !== -1);
+}
+
+Firebug.CSSDirtyListener.prototype =
+{
+    markSheetDirty: function(styleSheet)
+    {
+        var index = this.context.dirtyStyleSheets.indexOf(styleSheet);
+        if (index ===  -1)
+            this.context.dirtyStyleSheets.push(styleSheet);
+        if (FBTrace.DBG_CSS)
+            FBTrace.sysout("CSSDirtyListener markSheetDirty "+index+" "+styleSheet.href);
+    },
+    onCSSInsertRule: function(styleSheet, cssText, ruleIndex)
+    {
+        this.markSheetDirty(styleSheet);
+    },
+    onCSSDeleteRule: function(styleSheet, ruleIndex)
+    {
+        this.markSheetDirty(styleSheet);
+    },
+    onCSSSetProperty: function(style, propName, propValue, propPriority, prevValue, prevPriority, rule, baseText)
+    {
+        var styleSheet = rule.parentStyleSheet;
+        this.markSheetDirty(styleSheet);
+    },
+    onCSSRemoveProperty: function(style, propName, prevValue, prevPriority, rule, baseText)
+    {
+        var styleSheet = rule.parentStyleSheet;
+        this.markSheetDirty(styleSheet);
+    },
+    onStartCSSEditing: function(styleSheet, context)
+    {
+        this.markSheetDirty(styleSheet);
+    },
+};
 
 // ************************************************************************************************
 // Local Helpers
