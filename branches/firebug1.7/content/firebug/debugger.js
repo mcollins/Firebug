@@ -966,7 +966,7 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
 
                 if (panel)
                 {
-                    if (panel.selectedSourcebox && panel.selectedSourceBox.breakCauseBox)
+                    if (panel.selectedSourceBox && panel.selectedSourceBox.breakCauseBox)
                     {
                         panel.selectedSourceBox.breakCauseBox.hide();
                         delete panel.selectedSourceBox.breakCauseBox;
