@@ -23,4 +23,13 @@
                 label="Use firefox.exe -chromebug "/>
             <menuseparator insertbefore="menu_firebug"/>
     </menupopup>
+
+    <!-- SeaMonkey Tools menu -->
+    <menupopup id="toolsPopup">
+        <menuitem id="menu_OpenChromeBugNow" insertbefore="menu_firebug"
+            tooltiptext="ChromeBug: Firebug for Chrome"
+            label="Use seamonkey.exe -chromebug"/>
+        <menuseparator insertbefore="menu_firebug"/>
+    </menupopup>
+
 </overlay>
