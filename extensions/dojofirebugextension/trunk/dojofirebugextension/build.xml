@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<project name="dojofirebugextension" default="xpi" basedir=".">
+
+    <property name="dist.dir" value="dist/"/>
+    <property name="build.dir" value="build/"/>
+    <property file="version.properties"/>
+
+    <target name="xpi"
+        depends="prepare"
+        description="zip files into firefox XPI">
+        <mkdir dir="${dist.dir}"/>
+
+        <zip
+            destfile="${dist.dir}/${ant.project.name}-${VERSION}${RELEASE}.xpi"
+            basedir="${build.dir}" includes="**/*" />
+    </target>
+
+    <target name="prepare" depends="clean">
+        <mkdir dir="${build.dir}"/>
+        <!-- copy install.rdf and replace tokens -->
+        <copy file="install.rdf"
+                tofile="${build.dir}/install.rdf"
+                overwrite="true">
+                <filterchain>
+                        <replacetokens>
+                             <token key="VERSION" value="${VERSION}"/>
+                             <token key="RELEASE" value="${RELEASE}"/>
+                        </replacetokens>
+                </filterchain>
+        </copy>
+
+        <copy file="update.rdf"
+                tofile="${dist.dir}/update.rdf"
+                overwrite="true">
+                <filterchain>
+                        <replacetokens>
+                             <token key="VERSION" value="${VERSION}"/>
+                             <token key="RELEASE" value="${RELEASE}"/>
+                        </replacetokens>
+                </filterchain>
+        </copy>
+
+        <copy file="chrome.manifest"
+                tofile="${build.dir}/chrome.manifest"
+                overwrite="true">
+        </copy>
+
+        <copy todir="${build.dir}">
+            <fileset dir="${basedir}" includes="chrome/**/*" excludes="chrome/**/Thumbs.db"/>
+            <fileset dir="${basedir}" includes="defaults/**/*" excludes="default/**/Thumbs.db"/>
+        	
+        </copy>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+</project>
