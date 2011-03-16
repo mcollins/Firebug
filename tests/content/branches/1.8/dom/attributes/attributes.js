@@ -55,7 +55,8 @@ function testDomPanel(callback)
             FBTest.waitForDOMProperty("attributes", function(row)
             {
                 var value = row.querySelector(".memberValueCell");
-                FBTest.compare(expectedValue, value.textContent, "Attributes list must match");
+                FBTest.compare(expectedValue, value.textContent,
+                    "Attributes list must match: " + value.textContent);
                 callback();
             }, true);
         });

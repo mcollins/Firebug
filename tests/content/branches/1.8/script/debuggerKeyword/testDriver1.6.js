@@ -101,7 +101,7 @@ function testResumeState()
 function clickDisableButton()
 {
     var panel = FBTestFirebug.getPanel("script");
-    var button = panel.panelNode.querySelector(".notationButton.disableButton");
+    var button = panel.panelNode.querySelector(".notificationButton.skipButton");
     if (!FBTest.ok(button, "There must be a balloon with 'Disable' button."))
     {
         FBTestFirebug.testDone("debuggerKeyword.FAIL");

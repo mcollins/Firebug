@@ -42,7 +42,15 @@ function testClearAppCache(callback, win, itemURL)
 {
     FBTest.clearCache();
     clearAppCache(win)
-    win.applicationCache.mozRemove(itemURL);
+
+    try
+    {
+        win.applicationCache.mozRemove(itemURL);
+    }
+    catch (err)
+    {
+        FBTest.progress(err);
+    }
 
     FBTest.reload(callback);
 }
