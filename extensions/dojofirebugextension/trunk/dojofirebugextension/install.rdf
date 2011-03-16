@@ -13,11 +13,10 @@
                    em:name="Dojo Firebug Extension"
                    em:version="@VERSION@@RELEASE@"
                    em:description="Firebug extension to help dojo developers"
-                   em:homepageURL="http://www.getfirebug.com/"
-				   em:updateURL="https://getfirebug.com/releases/dojofirebugextension/update.rdf"                  
+				   em:updateURL="https://getfirebug.com/releases/dojofirebugextension/@FBUG_VERSION@/update.rdf"                 
                    em:iconURL="chrome://dojofirebugextension/content/icon.png">
     	
-    	<em:creator>Patricio Reyna Almandos - Fernando Gomez</em:creator>
+    	<em:creator>Patricio Reyna Almandos and Fernando Gomez (IBM Argentina)</em:creator>
     	
     	<em:targetApplication RDF:resource="rdf:#$41y0G2"/>
     	

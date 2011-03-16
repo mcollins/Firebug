@@ -1,59 +1,80 @@
 <?xml version="1.0"?>
 <project name="dojofirebugextension" default="xpi" basedir=".">
 
-    <property name="dist.dir" value="dist/"/>
-    <property name="build.dir" value="build/"/>
-    <property file="version.properties"/>
+	<property name="dist.dir" value="dist/" />
+	<property name="build.dir" value="build/" />
+	<property file="version.properties" />
 
-    <target name="xpi"
-        depends="prepare"
-        description="zip files into firefox XPI">
-        <mkdir dir="${dist.dir}"/>
+	<target name="xpi" depends="prepare" description="zip files into firefox XPI">
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${dist.dir}/${FBUG_VERSION}" />
 
-        <zip
-            destfile="${dist.dir}/${ant.project.name}-${VERSION}${RELEASE}.xpi"
-            basedir="${build.dir}" includes="**/*" />
-    </target>
+		<zip destfile="${dist.dir}/${FBUG_VERSION}/${ant.project.name}-${VERSION}${RELEASE}.xpi" basedir="${build.dir}" includes="**/*" />
+		
+        <checksum
+            file="${dist.dir}/${FBUG_VERSION}/${ant.project.name}-${VERSION}${RELEASE}.xpi"
+            property="updateHash"
+            algorithm="SHA-1"/>
 
-    <target name="prepare" depends="clean">
-        <mkdir dir="${build.dir}"/>
-        <!-- copy install.rdf and replace tokens -->
-        <copy file="install.rdf"
-                tofile="${build.dir}/install.rdf"
-                overwrite="true">
-                <filterchain>
-                        <replacetokens>
-                             <token key="VERSION" value="${VERSION}"/>
-                             <token key="RELEASE" value="${RELEASE}"/>
-                        </replacetokens>
-                </filterchain>
-        </copy>
+        <echo>Update hash is ${updateHash}</echo>
 
         <copy file="update.rdf"
-                tofile="${dist.dir}/update.rdf"
+                tofile="${dist.dir}/${FBUG_VERSION}/update.rdf"
                 overwrite="true">
                 <filterchain>
                         <replacetokens>
                              <token key="VERSION" value="${VERSION}"/>
                              <token key="RELEASE" value="${RELEASE}"/>
+                        	 <token key="FBUG_VERSION" value="${FBUG_VERSION}" />
+                             <token key="UPDATEHASH" value="${updateHash}"/>
                         </replacetokens>
                 </filterchain>
         </copy>
+    	<!-- clean up build artifacts after we are done -->
+    	<delete includeemptydirs="true" failonerror="false" dir="${build.dir}"/>
 
-        <copy file="chrome.manifest"
-                tofile="${build.dir}/chrome.manifest"
-                overwrite="true">
-        </copy>
+	</target>
 
-        <copy todir="${build.dir}">
-            <fileset dir="${basedir}" includes="chrome/**/*" excludes="chrome/**/Thumbs.db"/>
-            <fileset dir="${basedir}" includes="defaults/**/*" excludes="default/**/Thumbs.db"/>
-        	
-        </copy>
-    </target>
+	<target name="prepare" depends="clean">
+		<mkdir dir="${build.dir}" />
+		<!-- copy install.rdf and replace tokens -->
+		<copy file="install.rdf" tofile="${build.dir}/install.rdf" overwrite="true">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${VERSION}" />
+					<token key="RELEASE" value="${RELEASE}" />
+					<token key="FBUG_VERSION" value="${FBUG_VERSION}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+<!--
+		<copy file="update.rdf" tofile="${dist.dir}/update.rdf" overwrite="true">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${VERSION}" />
+					<token key="RELEASE" value="${RELEASE}" />
+					<token key="FBUG_VERSION" value="${FBUG_VERSION}" />
+					<token key="UPDATEHASH" value="${updateHash}"/>
+				</replacetokens>
+			</filterchain>
+		</copy>
+-->
+		
+		<copy file="chrome.manifest" tofile="${build.dir}/chrome.manifest" overwrite="true">
+		</copy>
 
-    <target name="clean">
-        <delete dir="${build.dir}"/>
-        <delete dir="${dist.dir}"/>
-    </target>
+		<copy file="license.txt" tofile="${build.dir}/license.txt" overwrite="true">
+		</copy>
+
+		<copy todir="${build.dir}">
+			<fileset dir="${basedir}" includes="chrome/**/*" excludes="chrome/**/Thumbs.db" />
+			<fileset dir="${basedir}" includes="defaults/**/*" excludes="default/**/Thumbs.db" />
+		</copy>
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
 </project>
