@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Dojo Extension Test List</title>
+
+</head>
+<body>
+<script type="text/javascript">
+var driverBaseURI = "chrome://dojofirebugextension/content/fbtest/tests/";
+var baseURI = driverBaseURI;
+var serverURI = 'chrome://dojofirebugextension/content/fbtest/tests/';
+var testList = [
+	{ group: "Dojo", uri: "widget-destroy-test-withoutdojoextension.js", desc: "verifies that creation/destruction of widgets don't leave references", testPage: "widget-destroy-test.html" },
+    { group: "Dojo", uri: "widget-destroy-test.js", desc: "verifies that creation/destruction of widgets don't leave references", testPage: "widget-destroy-test.html" },
+    { group: "Dojo", uri: "someWidgets.js", desc: "Check number of widgets for a page", testPage: "someWidgets.html" },    
+    { group: "Dojo", uri: "basic_connections.js", desc: "Connections related tests", testPage: "basic_connections.html" },
+    { group: "Dojo", uri: "basic_subscriptions.js", desc: "Subscriptions related tests", testPage: "basic_subscriptions.html" },
+    { group: "Dojo", uri: "widget_connections.js", desc: "Widget connections test", testPage: "widget_connections_Dojo1.5.html" },
+    { group: "Dojo", uri: "objects_panel_support.js", desc: "Objects panel support test", testPage: "objects_panel_support.html" },
+    { group: "Dojo", uri: "options_menu.js", desc: "Options menu test", testPage: "objects_panel_support.html" },
+    { group: "Dojo", uri: "documentation_support.js", desc: "Documentation menuitems support", testPage: "documentation_support.html" },
+    { group: "Dojo", uri: "menu_item.js", desc: "Check bug accessing __parent__ property", testPage: "menu_item.html" },
+    { group: "Dojo", uri: "connect_parameters.js", desc: "Verify the correct track of connections for each posible combination of parameters", testPage: "connect_parameters.html" },
+    { group: "Dojo", uri: "subscribe_parameters.js", desc: "Verify the correct track of subscriptions for each posible combination of parameters", testPage: "subscribe_parameters.html" }
+];
+</script>
+
+</body>
+</html>

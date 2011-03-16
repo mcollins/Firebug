@@ -1,0 +1,8 @@
+content		dojofirebugextension		chrome/content/
+skin    	dojofirebugextension  		classic/1.0 chrome/skin/classic/
+locale  	dojofirebugextension	en-US	chrome/locale/en-US/
+locale  	dojofirebugextension	es-AR	chrome/locale/es-AR/
+
+overlay		chrome://firebug/content/firebugOverlay.xul		chrome://dojofirebugextension/content/dojofirebugextension.xul
+
+
