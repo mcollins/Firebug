@@ -8,13 +8,22 @@
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleDyneEditing" oncommand="Firebug.Dyne.toggleEditing()"/>
-        <!-- takeover CSS editing, with fallback -->
-        <command id="cmd_toggleCSSEditing" oncommand="Firebug.Dyne.toggleCSSEditing()"/>
         <command id="cmd_saveDyneEditing" oncommand="Firebug.Dyne.saveEditing()"/>
     </commandset>
 
     <toolbar id="fbToolbar">
         <hbox id="fbToolbarInner">
+            <hbox id="fbCSSButtons" collapsed="true" class="noTabStop">
+                 <toolbarbutton id="fbToggleCSSEditing">
+                     <menupopup id="fbCSSEditorMenu">
+                         <menuitem id="menu_cssOrionEdit" mode="Orion"
+                                   label="Orion Edit"
+                                   oncommand="Firebug.currentContext.getPanel('stylesheet').onEditMode(event, this)"
+                                   type="radio" autocheck="false"
+                                   class="fbInternational"/>
+                     </menupopup>
+                  </toolbarbutton>
+            </hbox>
             <hbox id="fbEditButtons" insertafter="fbBonButtons">
                 <toolbarbutton id="fbToggleDyneEditing" collapsed="false"
                     label="Edit"

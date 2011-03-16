@@ -27,11 +27,10 @@ Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 Firebug.Dyne = extend(Firebug.Module,
 {
     dispatchName: "dyne",
-    editors: [],
 
     initialize: function()
     {
-
+        Firebug.CSSModule.registerEditor("Orion", this);
     },
 
     showPanel: function(browser, panel)
@@ -65,36 +64,24 @@ Firebug.Dyne = extend(Firebug.Module,
     },
     // **********************************************************************************************
 
-    toggleCSSEditing: function()
-    {
-        if (!Firebug.Dyne.toggleEditing()) // then we did not have web edit ide
-        {
-            // fall back to panel editor, mimic cmd_toggleCSSEditing in firebugOverlay.xul
-            var panel = Firebug.currentContext.getPanel('stylesheet');
-            Firebug.CSSStyleSheetPanel.prototype.toggleEditing.apply(panel, []);
-        }
-    },
-
     /*
      * Integrate the selected panel with the selected editor
      */
-    toggleEditing: function()
+    startEditing: function()
     {
         var panel = Firebug.chrome.getSelectedPanel();
-        if (panel.dynamoEditing)
-        {
-            FBTrace.sysout("Retry requested ");
-        }
-        else
-        {
-            FBTrace.sysout("dyne.toggleEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
-            var url = Firebug.chrome.getSelectedPanelURL();
-            var link = new Firebug.EditLink(panel.context, url, panel);
-            Firebug.chrome.select(link);
-            FBTrace.sysout("Edit requested "+url);
-            return true;
-        }
+        FBTrace.sysout("dyne.toggleEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
+        var url = Firebug.chrome.getSelectedPanelURL();
+        var link = new Firebug.EditLink(panel.context, url, panel);
+        Firebug.chrome.select(link);
+        FBTrace.sysout("Edit requested "+url);
+        return true;
     },
+
+    stopEditing: function()
+    {
+        FBTrace.sysout("dyne.stopEditing");
+    }
 
 });
 
@@ -626,7 +613,6 @@ Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 Firebug.registerModule(Firebug.Dyne);
 Firebug.registerPanel(Firebug.Dyne.OrionPanel);
 
-Firebug.Dyne.registerEditor(Firebug.Dyne.OrionPanel);
 
 // ************************************************************************************************
 }});
