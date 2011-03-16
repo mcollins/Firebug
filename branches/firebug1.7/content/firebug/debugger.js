@@ -965,7 +965,15 @@ Firebug.Debugger = extend(Firebug.ActivableModule,
                     panel.showNoStackFrame(); // unhighlight and remove toolbar-status line
 
                 if (panel)
+                {
+                    if (panel.selectedSourceBox.breakCauseBox)
+                    {
+                        panel.selectedSourceBox.breakCauseBox.hide();
+                        delete panel.selectedSourceBox.breakCauseBox;
+                    }
+
                     panel.highlight(false);
+                }
 
                 chrome.syncSidePanels();  // after main panel is all updated.
             }

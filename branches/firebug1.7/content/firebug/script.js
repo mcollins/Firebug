@@ -184,12 +184,6 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
             var lineNode = sourceBox.getLineNode(lineNumber);  // we close over lineNumber
             sourceBox.selectedLine = lineNode;  // if null, clears
 
-            if (sourceBox.breakCauseBox)
-            {
-                sourceBox.breakCauseBox.hide();
-                delete sourceBox.breakCauseBox;
-            }
-
             if (sourceBox.selectedLine)
             {
                 lineNode.setAttribute(highlightingAttribute, "true");
