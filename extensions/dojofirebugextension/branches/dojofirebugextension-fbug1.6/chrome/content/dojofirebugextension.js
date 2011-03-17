@@ -1422,10 +1422,14 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
     	var ctx = _safeGetContext(this);
     	var self = this;
     	var eventsRegistrator = new DojoModel.EventsRegistrator(ctx.connectionsAPI);
-    	var connectionsCounterGetter = function(){
-    		self._updateCounter(this.connectionCounterNode, ctx.connectionsAPI.getConnections().length);};
-    	var subscriptionsCounterGetter = function(){
-			self._updateCounter(this.subscriptionCounterNode, ctx.connectionsAPI.getSubscriptionsList().length);};
+    	var connectionsCounterGetter = function() {
+    		if(!ctx.connectionsAPI) return;
+    		self._updateCounter(this.connectionCounterNode, ctx.connectionsAPI.getConnections().length);
+    	};
+    	var subscriptionsCounterGetter = function() {
+    		if(!ctx.connectionsAPI) return;
+			self._updateCounter(this.subscriptionCounterNode, ctx.connectionsAPI.getSubscriptionsList().length);
+		};
     	eventsRegistrator.registerListenerForEvent(
     			[DojoModel.ConnectionsAPI.ON_CONNECTION_ADDED, DojoModel.ConnectionsAPI.ON_CONNECTION_REMOVED], connectionsCounterGetter);
     	eventsRegistrator.registerListenerForEvent(
