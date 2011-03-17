@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bug test</title>
+</head>
+<body>
+    <h1>Errors inside the onReadyStateChange function doesn't work</h1>
+
+    <p>If Firebug is enabled, errors inside an onReadyStateChange event fail
+silently </p>
+
+
+    <script type="text/javascript">
+        window.onerror = function(msg, url, lno) {
+            if (window.console)
+                console.log("window.onerror got called with "+msg);
+            return false;
+        }
+
+
+        var oXmlHttp = new XMLHttpRequest();
+
+        oXmlHttp.open( "GET", this.location.href ) ;
+
+        oXmlHttp.onreadystatechange = function(e)
+        {
+            //This line should throw an error visible in both the Error Console and the Firebug console
+            throw Error('You should be able to see me in the console');
+        }
+
+        oXmlHttp.send( null ) ;
+</script>
+
+</body>
+</html>
