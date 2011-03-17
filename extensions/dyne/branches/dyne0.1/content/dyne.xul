@@ -24,6 +24,14 @@
                      </menupopup>
                   </toolbarbutton>
             </hbox>
+            <hbox id="fbOrionButtons" collapsed="true" class="noTabStop" insertbefore="fbLocationButtons">
+                <toolbarbutton id="fbOrionSaveButton"
+                    label="Save"
+                    tooltiptext="Save Edits"
+                    command="cmd_saveDyneEditing"
+                    type="menu-button">
+                </toolbarbutton>
+            </hbox>
             <hbox id="fbScriptButtons">
                 <toolbarbutton id="fbToggleJSEditor"
                            label="firebug.Edit"

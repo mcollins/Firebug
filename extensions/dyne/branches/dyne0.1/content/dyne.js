@@ -449,14 +449,19 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     //*******************************************************************************************************
     show: function(state)
     {
-        // Use orion toolbox for now
-        var toolbar = Firebug.chrome.$('fbToolBar');
-        if (toolbar)
-            FBL.collapse(toolbar, true);
-
-        this.showToolbarButtons("fbEditorButtons", true);
-        this.showToolbarButtons("fbLocationSeparator", true);
-        this.showToolbarButtons("fbLocationButtons", true);
+        if (this.useOrionToolbar)
+        {
+            // Use orion toolbox for now
+            var toolbar = Firebug.chrome.$('fbToolbar');
+            if (toolbar)
+                FBL.collapse(toolbar, true);
+        }
+        else
+        {
+            this.showToolbarButtons("fbOrionButtons", true);
+            this.showToolbarButtons("fbLocationSeparator", true);
+            this.showToolbarButtons("fbLocationButtons", true);
+        }
 
         Firebug.Dyne.saveEditing = bind(this.saveEditing, this);
         // restore state
@@ -464,14 +469,18 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     hide: function()
     {
-        var toolbar = Firebug.chrome.$('fbToolBar');
-        if (toolbar)
-            FBL.collapse(toolbar, false);
-
-        this.showToolbarButtons("fbEditorButtons", false);
-        this.showToolbarButtons("fbLocationSeparator", false);
-        this.showToolbarButtons("fbLocationButtons", false);
-
+        if (this.useOrionToolbar)
+        {
+            var toolbar = Firebug.chrome.$('fbToolbar');
+            if (toolbar)
+                FBL.collapse(toolbar, false);
+        }
+        else
+        {
+            this.showToolbarButtons("fbOrionButtons", false);
+            this.showToolbarButtons("fbLocationSeparator", false);
+            this.showToolbarButtons("fbLocationButtons", false);
+        }
         Firebug.Dyne.saveEditing = Firebug.Dyne.noActiveEditor;
 
         delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
