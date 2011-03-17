@@ -110,6 +110,7 @@ Firebug.TabContext.prototype =
         this.compilationUnits[sourceFile.href] = compilationUnit;
 
         compilationUnit.sourceFile = sourceFile; // HACK
+        compilationUnit.href = compilationUnit.url; // HACK
 
         if (sourceFile.compilation_unit_type == "event")
             compilationUnit.kind = CompilationUnit.BROWSER_GENERATED;
