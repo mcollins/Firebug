@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE dojoDTD SYSTEM "chrome://dojofirebugextension/locale/dojo.dtd">
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<script src="chrome://dojofirebugextension/content/inspector-patch.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/dojomodel.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/dojoaccess.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/dojodebugger.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/dojoreps.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/dojofirebugextension.js" type="application/x-javascript"/>    
+
+    <stringbundleset id="stringbundleset">
+    	<stringbundle id="dojostrings" src="chrome://dojofirebugextension/locale/dojo.properties"/>
+	</stringbundleset>
+
+    <!-- Firefox page context menu -->
+<!--    
+    <menupopup id="contentAreaContextMenu">
+        <menuitem id="menu_dojofirebugextension_inspect" label="firebug.InspectElement"
+                  command="cmd_dojofirebugextension_inspect" class="menuitem-iconic fbInternational" disabled="!listener.fnExists" />
+    </menupopup>
+-->    
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_dojofirebugextensionGetDojoWidgetButton" oncommand="DojoExtension.dojofirebugextensionModel.onShowWidgetsButton(FirebugContext)"/>
+        <command id="cmd_dojofirebugextensionViewConnectionsInTable" oncommand="DojoExtension.dojofirebugextensionModel.onShowConnectionsInTableButton(FirebugContext)"/>
+		<command id="cmd_dojofirebugextensionViewSubscriptions" oncommand="DojoExtension.dojofirebugextensionModel.onShowSubscriptionsButton(FirebugContext)"/>
+<!--		<command id="cmd_dojofirebugextension_inspect" oncommand="DojoExtension.dojofirebugextensionModel.inspectFromContextMenu(document.popupNode);" disabled="DojoExtension.dojofirebugextensionModel.canInspect(FirebugContext, document.popupNode);"/> -->
+    </commandset>
+
+	<toolbar id="fbToolbar" align="center" role="toolbar">
+        <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
+            <hbox id="fbdojofirebugextensionButtons" insertafter="fbNetButtons">
+                <!-- <toolbarseparator/> -->
+                <toolbarbutton id="widgetsButton"
+                    label="&dojo.widgets.label;" class="toolbar-text-button"
+                    type="radio" group="dojoOptions" checked="true" 
+                    tooltiptext="&dojo.widgets.tooltip;" command="cmd_dojofirebugextensionGetDojoWidgetButton"/>
+                <toolbarbutton id="connectionsInTableButton"
+                    label="&dojo.connections.label;" class="toolbar-text-button"
+                    type="radio" group="dojoOptions" 
+                    tooltiptext="&dojo.connections.tooltip;" command="cmd_dojofirebugextensionViewConnectionsInTable"/>
+                <toolbarbutton id="subscriptionsButton"
+                    label="&dojo.subscriptions.label;" class="toolbar-text-button"
+                    type="radio" group="dojoOptions" 
+                    tooltiptext="&dojo.subscriptions.tooltip;" command="cmd_dojofirebugextensionViewSubscriptions"/>
+           </hbox>
+       </hbox>
+    </toolbar>
+
+
+</overlay>

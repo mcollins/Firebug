@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head> 
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>Dojo Widgets Tests</title>
+
+	<script type="text/javascript">
+	    var djConfig = {
+	    	isDebug: true,
+		    parseOnLoad:true
+		}
+	</script>
+	
+    <!--  Google 1.5 -->
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/tundra/tundra.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>
+    
+</head>
+
+<body class="tundra">
+
+<div id="mainDiv" style="width: 100%; height: 100%;">
+	<button id="button">Click me!</button>            
+	<button id="button2">Click me 2!</button>            
+</div>
+
+<script type="text/javascript">
+
+var objA = {
+		funcTest: function(){
+			alert("Hello!");
+		}
+};
+
+var functionGlobal = function(){
+	alert("Global Hello!");
+};
+
+var disconnectHandler = null;
+
+var disconnectFirstConnection = function(){
+	dojo.disconnect(disconnectHandler);
+}
+
+var button = dojo.byId('button');
+
+dojo.addOnLoad(
+		function() {
+			disconnectHandler = dojo.connect(button, "onclick", objA, "funcTest", true);
+			dojo.connect(button, "onblur", objA, objA.funcTest, true);
+			dojo.connect(button, "onclick", "functionGlobal");
+			dojo.connect(button, "onblur", functionGlobal);
+		}
+);
+
+</script>
+
+</body>
+</html>

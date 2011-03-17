@@ -1,0 +1,324 @@
+/* Released under BSD license (see license.txt) */
+/*
+ * dojofirebugextension 
+ * Copyright IBM Corporation 2010, 2010. All Rights Reserved. 
+ * U.S. Government Users Restricted Rights -  Use, duplication or disclosure restricted by GSA ADP 
+ * Schedule Contract with IBM Corp. 
+ */
+
+.selectableObject {
+	cursor: pointer;
+}
+
+.selectableObject:hover{
+	color: blue;
+	text-decoration: underline;
+}
+
+.object {
+    color: red;
+    background-image:url('chrome://dojofirebugextension/skin/object.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+}
+
+
+.incomingConnections {
+    color: red;
+    background-image:url('chrome://dojofirebugextension/skin/incomming.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+	cursor: default;
+}
+
+.outgoingConnections {
+    color: red;
+    background-image:url('chrome://dojofirebugextension/skin/outgoing.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+	cursor: default;
+}
+
+.event {
+    color: green;
+    background-image:url('chrome://dojofirebugextension/skin/event.gif');
+    background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+	cursor: default;
+}
+
+.function {
+    color: green;
+    background-image:url('chrome://dojofirebugextension/skin/function.png');
+    background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+	cursor: default;
+}
+
+.connection {
+    color: black;
+    background-image:url('chrome://dojofirebugextension/skin/connection.gif');
+    background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+}
+
+.connectionInc {
+    color: black;
+    margin-left: 15px;
+    background-image:url('chrome://dojofirebugextension/skin/event.gif');
+    background-repeat:no-repeat;
+	background-position:left top;
+	padding: 2px;
+	padding-left: 20px;
+}
+
+.connectionOut {
+    color: black;
+    margin-left: 15px;
+    background-image:url('chrome://dojofirebugextension/skin/function.png');
+    background-repeat:no-repeat;
+	background-position:left top;
+	padding: 2px;
+	padding-left: 20px;
+}
+
+.subscription {
+    color: green;
+    margin-left: 20px;
+    background-image:url('chrome://dojofirebugextension/skin/subscription.gif');
+    background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+	cursor: default;
+}
+
+.topic {
+    color: red;
+    background-image:url('chrome://dojofirebugextension/skin/topic.gif');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding : 1px;
+	padding-left: 20px;
+}
+
+.dojo-warning{
+	background-color:#D8E4F1;
+	border:1px solid #6699CC;
+	margin-bottom: 5px;
+	color: gray;
+	padding-left: 10px;
+}
+
+.dojo-warning img{
+	vertical-align: middle;
+	margin-right: 2px;
+}
+
+.dojo-warning input{
+	font-size:9px;
+	color: black;
+}
+
+.connections-table{
+	border: 1px solid #666666;
+}
+
+.connections-table th{
+	padding: 2px;
+	background-color: #FFCC00;
+	border: 1px solid white;
+}
+
+.connections-table th:hover { 
+	text-decoration: underline; 
+}
+
+.connections-table th{
+	cursor: pointer;
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.connections-table td{
+	padding: 2px;
+	border: 1px solid white;
+}
+
+.connections-table .row-odd{
+	background-color: #FFEEAA;
+}
+
+.connections-table .row-even{
+	background-color: white;
+}
+
+.connections-table .superHeader{
+	background-color: #E2F3B8;
+	text-align: center;
+	font-weight: bold
+}
+
+.connections-table .columnPriority0{
+	background-image:url('chrome://firebug/skin/arrowDown.png');
+	background-repeat:no-repeat;
+	background-position:right center;
+}
+
+.widgetDeclaredClass{
+	color: gray;
+} 
+
+.widgetId{
+	font-weight: bold;
+}
+
+.detached {
+	opacity: 0.5;
+}
+
+.counterLabel{
+	color: green;
+	font-weight: bold;
+}
+
+.counterValue{
+	color: red;
+	font-weight: bold
+}
+
+.countOfConnectionLabel{
+	margin-left: 1px;
+    background-image:url('chrome://dojofirebugextension/skin/connection.gif');
+    background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+}
+
+.countOfSubscriptionLabel{
+	margin-left: 1px;
+    background-image:url('chrome://dojofirebugextension/skin/subscription.gif');
+    background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 20px;
+}
+
+.disabledPanelBox .descImage-dojofirebugextension {
+    background-image:url('chrome://dojofirebugextension/skin/disabled-extension-message.png');
+    width: 400px;
+}
+
+.infoMessage{
+	background-image:url('chrome://dojofirebugextension/skin/info.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	font-weight: bold;
+	margin: 20px;
+	padding: 2px;
+	padding-left: 20px;
+	color: gray;
+}
+
+.simpleMessage{
+	font-weight: bold;
+	color: gray;
+	margin: 20px;
+}
+
+.subscriptions , .connectionsInfo{
+	padding: 5px;
+}
+
+.currentSelection, .currentSelection *{
+	background-color:highlight !important;
+	border-color:highlight !important;
+	color:highlighttext !important;
+}
+
+.container-opened .collapsable-label{
+	background-image:url('chrome://firebug/skin/win/twistyOpen.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 15px;
+}
+
+.container-collapsed .collapsable-label{
+	background-image:url('chrome://firebug/skin/win/twistyClosed.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 15px;
+}
+
+.collapsable-content{
+	margin-left: 15px;
+}
+
+.container-opened .collapsable-content{
+	display: inherit;
+}
+
+.container-collapsed .collapsable-content{
+	display: none;
+}
+
+.widget-info-level-specific .widget-specific-data{
+	display: inherit;
+}
+
+.widget-info-level-full .widget-specific-data{
+	display: none;
+}
+
+.widget-info-level-specific .widget-full-data{
+	display: none;
+}
+
+.widget-info-level-full .widget-full-data{
+	display: inherit;
+}
+
+.widget-label{
+	margin: 5px;
+}
+
+.widget-label select {
+	border: none;
+	height: 15px;
+	color: gray;
+	font-size: 95%;
+}
+
+.infoLevelToggle{
+	padding-left: 16px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	cursor: pointer;
+}
+
+.widget-info-level-specific .infoLevelToggle{
+	background-image:url('chrome://dojofirebugextension/skin/specific_info_level.gif');
+	background-repeat:no-repeat;
+	background-position:center;
+}
+
+.widget-info-level-full .infoLevelToggle{
+	background-image:url('chrome://dojofirebugextension/skin/full_info_level.gif');
+	background-repeat:no-repeat;
+	background-position:center;
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head> 
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>Dojo Widgets Tests</title>
+
+	<script type="text/javascript">
+	    var djConfig = {
+	    	isDebug: true,
+		    parseOnLoad:true
+		}
+	</script>
+	
+    <!--  Google 1.5 -->
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/tundra/tundra.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>
+    
+</head>
+
+<body class="tundra">
+
+<div id="mainDiv" style="width: 100%; height: 100%;">
+	No visual content, just js!           
+</div>
+
+<script type="text/javascript">
+
+function methodGlobal1(){};
+function methodGlobal2(){};
+function methodGlobal3(){};
+function methodGlobal4(){};
+function methodGlobal5(){};
+function methodGlobal6(){};
+function methodGlobal7(){};
+function methodGlobal8(){};
+function methodGlobal9(){};
+function methodGlobal10(){};
+function methodGlobal11(){};
+function methodGlobal12(){};
+function methodGlobal13(){};
+function methodGlobal14(){};
+
+dojo.addOnLoad(
+		function() {
+			var objConnTargetTest = window.objConnTargetTest = {
+					method1: function(){},
+					method2: function(){},
+					method3: function(){},
+					method4: function(){},
+					method5: function(){},
+					method6: function(){}
+			};
+
+			var objConnHandlerTest = window.objConnHandlerTest = {
+					methodHandler1: function(){},
+					methodHandler2: function(){},
+					methodHandler3: function(){},
+					methodHandler4: function(){},
+					methodHandler5: function(){}
+			};
+
+			dojo.connect("methodGlobal1", "methodGlobal2");
+			dojo.connect("methodGlobal2", methodGlobal1);
+			dojo.connect(null, "methodGlobal3", "methodGlobal4");
+			dojo.connect(null, "methodGlobal4", methodGlobal3);
+			dojo.connect("methodGlobal5", null, "methodGlobal6");
+			dojo.connect("methodGlobal6", null, methodGlobal5);
+			dojo.connect(null, "methodGlobal7", null, "methodGlobal8");
+			dojo.connect(null, "methodGlobal8", null, methodGlobal7);
+			dojo.connect(null, "methodGlobal9", objConnHandlerTest, "methodHandler1");
+			dojo.connect(null, "methodGlobal10", objConnHandlerTest, objConnHandlerTest.methodHandler2);
+			dojo.connect(objConnTargetTest, "method1", "methodGlobal11");
+			dojo.connect(objConnTargetTest, "method2", methodGlobal12);
+			dojo.connect(objConnTargetTest, "method3", null, "methodGlobal13");
+			dojo.connect(objConnTargetTest, "method4", null, methodGlobal14);
+			dojo.connect(objConnTargetTest, "method5", objConnHandlerTest, "methodHandler3");
+			dojo.connect(objConnTargetTest, "method6", objConnHandlerTest, objConnHandlerTest.methodHandler4);
+			dojo.connect("unexistentMethod", objConnHandlerTest, "methodHandler5");
+		}
+);
+
+</script>
+
+</body>
+</html>
