@@ -31,6 +31,8 @@ Firebug.Dyne = extend(Firebug.Module,
     initialize: function()
     {
         Firebug.CSSModule.registerEditor("Orion", this);
+        Firebug.ScriptPanel.registerEditor("Source", Firebug.Dyne.JSTextAreaEditor);
+        Firebug.ScriptPanel.registerEditor("Orion", this);
     },
 
     showPanel: function(browser, panel)
@@ -38,7 +40,16 @@ Firebug.Dyne = extend(Firebug.Module,
         if (!panel)
             return;
 
-        panel.showToolbarButtons("fbEditButtons",  (panel.location instanceof CompilationUnit));
+        if (panel.name === "script")
+        {
+            panel.showToolbarButtons("fbToggleJSEditor",  true);
+            Firebug.ScriptPanel.updateEditButton();
+        }
+        else
+        {
+            panel.showToolbarButtons("fbToggleJSEditor",  false);
+        }
+
     },
 
     updateOption: function(name, value)
@@ -47,15 +58,6 @@ Firebug.Dyne = extend(Firebug.Module,
     },
 
     // **********************************************************************************************
-    registerEditor: function(editor)
-    {
-        this.editors.push(editor);
-    },
-
-    unregisterEditor: function(editor)
-    {
-        FBL.remove(editors, editor);
-    },
 
     noActiveEditor: function()
     {
@@ -64,13 +66,37 @@ Firebug.Dyne = extend(Firebug.Module,
     },
     // **********************************************************************************************
 
+    toggleJSEditing: function()
+    {
+        var panel = Firebug.chrome.getSelectedPanel();
+        var panel = panel.context.getPanel("script");
+        if (panel.editing)
+        {
+            this.currentJSEditor.stopEditing(panel.location, Firebug.currentContext);
+            panel.editing = false;
+        }
+        else
+        {
+            try
+            {
+                this.currentJSEditor = Firebug.ScriptPanel.getCurrentEditor();
+                this.currentJSEditor.startEditing(panel.location, Firebug.currentContext);
+                panel.editing = true;
+            }
+            catch(exc)
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("editor.startEditing ERROR "+exc, {name: Firebug.ScriptPanel.getCurrentEditorName(), currentEditor: this.currentJSEditor, location: panel.location});
+            }
+        }
+    },
     /*
      * Integrate the selected panel with the selected editor
      */
     startEditing: function()
     {
         var panel = Firebug.chrome.getSelectedPanel();
-        FBTrace.sysout("dyne.toggleEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
+        FBTrace.sysout("dyne.startEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
         var url = Firebug.chrome.getSelectedPanelURL();
         var link = new Firebug.EditLink(panel.context, url, panel);
         Firebug.chrome.select(link);
@@ -91,6 +117,41 @@ Firebug.EditLink = function EditLink(context, location, panel)
     this.originURL = location;
     this.originPanel = panel; // may be null
 }
+
+//*****************************************************************************
+// A simple text area editor
+
+Firebug.Dyne.JSTextAreaEditor = function(doc)
+{
+    this.box = this.tag.replace({}, doc, this);
+    this.input = this.box.firstChild;
+}
+
+
+// Class methods
+Firebug.Dyne.JSTextAreaEditor.startEditing = function(location, context)
+{
+    location.getSourceLines(-1, -1, function loadSource(unit, firstLineNumber, lastLineNumber, linesRead)
+    {
+        var scriptPanel = context.getPanel("script");
+        var currentEditor = new Firebug.Dyne.JSTextAreaEditor(scriptPanel.document);
+        src = linesRead.join("");
+        Firebug.Editor.startEditing(scriptPanel.panelNode, src, currentEditor);
+
+        currentEditor.input.scrollTop = scriptPanel.panelNode.scrollTop;
+    });
+};
+
+Firebug.Dyne.JSTextAreaEditor.stopEditing = function()
+{
+    Firebug.Editor.stopEditing();
+};
+
+Firebug.Dyne.JSTextAreaEditor.prototype = domplate(Firebug.StyleSheetEditor.prototype,
+{
+
+});
+
 
 Firebug.Dyne.OrionPanel = function dynePanel() {};
 
@@ -388,6 +449,11 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     //*******************************************************************************************************
     show: function(state)
     {
+        // Use orion toolbox for now
+        var toolbar = Firebug.chrome.$('fbToolBar');
+        if (toolbar)
+            FBL.collapse(toolbar, true);
+
         this.showToolbarButtons("fbEditorButtons", true);
         this.showToolbarButtons("fbLocationSeparator", true);
         this.showToolbarButtons("fbLocationButtons", true);
@@ -398,6 +464,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     hide: function()
     {
+        var toolbar = Firebug.chrome.$('fbToolBar');
+        if (toolbar)
+            FBL.collapse(toolbar, false);
+
         this.showToolbarButtons("fbEditorButtons", false);
         this.showToolbarButtons("fbLocationSeparator", false);
         this.showToolbarButtons("fbLocationButtons", false);

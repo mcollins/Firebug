@@ -7,7 +7,7 @@
     <script src="chrome://dyne/content/dyne.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_toggleDyneEditing" oncommand="Firebug.Dyne.toggleEditing()"/>
+        <command id="cmd_toggleJSEditor" oncommand="Firebug.Dyne.toggleJSEditing()"/>
         <command id="cmd_saveDyneEditing" oncommand="Firebug.Dyne.saveEditing()"/>
     </commandset>
 
@@ -16,32 +16,38 @@
             <hbox id="fbCSSButtons" collapsed="true" class="noTabStop">
                  <toolbarbutton id="fbToggleCSSEditing">
                      <menupopup id="fbCSSEditorMenu">
-                         <menuitem id="menu_cssOrionEdit" mode="Orion"
+                         <menuitem id="menu_cssEditModeOrion" mode="Orion"
                                    label="Orion Edit"
-                                   oncommand="Firebug.currentContext.getPanel('stylesheet').onEditMode(event, this)"
+                                   oncommand="Firebug.CSSModule.onEditMode(event, this)"
                                    type="radio" autocheck="false"
                                    class="fbInternational"/>
                      </menupopup>
                   </toolbarbutton>
             </hbox>
-            <hbox id="fbEditButtons" insertafter="fbBonButtons">
-                <toolbarbutton id="fbToggleDyneEditing" collapsed="false"
-                    label="Edit"
-                    class="toolbar-text-button fbInternational"
-                    tooltiptext="Edit this source"
-                    command="cmd_toggleDyneEditing"
-                    >
-                </toolbarbutton>
+            <hbox id="fbScriptButtons">
+                <toolbarbutton id="fbToggleJSEditor"
+                           label="firebug.Edit"
+                           class="fbInternational"
+                           tooltiptext="firebug.EditJSTooltip"
+                           command="cmd_toggleJSEditor"
+                           type="menu-button">
+                    <menupopup id="fbJSEditorMenu"
+                         onpopupshowing="Firebug.ScriptPanel.onOptionsShowing(this)">
+                         <!-- id must be menu_+getEditOptionKey+mode -->
+                         <menuitem id="menu_JSEditorSource" mode="Source"
+                               label="firebug.script.Source Edit"
+                               oncommand="Firebug.ScriptPanel.onEditMode(event, this)"
+                               type="radio" autocheck="false"
+                               class="fbInternational"/>
+                         <menuitem id="menu_JSEditorOrion" mode="Orion"
+                               label="firebug.script.Orion Edit"
+                               oncommand="Firebug.ScriptPanel.onEditMode(event, this)"
+                               type="radio" autocheck="false"
+                               class="fbInternational"/>
+                    </menupopup>
+                 </toolbarbutton>
             </hbox>
-            <hbox id="fbEditorButtons" insertbefore="fbLocationButtons">
-                <toolbarbutton id="fbToggleDyneSaveClear" collapsed="false"
-                    label="Save"
-                    class="toolbar-text-button fbInternational"
-                    tooltiptext="Edit this source"
-                    command="cmd_saveDyneEditing"
-                    >
-                </toolbarbutton>
-            </hbox>
+
         </hbox>
 
     </toolbar>
