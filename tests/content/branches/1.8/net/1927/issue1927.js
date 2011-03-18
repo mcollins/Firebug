@@ -11,15 +11,19 @@ function runTest()
 
             waitForDialogLoaded(function(win)
             {
-                fireDialogCommand(win, "accept");
-
-                waitForDialogLoaded(function(win)
+                fireDialogCommand(win, "accept", function()
                 {
-                    fireDialogCommand(win, "cancel");
-                    setTimeout(function() {
-                        verifyNetResponse();
-                        FBTest.testDone("issue1927.DONE");
-                    }, 500);
+                    waitForDialogLoaded(function(win)
+                    {
+                        fireDialogCommand(win, "cancel", function()
+                        {
+                            setTimeout(function()
+                            {
+                                verifyNetResponse();
+                                FBTest.testDone("issue1927.DONE");
+                            }, 500);
+                        });
+                    });
                 });
             });
         });
@@ -66,6 +70,7 @@ function waitForDialogLoaded(callback)
             function domWindowLoaded()
             {
                 domWindow.removeEventListener("load", domWindowLoaded, true);
+                FBTest.progress("dialog loaded");
                 callback(domWindow);
             }
             domWindow.addEventListener("load", domWindowLoaded, true);
@@ -75,9 +80,20 @@ function waitForDialogLoaded(callback)
     wm.addListener(listener);
 }
 
-function fireDialogCommand(win, dlgType)
+function fireDialogCommand(win, dlgType, callback)
 {
-    setTimeout(function() {
+    function onDialogClosed()
+    {
+        FBTest.progress("Dialog closed");
+        win.removeEventListener("load", onDialogClosed, true);
+        callback();
+    }
+
+    win.addEventListener("unload", onDialogClosed, true);
+
+    setTimeout(function()
+    {
+        FBTest.progress("Fire command: " + dlgType);
         win.document.documentElement._doButtonCommand(dlgType);
-    }, 100);
+    }, 200);
 }

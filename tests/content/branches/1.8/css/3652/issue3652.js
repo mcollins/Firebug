@@ -32,9 +32,13 @@ function runTest()
 
             // Type 'home' to move the cursor at the begginging and cancel the selection.
             // Consequently type 'arrow-up' to get the (global) previous color.
-            FBTest.sendKey("HOME", editor);
+            // DOM_VK_HOME doesn't work on MAC, press left 3x instead.
+            FBTest.sendKey("LEFT", editor);
+            FBTest.sendKey("LEFT", editor);
+            FBTest.sendKey("LEFT", editor);
+
             FBTest.sendKey("UP", editor);
-            FBTest.compare("Purple", editor.value, "Must be autocompleted to Purple.");
+            FBTest.compare("Purple", editor.value, "Must be autocompleted to Purple and it's: " + editor.value);
 
             // And again go back to 'Red' (now with capital R)
             FBTest.sendKey("DOWN", editor);
