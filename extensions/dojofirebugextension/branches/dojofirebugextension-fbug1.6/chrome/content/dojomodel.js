@@ -942,7 +942,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 this.event = event;
 		 this.connections = connections;
 		 this.getEventFunction = function(){
-			return (connections.length > 0) ? connections[0].getEventFunction() : null;
+			return (this.connections.length > 0) ? this.connections[0].getEventFunction() : null;
 		 };
 	 };
 	 

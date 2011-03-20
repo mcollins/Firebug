@@ -1720,6 +1720,8 @@ DojoExtension.DojoHTMLPanel.prototype = extend(Firebug.HTMLPanel.prototype,
  */
 DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 {
+	
+	extensionLoaded: false, //if the extension has already registered its stuff.
 
 	//FIXME this shouldn't be here! model doesn't need to know the view! 
 	//should base on listeners..
@@ -1730,7 +1732,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     initialize: function() {
 		Firebug.ActivableModule.initialize.apply(this, arguments);
 
-        if (Firebug.Debugger) {
+		if (this.isExtensionEnabled() && Firebug.Debugger) {
     		Firebug.Debugger.addListener(this);
         }
     },
@@ -1844,7 +1846,9 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
      * This way, we can detect when dojo.js is loaded and take action. 
      */
     onSourceFileCreated : function (context, sourceFile) {
-    	var panelIsEnable = Firebug.getPref("extensions.firebug.dojofirebugextension", "enableSites");
+    	//var panelIsEnable = Firebug.getPref("extensions.firebug.dojofirebugextension", "enableSites");
+    	var panelIsEnable = this.isExtensionEnabled();
+    	
         if (panelIsEnable) {
 	       var href = sourceFile.href;
 		   
@@ -1954,6 +1958,44 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 		   	   });
    },
    
+   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+   // Activation logic
+   
+   onObserverChange: function(observer) {
+	   Firebug.ActivableModule.onObserverChange.apply(this, arguments);
+	   
+	   if(!this.hasObservers()) {
+		   this.disableExtension();
+	   } else {
+		   this.enableExtension();
+	   }
+   },
+   
+   isExtensionEnabled: function() {
+	   return Firebug.getPref("extensions.firebug.dojofirebugextension", "enableSites");
+   },
+   
+   enableExtension: function() {
+	   if(this.extensionLoaded)
+		   return;
+	   
+	   
+	   DojoReps.registerReps();
+
+	   //last step
+	   this.extensionLoaded = true;
+   },
+   
+   disableExtension: function() {
+	   if(!this.extensionLoaded)
+		   return;
+	   
+	   DojoReps.unregisterReps();
+	   
+	   //last step
+	   this.extensionLoaded = false;
+   },
+
    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
    // FBTest
 

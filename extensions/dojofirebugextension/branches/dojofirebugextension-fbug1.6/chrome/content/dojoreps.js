@@ -565,14 +565,27 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 	}
 });
 
+//called by dojofirebugextension
+this.registerReps = function() {
+	Firebug.registerRep(this.DojoMainRep);
+	Firebug.registerRep(this.DijitMainRep);
+	Firebug.registerRep(this.DijitRep);
+	Firebug.registerRep(this.ConnectionRep);
+	Firebug.registerRep(this.ConnectionsInfoRep);	
+};
+
+//called by dojofirebugextension
+this.unregisterReps = function() {
+	Firebug.unregisterRep(this.DojoMainRep);
+	Firebug.unregisterRep(this.DijitMainRep);
+	Firebug.unregisterRep(this.DijitRep);
+	Firebug.unregisterRep(this.ConnectionRep);
+	Firebug.unregisterRep(this.ConnectionsInfoRep);	
+};
+
 
 // ************************************************************************************************
 
-Firebug.registerRep(this.DojoMainRep);
-Firebug.registerRep(this.DijitMainRep);
-Firebug.registerRep(this.DijitRep);
-Firebug.registerRep(this.ConnectionRep);
-Firebug.registerRep(this.ConnectionsInfoRep);
 
-//************************************************************************************************
+
 }});

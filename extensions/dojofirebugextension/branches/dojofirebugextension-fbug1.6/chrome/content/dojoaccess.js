@@ -383,6 +383,9 @@ Version.prototype = {
 		
 };
 var HeadVersion = function() {
+	//call super constructor
+	Version.apply(this);
+	
 	this.isHead = true;
 };
 HeadVersion.prototype = extend(Version.prototype, {
