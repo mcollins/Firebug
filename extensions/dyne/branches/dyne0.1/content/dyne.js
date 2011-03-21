@@ -217,23 +217,26 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         if (Firebug.Dyne.OrionPanel.openInNewWindow)
         {
             this.addEditURL(editLink);
-            if (editLink.saveURL)
+            if (editLink.editURL)
                 this.openInWindow(editLink);
             else
                 Firebug.Console.logFormatted(["No editing url for "+editLink.originURL, editLink]);
         }
         else
         {
-            editLink.saveURL = this.addEditURL(editLink);
+            this.addEditURL(editLink);
 
-            FBTrace.sysout("dyne.updateSelection "+editLink.saveURL, editLink);
-            this.navigate(editLink.editURL);
+            FBTrace.sysout("dyne.updateSelection editURL "+editLink.editURL, editLink);
+            if (this.location !== editLink.editURL)
+                this.navigate(editLink.editURL);
+            else
+                this.attachUpdater();
         }
     },
 
     openInWindow: function(editLink)
     {
-        var editURL = editLink.saveURL;
+        var editURL = editLink.editURL;
         var orionWindow = this.orionWindow;
         if(!orionWindow || orionWindow.closed)
         {
@@ -271,6 +274,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.setSaveAvailable(false);
 
         var source = FBL.getResource(fileURL);
+        FBTrace.sysout("editLocalFile "+fileURL+" source.length "+source.length);
         this.currentEditor.setText(source);
     },
 
@@ -298,10 +302,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         this.selectedOrionBox.setAttribute("class", "orionBox");
         this.panelNode.appendChild(this.selectedOrionBox);
 
-        var editLocation = location;
-        if (this.isLocalURI(location))
-            editLocation = "";  // set editLocal
-
         var iframe = this.insertOrionScripts(this.selectedOrionBox, location);
 
         // the element is available synchronously, but orion still needs to load
@@ -317,10 +317,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         FBTrace.sysout("dyne.createOrionBox load listener added "+location+" Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
     },
 
-    insertOrionScripts: function(parentElement, location)
+    insertOrionScripts: function(parentElement, url)
     {
-        var orionWrapper = "http://localhost:8080/coding.html#";
-        var url = orionWrapper + (location || "");
         var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
         parentElement.innerHTML = "<iframe src='"+url+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
@@ -376,24 +374,31 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     integrateOrion: function(win)
     {
-        this.currentEclipse = win;
-        if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
-        var topContainer = win.dijit.byId('topContainer');
-        if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne.integrateOrion topContainer: "+topContainer);
-        var editor = topContainer._editorContainer._editor;
-        if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
-        this.currentEditor = editor;
+        try
+        {
+            this.currentEclipse = win;
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
+            var topContainer = win.dijit.byId('topContainer');
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.integrateOrion topContainer: "+topContainer, topContainer);
+            var editor = topContainer._editorContainer._editor;
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
+            this.currentEditor = editor;
 
-        var console = createFirebugConsole(this.context, win);
+            var console = createFirebugConsole(this.context, win);
 
-        if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne.integrateOrion console ", console);
-        win.wrappedJSObject.console = console;
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.integrateOrion console ", console);
+            win.wrappedJSObject.console = console;
 
-        this.attachUpdater();
+            this.attachUpdater();
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("dyne.integrateOrion ERROR: "+exc, exc);
+        }
     },
 
     attachUpdater: function()
@@ -401,7 +406,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var model = this.getModel();
         if (this.selection instanceof Firebug.EditLink)
         {
-            if (this.isLocalURI(this.selection.fileURL)){
+            FBTrace.sysout("attachUpdater "+this.selection.fileURL);
+            if (this.isLocalURI(this.selection.fileURL))
+            {
                 this.editLocalFile(this.selection.fileURL);
             }
             var fromPanel = this.selection.originPanel;
@@ -411,9 +418,15 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
                 model.addListener(updater);
                 return;
             }
+            else if (fromPanel.name === "script")
+            {
+                var updater = new Firebug.Dyne.CompilationUnitUpdater(model, this, this.selection);
+                model.addListener(updater);
+                return;
+            }
               // TODO a different listener for each kind of file
         }
-        FBTrace.sysout("Dyne onEditorReady ERROR no match "+this.selection, this.selection);
+        FBTrace.sysout("Dyne attachUpdater ERROR no match "+this.selection, this.selection);
     },
 
     getModel: function()
@@ -436,15 +449,23 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     setSaveAvailable: function(isAvailable)
     {
-        $('fbToggleDyneSaveClear').disabled = !isAvailable;
+        $('fbOrionSaveButton').disabled = !isAvailable;
     },
 
     saveEditing: function()
     {
-        FBTrace.sysout("saveEditing "+this.location);
-        var saver = new Firebug.Dyne.Saver();
+        FBTrace.sysout("saveEditing "+this.location, this.selection);
         var src = this.getModel().getText();
-        saver.save(this.location, src);
+        if (this.selection.fileURL)
+        {
+            var saver = new Firebug.Dyne.LocalSaver();
+            saver.save(this.selection.fileURL, src);
+        }
+        else
+        {
+            var saver = new Firebug.Dyne.Saver();
+            saver.save(this.location, src);
+        }
     },
 
     getLocationList: function()
@@ -534,7 +555,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     addEditURLByFileURL: function(editLink)
     {
-        editLink.editURL = "http://localhost:8080/coding.html";
+        editLink.editURL = "http://localhost:8080/coding.html#http://localhost:8080/file/C/blank.html";
         return;
         var url = editLink.originURL;
         var unslash = url.split('/');
@@ -570,7 +591,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             href = href.split('#')[0]; // discard fragment
 
             if (href === editLink.originURL)
-                return this.getEditURLbyNetFile(files[i]);
+                return editLink.editURL = this.getEditURLbyNetFile(files[i]);
         }
     },
 
@@ -620,6 +641,32 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     },
 
 });
+
+Firebug.Dyne.CompilationUnitUpdater = function(model, panel, editLink)
+{
+    this.model = model;
+    this.orionPanel = panel;
+    this.editLink = editLink;
+}
+
+Firebug.Dyne.CompilationUnitUpdater.prototype =
+{
+    onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
+    {
+        var changedLineIndex = this.model.getLineAtOffset(start);
+        var lineText = this.model.getLine(changedLineIndex);
+        if (FBTrace.DBG_DYNE)
+        {
+            FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged "+changedLineIndex+" "+lineText);
+            FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
+        }
+
+        var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
+        this.orionPanel.setSaveAvailable(true);
+    },
+
+},
+
 
 Firebug.Dyne.CSSStylesheetUpdater = function(model, cssPanel)
 {
@@ -717,8 +764,53 @@ Firebug.Dyne.Saver.prototype =
     {
         this.request.open("PUT", url, true);
         this.request.send(src);
-    }
+    },
 }
+
+Firebug.Dyne.LocalSaver = function()
+{
+}
+
+Firebug.Dyne.LocalSaver.prototype =
+{
+    save: function(url, src)
+    {
+        var localFileURI = FBL.makeURI(url);
+        if (localFileURI instanceof Ci.nsILocalFile)
+        {
+            this.writeTextToFile(localFileURI, src);
+        }
+        else
+        {
+            FBTrace.sysout("Dyne.LocalSaver ERROR not a local file URI "+url, localFileURI)
+        }
+    },
+
+    writeTextToFile: function(file, string)
+    {
+        try
+        {
+            // Initialize output stream.
+            var outputStream = Cc["@mozilla.org/network/file-output-stream;1"]
+                .createInstance(Ci.nsIFileOutputStream);
+            outputStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
+
+            // Store text
+            outputStream.write(string, string.length);
+            outputStream.close();
+
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("Dyne.Saver.writeTextToFile to " + file.path, string);
+            return file.path;
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_ERRORS || FBTrace.DBG_DYNE)
+                FBTrace.sysout("Dyne.Saver.writeTextToFile; EXCEPTION for "+file.path+": "+err, {exception: err, string: string});
+        }
+    },
+}
+
 
 // ************************************************************************************************
 // ************************************************************************************************
