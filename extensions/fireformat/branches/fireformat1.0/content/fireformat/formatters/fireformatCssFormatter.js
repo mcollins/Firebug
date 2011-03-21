@@ -103,6 +103,12 @@ FBL.ns(function() {
           props.push({ name: m[1], value: m[2], important: m[3] });
         }
       }
+
+      if (this.prefCache.getPref("property.alphaSortProperties")) {
+          props = props.sort(function(a, b) {
+              return a.name.localeCompare(b.name);
+          })
+      }
       var propLen = props.length;
       for (var i = 0; i < propLen; i++) {
         var prop = props[i];

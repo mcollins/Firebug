@@ -38,6 +38,7 @@ pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforeValue", 1);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforePriority", 1);
 pref("extensions.firebug.fireformatCssFormatter.property.spaceBeforeSemicolon", 0);
 pref("extensions.firebug.fireformatCssFormatter.property.valueSpaceCount", 1);
+pref("extensions.firebug.fireformatCssFormatter.property.alphaSortProperties", false);
 
 /*
  * Simple @rule text formatting
