@@ -4,7 +4,7 @@ ol {
 }
 
 body {
-	font-family:"trebuchet ms",helvetica,sans-serif;
+    font-family:"trebuchet ms",helvetica,sans-serif;
 }
 
 
@@ -18,7 +18,7 @@ body {
 
 #header {
     width: 100%;
-    padding: 5px 5px 5px 300px;
+    padding: 5px 5px 5px 190px;
 }
 
 .logo
@@ -27,27 +27,25 @@ body {
 }
 
 body {
-	background-repeat: no-repeat;
-	background-image: -moz-linear-gradient(center top , #E7EDF6 3px, rgba(231, 237, 246, 0) 156px), -moz-linear-gradient(left center , rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.2)), -moz-linear-gradient(left center 32deg, rgba(255, 255, 255, 0) 19.5%, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.1) 21.5%, rgba(255, 255, 255, 0.2) 22%, rgba(255, 255, 255, 0.2) 25.5%, rgba(255, 255, 255, 0.1) 26%, rgba(255, 255, 255, 0.1) 27.5%, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0) 49.5%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 52.5%, rgba(255, 255, 255, 0.2) 53%, rgba(255, 255, 255, 0.2) 54.5%, rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0.1) 57.5%, rgba(255, 255, 255, 0) 58%, rgba(255, 255, 255, 0) 87%, rgba(255, 255, 255, 0.2) 90%);
+    background-repeat: no-repeat;
+    background-image: -moz-linear-gradient(center top , #E7EDF6 3px, rgba(231, 237, 246, 0) 156px), -moz-linear-gradient(left center , rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.2)), -moz-linear-gradient(left center 32deg, rgba(255, 255, 255, 0) 19.5%, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.1) 21.5%, rgba(255, 255, 255, 0.2) 22%, rgba(255, 255, 255, 0.2) 25.5%, rgba(255, 255, 255, 0.1) 26%, rgba(255, 255, 255, 0.1) 27.5%, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0) 49.5%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 52.5%, rgba(255, 255, 255, 0.2) 53%, rgba(255, 255, 255, 0.2) 54.5%, rgba(255, 255, 255, 0.1) 55%, rgba(255, 255, 255, 0.1) 57.5%, rgba(255, 255, 255, 0) 58%, rgba(255, 255, 255, 0) 87%, rgba(255, 255, 255, 0.2) 90%);
     background-color: #CCD9EA;
 }
 .swarmpicker {
-	margin-top: 20px;
-	width: 300px;
-	float: left;
+    margin-top: 20px;
+    width: 300px;
+    float: left;
 }
 .swarmSpecification {
 	margin-left: 300px;
 }
 .theSwarm {
-	background-color: rgba(255, 255, 255, 0.35);
-    background-image: -moz-linear-gradient(center top , rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.75));
+    background-image: -moz-linear-gradient(center top , rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
     border: 1px solid #C3CEDF;
     border-radius: 5px 5px 5px 5px;
-	
 }
 .swarmCommand {
-	margin: 10px 0 10px 50px;
+    margin: 10px 0 10px 50px;
 }
 
 .extension  {
@@ -70,7 +68,7 @@ body {
 }
 
 #extensionsSelected {
-	margin: 10px 0 10px 50px;
+    margin: 10px 0 10px 50px;
 }
 .inSwarm {
 /*   border-color:  #FF9933; */
