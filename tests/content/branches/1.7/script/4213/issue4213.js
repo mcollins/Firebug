@@ -49,6 +49,7 @@ function stepInto(callback)
     var fileUrl = basePath + "script/4213/issue4213-1.js";
     FBTest.waitForBreakInDebugger(null, lineNo, false, function hitBreak()
     {
+        FBTest.progress("The break happened on: " + lineNo + " line.");
         callback();
     });
 
