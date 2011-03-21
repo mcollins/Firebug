@@ -1,23 +1,36 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 
 <head>
 <title>Basic Firebug Swarm from the Firebug Team</title>
-<meta http-equiv="content-type"
-        content="text/html;charset=utf-8" />
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
 <link rel="stylesheet" href="../common/swarmExtensionStatus.css" type="text/css"/>
 <link rel="stylesheet" href="../common/swarm.css" type="text/css"/>
 <script type="text/javascript" src="../common/swarm.js"></script>
 </head>
+
 <body>
   <table id="header">
   <tbody>
   <tr>
   <td>
-  <form id="swarmSelector">
+  <a href="http://getfirebug.com/" target="_blank"><img class="logo" src="http://getfirebug.com/img/firebug-logo.png"/></a>
+  </td>
+  <td>
+  <a href="http://getfirebug.com/contribute" target="_blank"><div id="contribute">
+    Support Firebug<br>
+    <span>Buy A Fiery-Firebug Mousepad or</span><br>
+    <span>Become a Corporate Sponsor</span>
+    </div>
+ </a>
+  </td>
+  </tr>
+  </tbody>
+  </table>
+ <div class="swarmpicker">
+   <form id="swarmSelector">
   <div class="swarmSelector">
-    <input type="checkbox" name="swarms" value="basic" checked="true"/>Basic Extensions, includes Firebug
+    <input type="checkbox" name="swarms" value="basic" checked="true" />Basic Extensions, includes Firebug
   </div>
   <div class="swarmSelector">
     <input type="checkbox" name="swarms" value="designer" />Designer Extensions
@@ -31,23 +44,9 @@
     <div class="swarmSelector">
     <input type="checkbox" name="swarms" value="labs" />Firebug Labs Extensions
   </div>
-  <button class="swarmCommand" id="installSelected">Install The Swarm!</button><span id="extensionsSelected"></span>
+  <button class="swarmCommand blue-pill" id="installSelected">Install The Swarm!</button><br><span id="extensionsSelected"></span>
   </form>
-  </td>
-  <td>
-  <img  src="http://getfirebug.com/img/firebug-logo.png"/>
-  </td>
-  <td>
-  <a href="http://getfirebug.com/contribute" target="_blank"><div id="contribute">
-    Support Firebug<br>
-    <span>Buy A Fiery-Firebug Mousepad or</span><br>
-    <span>Become a Corporate Sponsor</span>
-    </div>
- </a>
-  </td>
-  </tr>
-  </tbody>
-  </table>
+ </div>
  <div class="swarmSpecification">
 
  <div class="theSwarm"> <!-- One item for every extension in the Swarm -->
