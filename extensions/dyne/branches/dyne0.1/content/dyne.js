@@ -216,7 +216,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     {
         if (Firebug.Dyne.OrionPanel.openInNewWindow)
         {
-            editLink.saveURL = this.getEditURLbyURL(editLink.context, editLink.originURL);
+            this.addEditURL(editLink);
             if (editLink.saveURL)
                 this.openInWindow(editLink);
             else
@@ -224,8 +224,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         }
         else
         {
-            // Assume the server supports PUT
-            this.navigate(editLink.originURL);
+            editLink.saveURL = this.addEditURL(editLink);
+
+            FBTrace.sysout("dyne.updateSelection "+editLink.saveURL, editLink);
+            this.navigate(editLink.editURL);
         }
     },
 
@@ -238,7 +240,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             orionWindow = this.orionWindow = FBL.openWindow("Orion", "chrome://browser/content/browser.xul");
             function openEditURL()
             {
-                FBTrace.sysout("openEditURL "+editURL);
+                FBTrace.sysout("openEditURL "+editURL, editLink);
                 orionWindow.gBrowser.selectedTab = orionWindow.gBrowser.addTab(editURL);
                 orionWindow.removeEventListener("load", openEditURL, false);
             }
@@ -258,14 +260,17 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         if (!editURL)
             return;
 
+        if (editURL !== this.location)
+            FBTrace.sysout("dyne.updateLocation inconsistent "+editURL+" !== "+this.location);
+
         this.selectOrionBox(this.location);
     },
 
-    editLocalFile: function()
+    editLocalFile: function(fileURL)
     {
         this.setSaveAvailable(false);
 
-        var source = FBL.getResource(this.location);
+        var source = FBL.getResource(fileURL);
         this.currentEditor.setText(source);
     },
 
@@ -305,11 +310,11 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         {
             iframe.contentWindow.removeEventListener('load', orionFrameLoad, true);
             collapse(panel.loadingBox, true);
-            FBTrace.sysout("dyne.createOrionBox orion frame load Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
+            FBTrace.sysout("dyne.createOrionBox orion frame load "+iframe.contentWindow.location+" Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
             panel.integrateOrion(iframe.contentWindow);
         }, true);
 
-        FBTrace.sysout("dyne.createOrionBox load listener added Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
+        FBTrace.sysout("dyne.createOrionBox load listener added "+location+" Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
     },
 
     insertOrionScripts: function(parentElement, location)
@@ -376,7 +381,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
         var topContainer = win.dijit.byId('topContainer');
         if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne.integrateOrion topContainer"+topContainer);
+            FBTrace.sysout("dyne.integrateOrion topContainer: "+topContainer);
         var editor = topContainer._editorContainer._editor;
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
@@ -396,8 +401,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var model = this.getModel();
         if (this.selection instanceof Firebug.EditLink)
         {
-            if (this.isLocalURI(this.location)){
-                this.editLocalFile();
+            if (this.isLocalURI(this.selection.fileURL)){
+                this.editLocalFile(this.selection.fileURL);
             }
             var fromPanel = this.selection.originPanel;
             if (fromPanel.name === "stylesheet")
@@ -496,28 +501,54 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     //*******************************************************************************************************
 
-    getEditURLbyURL: function(context, url)
+    addEditURL: function(editLink)
     {
-        if (url.substr(0,4) === "http")
-            return this.getEditURLbyWebURL(context, url);
+        if (editLink.originURL.substr(0,4) === "http")
+            return this.addEditURLForWebURL(editLink);
         else
-            return this.getEditURLNotHTTP(context, url);
+            return this.addEditURLNotHTTP(editLink);
     },
 
 
-    getEditURLNotHTTP: function(context, url)
+    addEditURLNotHTTP: function(editLink)
     {
-        if (url.substr(0,5) !== "file:")
+        var url = editLink.originURL;
+        if (url.substr(0,5) === "file:")
+        {
+            editLink.fileURL = url;
+        }
+        else
         {
             var uri = FBL.getLocalSystemURI(url);
-            FBTrace.sysout("getLocalSystemURI("+url+")="+uri);
+            var editURL = null;
             if (uri)
-                url = uri.spec;
+                editURL = uri.spec;
+            FBTrace.sysout("getLocalSystemURI("+url+")="+(editURL?editURL:"ERROR "), uri);
+            editLink.fileURL = editURL;  // better be a file url now
         }
 
-        return this.getEditURLByFileURL(url);
+
+        return this.addEditURLByFileURL(editLink);
     },
 
+
+    addEditURLByFileURL: function(editLink)
+    {
+        editLink.editURL = "http://localhost:8080/coding.html";
+        return;
+        var url = editLink.originURL;
+        var unslash = url.split('/');
+        while(unslash.length)
+        {
+            if (unslash.shift() === "fbug")
+            {
+                editURL += unslash.join('/');
+                break;
+            }
+        }
+        FBTrace.sysout("getEditURLByFileURL("+url+")="+editURL);
+        return editURL;
+    },
 
     openInPanel: function(panel, editURL)
     {
@@ -529,16 +560,16 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     /*
      * @param url starts with 'http'
      */
-    getEditURLbyWebURL: function(context, url)
+    addEditURLForWebURL: function(editLink)
     {
-        var files = context.netProgress.files;
+        var files = this.context.netProgress.files;
         for (var i = 0; i < files.length; i++)
         {
             var href = files[i].href;
             href = href.split('?')[0]; // discard query
             href = href.split('#')[0]; // discard fragment
 
-            if (href === url)
+            if (href === editLink.originURL)
                 return this.getEditURLbyNetFile(files[i]);
         }
     },
