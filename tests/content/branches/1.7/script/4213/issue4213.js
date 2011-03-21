@@ -19,7 +19,13 @@ function runTest()
                     stepInto(function hitNextBreak()
                     {
                         verifyLocation("issue4213-1.js");
-                        FBTest.testDone("issue4213.DONE");
+
+                        //xxxHonza: for debugging purposes, test bot fails on the
+                        // previous verifyLocation, but I can't repro that. 
+                        setTimeout(function() {
+                            verifyLocation("II. issue4213-1.js");
+                            FBTest.testDone("issue4213.DONE");
+                        }, 400);
                     });
                 });
 
