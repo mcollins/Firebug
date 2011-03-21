@@ -43,6 +43,7 @@
 <!ENTITY fireformat.cssFormatter.property.spaceBeforePriority "Spaces Before Priority">
 <!ENTITY fireformat.cssFormatter.property.spaceBeforeSemicolon "Spaces Before Semicolon">
 <!ENTITY fireformat.cssFormatter.property.valueSpaceCount "Spaces Between Values">
+<!ENTITY fireformat.cssFormatter.property.sortProperties "Sort Properties Alphabetically">
 
 <!ENTITY fireformat.cssFormatter.atRuleOptions "At Rules">
 <!ENTITY fireformat.cssFormatter.atRule.tokensPerLine "Tokens Per Line">

@@ -40,6 +40,7 @@
         <preference id="pref_css_prop_beforePriority" type="int" name="extensions.firebug.fireformatCssFormatter.property.spaceBeforePriority" />
         <preference id="pref_css_prop_beforeSemicolon" type="int" name="extensions.firebug.fireformatCssFormatter.property.spaceBeforeSemicolon" />
         <preference id="pref_css_prop_valueSpace" type="int" name="extensions.firebug.fireformatCssFormatter.property.valueSpaceCount" />
+        <preference id="pref_css_prop_alphaSort" type="bool" name="extensions.firebug.fireformatCssFormatter.property.alphaSortProperties" />
 
         <preference id="pref_css_at_tokens" type="int" name="extensions.firebug.fireformatCssFormatter.atRule.tokensPerLine" />
         <preference id="pref_css_at_indent" type="int" name="extensions.firebug.fireformatCssFormatter.atRule.indentLevel" />
@@ -173,6 +174,9 @@
                   <row align="center">
                     <label control="ffmt_css_prop_valueSpace" value="&fireformat.cssFormatter.property.valueSpaceCount;" />
                     <textbox type="number" min="1" id="ffmt_css_prop_valueSpace" preference="pref_css_prop_valueSpace" />
+                  </row>
+                  <row>
+                    <checkbox label="&fireformat.cssFormatter.property.sortProperties;" preference="pref_css_prop_alphaSort" />
                   </row>
                 </rows>
               </grid>
