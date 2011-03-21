@@ -382,6 +382,12 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
         this.currentEditor = editor;
 
+        var console = createFirebugConsole(this.context, win);
+
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.integrateOrion console ", console);
+        win.wrappedJSObject.console = console;
+
         this.attachUpdater();
     },
 
