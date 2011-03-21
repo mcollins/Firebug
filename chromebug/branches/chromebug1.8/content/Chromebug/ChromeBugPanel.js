@@ -162,7 +162,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (!browser.currentURI)
         {
-            FBTrace.sysout("createBrowser create name from "+browserNameFrom+" gave browserName "+browserName+' FAILED makeURI ' + (global?safeToString(global):"no global") );
+            FBTrace.sysout("createBrowser create name from "+browserNameFrom+" gave browserName "+browserName+' FAILED makeURI ' + (global?safeToString(global):"no global"), global );
         }
 
         this.fakeTabBrowser.browsers[browser.tag] = browser;
@@ -257,7 +257,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.TraceModule.addListener(this);
 
-        if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("Chromebug.initialize module "+this.uid+" Firebug.Debugger:"+Firebug.Debugger.fbListeners.length+" window.location="+window.location+"\n");
+        if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("Chromebug.initialize module "+this.uid+" window.location="+window.location+"\n");
 
         var wantIntro = prefs.getBoolPref("extensions.chromebug.showIntroduction");
 

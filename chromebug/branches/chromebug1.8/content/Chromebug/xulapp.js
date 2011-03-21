@@ -277,7 +277,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         var url = safeGetWindowLocation(domWindow);
         var title = domWindow.document.title;
         var id = FBL.getWindowId(domWindow);
-        var key = url +"("+id+") - "+title;
+        var key = url +"("+id.outer+"."+id.inner+") - "+title;
         if (!key)
                 key = "(no location)";
 
@@ -355,14 +355,25 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         },
     },
 
+    watchedWindows: {},
+
     watchChromeWindow:
     {
         observe: function(subject, topic, data)
         {
             if (subject instanceof Ci.nsIDOMWindow)
             {
-                var id = FBL.getWindowId(subject).join('.');
-                FBTrace.sysout("watchChromeWindow data: "+data+" location: "+subject.location+" id: "+id);
+                var id = FBL.getWindowId(subject);
+
+                var context = Firebug.Chromebug.getOrCreateContext(subject, safeGetWindowLocation(subject));
+                if (!context)
+                {
+                    FBTrace.sysout("watchChromeWindow ERROR no context for "+safeGetWindowLocation(subject));
+                    return;
+                }
+
+                Chromebug.XULAppModule.watchedWindows[id.inner] =  {win: subject, kind: 'chrome', context: context};
+                FBTrace.sysout("watchChromeWindow location: "+subject.location+" id: "+id.outer+"."+id.inner+" context "+context.getName());
             }
         }
     },
@@ -373,8 +384,9 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         {
             if (subject instanceof Ci.nsIDOMWindow)
             {
-                var id = FBL.getWindowId(subject).join('.');
-                FBTrace.sysout("watchContentWindow data: "+data+" location: "+subject.location+" id: "+id);
+                var id = FBL.getWindowId(subject);
+                FBTrace.sysout("watchContentWindow data: "+data+" location: "+subject.location+" id: "+id.outer+"."+id.inner);
+                Chromebug.XULAppModule.watchedWindows[id.inner] = {win: subject, kind: 'content'};
             }
         }
     },
@@ -384,7 +396,16 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         observe: function(subject, topic, data)
         {
             var id = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64).data
-            FBTrace.sysout("unwatchInnerWindow data: "+data+" location: "+subject.location+" id: "+id, {subject: subject, topic: topic, data: data});
+            var watched = Chromebug.XULAppModule.watchedWindows[id];
+            if (!watched)
+            {
+                FBTrace.sysout("unwatchInnerWindow ERROR id: "+id+" not watched");
+                return;
+            }
+
+            FBTrace.sysout("unwatchInnerWindow id: "+id+" "+watched.kind+" "+watched.win.location);
+
+            delete Chromebug.XULAppModule.watchedWindows[id];
         }
     },
 
@@ -393,7 +414,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         observe: function(subject, topic, data)
         {
             var id = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64).data
-            FBTrace.sysout("unwatchOuterWindow data: "+data+" location: "+subject.location+" id: "+id, {subject: subject, topic: topic, data: data});
+            FBTrace.sysout("unwatchOuterWindow id: "+id);
         }
     },
 

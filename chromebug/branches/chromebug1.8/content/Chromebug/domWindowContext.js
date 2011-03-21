@@ -31,7 +31,7 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
     {
         this.window = global;
         var id = FBL.getWindowId(global);
-        this.setName(safeGetWindowLocation(global)+"("+id+")")
+        this.setName(safeGetWindowLocation(global)+"("+id.outer+","+id.inner+")")
     }
     else
     {
