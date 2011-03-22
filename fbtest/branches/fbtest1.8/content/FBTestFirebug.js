@@ -509,7 +509,7 @@ this.detachFirebug = function()
         return null;
 
     this.openFirebug();
-    return FW.Firebug.detachBar(FW.FirebugContext);
+    return FW.Firebug.detachBar(FW.Firebug.currentContext);
 }
 
 /**
@@ -900,7 +900,7 @@ this.isPanelTabDisabled = function(name)
  */
 this.getPanel = function(name)
 {
-    return FW.FirebugContext.getPanel(name);
+    return FW.Firebug.currentContext.getPanel(name);
 }
 
 this.listenerCleanups = [];
@@ -1971,17 +1971,17 @@ function createCanvas(width, height)
 
 this.inspectUsingFrame = function(elt)
 {
-    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "frame", null);
+    FW.Firebug.Inspector.highlightObject(elt, FW.Firebug.currentContext, "frame", null);
 }
 
 this.inspectUsingBoxModel = function(elt)
 {
-    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "boxModel", null);
+    FW.Firebug.Inspector.highlightObject(elt, FW.Firebug.currentContext, "boxModel", null);
 }
 
 this.inspectUsingBoxModelWithRulers = function(elt)
 {
-    FW.Firebug.Inspector.highlightObject(elt, FW.FirebugContext, "boxModel", "content");
+    FW.Firebug.Inspector.highlightObject(elt, FW.Firebug.currentContext, "boxModel", "content");
 }
 
 this.inspectorClear = function()
