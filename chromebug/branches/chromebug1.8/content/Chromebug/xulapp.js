@@ -364,14 +364,16 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             if (subject instanceof Ci.nsIDOMWindow)
             {
                 var id = FBL.getWindowId(subject);
-
-                var context = Firebug.Chromebug.getOrCreateContext(subject, safeGetWindowLocation(subject));
-                if (!context)
+                var name = safeGetWindowLocation(subject);
+                if (name)
                 {
-                    FBTrace.sysout("watchChromeWindow ERROR no context for "+safeGetWindowLocation(subject));
-                    return;
+                    var context = Firebug.Chromebug.getOrCreateContext(subject, name);
+                    if (!context)
+                    {
+                        FBTrace.sysout("watchChromeWindow ERROR no context for "+safeGetWindowLocation(subject));
+                        return;
+                    }
                 }
-
                 Chromebug.XULAppModule.watchedWindows[id.inner] =  {win: subject, kind: 'chrome', context: context};
                 FBTrace.sysout("watchChromeWindow location: "+subject.location+" id: "+id.outer+"."+id.inner+" context "+context.getName());
             }
