@@ -36,6 +36,7 @@
 <!ENTITY fireformat.cssFormatter.property.spaceBeforePriority "Leerzeichen vor Priorität">
 <!ENTITY fireformat.cssFormatter.property.spaceBeforeSemicolon "Leerzeichen vor Semikolon">
 <!ENTITY fireformat.cssFormatter.property.valueSpaceCount "Leerzeichen zwischen Werten">
+<!ENTITY fireformat.cssFormatter.property.sortProperties "Eigenschaften sortieren Alphabetisch">
 <!ENTITY fireformat.cssFormatter.atRuleOptions "Regelanwendung">
 <!ENTITY fireformat.cssFormatter.atRule.tokensPerLine "Token pro Zeile">
 <!ENTITY fireformat.cssFormatter.atRule.indentLevel "Zeileneinzugstiefe">

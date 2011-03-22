@@ -36,6 +36,7 @@
 <!ENTITY fireformat.cssFormatter.property.spaceBeforePriority "Espaços Antes da Prioridade">
 <!ENTITY fireformat.cssFormatter.property.spaceBeforeSemicolon "Espaços Antes do Ponto-e-Vírgula">
 <!ENTITY fireformat.cssFormatter.property.valueSpaceCount "Espaços Entre Valores">
+<!ENTITY fireformat.cssFormatter.property.sortProperties "Propriedades Ordem Alfabética">
 <!ENTITY fireformat.cssFormatter.atRuleOptions "Conforme as regras">
 <!ENTITY fireformat.cssFormatter.atRule.tokensPerLine "Tokens Por Linha">
 <!ENTITY fireformat.cssFormatter.atRule.indentLevel "Marcador por Número">
