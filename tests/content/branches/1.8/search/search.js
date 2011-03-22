@@ -180,7 +180,7 @@ function executeSearchTestSuite(tests, container, continuation, exec) {
 
 function openAndSelectPanel(panelName) {
 
-    if (FW.FirebugContext.detached)
+    if (FW.Firebug.currentContext.detached)
         FW.FirebugChrome.focus();
     else
         FW.Firebug.showBar(true);

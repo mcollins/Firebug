@@ -9,7 +9,7 @@ function runTest()
         {
             var panel = FW.FirebugChrome.selectPanel("net");
 
-            var panelNode = FW.FirebugContext.getPanel("net").panelNode;
+            var panelNode = FW.Firebug.currentContext.getPanel("net").panelNode;
             FBTestFirebug.expandElements(panelNode, "netRow", "category-html", "hasHeaders", "loaded");
             FBTestFirebug.expandElements(panelNode, "netInfoResponseTab");
 

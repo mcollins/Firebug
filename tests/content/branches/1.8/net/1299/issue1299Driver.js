@@ -12,7 +12,7 @@ function runTest()
         FBTest.enableNetPanel(function(win)
         {
             // Remove issue1299.js from Firebug cache.
-            FW.FirebugContext.sourceCache.invalidate(scriptURI);
+            FW.Firebug.currentContext.sourceCache.invalidate(scriptURI);
 
             var options = {
                 tagName: "tr",
@@ -25,7 +25,7 @@ function runTest()
             FBTest.waitForDisplayedElement("net", options, function(netRow)
             {
                 // OK, the script file must be in Firebug cache again.
-                var text = FW.FirebugContext.sourceCache.loadText(scriptURI);
+                var text = FW.Firebug.currentContext.sourceCache.loadText(scriptURI);
 
                 var expectedText = "function issue1299() { return \"issue1299\"; }";
                 FBTest.compare(expectedText, text,
