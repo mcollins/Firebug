@@ -459,7 +459,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         if (this.selection.fileURL)
         {
             var saver = new Firebug.Dyne.LocalSaver();
-            saver.save(this.selection.fileURL, src);
+            if (saver.save(this.selection.fileURL, src))
+                this.setSaveAvailable(false);
         }
         else
         {
@@ -779,10 +780,12 @@ Firebug.Dyne.LocalSaver.prototype =
         if (localFileURI instanceof Ci.nsILocalFile)
         {
             this.writeTextToFile(localFileURI, src);
+            return true;
         }
         else
         {
-            FBTrace.sysout("Dyne.LocalSaver ERROR not a local file URI "+url, localFileURI)
+            FBTrace.sysout("Dyne.LocalSaver ERROR not a local file URI "+url, localFileURI);
+            return false;
         }
     },
 
