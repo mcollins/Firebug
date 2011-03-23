@@ -55,7 +55,7 @@ function stepInto(callback)
     var fileUrl = basePath + "script/4213/issue4213-1.js";
     FBTest.waitForBreakInDebugger(null, lineNo, false, function hitBreak(row)
     {
-        FBTest.compare(lineNo, currentLineNo, "The step happened: " + row.firstChild.textContent);
+        FBTest.progress("The step happened: " + row.firstChild.textContent);
 
         FBTest.progress("The break happened on: " + lineNo + " line.");
         callback();
