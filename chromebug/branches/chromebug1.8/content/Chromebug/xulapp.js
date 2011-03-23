@@ -244,52 +244,42 @@ Chromebug.XULAppModule = extend(Firebug.Module,
 
     getDOMWindowTreeByDocShell: function(docShell)
     {
+        var domWindowTreeNode = {};
+
         var domWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(docShell);
-        var url = safeGetWindowLocation(domWindow);
+        var key = Chromebug.XULAppModule.getKeyByDOMWindow(domWindow);
 
-        var domWindowsByURL = {};
-
+        var isParent = false;
         this.eachDocShell(docShell, "all", function visitSubShells(childShell)
         {
-            if (childShell == docShell)
-            {
-                domWindowsByURL[url] = domWindow;
-                return;
-            }
-
-            if (!domWindowsByURL)
-                domWindowsByURL = {};
-
             var childDOMWindow = Chromebug.XULAppModule.getDOMWindowByDocShell(childShell);
+            var childKey = Chromebug.XULAppModule.getKeyByDOMWindow(childDOMWindow);
 
-            var key = Chromebug.XULAppModule.getKeyByDOMWindow(childDOMWindow, domWindowsByURL);
-
-            var familyTree = Chromebug.XULAppModule.getDOMWindowTreeByDocShell(childShell);  // recurse
-
-            domWindowsByURL[key] = familyTree; // either a window or a table
+            if (childKey === key)
+            {
+                domWindowTreeNode[childKey] = {win: domWindow, children: {}, outer: true}; // outer DOM window
+            }
+            else
+            {
+                isParent = true;
+                var familyTree = Chromebug.XULAppModule.getDOMWindowTreeByDocShell(childShell);  // recurse
+                domWindowTreeNode[childKey] = {win: childDOMWindow, children: familyTree};
+            }
         });
-
-        return domWindowsByURL;
+        domWindowTreeNode[key].isParent = isParent;
+        return domWindowTreeNode;
     },
 
     getKeyByDOMWindow: function(domWindow, domWindowsByURL)
     {
-        var url = safeGetWindowLocation(domWindow);
-        var title = domWindow.document.title;
         var id = FBL.getWindowId(domWindow);
-        var key = url +"("+id.outer+"."+id.inner+") - "+title;
-        if (!key)
-                key = "(no location)";
-
-        while (key in domWindowsByURL)
-                key = key +".";
-
+        var key = id.outer;
         return key;
     },
 
     getDOMWindowTree: function()
     {
-        var domWindowsByURL = {};
+        var domWindowTreeNode = {};
 
         var enumerator = windowMediator.getXULWindowEnumerator(null);  // null means all
         while(enumerator.hasMoreElements())
@@ -300,10 +290,10 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                  if (xul_window.docShell)
                  {
                      var domWindow = this.getDOMWindowByXULWindow(xul_window);
-                     var familyTree = this.getDOMWindowTreeByXULWindow(xul_window);  // recurse
+                     var key = this.getKeyByDOMWindow(domWindow);
 
-                     var key = this.getKeyByDOMWindow(domWindow, domWindowsByURL);
-                     domWindowsByURL[key] = familyTree; // either a window or a table
+                     var familyTree = this.getDOMWindowTreeByXULWindow(xul_window);  // recurse
+                     domWindowTreeNode[key] = {win: domWindow, children: familyTree, isParent: true};
                  }
                  else
                      FBTrace.sysout("A XUL Window without a docShell??", xul_window);
@@ -313,7 +303,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                  FBTrace.sysout("getXULWindowEnumerator gave element that was not nsIXULWindow!", xul_window);
              }
          }
-        return domWindowsByURL;
+        return domWindowTreeNode;
     },
 
     getWindowMediatorDOMWindows: function()
@@ -373,9 +363,11 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                         FBTrace.sysout("watchChromeWindow ERROR no context for "+safeGetWindowLocation(subject));
                         return;
                     }
+                    Chromebug.XULAppModule.watchedWindows[id.inner] =  {win: subject, kind: 'chrome', context: context};
+                    FBTrace.sysout("watchChromeWindow location: "+subject.location+" id: "+id.outer+"."+id.inner+" context "+context.getName());
+                    return;
                 }
-                Chromebug.XULAppModule.watchedWindows[id.inner] =  {win: subject, kind: 'chrome', context: context};
-                FBTrace.sysout("watchChromeWindow location: "+subject.location+" id: "+id.outer+"."+id.inner+" context "+context.getName());
+                FBTrace.sysout("watchChromeWindow ERROR window with no location,  id: "+id.outer+"."+id.inner);
             }
         }
     },
@@ -486,10 +478,6 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             }
         }
     },
-
-  //  closers: {},
- //   closerDOMWindows: {},
- //   closed_xul_windows: [],
 
     onCloseWindow: function(xul_win)
     {
@@ -753,7 +741,60 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
 
     getDefaultSelection: function()
     {
-        return Chromebug.XULAppModule.getDOMWindowTree();
+        var tree = Chromebug.XULAppModule.getDOMWindowTree();
+        // Convert the tree of {win, children} object to a tree of {description, descriptions}
+        return this.getDescriptionByNode(tree);
+    },
+
+    getDescriptionByNode: function(node)
+    {
+        var description = new Chromebug.XULAppModule.WindowList();
+        for (var key in node)
+        {
+            if (node.hasOwnProperty(key))
+            {
+                var childNode = node[key];
+                if (childNode.outer)
+                {
+                    description["outer DOM window"] = childNode.win;
+                }
+                else
+                {
+                    var childName = this.getDOMWindowDescription(childNode.win);
+                    if (childNode.isParent)
+                    {
+                        var childrenDescription = this.getDescriptionByNode(childNode.children);
+                        description[childName] = childrenDescription;
+                    }
+                    else
+                    {
+                        description[childName] = childNode.win;
+                    }
+                }
+            }
+        }
+        return description;
+    },
+
+    getDOMWindowDescription: function(domWindow)
+    {
+        var url = safeGetWindowLocation(domWindow);
+        var title = domWindow.document.title;
+        var id = FBL.getWindowId(domWindow);
+        var key = url +"("+id.outer+"."+id.inner+") - "+title;
+
+        return key;
+    },
+
+    addMember: function(object, type, props, name, value, level, order, context)
+    {
+        var member = Firebug.DOMPanel.prototype.addMember.apply(this, arguments);
+        if (name === 'outer DOM window')
+        {
+            var index = props.indexOf(member);
+            props.splice(index, 1);
+        }
+        return member;
     },
 
     show: function(state)
@@ -800,350 +841,44 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
 });
 
  // ************************************************************************************************
-
-/**
- * This template represents list of windows
- * Each tab in that window maintains its own window.
- */
-Chromebug.XULAppModule.WindowList = domplate(Firebug.Rep,
+Chromebug.XULAppModule.WindowList = function()
 {
-    tableTag:
-        TABLE({"class": "windowListTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
-            TBODY(
-                FOR("window", "$windowList",
-                    TR({"class": "windowListRow", _repObject: "$window"},
-                        TD({"class": "windowNameCol windowListCol"},
-                            SPAN({"class": "windowName"},
-                                "$window|getWindowName"
-                            ),
-                            SPAN({"class": "windowChildren"},
-                                "$window|getChildWindows"
-                            )
-                        )
-                    )
-                )
-            )
-        ),
+}
 
-    windowBodyTag:
-        TR({"class": "windowBodyRow", _repObject: "$window"},
-            TD({"class": "windowBodyCol", colspan: 1})
-        ),
-
-    summaryTag:
-        TR({"class": "summaryRow"},
-            TD({"class": "totalSize summaryCol"},
-                SPAN("Total Size: $windowList|getTotalSize")
-            )
-        ),
-
-    getWindowName: function(xul_window)
-    {
-        FBTrace.sysout('getWindowName '+xul_window.title, xul_window);
-        return xul_window.title;
-    },
-
-    getChildWindows: function(xul_window)
-    {
-        return "FIXME";
-    },
-
-    getTotalSize: function(windowList)
-    {
-        var totalSize = 0;
-        for (var i=0; i<windowList.length; i++)
-            totalSize += windowList[i].size;
-        return formatSize(totalSize);
-    },
-
-    onClick: function(event)
-    {
-        if (isLeftClick(event))
-        {
-            var row = getAncestorByClass(event.target, "windowListRow");
-            if (row)
-            {
-                this.toggleRow(row);
-                cancelEvent(event);
-            }
-        }
-    },
-
-    expandGroup: function(row)
-    {
-        if (hasClass(row, "windowListRow"))
-            this.toggleRow(row, true);
-    },
-
-    collapseGroup: function(row)
-    {
-        if (hasClass(row, "windowListRow") && hasClass(row, "opened"))
-            this.toggleRow(row);
-    },
-
-    toggleRow: function(row, forceOpen)
-    {
-        var opened = hasClass(row, "opened");
-        if (opened && forceOpen)
-            return;
-
-        toggleClass(row, "opened");
-        if (hasClass(row, "opened"))
-        {
-            var cache = row.repObject;
-            var infoBodyRow = this.windowBodyTag.insertRows({cache: cache}, row)[0];
-            infoBodyRow.repObject = cache;
-            this.initBody(infoBodyRow);
-        }
-        else
-        {
-            var infoBodyRow = row.nextSibling;
-            row.parentNode.removeChild(infoBodyRow);
-        }
-    },
-
-    initBody: function(infoBodyRow)
-    {
-        var tabCache = infoBodyRow.repObject;
-
-        var entries = [];
-        for (var url in tabCache.sourceCache.cache)
-            entries.push(new Chromebug.XULAppModule.CacheEntry(url, tabCache.sourceCache.cache[url]));
-
-        if (!entries.length)
-        {
-            infoBodyRow.firstChild.innerHTML = "There are no window entries";
-            return;
-        }
-
-        // Create basic structure for list of window entries
-        // and insert all window entries into it.
-        var table = Chromebug.XULAppModule.WindowTable.tableTag.replace({}, infoBodyRow.firstChild);
-        Chromebug.XULAppModule.WindowTable.resultTag.insertRows({entries: entries}, table.firstChild);
-    }
-});
-
-// ************************************************************************************************
-
-/**
- * This template represents an URL (displayed as a table-row within the panel)
- * that is windowd within the Firebug window.
- */
-Chromebug.XULAppModule.WindowTable = domplate(Firebug.Rep,
+Chromebug.XULAppModule.WindowListRep = domplate(Firebug.Rep,
 {
-    tableTag:
-        TABLE({"class": "fbWindowTable", cellpadding: 0, cellspacing: 0, onclick: "$onClick"},
-            TBODY()
-        ),
-
-    resultTag:
-        FOR("entry", "$entries",
-            TR({"class": "windowEntryRow", _repObject: "$entry"},
-                TD({"class": "windowEntryCol", width: "100%"},
-                    SPAN({"class": "windowEntryURL windowEntryLabel"},
-                        "$entry|getURL"
-                    ),
-                    SPAN({"class": "windowEntrySize windowEntryLabel"},
-                        "$entry|getSize"
-                    )
-                )
-            )
-        ),
-
-    resultInfoTag:
-        TR({"class": "windowEntryInfoRow", _repObject: "$entry"},
-            TD({"class": "windowEntryInfoCol", colspan: 2})
-        ),
-
-    getURL: function(entry)
+    supportsObject: function(object)
     {
-        return entry.url;
+        return (object instanceof Chromebug.XULAppModule.WindowList) ? 10 : 0;
     },
 
-    getSize: function(entry)
+    tag:
+        FirebugReps.OBJECTLINK("Window ", SPAN({"class": "objectPropValue"}, "$object|getLocation")),
+
+    getLocation: function(windowList)
     {
+        var win = windowList['outer DOM window'];
         try
         {
-            var data = entry.lines ? entry.lines.join("") : "";
-            return formatSize(data.length);
+            return (win && win.location && !win.closed) ? getFileName(win.location.href) : "";
         }
-        catch (err)
+        catch (exc)
         {
-            if (FBTrace.DBG_CBWINDOW)
-                FBTrace.sysout("Chromebug.XULAppModule.WindowList.getSize; ", err);
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("reps.Window window closed? "+exc, exc);
         }
     },
 
-    onClick: function(event)
-    {
-        if (isLeftClick(event))
-        {
-            var row = getAncestorByClass(event.target, "windowEntryRow");
-            if (row)
-            {
-                this.toggleResultRow(row);
-                cancelEvent(event);
-            }
-        }
-    },
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-    toggleResultRow: function(row)
-    {
-        var entry = row.repObject;
+    className: "XULWindowList",
 
-        toggleClass(row, "opened");
-        if (hasClass(row, "opened"))
-        {
-            var infoBodyRow = this.resultInfoTag.insertRows({entry: entry}, row)[0];
-            this.initInfoBody(infoBodyRow);
-        }
-        else
-        {
-            var infoBodyRow = row.nextSibling;
-            row.parentNode.removeChild(infoBodyRow);
-        }
-    },
-
-    initInfoBody: function(infoBodyRow)
-    {
-        var entry = infoBodyRow.repObject;
-        var TabView = Chromebug.XULAppModule.CacheEntryTabView;
-        var tabViewNode = TabView.viewTag.replace({entry: entry}, infoBodyRow.firstChild, TabView);
-
-        // Select default tab.
-        TabView.selectTabByName(tabViewNode, "Data");
-    },
 });
-
-// ************************************************************************************************
-
-/**
- * This template represents an "info-body" for expanded window entries.
- */
-Chromebug.XULAppModule.CacheEntryTabView = domplate(Firebug.Rep,
-{
-    listeners: [],
-
-    viewTag:
-        TABLE({"class": "tabView", cellpadding: 0, cellspacing: 0},
-            TBODY(
-                TR({"class": "tabViewRow"},
-                    TD({"class": "tabViewCol", valign: "top"},
-                        TAG("$tabList", {entry: "$entry"})
-                    )
-                )
-            )
-        ),
-
-    tabList:
-        DIV({"class": "tabViewBody"},
-            TAG("$tabBar", {entry: "$entry"}),
-            TAG("$tabBodies")
-        ),
-
-    // List of tabs
-    tabBar:
-        DIV({"class": "tabBar"},
-            A({"class": "DataTab tab", onclick: "$onClickTab",
-                view: "Data", $collapsed: "$entry|hideDataTab"},
-                    $STR("Chromebug.XULAppModule.tab.Data")
-            )
-        ),
-
-    // List of tab bodies
-    tabBodies:
-        DIV({"class": "tabBodies"},
-            DIV({"class": "tabDataBody tabBody"})
-        ),
-
-    hideDataTab: function(result)
-    {
-        return false;
-    },
-
-    onClickTab: function(event)
-    {
-        this.selectTab(event.target);
-    },
-
-    selectTabByName: function(tabView, tabName)
-    {
-        var tab = getElementByClass(tabView, tabName + "Tab");
-        if (tab)
-            this.selectTab(tab);
-    },
-
-    selectTab: function(tab)
-    {
-        var view = tab.getAttribute("view");
-        var viewBody = getAncestorByClass(tab, "tabViewBody");
-
-        // Deactivate current tab.
-        if (viewBody.selectedTab)
-        {
-            viewBody.selectedTab.removeAttribute("selected");
-            viewBody.selectedBody.removeAttribute("selected");
-        }
-
-        // Store info about new active tab. Each tab has to have a body,
-        // which is identified by class.
-        var tabBody = getElementByClass(viewBody, "tab" + view + "Body");
-        viewBody.selectedTab = tab;
-        viewBody.selectedBody = tabBody;
-
-        // Activate new tab.
-        viewBody.selectedTab.setAttribute("selected", "true");
-        viewBody.selectedBody.setAttribute("selected", "true");
-
-        this.updateTabBody(viewBody, view);
-    },
-
-    updateTabBody: function(viewBody, tabName)
-    {
-        var tab = viewBody.selectedTab;
-        var infoRow = getAncestorByClass(viewBody, "windowEntryInfoRow");
-        var entry = infoRow.repObject;
-
-        // Update Stack tab content
-        var tabDataBody = getElementByClass(viewBody, "tabDataBody");
-        if (tabName == "Data" && !tabDataBody.updated)
-        {
-            tabDataBody.updated = true;
-            var text = entry.lines.join("");
-            if (text && text.length > 10*1024)
-                text = text.substr(0, 10*1024) + "...";
-            tabDataBody.innerHTML = wrapText(text);
-        }
-    },
-});
-
-// ************************************************************************************************
-
-/**
- * Helper object representing the Window hierarchy
- */
-Chromebug.XULAppModule.DOMWindowRepNode = function(domWindow)
-{
-    this.name = name;
-    this.sourceCache = sourceCache;
-    this.size = 0; // Computed in getCacheSize
-}
-
-/**
- * Helper object for window entries.
- */
-Chromebug.XULAppModule.CacheEntry = function(url, lines)
-{
-    this.url = url;
-    this.lines = lines;
-    this.size = (lines && lines.length) ? lines.join("").length : 0;
-}
-
 
 // ************************************************************************************************
 // Registration
 
-
+Firebug.registerRep(Chromebug.XULAppModule.WindowListRep);
 Firebug.registerModule(Chromebug.XULAppModule);
 Firebug.registerPanel(Chromebug.XULAppPanel);
 
