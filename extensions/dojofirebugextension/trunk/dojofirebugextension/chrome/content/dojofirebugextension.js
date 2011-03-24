@@ -843,6 +843,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     searchable: true,
     inspectable: true,
     inspectOnlySupportedObjects: true, //DEPRECATED
+    editable: false,
 
     /**
      * @override
@@ -1529,6 +1530,7 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
     order: 1,
     enableA11y: true,
     deriveA11yFrom: "console",
+    editable: false,
     
     _COUTER_UPDATE_DELAY : 100,
     
@@ -1682,7 +1684,8 @@ DojoExtension.ConnectionsSidePanel.prototype = extend(SimplePanelPlusMixin,
     order: 2,
     enableA11y: true,
     deriveA11yFrom: "console",
-    breakable: true,   
+    //breakable: true,
+    editable: false,
     
     initialize: function() {
     	Firebug.Panel.initialize.apply(this, arguments);
@@ -1728,7 +1731,8 @@ DojoExtension.SubscriptionsSidePanel.prototype = extend(SimplePanelPlusMixin,
     order: 3,
     enableA11y: true,
     deriveA11yFrom: "console",
-    breakable: true,
+    //breakable: true,
+    editable: false,
 
     initialize: function() {
     	Firebug.Panel.initialize.apply(this, arguments);
