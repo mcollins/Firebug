@@ -302,6 +302,14 @@ var ChromebugOverrides = {
             FBTrace.sysout("ChromebugPanel.resumeFirebug\n");
     },
 
+    _setIsJSDActive: Firebug.setIsJSDActive,
+    setIsJSDActive: function(active)
+    {
+        if (!active)
+            FBTrace.sysout("ChromebugOverrides jsd deactivation ! <-----------------------------------!!!");
+        ChromebugOverrides._setIsJSDActive(active);
+    },
+
     tagBase: 1,
     tags:[],
 

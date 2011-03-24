@@ -48,6 +48,7 @@
             var win = enumerator.getNext();
             if ( win.location.href === releaser.url)
             {
+                Firebug.Chromebug.applicationReleased = true;
                 Components.utils.reportError("Chromebug releasing application thread");
                 releaser.unblock.apply(releaser,[]);
             }

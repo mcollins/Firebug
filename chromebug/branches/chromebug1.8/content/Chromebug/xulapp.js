@@ -357,6 +357,11 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 var name = safeGetWindowLocation(subject);
                 if (name)
                 {
+                    if (!Firebug.Chromebug.applicationReleased)  // then windows created could still be chromebug windows
+                    {
+                        FBTrace.sysout("watchChromeWindow too early dropping "+name)
+                        return;
+                    }
                     var context = Firebug.Chromebug.getOrCreateContext(subject, name);
                     if (!context)
                     {

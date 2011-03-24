@@ -24,6 +24,8 @@ FBL.ns(function chromebug() { with (FBL) {
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+const Cu = Components.utils;
+
 const windowWatcher = CCSV("@mozilla.org/embedcomp/window-watcher;1", "nsIWindowWatcher");
 const windowMediator = CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 const nsIDOMWindow = Ci.nsIDOMWindow;
@@ -579,6 +581,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     createContext: function(global, name)
     {
         var persistedState = null; // TODO
+        var kind = "unknown";
         // domWindow in fbug is browser.contentWindow type nsIDOMWindow.
         // docShell has a nsIDOMWindow interface
         if (global instanceof Ci.nsIDOMWindow)
@@ -586,6 +589,11 @@ Firebug.Chromebug = extend(Firebug.Module,
             if (global.closed)
                 return null;
 
+            if (!Firebug.Chromebug.applicationReleased)  // then windows created could still be chromebug windows
+            {
+                FBTrace.sysout("createContext too early dropping "+name);
+                return null;
+            }
             // When a XUL window is destroyed the destructor functions from XBL run after the unload event.
             // We delete the context in the unload event, then the destructor can then trigger an new context creation.
             // To avoid this we maintain a list of the windows we just destroyed then clean them up on a setTimeout
@@ -610,15 +618,28 @@ Firebug.Chromebug = extend(Firebug.Module,
                     context.sourceCache.storeSplitLines(props.fileName, lines);
                 FBTrace.sysout("createContext data url stored in to context under "+(props.fileName?props.fileName+ " & ":"just dataURL ")+url);
             }
+            kind = "nsIDOMWindow"
         }
         else
         {
+            if (name === "resource://gre/components/ConsoleAPI.js") // then no platform support for debugging
+                return null;
+
             var browser = Firebug.Chromebug.createBrowser(global, name);
             var context = Firebug.TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
+            if (global+"" === "[object Sandbox]")
+            {
+                kind = "Sandbox";
+                var props = Object.getOwnPropertyNames(global);
+                FBTrace.sysout("Sandbox "+props.length, props);
+            }
         }
 
         if (FBTrace.DBG_ACTIVATION)
-            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext nsIDOMWindow: '+(global instanceof Ci.nsIDOMWindow)+" name: "+context.getName(), context);
+        {
+            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext '+kind+" name: "+context.getName(), context);
+        }
+
         context.onLoadWindowContent = true; // all Chromebug contexts are active
         return context;
     },
