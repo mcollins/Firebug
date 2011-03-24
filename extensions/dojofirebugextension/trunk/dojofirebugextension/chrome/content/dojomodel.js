@@ -50,61 +50,135 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		}
 	};
 
+	
+	// ***************************************************************
+	/**
+	 * @class ArrayMap 
+	 */
+	 var ArrayMap = function() {		 
+
+		 this._map = new Array();
+		 
+		 
+	 };
+	 ArrayMap.prototype = extend(Map.prototype, 
+	 {
+		// Associates the specified value with the specified key in this map
+		put: function (key, value){
+		 	if (typeof(key) != 'undefined') {
+		 		this._map[key] = value;
+		 	}
+			return this;
+		},
+	
+		// Returns the value to which this map maps the specified key
+		get: function (key){
+			var res = null; 
+			if (typeof(key) != 'undefined') {
+				res = this._map[key]; 
+			}
+			return res; 
+		},
+	
+		// Removes the mapping for this key from this map if it is present
+		remove: function (key) {
+			if (typeof(key) != 'undefined') {
+				this._map[key] = undefined;
+			}			
+		},
+		
+		// Keys getter.
+		getKeys: function(){
+			var keys = [];
+			for (var i in this._map){
+				if (this._map[i]) {
+					keys.push(i);
+				}
+			}
+			return keys;
+		},
+		
+		// Values getter.
+		getValues: function(){
+			var values = [];
+			for (var i in this._map){
+				if (this._map[i]) {
+					values.push(this._map[i]);
+				}
+			}
+			return values;
+		},
+		
+		// Destructor
+		destroy: function(){
+			this._map.splice(0, this._map.length);
+			this._map = null;
+			delete this._map;
+		}		 
+	 });
+	 
+	 
+	// ***************************************************************
+	
 	/**
 	 * @class Dictionary 
+	 * @deprecated
 	 */
-	 var Dictionary = function() {
+	 var Dictionary = function() {		 
 		// The keys.
 		this._keys = [];
 
 		// The values
 		this._values = [];
-
+	 };
+	 Dictionary.prototype = extend(Map.prototype, 
+	 {
 		// Associates the specified value with the specified key in this map
-		this.put = function (key, value){
+		put: function (key, value){
 			var index = this._keys.indexOf(key);
 			if (index == -1){
 				index = (this._keys.push(key) - 1);
 			}
 			this._values[index] = value;
 			return this;
-		};
-
+		},
+	
 		// Returns the value to which this map maps the specified key
-		this.get = function (key){
+		get: function (key){
 			var index = this._keys.indexOf(key);
 			return (index != -1) ? this._values[index] : null;
-		};
-
+		},
+	
 		// Removes the mapping for this key from this map if it is present
-		this.remove = function (key){
+		remove: function (key){
 			var index = this._keys.indexOf(key);
 			if (index != -1){
 				this._keys.splice(index, 1);
 				this._values.splice(index, 1);
 			}
-		};
+		},
 		
 		// Keys getter.
-		this.getKeys = function(){
+		getKeys: function(){
 			return this._keys;
-		};
+		},
 		
 		// Values getter.
-		this.getValues = function(){
+		getValues: function(){
 			return this._values;
-		};
+		},
 		
 		// Destructor
-		this.destroy = function(){
+		destroy: function(){
 			this._keys.splice(0, this._keys.length);
 			this._keys = null;
 			this._values.splice(0, this._values.length);
 			this._values = null;
-		};
-	 };
-	 Dictionary.prototype = extend(Map.prototype);
-	 	 
+		}		 
+	 });
+	 	
+	// ***************************************************************
+	 
 	/**
 	 * @class HashCodeBasedDictionary
 	 */
@@ -123,62 +197,64 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		
 		// The values
 		this._values = [];
-
-		// Associates the specified value with the specified key in this map
-		this.put = function (key, value){
-			var realKey = key[this.keyIdPropertyName];
-			if (!realKey) {
-				realKey = key[this.keyIdPropertyName] =
-					(this._deprecatedKeys.length > 0) ? this._deprecatedKeys.pop() : this._nextKey++;
-			}
-			this._keys[realKey] = key;
-			this._values[realKey] = value;
-			return this;
-		};
-
-		// Returns the value to which this map maps the specified key
-		this.get = function (key){
-			var realKey = (key) ? key[this.keyIdPropertyName] : null;
-			return (realKey) ? this._values[realKey] : null;
-		};
-
-		// Removes the mapping for this key from this map if it is present
-		this.remove = function (key){
-			var realKey = key[this.keyIdPropertyName];
-			if (realKey) {
-				this._keys[realKey] = null;
-				this._values[realKey] = null;
-				this._deprecatedKeys.push(realKey);
-			}
-			delete key[this.keyIdPropertyName];
-		};
-		
-		// Keys getter.
-		this.getKeys = function(){
-			var keys = [];
-			for (var i = 0; i < this._keys.length; i++) {
-				if (this._keys[i]) keys.push(this._keys[i]);
-			}
-			return keys;
-		};
-		
-		// Values getter.
-		this.getValues = function(){
-			var values = [];
-			for (var i = 0; i < this._values.length; i++) {
-				if (this._values[i]) values.push(this._values[i]);
-			}
-			return values;
-		};
-		
-		// Destructor
-		this.destroy = function(){
-			this._keys.splice(0, this._keys.length);
-			this._values.splice(0, this._values.length);
-			this._values = null;
-		};
 	 };
-	 HashCodeBasedDictionary.prototype = extend(Map.prototype);
+	 HashCodeBasedDictionary.prototype = extend(Map.prototype,{
+			// Associates the specified value with the specified key in this map
+			put: function (key, value){
+				var realKey = key[this.keyIdPropertyName];
+				if (!realKey) {
+					realKey = key[this.keyIdPropertyName] =
+						(this._deprecatedKeys.length > 0) ? this._deprecatedKeys.pop() : this._nextKey++;
+				}
+				this._keys[realKey] = key;
+				this._values[realKey] = value;
+				return this;
+			},
+
+			// Returns the value to which this map maps the specified key
+			get: function (key){
+				var realKey = (key) ? key[this.keyIdPropertyName] : null;
+				return (realKey) ? this._values[realKey] : null;
+			},
+
+			// Removes the mapping for this key from this map if it is present
+			remove: function (key){
+				var realKey = key[this.keyIdPropertyName];
+				if (realKey) {
+					this._keys[realKey] = null;
+					this._values[realKey] = null;
+					this._deprecatedKeys.push(realKey);
+				}
+				delete key[this.keyIdPropertyName];
+			},
+			
+			// Keys getter.
+			getKeys: function(){
+				var keys = [];
+				for (var i = 0; i < this._keys.length; i++) {
+					if (this._keys[i]) keys.push(this._keys[i]);
+				}
+				return keys;
+			},
+			
+			// Values getter.
+			getValues: function(){
+				var values = [];
+				for (var i = 0; i < this._values.length; i++) {
+					if (this._values[i]) values.push(this._values[i]);
+				}
+				return values;
+			},
+			
+			// Destructor
+			destroy: function(){
+				this._keys.splice(0, this._keys.length);
+				this._values.splice(0, this._values.length);
+				this._values = null;
+			}		 
+	 });
+	 
+	// ***************************************************************
 	 
 	 /**
 	  * @class StringMap 
@@ -186,53 +262,55 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 var StringMap = function() {
 		// The map.
 		this._map = {};
-
-		// Associates the specified value with the specified key in this map
-		this.put = function (key, value){
-			this._map[key] = value;
-			return this;
-		};
-
-		// Returns the value to which this map maps the specified key
-		this.get = function (key){
-			return this._map[key];
-		};
-
-		// Removes the mapping for this key from this map if it is present
-		this.remove = function (key){
-			this._map[key] = null;
-			delete this._map[key];
-		};
-		
-		// Keys getter.
-		this.getKeys = function(){
-			var keys = [];
-			for (var i in this._map){
-				if (this._map[i]) {
-					keys.push(i);
-				}
-			}
-			return keys;
-		};
-		
-		// Values getter.
-		this.getValues = function(){
-			var values = [];
-			for (var i in this._map){
-				if (this._map[i]) {
-					values.push(this._map[i]);
-				}
-			}
-			return values;
-		};
-		
-		// Destructor
-		this.destroy = function(){
-			this._map = null;
-		};
 	 };
-	 StringMap.prototype = extend(Map.prototype);
+	 StringMap.prototype = extend(Map.prototype, 
+		{
+			// Associates the specified value with the specified key in this map
+		 	put: function (key, value) {
+				this._map[key] = value;
+				return this;
+			},
 
+			// Returns the value to which this map maps the specified key
+			get: function (key){
+				return this._map[key];
+			},
+
+			// Removes the mapping for this key from this map if it is present
+			remove: function (key){
+				this._map[key] = null;
+				delete this._map[key];
+			},
+			
+			// Keys getter.
+			getKeys: function(){
+				var keys = [];
+				for (var i in this._map){
+					if (this._map[i]) {
+						keys.push(i);
+					}
+				}
+				return keys;
+			},
+			
+			// Values getter.
+			getValues: function(){
+				var values = [];
+				for (var i in this._map){
+					if (this._map[i]) {
+						values.push(this._map[i]);
+					}
+				}
+				return values;
+			},
+			
+			// Destructor
+			destroy: function(){
+				this._map = null;
+			} 
+	 });
+
+	// ***************************************************************
 	 /**
 	 * @class EventListenerSupport
 	 */
@@ -240,18 +318,25 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 EventListenerSupport.prototype = {
 	 	
 		// The events
-		_eventsListeners: {},
+		_eventsListeners: null,
+		
+		_getEventListeners: function() {
+		 	if(this._eventsListeners == null) {
+		 		this._eventsListeners = {};
+		 	}
+		 	return this._eventsListeners;		 		
+	 	},
 		
 		addListener: function(/*String*/event, /*Function*/handler){
-			var listeners = this._eventsListeners[event];
+			var listeners = this._getEventListeners()[event];
 			if (!listeners) {
-				listeners = this._eventsListeners[event] = [];
+				listeners = this._getEventListeners()[event] = [];
 			}
 			listeners.push(handler);
 		},
 		
 		removeListener: function(/*String*/event, /*Function*/handler){
-			var listeners = this._eventsListeners[event];
+			var listeners = this._getEventListeners()[event];
 			if (listeners) {
 				var handlerIndex = listeners.indexOf(handler);
 				if (handlerIndex != -1){
@@ -261,13 +346,13 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		},
 		
 		removeAllListeners: function(){
-			for (var i in this._eventsListeners){
-				this._eventsListeners[i].splice(0, this._eventsListeners[i].length);
+			for (var i in this._getEventListeners()){
+				this._getEventListeners()[i].splice(0, this._getEventListeners()[i].length);
 			}
 		},
 		
 		fireEvent: function(/*String*/event, /*Arguments*/args){
-			var listeners = this._eventsListeners[event];
+			var listeners = this._getEventListeners()[event];
 			if (listeners) {
 				for (var i = 0; i < listeners.length; i++) {
 					listeners[i].apply(this, args);
@@ -277,6 +362,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 	
 	 };
 	 
+	// ***************************************************************
 	/**
 	 * @class EventsRegistrator
 	 * This class provide support to add and remove a set of registered listeners.  
@@ -292,16 +378,18 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		this.listenersContext = (listenersContext) ? listenersContext : {};
 		
 		// Array to reference the delay handlers.
-		this.timeOutFlags = [];
-		
+		this.timeOutFlags = [];		
+	};
+	EventsRegistrator.prototype = {
+			
 		/**
 		 * This method set a property in the object that is used as execution context of the listeners.
 		 * @param property property name
 		 * @param value the value
 		 */
-		this.setPropertyToListenersContext = function(/*String*/property, /*object*/value){
+		setPropertyToListenersContext: function(/*String*/property, /*object*/value){
 			this.listenersContext[property] = value;
-		};
+		},
 		
 		/**
 		 * This method register a listener for an event.
@@ -311,35 +399,35 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 * but in case that the same event is fire again before the execution is performed, the execution request is canceled
 		 * and a new one is created scheduled to be performed after the delay time were accomplished. 
 		 */
-		this.registerListenerForEvent = function(/*String|Array<String>*/event, /*function*/listener, /*int*/timeOut){
+		registerListenerForEvent: function(/*String|Array<String>*/event, /*function*/listener, /*int*/timeOut){
 			var events = (typeof(event) == 'string') ? [event] : event;
 			var listenerFunc = this._attachListenerContext(listener, timeOut); 
 			for (var i = 0; i < events.length; i++) {
 				this.listeners.push({event: events[i], listener: listenerFunc});
 			}
-		};
+		},
 		
 		/**
 		 * This method add all the registered listeners to the object.
 		 */
-		this.addAllListeners = function(){
+		addAllListeners: function(){
 			var list = null;
 			for (var i = 0; i < this.listeners.length; i++){
 				list = this.listeners[i];
 				this.object.addListener(list.event, list.listener);
 			}
-		};
+		},
 		
 		/**
 		 * This method remove all the registered listeners to the object.
 		 */
-		this.removeAllListeners = function(){
+		removeAllListeners: function(){
 			var list = null;
 			for (var i = 0; i < this.listeners.length; i++){
 				list = this.listeners[i];
 				this.object.removeListener(list.event, list.listener);
 			}
-		};
+		},
 		
 		/**
 		 * This method add all the registered listeners to the object.
@@ -348,7 +436,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 * @return a function that execute the listener with the listenersContext object
 		 * as executionContext.
 		 */
-		this._attachListenerContext = function(listener, timeOut){
+		_attachListenerContext: function(listener, timeOut){
 			var executionContext = this.listenersContext;
 			if (timeOut) {
 				return this._wrappWithTimeOutFunction(listener, executionContext, timeOut);
@@ -357,13 +445,13 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 					listener.apply(executionContext, arguments);
 				};
 			}
-		};
+		},
 		
 		/**
 		 * This method generate and return a new function that execute the func with 
 		 * the executionContext once the timeOut is accomplished.
 		 */
-		/*function*/ this._wrappWithTimeOutFunction = function(func, executionContext, timeOut){
+		/*function*/ _wrappWithTimeOutFunction: function(func, executionContext, timeOut){
 			var flagIndex = this.timeOutFlags.length;
 			this.timeOutFlags.push({});
 			var flags = this.timeOutFlags;
@@ -372,28 +460,29 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 				var args = arguments;
 				flags[flagIndex] = setTimeout(function(){func.apply(executionContext, args);}, timeOut);
 			};
-		};
-		
+		}
 	};
-	 
 	 /**
 	  * @class Connection API
 	  */
 	 var ConnectionsAPI = this.ConnectionsAPI = function(/*boolean*/ useHashCodeBasedDictionary){
 		 // Connections dictionary.
-		 this._connections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : new Dictionary();
+		 this._connections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : new ArrayMap(); //new Dictionary();
 		 
 		 // Array of connections.
 		 this._connectionsArray = [];
 		 
 		 // Disconnections dictionary.
-		 this._disconnections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : new Dictionary();
+		 this._disconnections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : new ArrayMap(); //new Dictionary();
 		 
 		 // Subscriptions
-		 this._subscriptions = new StringMap();
-		 
-		 // Add a connection
-		 this.addConnection = function(
+		 this._subscriptions = new StringMap();		 
+	 };
+	 
+	 ConnectionsAPI.prototype = extend(EventListenerSupport.prototype, {
+
+		 /** Add a connection */
+		 addConnection: function(
 				 	/*Object|null*/ obj, 
 					/*String*/ event, 
 					/*Object|null*/ context, 
@@ -402,7 +491,24 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 					/*dojo disconnect Handle*/ handle,
 					/*Object*/ callerInfo) {
 			 
-			   var originalFunction = ((obj[event]) ? obj[event].target : null);
+		 		if(FBTrace.DBG_DOJO_DBG) {		    			
+					FBTrace.sysout("DOJO DEBUG: adding connection " + event, [obj, event, context, method, dontFix, handle, callerInfo]);
+				}
+
+		 		//FIXME aca me salta un component is not available..(sera por las 5 conns?)
+		 		//con 5 args, me da este error
+		 		//con 4 args , me salta error de "lls[i] is null"
+		 		
+		 		var originalFunction = null;
+		 		try {
+					//var originalFunction = ((obj[event]) ? obj[event].target : null);
+			 		var originalFunction = ((obj[event]) ? obj[event]['target'] : null);
+		 		} catch (exc) {
+		 			//should not be here...
+		 			if(FBTrace.DBG_DOJO_DBG) {
+		 				FBTrace.sysout("DOJO DEBUG: error bypassed while adding connection", exc);
+		 			}
+		 		}
 			 	
 			   // Create the connection.
 			   var con = new Connection(obj, event, context, method, originalFunction, dontFix, handle[3], callerInfo);
@@ -423,26 +529,36 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			   this.fireEvent(ConnectionsAPI.ON_CONNECTION_ADDED);
 			   
 			   return con;
-		 };
+		 },
 		 
-		 // This function return (and create if it does not exist for the key) the objectInfo 
-		 // for the object passed as parameter.
-		 this._getAndCreateIfRequiredObjectInfo = function(obj){
+		 /**
+		  * This function return (and create if it does not exist for the key) the objectInfo
+		  * for the object passed as parameter.		  
+		  */ 
+		 _getAndCreateIfRequiredObjectInfo: function(obj){
 			    var objectInfo = this._connections.get(obj);
 			    if (!objectInfo){
 			 	   objectInfo = new ObjectInfo(obj);
 		 		   this._connections.put(obj, objectInfo);
 			    }
 			    return objectInfo;
-		 };
+		 },
 		 
-		 // Remove a connection, given a dojo handle
-		 this.removeConnection = function(/*Handle*/ handle){
+		 /**
+		  * Remove a connection, given a dojo handle
+		  */
+		 removeConnection: function(/*Handle*/ handle){
 	 		   var con = this._disconnections.get(handle);
 	 		   
 	 		   if(con){
+
+	 			   if(FBTrace.DBG_DOJO_DBG) {		    			
+	 				   FBTrace.sysout("DOJO DEBUG: removing connection", [handle, con]);
+	 			   }
+
+	 			   
 		 		   // Remove connection from list.
-				   this._connectionsArray.splice(this._connectionsArray.indexOf(con),1);
+				   this._connectionsArray.splice(this._connectionsArray.indexOf(con), 1);
 		 		   
 		 		   // Remove incoming connection
 		 		   var conObjInfo = this._connections.get(con.obj);
@@ -464,10 +580,12 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 		   // Raised the onConnectionRemoved event if there is registered handler.
 				   this.fireEvent(ConnectionsAPI.ON_CONNECTION_REMOVED);
 	 		   }
-		 };
+		 },
 		 
-		 // Add a subscription
-		 this.addSubscription = function(/*String*/ topic, /*Object|null*/ context, /*String|Function*/ method,
+		 /**
+		  * Add a subscription
+		  */
+		 addSubscription: function(/*String*/ topic, /*Object|null*/ context, /*String|Function*/ method,
 					/*unsubscribe Handle*/ handle, callerInfo){
 			 var subs = new Subscription(topic, context, method, callerInfo);
 			 var subsForTopic = this._subscriptions.get(topic);
@@ -485,10 +603,12 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		    
 		    // Raised the onSubscriptionAdded event if there is registered handler.
 			this.fireEvent(ConnectionsAPI.ON_SUBSCRIPTION_ADDED);
-		 };
+		 },
 		 
-		// Remove a Subscription, given a dojo handle
-		 this.removeSubscription = function(/*Handle*/ handle){
+		 /**
+		  * Remove a Subscription, given a dojo handle
+		  */
+		 removeSubscription: function(/*Handle*/ handle){
 			 var subs = this._disconnections.get(handle);
 			 
 			 if (handle && (handle.length==2)){
@@ -510,17 +630,21 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 		     // Raised the onSubscriptionRemoved event if there is registered handler.
 	 		    this.fireEvent(ConnectionsAPI.ON_SUBSCRIPTION_REMOVED);
 			 }
-		 };
+		 },
 		 
-		 // Return an object that contain the connections for the parameter object.
-		 this.getConnection = function(obj){
+		 /**
+		  * Return an object that contain the connections for the parameter object.
+		  */
+		 getConnection: function(obj){
 			 return this._connections.get(obj);
-		 };
+		 },
 		 
-		// Return an array with the objects with connections.
-		 this.getObjectsWithConnections = function(){
+		 /**
+		  * Return an array with the objects with connections.
+		  */
+		 getObjectsWithConnections: function() {
 			 return this._connections.getKeys();
-		 };
+		 },
 		 
 		 /**
 		  * Return an array with all the registered connections.
@@ -532,7 +656,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * this.ConnectionArraySorter.CONTEXT = 2;
 		  * this.ConnectionArraySorter.METHOD = 3;
 		  */
-		 /*Array<Connection>*/ this.getConnections = function(/*null|Array<int>*/ priorityCriteriaArray){
+		 /*Array<Connection>*/ getConnections: function(/*null|Array<int>*/ priorityCriteriaArray){
 			 if (priorityCriteriaArray) {
 				 var sorter = new ConnectionArraySorter(this.getObjectsWithConnections(), priorityCriteriaArray);
 				 var cons = sorter.sortConnectionArray(this._connectionsArray);
@@ -540,73 +664,79 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 } else {
 				 return this._connectionsArray;
 			 }
-		 };
+		 },
 		 
 		 /**
 		  * Return the subscriptions map.
 		  */
-		 /*Object(Map)*/ this.getSubscriptions = function(){
+		 /*Object(Map)*/ getSubscriptions: function(){
 			 return this._subscriptions;
-		 };
+		 },
 		 
 		 /**
 		  * Return an array with all the registered subscriptions.
 		  * @return the list of existent subscriptions.
 		  */
-		 /*Array<Subscriptions>*/ this.getSubscriptionsList = function(){
+		 /*Array<Subscriptions>*/ getSubscriptionsList: function(){
+			 
+			 //xxxPERFORMANCE
+			 
 			 var subs = [];
 			 var subKeys = this.getSubscriptions().getKeys();
 			 for (var i = 0; i < subKeys.length; i++) {
 				 subs = subs.concat(this.getSubscriptions().get(subKeys[i]));
 			 }
 			 return subs;
-		 };
+		 },
+		 
 		 /**
 		  * Returns is a disconnect handle is still being tracked 
 		  * @param handle The dojo disconnect handle returned by dojo.connect
 		  */
-		 /*Boolean*/ this.isHandleBeingTracked = function(/*DojoDisconnectHandler*/handle){
+		 /*Boolean*/ isHandleBeingTracked: function(/*DojoDisconnectHandler*/handle){
 			 //FIXME this method is only used from tests? is it needed at all ?
 			 return (this._disconnections.get(handle) == null);
-		 };
+		 },
 		 
 		 /**
 		  * Return the topics list.
 		  */
-		 /*Array<String>*/ this.getTopics = function(){
+		 /*Array<String>*/ getTopics: function(){
 			 return this.getSubscriptions().getKeys();
-		 };
+		 },
 		 
 		 /**
 		  * Return the subscriptions list for the topic passed as parameter.
 		  * @param topic The topic.
 		  */
-		 /*Array<Subscription>*/ this.subscriptionsForTopic = function(/*String*/topic){
+		 /*Array<Subscription>*/ subscriptionsForTopic: function(/*String*/topic){
 			 return this.getSubscriptions().get(topic);
-		 };
+		 },
 		 
 		 /**
 		  * Return true if there are any connection info registered for the object passed as parameter.
 		  * @param object The object.
 		  */
-		 /*boolean*/ this.areThereAnyConnectionsFor = function(/*object*/object){
+		 /*boolean*/ areThereAnyConnectionsFor: function(/*object*/object){
 			 var objInfo = this.getConnection(object);
 			 return objInfo &&
 				 	!objInfo.getConnectionsTracker().isEmpty();
-		 };
+		 },
 		 
 		 /**
 		  * Return true if there are any subscription info registered for the object passed as parameter.
 		  * @param object The object.
 		  */
-		 /*boolean*/ this.areThereAnySubscriptionFor = function(/*object*/object){
+		 /*boolean*/ areThereAnySubscriptionFor: function(/*object*/object){
 			 var objInfo = this.getConnection(object);
 			 return objInfo &&
 				 	!objInfo.getSubscriptionsTracker().isEmpty();
-		 };
+		 },
 		 
-		 // Destructor
-		 this.destroy = function(){
+		 /**
+		  * Destructor
+		  */
+		 destroy: function(){
 			 this._connections.destroy();
 			 delete this._connections;
 			 
@@ -622,10 +752,11 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 this.removeAllListeners();
 			 
 			 delete this._subscriptions;
-		 };
-	 };
-	 ConnectionsAPI.prototype = extend(EventListenerSupport.prototype);
-	 // Events supported by ConnectionsAPI.
+		 }		 
+	 });
+	 
+	 
+	 // Public Events supported by ConnectionsAPI.
 	 ConnectionsAPI.ON_CONNECTION_ADDED = 'connection_added';
 	 ConnectionsAPI.ON_CONNECTION_REMOVED = 'connection_removed';
 	 ConnectionsAPI.ON_SUBSCRIPTION_ADDED = 'subscription_added';
@@ -639,88 +770,90 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		this._connectionsTracker = new ConnectionsTracker(object);
 		
 		// SubscriptionsTracker
-		this._subscriptionsTracker = new SubscriptionsTracker(object);
-		
-		
-		// ***** Connection methods ******//
-		
-		// ConnectionsTracker getter
-		this.getConnectionsTracker = function(){
-			return this._connectionsTracker;
-		};
+		this._subscriptionsTracker = new SubscriptionsTracker(object);		
+	 };
+	 ObjectInfo.prototype = {
 
-		// SubscriptionsTracker getter
-		this.getSubscriptionsTracker = function(){
+			 // ***** Connection methods ******//
+		
+		/**
+		 * ConnectionsTracker getter
+		 */
+		getConnectionsTracker: function(){
+			return this._connectionsTracker;
+		},
+	
+		/**
+		 * SubscriptionsTracker getter
+		 */
+		getSubscriptionsTracker: function(){
 			return this._subscriptionsTracker;
-		};
+		},
 		
 		// Add new incoming connection.
-		this.addIncomingConnection = function(con){
+		addIncomingConnection: function(con){
 			this.getConnectionsTracker().addIncomingConnection(con);
-		};
+		},
 		
 		// Add new outgoing connection.
-		this.addOutgoingConnection = function(con){
+		addOutgoingConnection:  function(con){
 			this.getConnectionsTracker().addOutgoingConnection(con);
-		};
+		},
 		
 		// Remove incoming connection.
-		this.removeIncomingConnection = function(con){
+		removeIncomingConnection: function(con){
 			this.getConnectionsTracker().removeIncomingConnection(con);
-		};
+		},
 		
 		// Remove outgoing connection.
-		this.removeOutgoingConnection = function(con){
+		removeOutgoingConnection: function(con){
 			this.getConnectionsTracker().removeOutgoingConnection(con);
-		};
+		},
 		
 		// Return the events with connections associated.
-		this.getIncommingConnectionsEvents = function(){
+		getIncommingConnectionsEvents: function(){
 			return this.getConnectionsTracker().getIncommingConnectionsEvents();
-		};
+		},
 		
 		// Return the connections associated to the event passed as parameter.
-		this.getIncommingConnectionsForEvent = function(event){
+		getIncommingConnectionsForEvent: function(event){
 			return this.getConnectionsTracker().getIncommingConnectionsForEvent(event);
-		};
+		},
 		
 		// Return the methods with connections associated.
-		this.getOutgoingConnectionsMethods = function(){
+		getOutgoingConnectionsMethods: function(){
 			return this.getConnectionsTracker().getOutgoingConnectionsMethods();
-		};
+		},
 		
 		// Return the connections associated to the method passed as parameter.
-		this.getOutgoingConnectionsForMethod = function(method){
+		getOutgoingConnectionsForMethod: function(method){
 			return this.getConnectionsTracker().getOutgoingConnectionsForMethod(method);
-		};
+		},
 		
 		
 		// ***** Subscription methods ******//
 		
 		// Add new subscription.
-		this.addSubscription = function(sub){
+		addSubscription: function(sub){
 			this.getSubscriptionsTracker().addSubscription(sub);
-		};
+		},
 		
 		// Remove subscription.
-		this.removeSubscription = function(sub){
+		removeSubscription: function(sub){
 			this.getSubscriptionsTracker().removeSubscription(sub);
-		};
+		},
 		
 		// Return the subscriptions for the object associated with this.object.
-		this.getSubscriptions = function(){
+		getSubscriptions: function(){
 			return this.getSubscriptionsTracker().getSubscriptions();
-		};
-		
-		// ***** Empty method ******//
-		
+		},
+			
 		/**
 		  * Return true if there are no info registered.
 		  */
-		 /*boolean*/ this.isEmpty = function(){
-			 return (this.getConnectionsTracker().isEmpty() &&
-			 		this.getSubscriptionsTracker().isEmpty());
-		 };
+		/*boolean*/ isEmpty: function(){
+			return (this.getConnectionsTracker().isEmpty() && this.getSubscriptionsTracker().isEmpty());
+		 }
 	 };
 	 
 	 
@@ -735,92 +868,94 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		this._incomingConnections = new StringMap();
 		
 		// Outgoing connections (Dictionary<(String|Function),Connection>).
-		this._outgoingConnections = new Dictionary();
-		
-		// Add new incoming connection.
-		this.addIncomingConnection = function(con){
-			var incConnections = this._incomingConnections.get(con.event);
-			if (!incConnections){
-				incConnections = [];
-				this._incomingConnections.put(con.event, incConnections);
+		this._outgoingConnections = new ArrayMap(); //new Dictionary();		
+	 };
+	 ConnectionsTracker.prototype = 
+	 {
+
+			// Add new incoming connection.
+			addIncomingConnection: function(con){
+				var incConnections = this._incomingConnections.get(con.event);
+				if (!incConnections){
+					incConnections = [];
+					this._incomingConnections.put(con.event, incConnections);
+				}
+				incConnections.push(con);
+			},
+			
+			// Add new outgoing connection.
+			addOutgoingConnection: function(con){
+				var outConnections = this._outgoingConnections.get(con.method);
+				if (!outConnections){
+					outConnections = [];
+					this._outgoingConnections.put(con.method, outConnections);
+				}
+				outConnections.push(con);
+			},
+			
+			// Remove incoming connection.
+			removeIncomingConnection: function(con){
+				var cons = this._incomingConnections.get(con.event);
+				cons.splice(cons.indexOf(con),1);
+				// Remove event if it has no associated connections.
+				if (cons.length == 0) {
+					this._incomingConnections.remove(con.event);
+				}
+			},
+			
+			// Remove outgoing connection.
+			removeOutgoingConnection: function(con){
+				var cons = this._outgoingConnections.get(con.method);
+				cons.splice(cons.indexOf(con),1);
+				// Remove method if it has no associated connections.
+				if (cons.length == 0) {
+					this._outgoingConnections.remove(con.method);
+				}
+			},
+			
+			/**
+			 * Return the events with connections associated.
+			 * @return an array with the events with connections associated.
+			 */
+			getIncommingConnectionsEvents: function(){
+				return this._incomingConnections.getKeys();
+			},
+			
+			/**
+			 * Return the connections associated to the event passed as parameter.
+			 * @param event the event
+			 * @return an array with the connections associated to the event passed as parameter.
+			 */
+			getIncommingConnectionsForEvent: function(event){
+				var cons = this._incomingConnections.get(event);
+				return (cons) ? cons : [];
+			},
+			
+			/**
+			 * Return the methods with connections associated.
+			 * @return an array with the methods with connections associated.
+			 */
+			getOutgoingConnectionsMethods: function(){
+				return this._outgoingConnections.getKeys();
+			},
+			
+			/**
+			 * Return the connections associated to the method passed as parameter.
+			 * @param method the method
+			 * @return an array with the connections associated to the method passed as parameter.
+			 */
+			getOutgoingConnectionsForMethod: function(method){
+				var cons = this._outgoingConnections.get(method);
+				return (cons) ? cons : [];
+			},
+			
+			/**
+			 * Return true if there are no registered connections.
+			 */
+			/*boolean*/ isEmpty: function(){
+			 return (this.getIncommingConnectionsEvents().length == 0) &&
+			 		(this.getOutgoingConnectionsMethods().length == 0);
 			}
-			incConnections.push(con);
-		};
-		
-		// Add new outgoing connection.
-		this.addOutgoingConnection = function(con){
-			var outConnections = this._outgoingConnections.get(con.method);
-			if (!outConnections){
-				outConnections = [];
-				this._outgoingConnections.put(con.method, outConnections);
-			}
-			outConnections.push(con);
-		};
-		
-		// Remove incoming connection.
-		this.removeIncomingConnection = function(con){
-			var cons = this._incomingConnections.get(con.event);
-			cons.splice(cons.indexOf(con),1);
-			// Remove event if it has no associated connections.
-			if (cons.length == 0) {
-				this._incomingConnections.remove(con.event);
-			}
-		};
-		
-		// Remove outgoing connection.
-		this.removeOutgoingConnection = function(con){
-			var cons = this._outgoingConnections.get(con.method);
-			cons.splice(cons.indexOf(con),1);
-			// Remove method if it has no associated connections.
-			if (cons.length == 0) {
-				this._outgoingConnections.remove(con.method);
-			}
-		};
-		
-		/**
-		 * Return the events with connections associated.
-		 * @return an array with the events with connections associated.
-		 */
-		this.getIncommingConnectionsEvents = function(){
-			return this._incomingConnections.getKeys();
-		};
-		
-		/**
-		 * Return the connections associated to the event passed as parameter.
-		 * @param event the event
-		 * @return an array with the connections associated to the event passed as parameter.
-		 */
-		this.getIncommingConnectionsForEvent = function(event){
-			var cons = this._incomingConnections.get(event);
-			return (cons) ? cons : [];
-		};
-		
-		/**
-		 * Return the methods with connections associated.
-		 * @return an array with the methods with connections associated.
-		 */
-		this.getOutgoingConnectionsMethods = function(){
-			return this._outgoingConnections.getKeys();
-		};
-		
-		/**
-		 * Return the connections associated to the method passed as parameter.
-		 * @param method the method
-		 * @return an array with the connections associated to the method passed as parameter.
-		 */
-		this.getOutgoingConnectionsForMethod = function(method){
-			var cons = this._outgoingConnections.get(method);
-			return (cons) ? cons : [];
-		};
-		
-		/**
-		 * Return true if there are no registered connections.
-		 */
-		/*boolean*/ this.isEmpty = function(){
-		 return (this.getIncommingConnectionsEvents().length == 0) &&
-		 		(this.getOutgoingConnectionsMethods().length == 0);
-		};
-		
 	 };
 	 
 	 
@@ -832,33 +967,35 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		this.object = object;
 		 
 		// Subscriptions (Array<Connection>).
-		this._subscriptions = [];
-		
+		this._subscriptions = [];		
+	 };
+	 SubscriptionsTracker.prototype = 
+	 {
+
 		// Add new subscription.
-		this.addSubscription = function(sub){
+		addSubscription: function(sub){
 			this._subscriptions.push(sub);
-		};
+		},
 		
 		// Remove subscription.
-		this.removeSubscription = function(sub){
+		removeSubscription: function(sub){
 			this._subscriptions.splice(this._subscriptions.indexOf(sub),1);
-		};
+		},
 		
 		/**
 		 * Return the subscriptions for the object associated with this.object.
 		 * @return an array with the subscriptions for the object associated with this.object.
 		 */
-		this.getSubscriptions = function(){
+		getSubscriptions: function(){
 			return this._subscriptions;
-		};
+		},
 		
 		/**
 		 * Return true if there are no registered subscriptions.
 		 */
-		/*boolean*/ this.isEmpty = function(){
+		/*boolean*/ isEmpty: function(){
 		 return (this.getSubscriptions().length == 0);
-		};
-		
+		}			 
 	 };
 	 
 	 /**
@@ -899,10 +1036,14 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 this.originalFunction = originalFunction;
 		 this.dontFix = dontFix;
 		 this.listenerMechanism = listenerMechanism;
-		 this.callerInfo = callerInfo;
-		 
-		 // Destructor
-		 this.destroy = function(){
+		 this.callerInfo = callerInfo;				
+	 };
+	 Connection.prototype = extend(FunctionLinkResolver.prototype, {
+
+		 /**
+		  * Destructor
+		  */
+		 destroy: function(){
 			 this.clazz = null;
 			 this.obj = null;
 			 this.event = null;
@@ -912,14 +1053,12 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 this.dontFix = null;
 			 this.listenerMechanism = null;
 			 this.callerInfo = null;
-		 };
+		 },
 		 
-		 this.getEventFunction = function() {
+		 getEventFunction: function() {
 		 	return (isDojoExtProxy(this.originalFunction)) ? this.originalFunction.proxiedFunction : this.originalFunction;
-		 };
-		 
-	 };
-	 Connection.prototype = extend(FunctionLinkResolver.prototype);
+		 }		 
+	 });
 	 
 	 
 	 /**
@@ -932,7 +1071,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		this.method = method;
 		this.callerInfo = callerInfo;
 	 };
-	 Subscription.prototype = extend(FunctionLinkResolver.prototype);
+	 Subscription.prototype = extend(FunctionLinkResolver.prototype, {});
 	
 	 /**
 	  * @class IncomingConnectionDescriptor
@@ -941,9 +1080,13 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 this.obj = obj;
 		 this.event = event;
 		 this.connections = connections;
-		 this.getEventFunction = function(){
-			return (connections.length > 0) ? connections[0].getEventFunction() : null;
-		 };
+	 };
+	 //TODO chech whether we should be better extending from FunctionLinkResolver?  
+	 IncomingConnectionDescriptor.prototype =
+	 {
+		 getEventFunction: function(){
+				return (this.connections.length > 0) ? this.connections[0].getEventFunction() : null;
+		 }			 
 	 };
 	 
 	 /**
@@ -954,13 +1097,14 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 this.method = method;
 		 this.connections = connections;
 	 };
-	 OutgoingConnectionDescriptor.prototype = extend(FunctionLinkResolver.prototype);
+	 OutgoingConnectionDescriptor.prototype = extend(FunctionLinkResolver.prototype, {});
 	 
 	 /**
 	  * @class ConnectionArraySorter
 	  */
 	//TODO: Add comment!
-    var ConnectionArraySorter = this.ConnectionArraySorter = function (objectOrderArray, priorityCriteriaArray){
+    var ConnectionArraySorter = this.ConnectionArraySorter = function (objectOrderArray, priorityCriteriaArray) {
+
     	this.priorityCriteriaArray = priorityCriteriaArray;
     	
     	var criteriaObject = function(obj1, obj2){

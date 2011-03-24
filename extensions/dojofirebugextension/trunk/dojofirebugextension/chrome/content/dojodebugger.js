@@ -142,7 +142,7 @@ DojoDebugger.prototype =
 	    		    	
 	    	var jsdLine2 = lineNo + (sourceFile.getBaseLineOffset());
 	    	if(scriptLength == 1) {
-	    		//FIXME HACK!
+	    		//FIXME HACK! magic...
 	    		jsdLine2 = jsdLine2 - 1; 
 	    	}
 	    	var jsdLine = jsdLine2;
@@ -235,7 +235,7 @@ DojoDebugger.prototype =
 		 */
 		/*DebugInfo*/getDebugInfoAboutCaller: function(/*fbug context*/context, stackDepth) {
 
-			var stackTrace = getCurrentStackTrace(context);
+			var stackTrace = Firebug.Debugger.getCurrentStackTrace(context);
 			if(!stackTrace || !stackTrace.frames) {
 				return null;
 			}
@@ -252,20 +252,9 @@ DojoDebugger.prototype =
 		_findCallerFrame: function(stackTrace, context, stackDepth) {
 		   var isChromebugActive = _stringInclude(stackTrace.frames[1].href, 'chrome://'); //hack!
 
-		   var isFirebug1_7 = _stringInclude(Firebug.version, '1.7');
-		   var isFirebug1_6 = _stringInclude(Firebug.version, '1.6');
-
-//		   if (!isChromebugActive && isFirebug1_6) {
-//		       stackDepth = stackDepth - 1;
-//		   }
-
-//		   if (!isChromebugActive && isFirebug1_7) {
-//		       stackDepth = stackDepth - 1;
-//		   }
-		
-		    stackDepth = this._computeChromeOffeset(isChromebugActive, stackDepth, stackTrace);
+		   stackDepth = this._computeChromeOffeset(isChromebugActive, stackDepth, stackTrace);
 		   
-		    var frame = stackTrace.frames[stackDepth];
+		   var frame = stackTrace.frames[stackDepth];
 		   
 
 		   /*
@@ -279,13 +268,6 @@ DojoDebugger.prototype =
 		* IMPORTANT: Beware that Firefox sometimes returns prefix chrome:// but sometimes prefix file:// ! This breaks our assumptions
 		* for the computeChromeOffset method...
 		*/	   
-		   
-//	   Firebug.Console.log("stackDump: depth->" + stackDepth + " . caller name is: " + frame.fn + " . length: " + stackTrace.frames.length + " FB version: " + Firebug.version); 
-//	    for (var i = 0; i < stackTrace.frames.length; i++) {
-//	    	var frame1 = stackTrace.frames[i];
-//	    	Firebug.Console.log("stackIndex: " + i + " fn: " + frame1.fn + " file: " + frame1.href + " (" + frame1.line + ")");
-//	    }
-//	   Firebug.Console.log("\n\n");
 		   
 		   return frame;
 	   },
@@ -308,7 +290,7 @@ DojoDebugger.prototype =
 		    
 		    while (index <= stackDepth) {
 		    	
-		    	//FIXME HACK due to firefox not always returning prefix chrome:// for FF files...for example: firebug-service.js
+		    	//HACK due to firefox not always returning prefix chrome:// for FF files...for example: firebug-service.js
 		    	if (!_stringInclude(stackTrace.frames[realIndex].href, 'chrome://') && !_stringInclude(stackTrace.frames[realIndex].href, '/modules/')) {
 		              index++;
 		        }

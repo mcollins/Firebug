@@ -36,9 +36,9 @@ var getMethodLabel = function(method) {
 	if (typeof(method) == "string") {
 		label = method;
 	} else {
-		var script = findScriptForFunctionInContext(FirebugContext, method);			
+		var script = findScriptForFunctionInContext(Firebug.currentContext, method);			
 		try {
-			label = script ? getFunctionName(script, FirebugContext) : method.name;
+			label = script ? getFunctionName(script, Firebug.currentContext) : method.name;
 		} catch(exc) {
 			//$$HACK
 			label = method.name;
@@ -177,7 +177,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 
 	highlightObject: function(widget, context) {
 		var domElem = this._getHtmlNode(widget);
-		Firebug.Inspector.highlightObject(domElem, FirebugContext);
+		Firebug.Inspector.highlightObject(domElem, Firebug.currentContext);
 	},
 	
 	_getHtmlNode: function(widget) {
@@ -565,14 +565,49 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 	}
 });
 
+/** Rep for dojo classes */
+/*
+this.DojoClassRep = domplate(FirebugReps.Obj,
+		{
+			tag: FirebugReps.OBJECTLINK(
+					"$object|getTitle"
+			),
 
-// ************************************************************************************************
+			shortTag: FirebugReps.OBJECTLINK(
+					"$object|getTitle"
+			),
+			
+			supportsObject: function(object, type) {
+			    return object['declaredClass'] ? 1000 : 0;
+			},
+			
+			getTitle: function(object){
+				return object['declaredClass'];
+			}
 
-Firebug.registerRep(this.DojoMainRep);
-Firebug.registerRep(this.DijitMainRep);
-Firebug.registerRep(this.DijitRep);
-Firebug.registerRep(this.ConnectionRep);
-Firebug.registerRep(this.ConnectionsInfoRep);
+		});
+*/
+
+//called by dojofirebugextension
+this.registerReps = function() {
+	Firebug.registerRep(this.DojoMainRep);
+	Firebug.registerRep(this.DijitMainRep);
+	Firebug.registerRep(this.DijitRep);
+	Firebug.registerRep(this.ConnectionRep);
+	Firebug.registerRep(this.ConnectionsInfoRep);
+	//Firebug.registerRep(this.DojoClassRep);	
+};
+
+//called by dojofirebugextension
+this.unregisterReps = function() {
+	Firebug.unregisterRep(this.DojoMainRep);
+	Firebug.unregisterRep(this.DijitMainRep);
+	Firebug.unregisterRep(this.DijitRep);
+	Firebug.unregisterRep(this.ConnectionRep);
+	Firebug.unregisterRep(this.ConnectionsInfoRep);
+	//Firebug.unregisterRep(this.DojoClassRep);	
+};
+
 
 //************************************************************************************************
 }});

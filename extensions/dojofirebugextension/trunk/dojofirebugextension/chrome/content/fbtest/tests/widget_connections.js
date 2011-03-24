@@ -28,7 +28,7 @@ function verifyWidgetConnections(testPageUrl, expectedIncomming, expectedOutgoin
 	    	win = FBTest.FirebugWindow.FBL.unwrapObject(win);
 			try {
 				var panel = FW.FirebugChrome.selectPanel("dojofirebugextension"); //get our panel
-				var context = FW.FirebugContext; //context!
+				var context = FW.Firebug.currentContext; //context!
 				
 				var api = context.connectionsAPI;
 				var conns = api.getConnections();

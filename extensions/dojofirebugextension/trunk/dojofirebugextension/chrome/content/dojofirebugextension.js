@@ -1,6 +1,5 @@
 /* Released under BSD license (see license.txt) */
 /*
- * dojofirebugextension 
  * Copyright IBM Corporation 2010, 2010. All Rights Reserved. 
  * U.S. Government Users Restricted Rights -  Use, duplication or disclosure restricted by GSA ADP 
  * Schedule Contract with IBM Corp. 
@@ -17,11 +16,17 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 // ****************************************************************
 // GLOBAL FUNCTIONS IN THIS NAMESPACE
 // ****************************************************************
-	var DOJO_BUNDLE = "dojostrings";
-	var VERSION = "1.0a6";
+	var VERSION = "1.0a7";
+
+	//constants for dojo extension Preferences
 	var DOJO_PREF_MAP_IMPL = "dojofirebugextension.hashCodeBasedDictionaryEnabled";
 	var DOJO_PREF_BP_PLACE = "dojofirebugextension.breakPointPlaceDisabled";
 	var DOJO_PREF_EVENT_BASED_PROXY_ENABLED = "dojofirebugextension.useEventBasedProxy";
+	var DOJO_PREF_MAX_SUGGESTED_CONNECTIONS = "dojofirebugextension.maxAllowedNumberOfConnectionsInTable";
+	var DOJO_PREF_MAX_SUGGESTED_SUBSCRIPTIONS = "dojofirebugextension.maxAllowedNumberOfSubscriptionsInTable";
+	
+	//the name of our strings bundle
+	var DOJO_BUNDLE = "dojostrings";
 	
 	var nsIInterfaceRequestor = Ci.nsIInterfaceRequestor;
 	var nsISelectionDisplay = Ci.nsISelectionDisplay;
@@ -66,10 +71,19 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	/*context*/var _safeGetContext = function(panel) {
 		var ctx = panel.context;
 		if(!ctx) {
-			ctx = FirebugContext;
+			ctx = Firebug.currentContext;
 		}
 		return ctx;
 	};
+
+	//required as of FF 4
+	var _addMozillaExecutionGrants = function(fn) {
+		if(!fn.__exposedProps__) {
+			fn.__exposedProps__ = {};
+		}		
+		fn.__exposedProps__.apply = "r";
+		fn.__exposedProps__.call = "r";
+	};	
 
 	/**
 	 * sets our default css styles to a given document.
@@ -164,7 +178,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 		};
 		
 		/**
-		 * This method highlight the selection param in the parentNode element.
+		 * This method highlight the selection in the parentNode element.
 		 * @param parentNode the node where the main panel info is contained.
 		 * @param selection the selection.
 		 * @param focus boolean to decide if the object should be focus
@@ -326,15 +340,25 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     ObjectMethodProxier.prototype = {
 		/**
 		 * This method create proxy around a function.
+		 * @param context
 		 * @param obj the object that own the method to be proxied
-		 * @param method the method to be proxied
-		 * @param funcPreInvocation the function to be called before the original method invocation
-		 * @param funcPostInvocation the function to be called after the original method invocation
+		 * @param method the name of the method to be proxied
+		 * @param funcPreInvocation the Function object to be called before the original method invocation
+		 * @param funcPostInvocation the Function object to be called after the original method invocation
 		 * @return the proxied function
 		 */
-    	getProxiedFunction : function (obj, method, funcPreInvocation, funcPostInvocation) {
+    	getProxiedFunction : function (context, obj, method, funcPreInvocation, funcPostInvocation) {
 			var functionToProxy = obj[method];
 	    	var theProxy = function() {
+	    		
+	    		if(FBTrace.DBG_DOJO_DBG) {
+	    			
+	    			Firebug.Console.log("inner proxy invoked", context);
+	    			
+        			var a = arguments;    				
+        			FBTrace.sysout("DOJO DEBUG: executing proxy for fn:" + method + ", args: ", a);
+    			}
+    			
 				var funcPreInvParams = (funcPreInvocation != null) ? funcPreInvocation.apply(obj, arguments) : null;
 				var returnValue = functionToProxy.apply(obj, arguments);
 				var postInvocationReturnValue = (funcPostInvocation != null) ? funcPostInvocation.call(obj, returnValue, arguments, funcPreInvParams) : null;
@@ -342,6 +366,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 			};
 			theProxy.internalClass = "dojoext-added-code";
 			theProxy.proxiedFunction = functionToProxy;
+			theProxy.internaldesc = "dojoext-innerproxy";
 			return theProxy;
 		},
 		
@@ -349,12 +374,15 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 		 * @abstract
 		 * This method replace an object method with a proxy that include the invocation of 
 		 * the functions passed as parameter.
+		 * @param context
 		 * @param obj the object that own the method to be proxied
-		 * @param functionToProxy the method to be proxied
-		 * @param funcPreInvocation the function to be called before the original method invocation
-		 * @param funcPostInvocation the function to be called after the original method invocation
+		 * @param objClientName full name in web page of obj
+		 * @param expectedArgs number of expected args in web page. This is needed to generate web page script that can run in unprivileged context
+		 * @param functionToProxy the name of the method to be proxied
+		 * @param funcPreInvocation the Function obj to be called before the original method invocation
+		 * @param funcPostInvocation the Function obj to be called after the original method invocation
 		 */
-		proxyFunction : function(obj, functionToProxy, funcPreInvocation, funcPostInvocation){
+		proxyFunction : function(context, obj, objClientName, expectedArgs, functionToProxy, funcPreInvocation, funcPostInvocation){
 			throw("proxyFunction is an abstract method in ObjectMethodProxier");
 		}
     };
@@ -370,29 +398,96 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 		 * raised and log the error in the console. 
 		 * @param func the proxy function
 		 */
-    	_protectProxyFromExceptions : function(func){
-    		var protectedFunction = function(){
+    	_protectProxyFromExceptions : function(context, func) {
+    		//NOTE: the following function is executed by the client web page,
+    		//and it's executed as privileged code
+    		var protectedFunction = function() {
+
+
+    			if(FBTrace.DBG_DOJO_DBG) {
+    				
+    				Firebug.Console.log("protection proxy invoked", context);
+    				
+        			var a = arguments;    				
+        			FBTrace.sysout("DOJO DEBUG: executing _protectProxyFromExceptions proxy. Args: ", a);
+    			}
+    			    			
     			try{
     				return func.apply(this, arguments);
     			} catch (e) {
+
     				var msj = "An error at Dojo Firebug extension have occurred.";
-    				Firebug.Console.log(msj, _safeGetContext(this), "error", FirebugReps.Text);
+    				Firebug.Console.log(msj, context, "error", FirebugReps.Text);
+
+    				if(FBTrace.DBG_DOJO) {
+            			FBTrace.sysout("DOJO ERROR: while executing _protectProxyFromExceptions. Exc: ", e);
+        			}
+
     			}
     		};
     		protectedFunction.internalClass = "dojoext-added-code";
+    		protectedFunction.internaldesc = "dojoext-exceptionProtectProxy";
     		return protectedFunction;
     	},
     	
     	/**
 		 * @override
 		 */
-    	proxyFunction : function(obj, functionToProxy, funcPreInvocation, funcPostInvocation){
-			if (!DojoModel.isDojoExtProxy(obj[functionToProxy]) && !obj[functionToProxy]._listeners) {
-				obj[functionToProxy] = this._protectProxyFromExceptions(this.getProxiedFunction(obj, functionToProxy, funcPreInvocation, funcPostInvocation));
+    	proxyFunction : function(context, obj, objClientName, expectedArgs, functionToProxy, funcPreInvocation, funcPostInvocation){
+			    		
+    		
+    		if (!DojoModel.isDojoExtProxy(obj[functionToProxy]) && !obj[functionToProxy]._listeners) {
+
+    			var trackerProxy = this.getProxiedFunction(context, obj, functionToProxy, funcPreInvocation, funcPostInvocation);
+    			
+    			var excProxy = this._protectProxyFromExceptions(context, trackerProxy);
+    			_addMozillaExecutionGrants(excProxy);
+
+    			obj[functionToProxy] = excProxy; 
+    			
+    			
+/*				
+ 				//alternative code based on "eval" run on web page
+    			context.dojo.proxyCounter = (context.dojo.proxyCounter || 0) + 1;
+    			
+    			var fieldName = "__dojoext_" + context.dojo.proxyCounter + "__" + functionToProxy; 
+    			//inject our fn (privileged) in page (unprivileged) code
+    			obj[fieldName] = this._protectProxyFromExceptions(context, this.getProxiedFunction(context, obj, functionToProxy, funcPreInvocation, funcPostInvocation));
+    			   			
+    			//now evaluate/create a "client function" that can execute the injected privileged function
+				//e.g: dojo[_connect] = function() { return this.__dojoext___connect(arguments); };"
+				
+    			var argsStr = "";
+    			for (var i = 0; i < expectedArgs -1; i++){
+    				argsStr += "a[" + i + "],";
+    			}
+    			argsStr += "a[" + (expectedArgs - 1) + "]";
+
+
+    			var clientFn = objClientName + "['" + functionToProxy + "'] = function() { console.log('" + objClientName + "." + fieldName  + " invoked with these args: ', arguments); var a = arguments; return " + objClientName + "." + fieldName + "(" + argsStr + "); };";
+
+    			if(FBTrace.DBG_DOJO_DBG) {
+        			Firebug.Console.log("DOJO DEBUG: proxyFunction method . Generated argsStr: " + argsStr, context);
+    				//var b = objClientName + "['" + functionToProxy + "'] = function() { console.log('" + objClientName + "." + fieldName  + " invoked with these args: ', arguments); var a = arguments; return " + objClientName + "." + fieldName + "(" + argsStr + "); };";
+    				Firebug.Console.log("DOJO DEBUG: proxyFunction method . Generated web page fn: " +  clientFn, context);
+    			}
+
+    			Firebug.CommandLine.evaluate(clientFn, context);
+				
+				if(FBTrace.DBG_DOJO_DBG) {
+					FBTrace.sysout("DOJO DEBUG: proxied function " + functionToProxy + ". Eval'd expr: ", clientFn);
+        			FBTrace.sysout("DOJO DEBUG: proxied function " + functionToProxy + ". Arguments: ", arguments);
+    			}
+*/    			
+				
 			} else {
-				var msj = "Dojo Firebug Extension: A proxied function is attempted to be reproxied: " + functionToProxy +
+				var msg = "Dojo Firebug Extension: A proxied function is attempted to be reproxied: " + functionToProxy +
 						  ". Please report the bug.";
-				Firebug.Console.log(msj, _safeGetContext(this), "error", FirebugReps.Text);
+				Firebug.Console.log(msg, context, "error", FirebugReps.Text);
+				if(FBTrace.DBG_DOJO) {
+        			FBTrace.sysout("DOJO ERROR: " + msg + ". Arguments: ", arguments);
+    			}
+
 			}
 		},
     
@@ -452,13 +547,12 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 		 * @param funcPreInvocation the function to be called before the original method invocation
     	 */
     	eventFireFunctionWrapper : function(evtKey, func){
-    		  var context = this.context;
-    		//FIXME remove use of wrappedJSObject. Use unwrapObject() fn instead.
-    		  var docPage = context.window.wrappedJSObject.document;
+    		  var context = this.context;    		  
+    		  var docPage = unwrapObject(context.window).document;
     		  if (!this.isEventAlreadyRegistered(evtKey)){
     			  var listener = function(e) {  
     		        	//var args = e.target['args'];
-    		        	// FIXME[issue target property]: the arguments are setted to the document. 
+    		        	// FIXME[issue target property]: the arguments are set to the document. 
     		        	// This is a patch, the arguments should be setted to the event.target, but
     		        	// it is not working, if you inspect in FB the e.target you will be able to see 
     		        	// the property setted, but when you try access it via code it return undefined.
@@ -508,22 +602,21 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	   /**
 	    * @override
 	    */
-	   proxyFunction : function(obj, functionToProxy, funcPreInvocation, funcPostInvocation){
+	   proxyFunction : function(context, obj, objClientName, expectedArgs, functionToProxy, funcPreInvocation, funcPostInvocation){
 	    	var eventKey = "DojoExtensionEventPre" + functionToProxy;
 			var newFuncPreInvocation = (funcPreInvocation) ? this.eventFireFunctionWrapper(eventKey, funcPreInvocation) : null;
 			
 			eventKey = "DojoExtensionEventPos" + functionToProxy;
 			var newFuncPostInvocation = (funcPostInvocation) ? this.eventFireFunctionWrapper(eventKey, funcPostInvocation) : null;
 			
-			ObjectMethodProxierDirectAccessBased.prototype.proxyFunction.call(this, obj, functionToProxy, newFuncPreInvocation, newFuncPostInvocation);
+			ObjectMethodProxierDirectAccessBased.prototype.proxyFunction.call(this, context, obj, objClientName, expectedArgs, functionToProxy, newFuncPreInvocation, newFuncPostInvocation);
 	   },
     	
     	/**
     	 * Destructor
     	 */ 
-		destroy : function(){
-		 //FIXME remove use of wrappedJSObject. Use unwrapObject() fn instead.
-		    var docPage = this.context.window.wrappedJSObject.document;
+		destroy : function(){		 
+		   var docPage = unwrapObject(this.context.window).document;
 		    var list = this.getListenersList();
 			for (var i = 0; i < list.length; i++){
 				docPage.removeEventListener(list[i].event, list[i].listener, false);
@@ -765,7 +858,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     
     searchable: true,
     inspectable: true,
-    inspectOnlySupportedObjects: true,
+    inspectOnlySupportedObjects: true, //DEPRECATED
 
     /**
      * @override
@@ -773,30 +866,27 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     initialize: function() {
     	Firebug.ActivablePanel.initialize.apply(this, arguments);
     	
-    	// DomHighlightSelector       
-        this._domHighlightSelector = new DomHighlightSelector();
-        this._domHighlightSelector.addSelector("dojo-connection", function(selection, connection){
-    		return connection && ((connection['obj'] === selection) || (connection['context'] === selection));
-    	});
-        this._domHighlightSelector.addSelector("dojo-subscription", function(selection, subscription){
-    		return subscription && (subscription['context'] === selection);
-    	});
-        this._domHighlightSelector.addSelector("dojo-widget", function(selection, widget){
-    		return (widget === selection);
-    	});
-        
+    	this._initHighlighter();
+    	        
+    	this._initMessageBoxes();
+    	
+    	_addStyleSheet(this.document);
+	},
+	
+	_initMessageBoxes: function() {
         // Message boxes
         var self = this;
-        var ctx = _safeGetContext(self);
+        var ctx = _safeGetContext(this);
         
         /* Message box for connections */
         var conMsgBox = this.connectionsMessageBox = new ActionMessageBox("connectionsMsgBox", this.panelNode, 
         													$STR('warning.newConnectionsMade', DOJO_BUNDLE),
         													$STR('warning.newConnectionsMade.button.update', DOJO_BUNDLE),
-        													function(actionMessageBox){
+        													function(actionMessageBox) {
         														actionMessageBox.hideMessageBox();
         														self.showConnectionsInTable(ctx);
         													});
+        
         var showConnectionsMessageBox = function() { conMsgBox.showMessageBox(); };
         ctx.connectionsAPI.addListener(DojoModel.ConnectionsAPI.ON_CONNECTION_ADDED, showConnectionsMessageBox);
         ctx.connectionsAPI.addListener(DojoModel.ConnectionsAPI.ON_CONNECTION_REMOVED, showConnectionsMessageBox);
@@ -812,9 +902,25 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
         var showSubscriptionsMessageBox = function() { subMsgBox.showMessageBox(); };
         ctx.connectionsAPI.addListener(DojoModel.ConnectionsAPI.ON_SUBSCRIPTION_ADDED, showSubscriptionsMessageBox);
         ctx.connectionsAPI.addListener(DojoModel.ConnectionsAPI.ON_SUBSCRIPTION_REMOVED, showSubscriptionsMessageBox);
+		
+	},
+	
+	_initHighlighter: function() {
+
+		// DomHighlightSelector       
+        this._domHighlightSelector = new DomHighlightSelector();
         
-        // StyleSheet
-    	_addStyleSheet(this.document);
+        this._domHighlightSelector.addSelector("dojo-connection", function(selection, connection){
+    		return connection && ((connection['obj'] === selection) || (connection['context'] === selection));
+    	});
+        
+        this._domHighlightSelector.addSelector("dojo-subscription", function(selection, subscription){
+    		return subscription && (subscription['context'] === selection);
+    	});
+        
+        this._domHighlightSelector.addSelector("dojo-widget", function(selection, widget){
+    		return (widget === selection);
+    	});		
 	},
 	
 	/**
@@ -994,14 +1100,14 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 	        												$STR('warning.pageNeedToBeReload', DOJO_BUNDLE),
 	        												$STR('warning.pageNeedToBeReload.button', DOJO_BUNDLE),
 	        												function(actionMessageBox){
-	        													FirebugContext.window.location.reload();
+	        													Firebug.currentContext.window.location.reload();
 	        												});
 	        conMsgBox.loadMessageBox(true);
     	}
     },
     
     /**
-     * Update panel view.
+     * Update panel view. Main "render" panel method
      * @param panelConfig the configuration
      * @param context the FB context
      */
@@ -1009,7 +1115,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 	    var selection = context.dojoExtensionSelection;
 	    var dojoAccessor = getDojoAccessor(context);
 	    
-    	// Main panel view.
+    	//1st step: draw Main panel view.
     	if (panelConfig.refreshMainPanel){
     		// Clear the main panel
     		this.panelNode.innerHTML = "";
@@ -1017,7 +1123,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     		// Verify if the context is consistent.
     		this._showReloadBoxIfNeeded(context);
     		
-    		// Select the most suitable main panel to show the info about the object.
+    		// Select the most suitable main panel to show the info about the selection
     		
     		if (panelConfig.isViewSelected(PanelRenderConfig.VIEW_WIDGETS) || 
     			(!panelConfig.mainPanelView && dojoAccessor.isWidgetObject(selection))) {
@@ -1036,17 +1142,17 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 			}
 	    }
 	    
-    	// Highlight and Scroll the selection in the current view.
+    	// 2nd step: Highlight and Scroll the selection in the current view.
     	//FIXME why are we passing in 3 args if the target function receives only 2?
     	this.highlightSelection(selection, panelConfig.highlight, panelConfig.scroll);
     	
-    	// Side panel view
+    	// 3rd step: draw Side panel view
     	if (panelConfig.refreshSidePanel) {
 	    	var sidePanel = null;
     		if (panelConfig.sidePanelView) {
     			Firebug.chrome.selectSidePanel(panelConfig.sidePanelView);
 	    	} else {
-	    		// Select the most suitable side panel to show the info about the object.
+	    		// Select the most suitable side panel to show the info about the selection.
 				if (this._isConnection(selection)) {
 					Firebug.chrome.selectSidePanel(DojoExtension.ConnectionsSidePanel.prototype.name);
 				} else if(this._isSubscription(selection)){
@@ -1253,7 +1359,13 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 	   
 	    if(areThereAnyWidgets) {
 	    	// Function to show specific widget info.
-	    	var funcWidgetProperties = getDojoAccessor(context).getSpecificWidgetProperties;
+	    	//var funcWidgetProperties = getDojoAccessor(context).getSpecificWidgetProperties;
+			 // fn, thisObject, args => thisObject.fn(arguments, args);
+	    	var dojoAccessor = getDojoAccessor(context);
+	    	var fnGetHighLevelProps = dojoAccessor.getSpecificWidgetProperties;
+	    	
+	    	var funcWidgetProperties = bind(fnGetHighLevelProps, dojoAccessor, context);
+	    	
 	    	DojoReps.WidgetListRep.tag.append({object: widgets, propertiesToShow: funcWidgetProperties}, this.panelNode);
 	    } else {
 	    	DojoReps.Messages.infoTag.append({object: $STR('warning.nowidgets.msg1', DOJO_BUNDLE)}, this.panelNode);
@@ -1300,8 +1412,23 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	
     	// There are connections registered
     	if (cons.length > 0) {
-    	
 	    	var self = this;
+	    	
+    		var maxSuggestedConns = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_MAX_SUGGESTED_CONNECTIONS); 
+    		if(!context.dojo.showConnectionsAnyway && (cons.length > maxSuggestedConns)) {
+    	    	/* Warning message box *many* connections in page */
+    	        var manyConMsgBox = new ActionMessageBox("ManyConnsMsgBox", this.panelNode, 
+    	        												$STRF('warning.manyConnections', [ maxSuggestedConns ], DOJO_BUNDLE),
+    	        												$STR('warning.manyConnections.button', DOJO_BUNDLE),
+    	        												function(actionMessageBox){
+    	        													context.dojo.showConnectionsAnyway = true;
+    	        													self.showConnectionsInTable(context);
+    	        												});
+    	        manyConMsgBox.loadMessageBox(true);
+    	        return;
+    		}
+    		
+    		context.dojo.showConnectionsAnyway = undefined;
 	    	var sorterFunctionGenerator = function(criteriaPriorityArray){
 	    		return function(){
 	    			context.priorityCriteriaArray = criteriaPriorityArray;
@@ -1364,8 +1491,27 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	
     	// There are connections registered
     	var subs = context.connectionsAPI.getSubscriptions();
-    	if (subs.getValues().length > 0) {
-    		DojoReps.SubscriptionsRep.tag.append({object: subs}, this.panelNode);
+    	var len = subs.getValues().length; 
+    	if (len > 0) {
+    		
+    		var maxSuggestedSubs = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_MAX_SUGGESTED_SUBSCRIPTIONS); 
+    		if(!context.dojo.showSubscriptionsAnyway && (len > maxSuggestedSubs)) {
+    			var self = this;
+    	    	/* Warning message box *many* subscriptions in page */
+    	        var manySubsMsgBox = new ActionMessageBox("ManySubsMsgBox", this.panelNode, 
+    	        												$STRF('warning.manySubscriptions', [ maxSuggestedSubs ], DOJO_BUNDLE),
+    	        												$STR('warning.manySubscriptions.button', DOJO_BUNDLE),
+    	        												function(actionMessageBox){
+    	        													context.dojo.showSubscriptionsAnyway = true;
+    	        													self.showSubscriptions(context);
+    	        												});
+    	        manySubsMsgBox.loadMessageBox(true);
+    		
+    		} else {
+    			context.dojo.showSubscriptionsAnyway = undefined;
+    			DojoReps.SubscriptionsRep.tag.append({object: subs}, this.panelNode);
+    		}
+
     	} else {
     		DojoReps.Messages.infoTag.append({object: $STR('warning.noSubscriptionsRegistered', DOJO_BUNDLE)}, this.panelNode);
     	}
@@ -1422,10 +1568,14 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
     	var ctx = _safeGetContext(this);
     	var self = this;
     	var eventsRegistrator = new DojoModel.EventsRegistrator(ctx.connectionsAPI);
-    	var connectionsCounterGetter = function(){
-    		self._updateCounter(this.connectionCounterNode, ctx.connectionsAPI.getConnections().length);};
-    	var subscriptionsCounterGetter = function(){
-			self._updateCounter(this.subscriptionCounterNode, ctx.connectionsAPI.getSubscriptionsList().length);};
+    	var connectionsCounterGetter = function() {
+    		if(!ctx.connectionsAPI) return; 
+    		self._updateCounter(this.connectionCounterNode, ctx.connectionsAPI.getConnections().length);
+    	};
+    	var subscriptionsCounterGetter = function() {
+    		if(!ctx.connectionsAPI) return;
+    		self._updateCounter(this.subscriptionCounterNode, ctx.connectionsAPI.getSubscriptionsList().length); 
+    	};
     	eventsRegistrator.registerListenerForEvent(
     			[DojoModel.ConnectionsAPI.ON_CONNECTION_ADDED, DojoModel.ConnectionsAPI.ON_CONNECTION_REMOVED], connectionsCounterGetter);
     	eventsRegistrator.registerListenerForEvent(
@@ -1494,14 +1644,14 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
 		Firebug.DOMPanel.DirTable.tag.append({object: modPrefixes}, this.panelNode);
 
 		//Global connections count
-		var globalConnectionsCount = (context.connectionsAPI)?context.connectionsAPI.getConnections().length:0;
+		var globalConnectionsCount = (context.connectionsAPI) ? context.connectionsAPI.getConnections().length : 0;
 		DojoReps.CounterLabel.tag.append({label: $STR('conn.count.title', DOJO_BUNDLE),
 										  object: globalConnectionsCount, 
 										  counterLabelClass:"countOfConnectionLabel",
 										  counterValueId: this._connectionCounterId}, this.panelNode);
 		
 		//Global subscriptions count
-		var globalSubscriptionsCount = (context.connectionsAPI)?context.connectionsAPI.getSubscriptionsList().length:0;
+		var globalSubscriptionsCount = (context.connectionsAPI) ? context.connectionsAPI.getSubscriptionsList().length : 0;
 		DojoReps.CounterLabel.tag.append({label: $STR('subs.count.title', DOJO_BUNDLE),
 										  object: globalSubscriptionsCount, 
 										  counterLabelClass:"countOfSubscriptionLabel",
@@ -1716,7 +1866,8 @@ DojoExtension.DojoHTMLPanel.prototype = extend(Firebug.HTMLPanel.prototype,
  */
 DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 {
-
+	extensionLoaded: false, //if the extension has already registered its stuff.
+	
 	//FIXME this shouldn't be here! model doesn't need to know the view! 
 	//should base on listeners..
 	_getDojoPanel: function(context) {
@@ -1726,7 +1877,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     initialize: function() {
 		Firebug.ActivableModule.initialize.apply(this, arguments);
 
-        if (Firebug.Debugger) {
+		
+        if (this.isExtensionEnabled() && Firebug.Debugger) {
     		Firebug.Debugger.addListener(this);
         }
     },
@@ -1742,7 +1894,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         Firebug.ActivableModule.initContext.apply(this, arguments);
         var dojoAccessor = new DojoModel.DojoAccessor();
 
-		// Save the initial extension preferences values.
+		// Save extension's initial preferences values.
         context.initialConfig = {
         		hashCodeBasedDictionaryImplementationEnabled: _isHashCodeBasedDictionaryImplementationEnabled(),
         		breakPointPlaceSupportEnabled: !_isBreakPointPlaceSupportDisabled(),
@@ -1754,7 +1906,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         								new ObjectMethodProxierDirectAccessBased();
 
         context.dojo = { 
-        		mainMenuSelectedOption: SHOW_WIDGETS,
+        		mainMenuSelectedOption: SHOW_WIDGETS,        	
         		dojoAccessor: dojoAccessor,
         		dojoDebugger: new DojoModel.DojoDebugger(dojoAccessor)
         };
@@ -1779,6 +1931,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     	delete context.connectionsAPI;
     },
     
+    
     /**
      * Called after a context's page gets DOMContentLoaded
      */
@@ -1791,6 +1944,25 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 	    	panel.showInitialView(context);
     	}
     	
+    	var testVarFn = function() {
+    		alert("testVarFn!");
+    		return 1;
+    	};
+    	var exposed = testVarFn.__exposedProps__ || {};
+		exposed.apply = "r";
+		exposed.call = "r";
+		if(!testVarFn.__exposedProps__) {
+			testVarFn.__exposedProps__ = exposed;
+		}		    	
+		
+		var doc = unwrapObject(context.window).document; 
+		
+		document.testVarFn = testVarFn;
+    	
+		document.testObj = { test: 1 };
+		//document.testObj.__defineGetter__("", );
+    	
+    	
     },
     
     /**
@@ -1802,9 +1974,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     	// this test on name is a sign that this code belongs in panel.show()
 		var isdojofirebugextensionPanel = panel && panel.name == "dojofirebugextension";
         var dojofirebugextensionButtons = browser.chrome.$("fbdojofirebugextensionButtons");
-        collapse(dojofirebugextensionButtons, !isdojofirebugextensionPanel);
-
-        //if (!isdojofirebugextensionPanel) {return;}                              
+        collapse(dojofirebugextensionButtons, !isdojofirebugextensionPanel);                              
     },
 
     /**
@@ -1840,18 +2010,21 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
      * This way, we can detect when dojo.js is loaded and take action. 
      */
     onSourceFileCreated : function (context, sourceFile) {
-    	var panelIsEnable = Firebug.getPref("extensions.firebug.dojofirebugextension", "enableSites");
-        if (panelIsEnable) {
+    	//var panelIsEnable = Firebug.getPref("extensions.firebug.dojofirebugextension", "enableSites");
+    	var panelIsEnable = this.isExtensionEnabled();
+    	
+    	if (panelIsEnable) {
+    		
 	       var href = sourceFile.href;
 		   
 		   var dojo = DojoAccess._dojo(context);
 		   if (!context.connectHooked && dojo && dojo.connect) {
 			   context.connectHooked = true;
-			   
-			   context.objectMethodProxier.proxyFunction(dojo, "_connect", null, this._proxyConnect(context));
-			   context.objectMethodProxier.proxyFunction(dojo,  "disconnect", this._proxyDisconnect(context), null);
-			   context.objectMethodProxier.proxyFunction(dojo,  "subscribe", null, this._proxySubscribe(context));
-			   context.objectMethodProxier.proxyFunction(dojo, "unsubscribe", this._proxyUnsubscribe(context), null);
+		   
+			   context.objectMethodProxier.proxyFunction(context, dojo, "dojo", 5, "_connect", null, this._proxyConnect(context));
+			   context.objectMethodProxier.proxyFunction(context, dojo, "dojo", 1, "disconnect", this._proxyDisconnect(context), null);
+			   context.objectMethodProxier.proxyFunction(context, dojo, "dojo", 3, "subscribe", null, this._proxySubscribe(context));
+			   context.objectMethodProxier.proxyFunction(context, dojo, "dojo", 1, "unsubscribe", this._proxyUnsubscribe(context), null);
 			   
 			   // FIXME[BugTicket#91]: Replace this hack fix for a communication mechanism based on events.
 			   this._protectProxy(context, '_connect', 'disconnect', 'subscribe', 'unsubscribe');
@@ -1861,7 +2034,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 		   if (context.connectHooked && (!context.connectREHOOKED) && !DojoModel.isDojoExtProxy(dojo._connect) && !dojo._connect._listeners) {
 			   context.connectREHOOKED = true;
 			   
-			   context.objectMethodProxier.proxyFunction(dojo, "_connect", null, this._proxyConnect(context));
+			   context.objectMethodProxier.proxyFunction(context, dojo, "dojo", 5, "_connect", null, this._proxyConnect(context));
 				
 			   // FIXME[BugTicket#91]: Replace this hack fix for a communication mechanism based on events.
 			   this._protectProxy(context, "_connect");
@@ -1873,19 +2046,68 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 	/**
 	 * This function is a hack that wrap the proxies to avoid errors happen when the 
 	 * property __parent__ are invoked for the functions.
+	 * @param context
+	 * @param fnNames remaining args are assumed to be function names
 	 */
 	_protectProxy : function(context){
 		var dojo = DojoAccess._dojo(context);
+
 		var f = function(){};
 		f.internalClass = 'dojoext-added-code';
+		f.internaldesc = 'dojoext-protectProxt__parent__';
+		_addMozillaExecutionGrants(f);
 		for (var i = 1; i < arguments.length; i++) {
 			dojo.connect(dojo, arguments[i], f);
 		}
+
+		
+	/* 
+	    //alternative code based on "eval" run on web page 
+		var a = arguments;
+		var clientDefenseFn = "var f = function() {}; f.internalClass = 'dojoext-added-code'; f.internaldesc = 'dojoext-protectProxt__parent__';";
+
+		var fnNames = "var names = [";	
+		for (var i = 1; i < a.length - 1; i++) {
+			fnNames += "'" + a[i] + "',";
+		}		
+		fnNames += "'" + a[a.length-1] + "'];";
+		
+		Firebug.Console.log(fnNames, context);
+		
+		var connectLogic = "for (var i = 0; i < names.length; i++) { dojo.connect(dojo, names[i], f); }";
+		
+		var evalExp = clientDefenseFn + fnNames + connectLogic + "\n";		
+		
+		Firebug.Console.log(evalExp, context);
+
+		if(FBTrace.DBG_DOJO_DBG) {  				
+			FBTrace.sysout("DOJO DEBUG: about to exec protectingProxy evaluate expr");
+		}
+
+		
+		Firebug.CommandLine.evaluate(evalExp, context);
+		
+		if(FBTrace.DBG_DOJO_DBG) {  				
+			FBTrace.sysout("DOJO DEBUG: protectingProxy. Args: ", a);
+			FBTrace.sysout("DOJO DEBUG: protectingProxy. Eval'd expr: ", evalExp);
+		}
+	*/
+		
+		/*
+		//this is privileged code. It's better to wrap the fns with client code.
+		var f = function(){};
+		f.internalClass = 'dojoext-added-code';
+		f.internaldesc = 'dojoext-protectProxt__parent__';
+
+		for (var i = 1; i < arguments.length; i++) {
+			dojo.connect(dojo, arguments[i], f);
+		}
+		*/
 	},
 
     _proxyConnect : function(context){
 		var dojo = DojoAccess._dojo(context);  
-		var self = this;
+
 		var dojoDebugger = getDojoDebugger(context);
 		return (function(ret, args){
 				   
@@ -1894,8 +2116,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 					   return ret; 
 				   }
 			
-				   var obj =  args[0] || dojo.global;
-		   		   var event = args[1];
+				   var obj =  unwrapObject(args[0] || dojo.global);
+		   		   var event = unwrapObject(args[1]);
 
 			   		/* The context parameter could be null, in that case it will be determined according to the dojo.hitch implementation.
 			   		 * See the dojo.hitch comment at [dojo directory]/dojo/_base/lang.js and 
@@ -1907,14 +2129,15 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 		   					handlerContext = obj;
 		   			   } else {
 		   					handlerContext = dojo.global;
-		   			   }
+		   			   }		   		
 		   		   }
+		   		   handlerContext = unwrapObject(handlerContext);
 		   		   
-		   		   var method = args[3];
-		   		   var dontFix = (args.length>=5) ? args[4] : null;
+		   		   var method = unwrapObject(args[3]);
+		   		   var dontFix = unwrapObject((args.length >= 5 && args[4]) ? args[4] : null);
 
 		   		   var callerInfo = (context.initialConfig.breakPointPlaceSupportEnabled) ? dojoDebugger.getDebugInfoAboutConnectCaller(context) : null;
-				   
+				   		   		   
 		   		   context.connectionsAPI.addConnection(obj, event, handlerContext, method, dontFix, ret, callerInfo);
 				   return ret;
 				});
@@ -1923,8 +2146,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
    
    _proxyDisconnect : function(context){
 	   var dojo = DojoAccess._dojo(context);
-	   return (function(disc){
-	   				context.connectionsAPI.removeConnection(disc);
+	   return (function(handle){
+	   				context.connectionsAPI.removeConnection(unwrapObject(handle));
 	   	   	  });
    },
 
@@ -1933,21 +2156,61 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 	   var dojoDebugger = getDojoDebugger(context);
 	   return (function(ret, args){
 			   		var callerInfo = (context.initialConfig.breakPointPlaceSupportEnabled) ? dojoDebugger.getDebugInfoAboutSubscribeCaller(context) : null;
-			   		var method = (args[2]) ? args[2] : args[1];
-			   		var scope = (args[2]) ? args[1] : null;
+			   		var method = unwrapObject((args[2]) ? args[2] : args[1]);
+			   		var scope = unwrapObject((args[2]) ? args[1] : null);
 			   		if (!scope) {
 			   			scope = (typeof(method) == 'string') ? dojo.global : dojo;
 			   		}
-			   		context.connectionsAPI.addSubscription(args[0], scope, method, ret, callerInfo);
+			   		
+			   		var topic = unwrapObject(args[0]);
+			   		context.connectionsAPI.addSubscription(topic, scope, method, ret, callerInfo);
 			   		return ret;
 		   	   });
    },
   
    _proxyUnsubscribe : function(context){
 	   var dojo = DojoAccess._dojo(context);
-	   return (function(disc){
-		   			context.connectionsAPI.removeSubscription(disc);
+	   return (function(handle){
+		   			context.connectionsAPI.removeSubscription(unwrapObject(handle));
 		   	   });
+   },
+   
+   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+   // Activation logic
+   
+   onObserverChange: function(observer) {
+	   Firebug.ActivableModule.onObserverChange.apply(this, arguments);
+	   
+	   if(!this.hasObservers()) {
+		   this.disableExtension();
+	   } else {
+		   this.enableExtension();
+	   }
+   },
+   
+   isExtensionEnabled: function() {
+	   return Firebug.getPref("extensions.firebug.dojofirebugextension", "enableSites");
+   },
+   
+   enableExtension: function() {
+	   if(this.extensionLoaded)
+		   return;
+	   
+	   
+	   DojoReps.registerReps();
+
+	   //last step
+	   this.extensionLoaded = true;
+   },
+   
+   disableExtension: function() {
+	   if(!this.extensionLoaded)
+		   return;
+	   
+	   DojoReps.unregisterReps();
+	   
+	   //last step
+	   this.extensionLoaded = false;
    },
    
    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1981,7 +2244,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 	   return this._getDojoPanel(context).supportsObject(elt);
    }
 	*/
-    
+   
+   
 });
 
  /***********************************************************************************************************************/
@@ -1994,5 +2258,5 @@ Firebug.registerPanel(DojoExtension.ConnectionsSidePanel);
 Firebug.registerPanel(DojoExtension.SubscriptionsSidePanel);
 Firebug.registerPanel(DojoExtension.DojoDOMSidePanel);
 Firebug.registerPanel(DojoExtension.DojoHTMLPanel);
-//Firebug.registerStylesheet("chrome://dojofirebugextension/skin/dojofirebugextension.css");
+Firebug.registerStylesheet("chrome://dojofirebugextension/skin/dojofirebugextension.css");
 }});

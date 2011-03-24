@@ -17,15 +17,23 @@ var DojoAccess = FBL.ns(function() { with (FBL) {
 	//FIXME: This way of access objects is unsecure. Decouple communication with page and implement a secure mechanism.
     var _dojo = this._dojo = function(context) {
     	//UNSECURE
-    	//FIXME remove use of wrappedJSObject. Use unwrapObject() fn instead.
-    	return (context.window && context.window.wrappedJSObject.dojo) ? context.window.wrappedJSObject.dojo : null;
+    	if(!context.window)
+    		return null;
+    	
+    	return unwrapObject(context.window).dojo || null;
+    	
+    	//return (context.window && unwrapObject(context.window).dojo) ? unwrapObject(context.window).dojo : null;
     };
     
     //FIXME: (idem _dojo) This way of access objects is unsecure. Decouple communication with page and implement a secure mechanism.
     var _dijit = function(context) {
     	//UNSECURE
-    	//FIXME remove use of wrappedJSObject. Use unwrapObject() fn instead.
-    	return (context.window && context.window.wrappedJSObject.dijit) ? context.window.wrappedJSObject.dijit : null;
+    	if(!context.window)
+    		return null;
+
+    	return unwrapObject(context.window).dijit || null;
+    	
+    	//return (context.window && unwrapObject(context.window).dijit) ? unwrapObject(context.window).dijit : null;
     };
  
 
@@ -126,7 +134,8 @@ DojoModel.DojoAccessor.prototype =
 		},
 		
 		/**
-		 * returns an int that is the stacktrace depth to use to find the caller of connect
+		 * returns an int which is the stacktrace depth to use to find the caller 
+		 * (in web page stack trace) of a "connect" invocation
 		 * on this dojo version
 		 * @param context
 		 * @return int
@@ -137,10 +146,10 @@ DojoModel.DojoAccessor.prototype =
 			 * Example valid for dojo > 1.4
 			 * 'connect place' -> dojo.connect impl -> (_connect wrapper from _Widget) -> our proxy (2 frames in stack) -> dojo._connect impl
 			 */
-						
+									
 			//has the "_connect" fn been wrapped? If wrapped , we need to add one level to the depth
 			var stackDepth = (_dojo(context)._connect._listeners) ? 2 : 1;
-			
+						
 			//ok, now...has the "connect" fn also been wrapped?
 			stackDepth += ((_dojo(context).connect._listeners)? 1 : 0);
 			
@@ -148,13 +157,14 @@ DojoModel.DojoAccessor.prototype =
 		},
 		
 		/**
-		 * returns an int that is the stacktrace depth to use to find the caller of subscribe
+		 * returns an int which is the stacktrace depth to use to find the caller 
+		 * (in web page stack trace) of a "subscribe" invocation
 		 * on this dojo version
 		 * @param context
 		 * @return int
 		 */
 		/*int*/getStackTraceDepthForSubscribe: function(/*fbug context*/context) {
-			return ((_dojo(context).subscribe._listeners)? 1 : 0);
+			return (_dojo(context).subscribe._listeners) ? 1 : 0;
 		},
 		
 		/**
@@ -183,9 +193,15 @@ DojoModel.DojoAccessor.prototype =
 		
 		_toArray: function(/*WidgetSet*/ registry) {
 			var ar = [];
-			registry.forEach(function(elem) {
-				ar.push(elem);
-			});
+			//FIXME potential Xray issue
+//			registry.forEach(function(elem) {
+//				ar.push(elem);
+//			});
+			var hash = registry._hash;
+			var ar = [];
+			for(var id in hash){
+				ar.push(hash[id]);
+			}			
 			return ar;
 		},
 		
@@ -226,14 +242,18 @@ DojoModel.DojoAccessor.prototype =
 		},
 		
 		/**
-		 * returns specific widget properties.
+		 * returns "high-level" specific widget properties.
 		 * @param widget the widget
 		 * @return an object with the specific widget properties.
 		 */
-		/*Object*/getSpecificWidgetProperties: function(widget) {
+		/*Object*/getSpecificWidgetProperties: function(widget, context) {
+			var dojo = _dojo(context);
 			var props = {};
+
 			/* Declared Class */
-			props['declaredClass'] = widget['declaredClass'];
+			//props['declaredClass'] = widget['declaredClass'];
+			var declaredClassName = this._getDeclaredClassName(widget);
+			props['declaredClass'] = dojo.getObject(declaredClassName);
 			
 			/* Dom Node */
 			props['domNode'] = widget['domNode'];
@@ -383,6 +403,9 @@ Version.prototype = {
 		
 };
 var HeadVersion = function() {
+	//call super constructor
+	Version.apply(this);
+	
 	this.isHead = true;
 };
 HeadVersion.prototype = extend(Version.prototype, {

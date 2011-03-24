@@ -17,7 +17,7 @@ function runTest() {
 		    	FBTest.progress("pageInitialNumberOfSubscriptions: " + pageInitialNumberOfSubscriptions);
 		    	
 				var panel = FW.FirebugChrome.selectPanel("dojofirebugextension"); //get our panel
-				var context = FW.FirebugContext; //context!
+				var context = FW.Firebug.currentContext; //context!
 				var dijit = win.dijit;
 				
 				var api = context.connectionsAPI;
@@ -55,7 +55,7 @@ function runTest() {
 		    } catch (err) {
 		        FBTest.exception("Test: ", err);
 		    } finally {
-		    	//FW.FirebugContext.connectionsAPI.destroy();
+		    	//FW.Firebug.currentContext.connectionsAPI.destroy();
 		        FBTest.testDone();
 		    }
 	    });

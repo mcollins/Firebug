@@ -18,7 +18,7 @@ function runTest()
 
 	    try {
 	    	var panel = FW.FirebugChrome.selectPanel("dojofirebugextension"); //get our panel
-	    	var context = FW.FirebugContext; //context!
+	    	var context = FW.Firebug.currentContext; //context!
 	    	var widgets = panel.getWidgets(context); //method being tested
 
 	    	/*
