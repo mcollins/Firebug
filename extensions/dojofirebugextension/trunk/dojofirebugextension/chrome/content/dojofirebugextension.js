@@ -19,9 +19,9 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	var VERSION = "1.0a7";
 
 	//constants for dojo extension Preferences
-	var DOJO_PREF_MAP_IMPL = "dojofirebugextension.hashCodeBasedDictionaryEnabled";
+	var DOJO_PREF_MAP_IMPL = "dojofirebugextension.useHashCodes";
 	var DOJO_PREF_BP_PLACE = "dojofirebugextension.breakPointPlaceDisabled";
-	var DOJO_PREF_EVENT_BASED_PROXY_ENABLED = "dojofirebugextension.useEventBasedProxy";
+	var DOJO_PREF_EVENT_BASED_PROXY_ENABLED = "dojofirebugextension.useHTMLEventBasedProxy";
 	var DOJO_PREF_MAX_SUGGESTED_CONNECTIONS = "dojofirebugextension.maxAllowedNumberOfConnectionsInTable";
 	var DOJO_PREF_MAX_SUGGESTED_SUBSCRIPTIONS = "dojofirebugextension.maxAllowedNumberOfSubscriptionsInTable";
 	
@@ -102,14 +102,6 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     };
     
     /**
-     * toggle the map implementation in use (performance vs non-intrusive implementations).
-     */
-    var _switchMapImplementation = function(){
-    	var currentValue = _isHashCodeBasedDictionaryImplementationEnabled();
-    	Firebug.setPref(Firebug.prefDomain, DOJO_PREF_MAP_IMPL, !currentValue);
-    };
-    
-    /**
      * verify if the breakpoint place support is enabled.
      */
     var _isBreakPointPlaceSupportDisabled = function(){
@@ -132,15 +124,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     	var value = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_EVENT_BASED_PROXY_ENABLED);
     	return value;
     };
-    
-    /**
-     * enable/disable the html event based communication mechanism.
-     */
-    var _switchUseEventBasedProxy = function(){
-    	var currentValue = _isUseEventBasedProxyEnabled();
-    	Firebug.setPref(Firebug.prefDomain, DOJO_PREF_EVENT_BASED_PROXY_ENABLED, !currentValue);
-    };
-    
+        
     var _setNeedsReload = function(context, flag) {
     	context.needReload = flag;
     };
@@ -1265,9 +1249,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	        { label: $STR('label.Connections', DOJO_BUNDLE), nol10n: true, type: 'checkbox', checked: this._isOptionSelected(SHOW_CONNECTIONS_TABLE, context), command: bindFixed(this.showConnectionsInTable, this, context)  },
     	        { label: $STR('label.Subscriptions', DOJO_BUNDLE), nol10n: true, type: 'checkbox', checked: this._isOptionSelected(SHOW_SUBSCRIPTIONS, context), command: bindFixed(this.showSubscriptions, this, context)  },
     	        "-",
-    	        { label: $STR('label.HashCodeBasedDictionary', DOJO_BUNDLE), nol10n: true, type: 'checkbox', checked: _isHashCodeBasedDictionaryImplementationEnabled(), command: bindFixed(this._switchConfigurationSetting, this, _switchMapImplementation, context) },
     	        { label: $STR('label.BreakPointPlaceEnable', DOJO_BUNDLE), nol10n: true, type: 'checkbox', disabled: _isUseEventBasedProxyEnabled(), checked: !_isBreakPointPlaceSupportDisabled(), command: bindFixed(this._switchConfigurationSetting, this, _switchBreakPointPlaceEnabled, context) },
-    	        { label: $STR('label.UseEventBasedProxy', DOJO_BUNDLE), nol10n: true, type: 'checkbox', disabled:!_isBreakPointPlaceSupportDisabled(), checked: _isUseEventBasedProxyEnabled(), command: bindFixed(this._switchConfigurationSetting, this, _switchUseEventBasedProxy, context) },
     	        "-",
     	        { label: $STR('label.About', DOJO_BUNDLE), nol10n: true, command: bindFixed(this.showAbout, this) },
     	        "-",
@@ -2014,9 +1996,14 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     	var panelIsEnable = this.isExtensionEnabled();
     	
     	if (panelIsEnable) {
-    		
+    	  	
 	       var href = sourceFile.href;
-		   
+		  
+	       if(FBTrace.DBG_DOJO_DBG) {
+	    	   FBTrace.sysout("onSourceFileCreated: " + href);
+	       }
+	       
+	       
 		   var dojo = DojoAccess._dojo(context);
 		   if (!context.connectHooked && dojo && dojo.connect) {
 			   context.connectHooked = true;
