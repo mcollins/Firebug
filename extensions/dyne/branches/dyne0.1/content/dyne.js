@@ -86,7 +86,7 @@ Firebug.Dyne = extend(Firebug.Module,
             catch(exc)
             {
                 if (FBTrace.DBG_ERRORS)
-                    FBTrace.sysout("editor.startEditing ERROR "+exc, {name: Firebug.ScriptPanel.getCurrentEditorName(), currentEditor: this.currentJSEditor, location: panel.location});
+                    FBTrace.sysout("editor.startEditing ERROR "+exc, {exc: exc, name: Firebug.ScriptPanel.getCurrentEditorName(), currentEditor: this.currentJSEditor, location: panel.location});
             }
         }
     },
@@ -378,7 +378,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         {
             this.currentEclipse = win;
             if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse);
+                FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse.location, this.currentEclipse);
             var topContainer = win.dijit.byId('topContainer');
             if (FBTrace.DBG_DYNE)
                 FBTrace.sysout("dyne.integrateOrion topContainer: "+topContainer, topContainer);
@@ -398,6 +398,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         catch(exc)
         {
             FBTrace.sysout("dyne.integrateOrion ERROR: "+exc, exc);
+            this.panelNode.removeChild(this.selectedOrionBox);
+            delete this.location;
+            delete this.selectedOrionBox;
         }
     },
 
@@ -516,6 +519,8 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         }
         Firebug.Dyne.saveEditing = Firebug.Dyne.noActiveEditor;
 
+        collapse(this.loadingBox, true);
+
         delete this.infoTipURL;  // clear the state that is tracking the infotip so it is reset after next show()
         this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
     },
@@ -556,7 +561,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     addEditURLByFileURL: function(editLink)
     {
-        editLink.editURL = "http://localhost:8080/coding.html#http://localhost:8080/file/C/blank.html";
+        editLink.editURL = "http://localhost:8080/coding.html";
         return;
         var url = editLink.originURL;
         var unslash = url.split('/');
@@ -816,6 +821,95 @@ Firebug.Dyne.LocalSaver.prototype =
 
 
 // ************************************************************************************************
+
+Firebug.Dyne.MetaOrionPanel = function metaOrionPanel() {};
+Firebug.Dyne.MetaOrionPanel.prototype = extend(Firebug.Panel,
+{
+    name: "metaorion",
+    title: "MetaOrion",
+    searchable: false, // TODO
+    breakable: false,
+    enableA11y: false, // TODO
+    order: 70,
+
+
+    show: function(state)
+    {
+        if (this.setMetaOrionEditorObject(this.context))
+        {
+
+        }
+        else
+        {
+            this.activeWarningTag = Firebug.Dyne.WarningRep.showNotOrion(this.panelNode);
+            return;
+        }
+
+    },
+
+    setMetaOrionEditorObject: function(context)
+    {
+        if (context.window.wrappedJSObject.dijit)
+        {
+            this.metaOrion = {};
+            var win = context.window.wrappedJSObject;
+            this.metaOrion.topContainer = win.dijit.byId('topContainer');
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.integrateOrion topContainer: "+this.metaOrion.topContainer, this.metaOrion.topContainer);
+            if (this.metaOrion.topContainer)
+                this.metaOrion.editor = this.metaOrion.topContainer._editorContainer._editor;
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.integrateOrion editor "+this.metaOrion.editor, this.metaOrion.editor);
+            if (this.metaOrion.editor)
+                return this.metaOrion.editor;
+        }
+        return false;
+    },
+
+    hide: function(state)
+    {
+
+        if (this.activeWarningTag)
+        {
+            clearNode(this.panelNode);
+            delete this.activeWarningTag;
+        }
+    },
+});
+
+Firebug.Dyne.WarningRep = domplate(Firebug.Rep,
+{
+    tag:
+        DIV({"class": "disabledPanelBox"},
+            H1({"class": "disabledPanelHead"},
+                SPAN("$pageTitle")
+            ),
+            P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
+                SPAN("$suggestion")
+            )
+        ),
+
+    showNotOrion: function(parentNode)
+    {
+        var args = {
+            pageTitle: $STR("dyne.warning.not_Orion"),
+            suggestion: "<a>Orion</a>, developing for the web, in the web."
+        }
+
+        var box = this.tag.replace(args, parentNode, this);
+        var description = box.querySelector(".disabledPanelDescription");
+        FirebugReps.Description.render(args.suggestion, description,
+            bind(this.openOrionSite, this));
+
+        return box;
+     },
+
+     openOrionSite: function()
+     {
+         Firebug.currentContext.window.location = "http://wiki.eclipse.org/Orion";
+     },
+
+});
 // ************************************************************************************************
 // Registration
 
@@ -823,6 +917,7 @@ Firebug.registerStylesheet("chrome://dyne/skin/dyne.css");
 
 Firebug.registerModule(Firebug.Dyne);
 Firebug.registerPanel(Firebug.Dyne.OrionPanel);
+Firebug.registerPanel(Firebug.Dyne.MetaOrionPanel);
 
 
 // ************************************************************************************************
