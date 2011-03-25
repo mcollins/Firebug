@@ -106,5 +106,5 @@ function detachFirebug()
     if (FW.Firebug.isDetached())
         return null;
 
-    return FW.Firebug.detachBar(FW.FirebugContext);
+    return FW.Firebug.detachBar(FW.Firebug.currentContext);
 }

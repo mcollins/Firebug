@@ -17,7 +17,7 @@ function runTest()
             {
                 FBTest.progress("issue2558; Halted on debugger keyword.");
                 FW.FirebugChrome.selectSidePanel("watches");
-                var watchPanel = FW.FirebugContext.getPanel("watches", true);
+                var watchPanel = FW.Firebug.currentContext.getPanel("watches", true);
                 FBTest.ok(watchPanel, "The watch panel must be there");
 
                 // 4) Create new watch expression 'arguments'.

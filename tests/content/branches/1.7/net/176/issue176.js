@@ -20,7 +20,7 @@ function runTest()
                 var panel = FW.FirebugChrome.selectPanel("net");
 
                 // Set "Flash" filter and wait for relayout.
-                FW.Firebug.NetMonitor.onToggleFilter(FW.FirebugContext, "flash");
+                FW.Firebug.NetMonitor.onToggleFilter(FW.Firebug.currentContext, "flash");
                 setTimeout(checkNetPanelUI, 300);
             });
 
@@ -63,6 +63,6 @@ function checkNetPanelUI()
             file.href);
     }
 
-    FW.Firebug.NetMonitor.onToggleFilter(FW.FirebugContext, "all");
+    FW.Firebug.NetMonitor.onToggleFilter(FW.Firebug.currentContext, "all");
     FBTestFirebug.testDone("issue1256.DONE");
 }

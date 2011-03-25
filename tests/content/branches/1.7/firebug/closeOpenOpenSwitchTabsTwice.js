@@ -47,19 +47,19 @@ function runTest()
             checkIconOn('script');
             checkIconOn('net');
 
-            FBTest.compare(openedPage, FW.FirebugContext.getName(), "The context should be "+openedPage);
+            FBTest.compare(openedPage, FW.Firebug.currentContext.getName(), "The context should be "+openedPage);
 
             var alsoOpened = basePath+"firebug/AlsoOpenFirebugOnThisPage.html";
             FBTestFirebug.openNewTab(alsoOpened, function(win)
             {
                 FBTest.progress("Also open Firebug on "+alsoOpened);
                 FBTestFirebug.openFirebug();
-                FBTest.compare(alsoOpened, FW.FirebugContext.getName(), "The context should be "+alsoOpened);
+                FBTest.compare(alsoOpened, FW.Firebug.currentContext.getName(), "The context should be "+alsoOpened);
 
                 FBTest.progress("Switch Back to a tab that had Firebug open");
                 tabbrowser.selectedTab = theFirebuggedTab;
                 FBTest.ok(FBTestFirebug.isFirebugOpen(), "Firebug UI must be opened now.");
-                FBTest.compare(openedPage, FW.FirebugContext.getName(), "The context should be "+openedPage);
+                FBTest.compare(openedPage, FW.Firebug.currentContext.getName(), "The context should be "+openedPage);
 
                 FBTestFirebug.testDone("closeOpenOpenSwitchTabsTwice.DONE");
             });
