@@ -109,6 +109,8 @@ function windowEvalScriptDebugger()
 {
     var script = "function bar4()\n{\n   debugger;   /*@debuggerScriptRow - don't remove this comment*/\n}\nbar4();";
     window.eval(script);
+
+
     eval(script);
 }
 
