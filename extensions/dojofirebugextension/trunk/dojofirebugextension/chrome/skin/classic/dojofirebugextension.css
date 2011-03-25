@@ -322,3 +322,13 @@
 	background-repeat:no-repeat;
 	background-position:center;
 }
+
+/*************************************************************************************************/
+/* Firefox context menu */
+
+
+#menu_dojofirebugextension_inspect {
+    list-style-image: url(chrome://dojofirebugextension/skin/dojo-logo-icon.png);
+}
+
+/*************************************************************************************************/

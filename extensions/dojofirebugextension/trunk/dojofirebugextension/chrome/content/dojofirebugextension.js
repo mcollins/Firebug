@@ -842,7 +842,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     
     searchable: true,
     inspectable: true,
-    inspectOnlySupportedObjects: true, //DEPRECATED
+    inspectHighlightColor: "green",
     editable: false,
 
     /**
@@ -907,6 +907,26 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     		return (widget === selection);
     	});		
 	},
+	
+	// **********  Inspector related methods ************************
+	
+    /**
+     * Highlight a node using the frame highlighter.
+     * Overridden here to avoid changing dojo extension panel contents all the time.  
+     * @param {Element} node The element to inspect
+     */
+	inspectNode: function(node) {
+		return false;
+	},
+	
+	stopInspecting: function(node, canceled) {
+		if (canceled)
+            return;
+
+		this.select(node);		
+	},
+	
+	// **********  end of Inspector related methods ************************
 	
 	/**
      * @state: persistedPanelState plus non-persisted hide() values 
@@ -1156,7 +1176,12 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	var ctx = _safeGetContext(this);
     	if (this.supportsActualObject(ctx, object) == 0) {
     		var dojoAccessor = getDojoAccessor(ctx);
-    		this.select(dojoAccessor.getEnclosingWidget(ctx, object));
+    		var widget = dojoAccessor.getEnclosingWidget(ctx, object);
+    		if(!widget) {
+    			return;
+    		}
+    		this.select(widget);
+
     	} else {
     	
 	    	Firebug.ActivablePanel.updateSelection.call(this, object);
@@ -1867,8 +1892,48 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         if (this.isExtensionEnabled() && Firebug.Debugger) {
     		Firebug.Debugger.addListener(this);
         }
+        
+        this._registerContextMenuListener();
+    },
+    
+    _registerContextMenuListener: function() {
+    	var contextMenu = document.getElementById("contentAreaContextMenu");
+    	if (contextMenu) {
+    		contextMenu.addEventListener("popupshowing", this._onContentAreaContextMenuShowing, false);
+    	}
+    },
+    
+    _onContentAreaContextMenuShowing: function(event) {
+    	var inspectItem = document.getElementById("menu_dojofirebugextension_inspect");
+
+    	var elt = document.popupNode;
+    	var context = Firebug.TabWatcher.getContextByWindow(elt.ownerDocument.defaultView);
+    	var dojo = DojoAccess._dojo(context);
+    	var disabledValue = false;
+    	if(!dojo) {
+    		inspectItem.hidden = true;
+    	} else {
+    		var isElemSupported = DojoExtension.dojofirebugextensionModel._getDojoPanel(context).supportsObject(elt);
+    		inspectItem.hidden = !isElemSupported;
+    	}    
     },
 
+    /**
+     * inspector related method
+     */
+    inspectFromContextMenu: function(elt) {
+        var panel, inspectingPanelName;
+        var context = Firebug.TabWatcher.getContextByWindow(elt.ownerDocument.defaultView);
+
+        inspectingPanelName = "dojofirebugextension";
+
+        Firebug.toggleBar(true, inspectingPanelName);
+        Firebug.chrome.select(elt, inspectingPanelName);
+
+        panel = Firebug.chrome.selectPanel(inspectingPanelName);
+        panel.panelNode.focus();
+    },
+    
     shutdown: function() {
         Firebug.ActivableModule.shutdown.apply(this, arguments);
         if (Firebug.Debugger) {
@@ -2213,28 +2278,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
            extension: "dojofirebugextension",
            testListURL: "chrome://dojofirebugextension/content/fbtest/testlists/testList.html"
        });
-   }/*,
-   
-   
-   inspectFromContextMenu: function(elt)
-   {
-       var panel, inspectingPanelName;
-       var context = Firebug.TabWatcher.getContextByWindow(elt.ownerDocument.defaultView);
-
-       inspectingPanelName = "dojofirebugextension";
-
-       Firebug.toggleBar(true, inspectingPanelName);
-       Firebug.chrome.select(elt, inspectingPanelName);
-
-       panel = Firebug.chrome.selectPanel(inspectingPanelName);
-       panel.panelNode.focus();
-   },
-   
-   canInspect: function(context, elt)
-   {
-	   return this._getDojoPanel(context).supportsObject(elt);
    }
-	*/
    
    
 });

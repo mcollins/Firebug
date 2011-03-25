@@ -9,3 +9,5 @@
 
 <!ENTITY  dojo.subscriptions.label         "All subscriptions">
 <!ENTITY  dojo.subscriptions.tooltip       "View all subscriptions">
+
+<!ENTITY  window.contextmenuitem.inspect       "Inspect in Dojo panel">

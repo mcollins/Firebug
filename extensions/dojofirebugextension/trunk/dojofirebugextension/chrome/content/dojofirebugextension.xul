@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 
+<?xml-stylesheet href="chrome://dojofirebugextension/skin/dojofirebugextension.css"?>
+
 <!DOCTYPE dojoDTD SYSTEM "chrome://dojofirebugextension/locale/dojo.dtd">
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
@@ -15,18 +17,16 @@
 	</stringbundleset>
 
     <!-- Firefox page context menu -->
-<!--    
     <menupopup id="contentAreaContextMenu">
-        <menuitem id="menu_dojofirebugextension_inspect" label="firebug.InspectElement"
-                  command="cmd_dojofirebugextension_inspect" class="menuitem-iconic fbInternational" disabled="!listener.fnExists" />
-    </menupopup>
--->    
+        <menuitem id="menu_dojofirebugextension_inspect" insertafter="menu_firebugInspect" label="&window.contextmenuitem.inspect;"
+                  command="cmd_dojofirebugextension_inspect" class="menuitem-iconic fbInternational" />
+    </menupopup>    
 
     <commandset id="mainCommandSet">
-        <command id="cmd_dojofirebugextensionGetDojoWidgetButton" oncommand="DojoExtension.dojofirebugextensionModel.onShowWidgetsButton(FirebugContext)"/>
-        <command id="cmd_dojofirebugextensionViewConnectionsInTable" oncommand="DojoExtension.dojofirebugextensionModel.onShowConnectionsInTableButton(FirebugContext)"/>
-		<command id="cmd_dojofirebugextensionViewSubscriptions" oncommand="DojoExtension.dojofirebugextensionModel.onShowSubscriptionsButton(FirebugContext)"/>
-<!--		<command id="cmd_dojofirebugextension_inspect" oncommand="DojoExtension.dojofirebugextensionModel.inspectFromContextMenu(document.popupNode);" disabled="DojoExtension.dojofirebugextensionModel.canInspect(FirebugContext, document.popupNode);"/> -->
+        <command id="cmd_dojofirebugextensionGetDojoWidgetButton" oncommand="DojoExtension.dojofirebugextensionModel.onShowWidgetsButton(Firebug.currentContext)"/>
+        <command id="cmd_dojofirebugextensionViewConnectionsInTable" oncommand="DojoExtension.dojofirebugextensionModel.onShowConnectionsInTableButton(Firebug.currentContext)"/>
+		<command id="cmd_dojofirebugextensionViewSubscriptions" oncommand="DojoExtension.dojofirebugextensionModel.onShowSubscriptionsButton(Firebug.currentContext)"/>
+		<command id="cmd_dojofirebugextension_inspect" oncommand="DojoExtension.dojofirebugextensionModel.inspectFromContextMenu(document.popupNode);"/>
     </commandset>
 
 	<toolbar id="fbToolbar" align="center" role="toolbar">
