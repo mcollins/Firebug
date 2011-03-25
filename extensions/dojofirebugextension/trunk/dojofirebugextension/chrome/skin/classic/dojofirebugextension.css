@@ -217,6 +217,15 @@
 	padding-left: 20px;
 }
 
+.countOfWidgetsLabel {
+	margin-left: 1px;
+    /*background-image:url('chrome://dojofirebugextension/skin/subscription.gif');
+    background-repeat:no-repeat;
+	background-position:left center;*/
+	padding: 2px;
+	padding-left: 20px;
+}
+
 .disabledPanelBox .descImage-dojofirebugextension {
     background-image:url('chrome://dojofirebugextension/skin/disabled-extension-message.png');
     width: 400px;

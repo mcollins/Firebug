@@ -1562,6 +1562,7 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
     
     _connectionCounterId: "connectionCounterId",
     _subscriptionCounterId: "subscriptionCounterId",
+    _widgetsCounterId: "widgetsCounterId",
 
     _getDojoInfo: function(context) {		
 		var accessor = getDojoAccessor(context);
@@ -1586,10 +1587,19 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
     		if(!ctx.connectionsAPI) return;
     		self._updateCounter(this.subscriptionCounterNode, ctx.connectionsAPI.getSubscriptionsList().length); 
     	};
+    	var widgetsCounterGetter = function() {
+    		if(!ctx.dojo.dojoAccessor) return;
+    		self._updateCounter(this.widgetsCounterNode, ctx.dojo.dojoAccessor.getDijitRegistrySize(ctx)); 
+    	};
+
+    	//registers the listeners into model...
     	eventsRegistrator.registerListenerForEvent(
     			[DojoModel.ConnectionsAPI.ON_CONNECTION_ADDED, DojoModel.ConnectionsAPI.ON_CONNECTION_REMOVED], connectionsCounterGetter);
     	eventsRegistrator.registerListenerForEvent(
     			[DojoModel.ConnectionsAPI.ON_SUBSCRIPTION_ADDED, DojoModel.ConnectionsAPI.ON_SUBSCRIPTION_REMOVED], subscriptionsCounterGetter);
+    	eventsRegistrator.registerListenerForEvent(
+    			[DojoModel.ConnectionsAPI.ON_CONNECTION_ADDED, DojoModel.ConnectionsAPI.ON_CONNECTION_REMOVED], widgetsCounterGetter);
+
     	ctx.infoPanelCoutersRefreshEventsReg = eventsRegistrator;
         
     	_addStyleSheet(this.document);
@@ -1603,6 +1613,8 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
 					"connectionCounterNode", this._getCounterNode(this._connectionCounterId));
 			ctx.infoPanelCoutersRefreshEventsReg.setPropertyToListenersContext(
 					"subscriptionCounterNode", this._getCounterNode(this._subscriptionCounterId));
+			ctx.infoPanelCoutersRefreshEventsReg.setPropertyToListenersContext(
+					"widgetsCounterNode", this._getCounterNode(this._widgetsCounterId));
 			ctx.infoPanelCoutersRefreshEventsReg.addAllListeners();
 		}
 	},
@@ -1632,11 +1644,13 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
      */
 	showInfo: function(context) {
 		var dojoInfo = this._getDojoInfo(context);
-	
+		
 		if(!dojoInfo) {
 			clearNode(this.panelNode);
 			return;
 		}
+
+		var accessor = getDojoAccessor(context);
 		
 		//Dojo version
 		var versionLabel = $STR('dojo.version.label', DOJO_BUNDLE);
@@ -1666,7 +1680,14 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
 										  object: globalSubscriptionsCount, 
 										  counterLabelClass:"countOfSubscriptionLabel",
 										  counterValueId: this._subscriptionCounterId}, this.panelNode);
-		
+
+		//Widgets in registry count
+		var widgetsCount = accessor ? accessor.getDijitRegistrySize(context) : 0;
+		DojoReps.CounterLabel.tag.append({label: $STR('widgets.count.title', DOJO_BUNDLE),
+										  object: widgetsCount, 
+										  counterLabelClass:"countOfWidgetsLabel",
+										  counterValueId: this._widgetsCounterId}, this.panelNode);
+
 	},
 	
     refresh: function() {

@@ -167,6 +167,20 @@ DojoModel.DojoAccessor.prototype =
 			return (_dojo(context).subscribe._listeners) ? 1 : 0;
 		},
 		
+		/*int*/getDijitRegistrySize: function(context) {
+			var dijit = _dijit(context);
+			if(!dijit) {
+				return 0;
+			}
+			var reg = dijit.registry;
+			if(!reg) {
+				return 0;
+			}
+			
+			//diff versions of dojo..
+			return (reg.length) ? reg.length : reg._hash.length;
+		},
+		
 		/**
 		 * returns the dijit widgets available on the dijit registry
 		 * @return array
@@ -250,6 +264,9 @@ DojoModel.DojoAccessor.prototype =
 			var dojo = _dojo(context);
 			var props = {};
 
+			//TODO
+			//add "label" if the widget has it. Eg, "tab #3" in main.html
+			
 			/* Declared Class */
 			//props['declaredClass'] = widget['declaredClass'];
 			var declaredClassName = this._getDeclaredClassName(widget);
