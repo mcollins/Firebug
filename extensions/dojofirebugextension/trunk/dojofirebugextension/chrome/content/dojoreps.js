@@ -348,7 +348,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
     		var obj = conInfo.object;
     		var event = incommingConnectionsEvents[i];
     		var connections = conInfo.getIncommingConnectionsForEvent(event); //array    		
-    		incConnect.push(new DojoModel.IncomingConnectionDescriptor(obj, event, connections));
+    		incConnect.push(new IncomingConnectionsDescriptor(obj, event, connections));
     	}
         return incConnect;
   	},
@@ -360,7 +360,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
     		var connections = outCons.getOutgoingConnectionsForMethod(m);
     		var context = outCons.object;
     		var method = m;
-    		outConnect.push(new DojoModel.OutgoingConnectionDescriptor(context, method, connections));
+    		outConnect.push(new OutgoingConnectionsDescriptor(context, method, connections));
     	}
         return outConnect;
   	},
@@ -388,6 +388,33 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 	onContainerClick: onContainerClick,
 	toggleContainer: toggleContainer
 });
+
+/**
+ * @class IncomingConnectionsDescriptor
+ */
+var IncomingConnectionsDescriptor = this.IncomingConnectionsDescriptor = function(obj, /*string*/event, /*array*/connections){
+	 this.obj = obj;
+	 this.event = event;
+	 this.connections = connections;
+};
+  
+IncomingConnectionsDescriptor.prototype =
+{
+	 /*function*/getEventFunction: function(){
+			return (this.connections.length > 0) ? this.connections[0].getEventFunction() : null;
+	 }			 
+};
+
+/**
+ * @class OutgoingConnectionsDescriptor
+ */
+var OutgoingConnectionsDescriptor = this.OutgoingConnectionsDescriptor = function(context, method, /*array*/connections){
+	 this.context = context;
+	 this.method = method;
+	 this.connections = connections; //array
+};
+OutgoingConnectionsDescriptor.prototype = extend(DojoModel.FunctionLinkResolver.prototype, {});
+
 
 this.SubscriptionsRep = domplate(FirebugReps.Obj,
 {

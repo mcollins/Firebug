@@ -655,13 +655,13 @@ var DojoPanelMixin =  {
 		}
 		
 		// Check if the selected object is a connection event
-		var /*IncomingConnectionDescriptor*/ incDesc = this._getReferencedObjectFromNodeWithType(target, "dojo-eventFunction");
+		var /*IncomingConnectionsDescriptor*/ incDesc = this._getReferencedObjectFromNodeWithType(target, "dojo-eventFunction");
 		if (incDesc){
 			items = items.concat(this._getFunctionContextMenuItems(incDesc.getEventFunction(), 'menuitem.breakon.event', incDesc.event));
 		}
 		
 		// Check if the selected object is a connection target
-		var /*OutgoingConnectionDescriptor*/ outDesc = this._getReferencedObjectFromNodeWithType(target, "dojo-targetFunction");
+		var /*OutgoingConnectionsDescriptor*/ outDesc = this._getReferencedObjectFromNodeWithType(target, "dojo-targetFunction");
 		if (outDesc){
 			var fnListenerLabel = (typeof(outDesc.method) == "string") ? outDesc.method : null;
 			items = items.concat(this._getFunctionContextMenuItems(outDesc.getListenerFunction(), 'menuitem.breakon.target', fnListenerLabel));

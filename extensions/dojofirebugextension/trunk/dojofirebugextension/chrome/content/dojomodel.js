@@ -1092,33 +1092,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		this.callerInfo = callerInfo;
 	 };
 	 Subscription.prototype = extend(FunctionLinkResolver.prototype, {});
-	
-	 /**
-	  * @class IncomingConnectionDescriptor
-	  */
-	 var IncomingConnectionDescriptor = this.IncomingConnectionDescriptor = function(obj, /*string*/event, /*array*/connections){
-		 this.obj = obj;
-		 this.event = event;
-		 this.connections = connections;
-	 };
-	 //TODO chech whether we should be better extending from FunctionLinkResolver?  
-	 IncomingConnectionDescriptor.prototype =
-	 {
-		 /*function*/getEventFunction: function(){
-				return (this.connections.length > 0) ? this.connections[0].getEventFunction() : null;
-		 }			 
-	 };
-	 
-	 /**
-	  * @class OutgoingConnectionDescriptor
-	  */
-	 var OutgoingConnectionDescriptor = this.OutgoingConnectionDescriptor = function(context, method, /*array*/connections){
-		 this.context = context;
-		 this.method = method;
-		 this.connections = connections; //array
-	 };
-	 OutgoingConnectionDescriptor.prototype = extend(FunctionLinkResolver.prototype, {});
-	 
+		 
 	 /**
 	  * @class ConnectionArraySorter
 	  */
