@@ -27,6 +27,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	
 	//the name of our strings bundle
 	var DOJO_BUNDLE = "dojostrings";
+	var DOJO_EXT_CSS_URL = "chrome://dojofirebugextension/skin/dojofirebugextension.css";
 	
 	var nsIInterfaceRequestor = Ci.nsIInterfaceRequestor;
 	var nsISelectionDisplay = Ci.nsISelectionDisplay;
@@ -90,7 +91,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	 * This method is used by the panels on this file.
 	 */
     var _addStyleSheet = function(doc) {
-    	appendStylesheet(doc, "chrome://dojofirebugextension/skin/dojofirebugextension.css");
+    	appendStylesheet(doc, DOJO_EXT_CSS_URL);
     };
     
     /**
@@ -2293,5 +2294,5 @@ Firebug.registerPanel(DojoExtension.ConnectionsSidePanel);
 Firebug.registerPanel(DojoExtension.SubscriptionsSidePanel);
 Firebug.registerPanel(DojoExtension.DojoDOMSidePanel);
 Firebug.registerPanel(DojoExtension.DojoHTMLPanel);
-Firebug.registerStylesheet("chrome://dojofirebugextension/skin/dojofirebugextension.css");
+Firebug.registerStylesheet(DOJO_EXT_CSS_URL);
 }});
