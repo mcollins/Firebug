@@ -18,6 +18,7 @@
 <button id="debuggerDeep" onclick="debuggerDeep();">debugger Deep</button>
 <button id="debuggerInXHR" onclick="loadXHRDebugger();">debugger in XHR</button>
 <button id="debuggerInScript" onclick="loadScriptDebugger();">debugger in Script</button>
+<button id="windowEvalScriptDebugger" onclick="windowEvalScriptDebugger();">debugger in window.eval()</button>
 
 <br/><br/>
 
@@ -102,6 +103,13 @@ function loadScriptDebugger(callback)
     var script = document.createElement("script");
     script.setAttribute("src", "debuggerKeyword2.js");
     document.body.appendChild(script);
+}
+
+function windowEvalScriptDebugger()
+{
+    var script = "function bar4()\n{\n   debugger;   /*@debuggerScriptRow - don't remove this comment*/\n}\nbar4();";
+    window.eval(script);
+    eval(script);
 }
 
 </script>
