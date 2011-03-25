@@ -20,7 +20,7 @@
 
             executeSearch("Script" );
 
-            var logPanel = Firebug.Console.getPanel(FirebugContext).panelNode;
+            var logPanel = Firebug.Console.getPanel(Firebug.currentContext).panelNode;
             FBTest.compare(
                     logPanel.getElementsByClassName("matched").length,
                     2,

@@ -26,14 +26,14 @@ function allOpened()
     var placement = FW.Firebug.getPlacement();
     FBTest.compare("inBrowser", placement, "Firebug now open in browser");
 
-    if (FBTest.FirebugWindow.FirebugContext)
+    if (FBTest.FirebugWindow.Firebug.currentContext)
     {
-        var contextName = FBTest.FirebugWindow.FirebugContext.getName();
-        FBTest.ok(true, "chromeWindow.FirebugContext "+contextName);
-        FBTest.ok(contextName == allOpenAllCloseURL, "FirebugContext set to "+allOpenAllCloseURL);
+        var contextName = FBTest.FirebugWindow.Firebug.currentContext.getName();
+        FBTest.ok(true, "chromeWindow.Firebug.currentContext "+contextName);
+        FBTest.ok(contextName == allOpenAllCloseURL, "Firebug.currentContext set to "+allOpenAllCloseURL);
     }
     else
-        FBTest.ok(false, "no FirebugContext");
+        FBTest.ok(false, "no Firebug.currentContext");
 
     FBTestFirebug.openNewTab(basePath + "firebug/AlsoOpenFirebugOnThisPage.html", alsoOpened);
 }

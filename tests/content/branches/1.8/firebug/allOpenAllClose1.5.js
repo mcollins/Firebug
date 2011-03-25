@@ -26,20 +26,20 @@ function allOpened()
     var placement = FW.Firebug.getPlacement();
     FBTest.compare("inBrowser", placement, "Firebug now open in browser");
 
-    if (FBTest.FirebugWindow.FirebugContext)
+    if (FBTest.FirebugWindow.Firebug.currentContext)
     {
-        var contextName = FBTest.FirebugWindow.FirebugContext.getName();
+        var contextName = FBTest.FirebugWindow.Firebug.currentContext.getName();
         /*
         var cL = contextName.length;
         var aL =  allOpenAllCloseURL.length;
-        FBTest.compare(aL+"", cL+"", "chromeWindow.FirebugContext has same length"+contextName);
+        FBTest.compare(aL+"", cL+"", "chromeWindow.Firebug.currentContext has same length"+contextName);
         for (var i = 0; i < allOpenAllCloseURL.length; i++)
             if ( allOpenAllCloseURL[i] != contextName[i] ) FBTest.progress("compare fails at "+i+" "+ allOpenAllCloseURL[i]);
             */
-        FBTest.compare(allOpenAllCloseURL+"", contextName+"", "FirebugContext set to "+allOpenAllCloseURL);
+        FBTest.compare(allOpenAllCloseURL+"", contextName+"", "Firebug.currentContext set to "+allOpenAllCloseURL);
     }
     else
-        FBTest.ok(false, "no FirebugContext");
+        FBTest.ok(false, "no Firebug.currentContext");
 
     FBTestFirebug.openNewTab(basePath + "firebug/AlsoOpenFirebugOnThisPage.html", alsoOpened);
 }

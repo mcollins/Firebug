@@ -47,7 +47,7 @@ function breakOnMutation(win, type, buttonId, lineNo, callback)
 {
     var chrome = FW.Firebug.chrome;
     var content = win.document.getElementById("content");
-    var context = chrome.window.FirebugContext;
+    var context = chrome.window.Firebug.currentContext;
 
     FBTestFirebug.selectPanel("html");
 
