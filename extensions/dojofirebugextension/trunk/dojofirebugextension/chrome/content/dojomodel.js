@@ -816,17 +816,17 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		},
 		
 		// Return the connections associated to the event passed as parameter.
-		getIncommingConnectionsForEvent: function(event){
+		/*array*/getIncommingConnectionsForEvent: function(event){
 			return this.getConnectionsTracker().getIncommingConnectionsForEvent(event);
 		},
 		
 		// Return the methods with connections associated.
-		getOutgoingConnectionsMethods: function(){
+		/*array*/getOutgoingConnectionsMethods: function(){
 			return this.getConnectionsTracker().getOutgoingConnectionsMethods();
 		},
 		
 		// Return the connections associated to the method passed as parameter.
-		getOutgoingConnectionsForMethod: function(method){
+		/*array*/getOutgoingConnectionsForMethod: function(method){
 			return this.getConnectionsTracker().getOutgoingConnectionsForMethod(method);
 		},
 		
@@ -866,9 +866,11 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 
 		// Incoming connections (map<String, IncomingConnectionsForEvent>).
 		this._incomingConnections = new StringMap();
+		this._incomingConnectionsCount = 0;
 		
 		// Outgoing connections (Dictionary<(String|Function),Connection>).
-		this._outgoingConnections = new ArrayMap(); //new Dictionary();		
+		this._outgoingConnections = new Dictionary(); //must be Dictionary
+		this._outgoingConnectionsCount = 0;
 	 };
 	 ConnectionsTracker.prototype = 
 	 {
@@ -881,6 +883,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 					this._incomingConnections.put(con.event, incConnections);
 				}
 				incConnections.push(con);
+				this._incomingConnectionsCount++;
 			},
 			
 			// Add new outgoing connection.
@@ -891,33 +894,36 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 					this._outgoingConnections.put(con.method, outConnections);
 				}
 				outConnections.push(con);
+				this._outgoingConnectionsCount++;
 			},
 			
 			// Remove incoming connection.
 			removeIncomingConnection: function(con){
 				var cons = this._incomingConnections.get(con.event);
-				cons.splice(cons.indexOf(con),1);
+				cons.splice(cons.indexOf(con),1); //xxxPERFORMANCE
 				// Remove event if it has no associated connections.
 				if (cons.length == 0) {
 					this._incomingConnections.remove(con.event);
 				}
+				this._incomingConnectionsCount--;
 			},
 			
 			// Remove outgoing connection.
 			removeOutgoingConnection: function(con){
 				var cons = this._outgoingConnections.get(con.method);
-				cons.splice(cons.indexOf(con),1);
+				cons.splice(cons.indexOf(con),1); //xxxPERFORMANCE
 				// Remove method if it has no associated connections.
 				if (cons.length == 0) {
 					this._outgoingConnections.remove(con.method);
 				}
+				this._outgoingConnectionsCount--;
 			},
 			
 			/**
 			 * Return the events with connections associated.
 			 * @return an array with the events with connections associated.
 			 */
-			getIncommingConnectionsEvents: function(){
+			/*array*/getIncommingConnectionsEvents: function(){
 				return this._incomingConnections.getKeys();
 			},
 			
@@ -926,7 +932,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 * @param event the event
 			 * @return an array with the connections associated to the event passed as parameter.
 			 */
-			getIncommingConnectionsForEvent: function(event){
+			/*array*/getIncommingConnectionsForEvent: function(event){
 				var cons = this._incomingConnections.get(event);
 				return (cons) ? cons : [];
 			},
@@ -935,7 +941,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 * Return the methods with connections associated.
 			 * @return an array with the methods with connections associated.
 			 */
-			getOutgoingConnectionsMethods: function(){
+			/*array*/getOutgoingConnectionsMethods: function(){
 				return this._outgoingConnections.getKeys();
 			},
 			
@@ -944,7 +950,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 * @param method the method
 			 * @return an array with the connections associated to the method passed as parameter.
 			 */
-			getOutgoingConnectionsForMethod: function(method){
+			/*array*/getOutgoingConnectionsForMethod: function(method){
 				var cons = this._outgoingConnections.get(method);
 				return (cons) ? cons : [];
 			},
@@ -955,7 +961,16 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			/*boolean*/ isEmpty: function(){
 			 return (this.getIncommingConnectionsEvents().length == 0) &&
 			 		(this.getOutgoingConnectionsMethods().length == 0);
+			},
+			
+			/*int*/getTotalCountOfIncommingConnections: function() {
+				return this._incomingConnectionsCount;
+			},
+
+			/*int*/getTotalCountOfOutgoingConnections: function() {
+				return this._outgoingConnectionsCount;
 			}
+
 	 };
 	 
 	 
@@ -979,6 +994,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		
 		// Remove subscription.
 		removeSubscription: function(sub){
+			//xxxPERFORMANCE
 			this._subscriptions.splice(this._subscriptions.indexOf(sub),1);
 		},
 		
@@ -986,7 +1002,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 * Return the subscriptions for the object associated with this.object.
 		 * @return an array with the subscriptions for the object associated with this.object.
 		 */
-		getSubscriptions: function(){
+		/*array*/getSubscriptions: function(){
 			return this._subscriptions;
 		},
 		
@@ -995,7 +1011,11 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 */
 		/*boolean*/ isEmpty: function(){
 		 return (this.getSubscriptions().length == 0);
-		}			 
+		},
+
+		/*int*/getTotalCountOfSubscriptions: function() {
+			return this._subscriptions.length;
+		}
 	 };
 	 
 	 /**
@@ -1076,7 +1096,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 /**
 	  * @class IncomingConnectionDescriptor
 	  */
-	 var IncomingConnectionDescriptor = this.IncomingConnectionDescriptor = function(obj, event, connections){
+	 var IncomingConnectionDescriptor = this.IncomingConnectionDescriptor = function(obj, /*string*/event, /*array*/connections){
 		 this.obj = obj;
 		 this.event = event;
 		 this.connections = connections;
@@ -1084,7 +1104,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 //TODO chech whether we should be better extending from FunctionLinkResolver?  
 	 IncomingConnectionDescriptor.prototype =
 	 {
-		 getEventFunction: function(){
+		 /*function*/getEventFunction: function(){
 				return (this.connections.length > 0) ? this.connections[0].getEventFunction() : null;
 		 }			 
 	 };
@@ -1092,10 +1112,10 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 /**
 	  * @class OutgoingConnectionDescriptor
 	  */
-	 var OutgoingConnectionDescriptor = this.OutgoingConnectionDescriptor = function(context, method, connections){
+	 var OutgoingConnectionDescriptor = this.OutgoingConnectionDescriptor = function(context, method, /*array*/connections){
 		 this.context = context;
 		 this.method = method;
-		 this.connections = connections;
+		 this.connections = connections; //array
 	 };
 	 OutgoingConnectionDescriptor.prototype = extend(FunctionLinkResolver.prototype, {});
 	 

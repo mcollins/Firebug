@@ -20,7 +20,7 @@ var DOJO_BUNDLE = "dojostrings";
 // GENERAL FUNCTIONS
 //****************************************************************
 
-var getRep = function(value){
+var getRep = function(value) {
 	    var rep = Firebug.getRep(value);
 	    var tag = rep.shortTag || rep.tag;
 	    return tag;
@@ -260,7 +260,7 @@ this.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
 			)
 		),
 	getRep: getRep,
-	subscriptionsIterator: function(connInfo){
+	/*array*/subscriptionsIterator: function(/*SubscriptionsTracker*/connInfo){
 		return connInfo.getSubscriptions();
 	},
 	getMethodLabel: getMethodLabel,
@@ -283,14 +283,15 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 				DIV({"class": "collapsable-container container-opened"},
 					DIV({"class": "collapsable-label", onclick: "$onContainerClick"},
 						DIV({"class": "incomingConnections"},
-							$STR('title.Listened by', DOJO_BUNDLE)
+							$STR('title.Listened by', DOJO_BUNDLE),
+							" ($object|getTotalCountOfIncommingConnections)"
 						)
 					),
 					DIV({"class": "collapsable-content"},
 						FOR("incCon", "$object|incommingConnectionsIterator",
 							DIV({"class": "collapsable-container container-opened"},
 								DIV({"class": "collapsable-label", onclick: "$onContainerClick"},
-									DIV({"class": "event dojo-eventFunction", _referencedObject: "$incCon"}, "$incCon.event")
+									DIV({"class": "event dojo-eventFunction", _referencedObject: "$incCon"}, "$incCon.event $incCon.connections|getNumberOfItemsIfNeeded")
 								),
 								DIV({"class": "collapsable-content"},
 									FOR("con", "$incCon.connections",
@@ -309,14 +310,19 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 			DIV({"style": "display:$object|outgoingConnectionsNotEmpty"},
 				DIV({"class": "collapsable-container container-opened"},
 					DIV({"class": "collapsable-label", onclick: "$onContainerClick"},
-						DIV({"class": "outgoingConnections"}, $STR('title.Listens to', DOJO_BUNDLE))
+						DIV({"class": "outgoingConnections"}, 
+							$STR('title.Listens to', DOJO_BUNDLE),
+							" ($object|getTotalCountOfOutgoingConnections)"
+						)
 					),
 					DIV({"class": "collapsable-content"},
 						FOR("outCon", "$object|outgoingConnectionsIterator",
 							DIV({"class": "collapsable-container container-opened"},
 								DIV({"class": "collapsable-label", onclick: "$onContainerClick"},
 									DIV({"class": "function dojo-targetFunction", _referencedObject: "$outCon"}, 
-										TAG(FirebugReps.OBJECTLINK("$title"), {object: "$outCon|getFunctionObject", className: "object", title: "$outCon.method|getMethodLabel"}))
+										TAG(FirebugReps.OBJECTLINK("$title"), {object: "$outCon|getFunctionObject", className: "object", title: "$outCon.method|getMethodLabel"}),
+										"$outCon.connections|getNumberOfItemsIfNeeded"
+									)
 								),
 								DIV({"class": "collapsable-content"},	
 									FOR("con", "$outCon.connections",
@@ -332,18 +338,21 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 			)
 		),
 		
-	incommingConnectionsIterator: function(conInfo) {
+	/*string*/getNumberOfItemsIfNeeded: function(/*array*/ arr) {
+		return arr.length > 1 ? " ("+arr.length+")" : "";
+	},
+	/*array*/incommingConnectionsIterator: function(/*ConnectionsTracker*/conInfo) {
 		var incConnect = [];
 		var incommingConnectionsEvents = conInfo.getIncommingConnectionsEvents();
 		for (var i = 0; i < incommingConnectionsEvents.length; i++ ) {
     		var obj = conInfo.object;
     		var event = incommingConnectionsEvents[i];
-    		var connections = conInfo.getIncommingConnectionsForEvent(event);    		
+    		var connections = conInfo.getIncommingConnectionsForEvent(event); //array    		
     		incConnect.push(new DojoModel.IncomingConnectionDescriptor(obj, event, connections));
     	}
         return incConnect;
   	},
-  	outgoingConnectionsIterator: function(outCons) {
+  	/*array*/outgoingConnectionsIterator: function(/*ConnectionsTracker*/outCons) {
 		var outConnect = [];
 		var outgoingConnectionsMethods = outCons.getOutgoingConnectionsMethods();
     	for (var i = 0; i < outgoingConnectionsMethods.length; i++) {
@@ -355,14 +364,20 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
     	}
         return outConnect;
   	},
-  	incomingConnectionsNotEmpty: function(incCons) {
+  	incomingConnectionsNotEmpty: function(/*ConnectionsTracker*/incCons) {
   		return this.arrayNotEmpty(this.incommingConnectionsIterator(incCons));
   	},  	
-  	outgoingConnectionsNotEmpty: function(outCons) {
+  	outgoingConnectionsNotEmpty: function(/*ConnectionsTracker*/outCons) {
 		return this.arrayNotEmpty(this.outgoingConnectionsIterator(outCons));
   	},
   	arrayNotEmpty: function(array) {
 		return (array.length == 0) ? "none" : "";
+  	},
+  	getTotalCountOfOutgoingConnections: function(/*ConnectionsTracker*/outCons) {
+  		return outCons.getTotalCountOfOutgoingConnections();
+  	},
+  	getTotalCountOfIncommingConnections: function(/*ConnectionsTracker*/incCons) {
+  		return incCons.getTotalCountOfIncommingConnections();
   	},
   	getMethodLabel: getMethodLabel,
   	getFunctionObject: getFunctionObject,
@@ -381,7 +396,7 @@ this.SubscriptionsRep = domplate(FirebugReps.Obj,
 			FOR("topic", "$object|topicsIterator",
 				DIV({"class": "collapsable-container container-opened"},
 					DIV({"class": "collapsable-label", onclick: "$onContainerClick"}, 
-							DIV({"class": "topic"}, "$topic.topic")
+							DIV({"class": "topic"}, "$topic.topic $topic.subscriptions|getNumberOfItemsIfNeeded")
 					),
 					DIV({"class": "collapsable-content"},
 						FOR("sub", "topic.subscriptions",
@@ -393,11 +408,13 @@ this.SubscriptionsRep = domplate(FirebugReps.Obj,
 				)
 			)
 	),
-	
+	/*string*/getNumberOfItemsIfNeeded: function(/*array*/ arr) {
+		return arr.length > 1 ? " ("+arr.length+")" : "";
+	},
 	onContainerClick: onContainerClick,
 	toggleContainer: toggleContainer,
 	
-	topicsIterator: function(subscriptions) {
+	topicsIterator: function(/*Map*/subscriptions) {
 		var topics = [];
 		var topicsArray = subscriptions.getKeys();
 		for (var e = 0; e < topicsArray.length; e++) { 
