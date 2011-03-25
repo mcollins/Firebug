@@ -108,8 +108,10 @@ function loadScriptDebugger(callback)
 function windowEvalScriptDebugger()
 {
     var script = "function bar4()\n{\n   debugger;   /*@debuggerScriptRow - don't remove this comment*/\n}\nbar4();";
-    window.eval(script);
+    window.eval(script);  // FAILS https://bugzilla.mozilla.org/show_bug.cgi?id=645160
 
+    var x = eval;
+    x(script);   // FAILS
 
     eval(script);
 }
