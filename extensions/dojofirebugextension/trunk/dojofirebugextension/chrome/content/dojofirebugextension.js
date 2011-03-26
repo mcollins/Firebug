@@ -347,6 +347,14 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 				var funcPreInvParams = (funcPreInvocation != null) ? funcPreInvocation.apply(obj, arguments) : null;
 				var returnValue = functionToProxy.apply(obj, arguments);
 				var postInvocationReturnValue = (funcPostInvocation != null) ? funcPostInvocation.call(obj, returnValue, arguments, funcPreInvParams) : null;
+				
+				if(FBTrace.DBG_DOJO_DBG) {
+					if(method == "_connect" || method == "connect") {
+						FBTrace.sysout("DOJO the proxy: returnValue[0].wrappedJSObject: " + returnValue[0].wrappedJSObject, returnValue);
+						FBTrace.sysout("DOJO the proxy: postInvocationReturnValue[0].wrappedJSObject: " + postInvocationReturnValue[0].wrappedJSObject, postInvocationReturnValue);
+					}
+				}
+				
 				return (postInvocationReturnValue) ? postInvocationReturnValue : returnValue;
 			};
 			theProxy.internalClass = "dojoext-added-code";
@@ -397,8 +405,12 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
         			FBTrace.sysout("DOJO DEBUG: executing _protectProxyFromExceptions proxy. Args: ", a);
     			}
     			    			
-    			try{
-    				return func.apply(this, arguments);
+    			try {
+    				
+    				var res = func.apply(this, arguments);
+    				
+    				return res;
+
     			} catch (e) {
 
     				var msj = "An error at Dojo Firebug extension have occurred.";
@@ -2003,41 +2015,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     	delete context.dojo.dojoAccessor;
     	delete context.connectionsAPI;
     },
-    
-    
-    /**
-     * Called after a context's page gets DOMContentLoaded
-     */
-    loadedContext: function(context)
-    {
-    	var panel = this._getDojoPanel(context);
-    	
-    	if (panel) {
-	    	// Show the initial view.
-	    	panel.showInitialView(context);
-    	}
-    	
-    	var testVarFn = function() {
-    		alert("testVarFn!");
-    		return 1;
-    	};
-    	var exposed = testVarFn.__exposedProps__ || {};
-		exposed.apply = "r";
-		exposed.call = "r";
-		if(!testVarFn.__exposedProps__) {
-			testVarFn.__exposedProps__ = exposed;
-		}		    	
-		
-		var doc = unwrapObject(context.window).document; 
-		
-		document.testVarFn = testVarFn;
-    	
-		document.testObj = { test: 1 };
-		//document.testObj.__defineGetter__("", );
-    	
-    	
-    },
-    
+            
     /**
      * invoked whenever the user selects a tab.
      */
@@ -2117,6 +2095,25 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 			   // FIXME[BugTicket#91]: Replace this hack fix for a communication mechanism based on events.
 			   this._protectProxy(context, "_connect");
 		   }
+		   
+		   if(!context.showInitialViewCall && dojo && (dojo.ready || dojo.addOnLoad)) {
+			   Firebug.Console.log("about to set addOnLoad", context);
+			   var showInitialViewCall = context.showInitialViewCall = function showInitialView() {
+				   Firebug.Console.log("executing addOnLoad", context);
+			       var panel = DojoExtension.dojofirebugextensionModel._getDojoPanel(context);
+			    	
+				   if (panel) {
+					   // Show the initial view.
+					   panel.showInitialView(context);
+				   }
+			   	};
+			   _addMozillaExecutionGrants(showInitialViewCall);
+			   
+			   //dojo.addOnLoad
+			   var dojoReadyFn = (dojo.ready) ? dojo.ready : dojo.addOnLoad;
+			   dojoReadyFn.call(dojo, showInitialViewCall);
+			   Firebug.Console.log("set addOnLoad", context);
+		   }
        }
 	},
 	
@@ -2194,8 +2191,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 					   return ret; 
 				   }
 			
-				   var obj =  unwrapObject(args[0] || dojo.global);
-		   		   var event = unwrapObject(args[1]);
+				   var obj =  unwrapObject(args[0] || dojo.global);				   
+		   		   var event = unwrapObject(args[1]);				   
 
 			   		/* The context parameter could be null, in that case it will be determined according to the dojo.hitch implementation.
 			   		 * See the dojo.hitch comment at [dojo directory]/dojo/_base/lang.js and 
@@ -2211,7 +2208,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 		   		   }
 		   		   handlerContext = unwrapObject(handlerContext);
 		   		   
-		   		   var method = unwrapObject(args[3]);
+		   		   var method = unwrapObject(args[3]);		   		   
 		   		   var dontFix = unwrapObject((args.length >= 5 && args[4]) ? args[4] : null);
 
 		   		   var callerInfo = (context.initialConfig.breakPointPlaceSupportEnabled) ? dojoDebugger.getDebugInfoAboutConnectCaller(context) : null;
