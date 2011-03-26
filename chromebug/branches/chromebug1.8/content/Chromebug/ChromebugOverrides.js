@@ -172,7 +172,6 @@ var ChromebugOverrides = {
             if (FBTrace.DBG_ERRORS)
                 FBTrace.sysout("supportsGlobal FAILS for "+safeGetWindowLocation(global)+" because: "+exc, exc);
         }
-
     },
 
     /*
@@ -187,6 +186,9 @@ var ChromebugOverrides = {
         if (frame && frame.isValid)
         {
             if (Firebug.Chromebug.isChromebugURL(frame.script.fileName))
+                return null;
+
+            if (Firebug.Chromebug.platformDoesNotSupport(frame.script.fileName))
                 return null;
 
             if (!global)

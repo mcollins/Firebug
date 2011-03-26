@@ -359,13 +359,16 @@ Chromebug.XULAppModule = extend(Firebug.Module,
                 {
                     if (!Firebug.Chromebug.applicationReleased)  // then windows created could still be chromebug windows
                     {
-                        FBTrace.sysout("watchChromeWindow too early dropping "+name)
-                        return;
+                        if (Chromebug.XULAppModule.isChromebugDOMWindow(global))
+                        {
+                            FBTrace.sysout("createContext dropping chromebug DOM window "+safeGetWindowLocation(global));
+                            return null;
+                        }
                     }
                     var context = Firebug.Chromebug.getOrCreateContext(subject, name);
                     if (!context)
                     {
-                        FBTrace.sysout("watchChromeWindow ERROR no context for "+safeGetWindowLocation(subject));
+                        FBTrace.sysout("watchChromeWindow ERROR no context for id: "+id+" "+safeGetWindowLocation(subject));
                         return;
                     }
                     Chromebug.XULAppModule.watchedWindows[id.inner] =  {win: subject, kind: 'chrome', context: context};
@@ -718,7 +721,17 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     {
         var panel = context.getPanel(panelName, false);
         panel.refresh();
-    }
+    },
+
+    isChromebugDOMWindow: function(domWindow)
+    {
+        var root = FBL.getRootWindow(domWindow);
+        var theContainingXULWindow = Chromebug.XULAppModule.getXULWindowByRootDOMWindow(root);
+        if (Firebug.Chromebug.isChromebugURL(safeGetWindowLocation(theContainingXULWindow)))
+            return true;
+        else
+            return false;
+    },
 });
 
 // Helper shortcut

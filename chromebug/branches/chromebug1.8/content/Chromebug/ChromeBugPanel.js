@@ -110,7 +110,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         catch(exc)
         {
-            FBTrace.sysout("onXULWindowAdded FAILS "+exc, exc);
+            FBTrace.sysout("onXULWindowAdded FAILS "+safeGetWindowLocation(outerDOMWindow)+' because '+exc, exc);
         }
     },
 
@@ -591,8 +591,11 @@ Firebug.Chromebug = extend(Firebug.Module,
 
             if (!Firebug.Chromebug.applicationReleased)  // then windows created could still be chromebug windows
             {
-                FBTrace.sysout("createContext too early dropping "+name);
-                return null;
+                if (Chromebug.XULAppModule.isChromebugDOMWindow(global))
+                {
+                    FBTrace.sysout("createContext dropping chromebug DOM window "+safeGetWindowLocation(global));
+                    return null;
+                }
             }
             // When a XUL window is destroyed the destructor functions from XBL run after the unload event.
             // We delete the context in the unload event, then the destructor can then trigger an new context creation.
@@ -622,9 +625,6 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         else
         {
-            if (name === "resource://gre/components/ConsoleAPI.js") // then no platform support for debugging
-                return null;
-
             var browser = Firebug.Chromebug.createBrowser(global, name);
             var context = Firebug.TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
             if (global+"" === "[object Sandbox]")
@@ -900,6 +900,14 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         // FBTrace.sysout("isChromebugURL "+result+" "+URL);
         return result;
+    },
+
+    platformDoesNotSupport: function(URL)
+    {
+        if (name === "resource://gre/components/ConsoleAPI.js") // then no platform support for debugging
+            return true;
+        else
+            return false;
     },
 
     buildInitialContextList: function(globals, globalTagByScriptTag, xulScriptsByURL, globalTagByScriptFileName)
