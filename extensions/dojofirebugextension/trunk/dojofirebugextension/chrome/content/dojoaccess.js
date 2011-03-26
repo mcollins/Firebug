@@ -20,9 +20,7 @@ var DojoAccess = FBL.ns(function() { with (FBL) {
     	if(!context.window)
     		return null;
     	
-    	return unwrapObject(context.window).dojo || null;
-    	
-    	//return (context.window && unwrapObject(context.window).dojo) ? unwrapObject(context.window).dojo : null;
+    	return unwrapObject(context.window).dojo || null;    	
     };
     
     //FIXME: (idem _dojo) This way of access objects is unsecure. Decouple communication with page and implement a secure mechanism.
@@ -31,9 +29,7 @@ var DojoAccess = FBL.ns(function() { with (FBL) {
     	if(!context.window)
     		return null;
 
-    	return unwrapObject(context.window).dijit || null;
-    	
-    	//return (context.window && unwrapObject(context.window).dijit) ? unwrapObject(context.window).dijit : null;
+    	return unwrapObject(context.window).dijit || null;    	
     };
  
 
@@ -44,7 +40,6 @@ var DojoAccess = FBL.ns(function() { with (FBL) {
 
 var API_DOC_URL_BASE = "http://dojotoolkit.org/api/";
 var REFERENCE_GUIDE_URL = "http://dojotoolkit.org/reference-guide/";
-//http://dojotoolkit.org/reference-guide/dijit/layout/BorderContainer.html
 
 DojoModel.DojoAccessor = function() {
 };
@@ -61,14 +56,7 @@ DojoModel.DojoAccessor.prototype =
 		 */
 		initializeInContext: function(/*fbug context*/ context) {
 
-			//nothing to do currently..
-			
-//			this.context = context;
-//			
-//			this._proxyConnect(context);
-//			this._proxyDisconnect(context);
-//			this._proxySubscribe(context);
-//			this._proxyUnsubscribe(context);				
+			//nothing to do currently..			
 		},
 		
 		/**
@@ -81,21 +69,6 @@ DojoModel.DojoAccessor.prototype =
 			return _dojo(context) && _dojo(context).connect;
 		},
 
-		//FIXME HACK. NOT BEING USED CURRENTLY
-		wasDojo_ConnectFunctionOverwriten: function(context) {
-			return (!DojoModel.isDojoExtProxy(_dojo(context)._connect) && !_dojo(context)._connect._listeners);
-		},
-		
-		/**
-		 * NOT BEING USED CURRENTLY
-		 * @param context
-		 * @param callback
-		 */
-		registerDojoOnUnloadCallback: function(/*fbug context*/ context, callback) {
-			// Clear references on page unload.
-			_dojo(context).addOnUnload(callback);			
-		},
-		
 		/**
 		 * returns DojoInfo object about the current loaded dojo.
 		 * @return { 'version': dojo.version, 'djConfig': djConfig };
@@ -207,6 +180,7 @@ DojoModel.DojoAccessor.prototype =
 		
 		_toArray: function(/*WidgetSet*/ registry) {
 			var ar = [];
+
 			//FIXME potential Xray issue
 //			registry.forEach(function(elem) {
 //				ar.push(elem);
@@ -321,10 +295,7 @@ DojoModel.DojoAccessor.prototype =
 			}
 			var version = this.getDojoInfo(context).version;
 			var docVersion = this._findClosestApiDocVersion(version);
-			
-			//older, deprecated, version of api url
-			//var docUrl = API_DOC_URL_BASE + "jsdoc/" + docVersion.toString() + "/" + declaredClassName;
-			
+						
 			var docUrl = API_DOC_URL_BASE + docVersion.toString() + "/" + declaredClassName.replace('.', '/', "g");
 			
 			return docUrl;
