@@ -225,16 +225,17 @@ this.ConnectionRep = domplate(FirebugReps.Obj,
 			" -> ",
 			TAG(FirebugReps.OBJECTLINK("$title"), {object: "$object|getFunctionObject", className: "object", title: "$object.method|getMethodLabel"})
 		),
-	shortTag: DIV(
-			"[",
-			TAG(FirebugReps.OBJECTLINK("$title:$object"), {object: "$object.obj", className: "object", title: "target"}), //FIXME i18n title?
-			" -> ",
-			SPAN("$object.event"),
-			" , ",
-			TAG(FirebugReps.OBJECTLINK("$title:$object"), {object: "$object.context", className: "object", title: "listener"}), //FIXME i18n title?
-			" -> ",
+	shortTag: DIV({},
+			SPAN({"class": "inline-connection"}, "connection("),
+			TAG(FirebugReps.OBJECTLINK("$object"), {object: "$object.obj", className: "object"}),
+			SPAN({"class": "inline-connection"}, "->"),
+			SPAN({"class": "inline-event"}, "$object.event"), //string
+			SPAN({"class": "inline-connection"}, ")==>"),
+			SPAN({"class": "inline-connection"}, "Exec:("),
+			TAG(FirebugReps.OBJECTLINK("$object"), {object: "$object.context", className: "object"}),
+			SPAN({"class": "inline-connection"}, "->"),
 			TAG(FirebugReps.OBJECTLINK("$title"), {object: "$object|getFunctionObject", className: "object", title: "$object.method|getMethodLabel"}),
-			"]"
+			SPAN({"class": "inline-connection"}, ")")
 		),
   	getMethodLabel: getMethodLabel,
   	getFunctionObject: getFunctionObject,
@@ -244,6 +245,39 @@ this.ConnectionRep = domplate(FirebugReps.Obj,
 
 	getRep: getRep
 });
+
+this.SubscriptionRep = domplate(FirebugReps.Obj, {
+	inspectable: false,
+	
+	shortTag: DIV({},
+			SPAN({"class": "inline-subscription"}, "subscription('"),
+			SPAN({"class": "inline-topic"}, "$object.topic"),
+			SPAN({"class": "inline-subscription"}, "'==>"),
+			TAG(FirebugReps.OBJECTLINK("$object"), {object: "$object.context", className: "object"}),
+			SPAN({"class": "inline-subscription"}, "->"),
+			TAG(FirebugReps.OBJECTLINK("$title"), {object: "$object|getFunctionObject", className: "object", title: "$object.method|getMethodLabel"}),
+			SPAN({"class": "inline-subscription"}, ")")
+		),
+	
+	tag: DIV({},
+			//$STR('title.subscriptionRep.onTopic', DOJO_BUNDLE),
+			SPAN({"class": "inline-subscription"}, "On Topic: '"),
+			SPAN({"class": "inline-topic"}, "$object.topic"),
+			SPAN({"class": "inline-subscription"}, "'==>Exec:("),
+			TAG(FirebugReps.OBJECTLINK("$object"), {object: "$object.context", className: "object"}),
+			SPAN({"class": "inline-subscription"}, "->"),
+			TAG(FirebugReps.OBJECTLINK("$title"), {object: "$object|getFunctionObject", className: "object", title: "$object.method|getMethodLabel"}),
+			SPAN({"class": "inline-subscription"}, ")")
+		),			
+
+  	getMethodLabel: getMethodLabel,
+  	getFunctionObject: getFunctionObject,
+	supportsObject: function(object, type) {
+		return object['clazz'] == 'Subscription';
+	},
+
+	getRep: getRep
+});		
 
 this.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
 {
@@ -638,6 +672,7 @@ this.registerReps = function() {
 	Firebug.registerRep(this.DijitMainRep);
 	Firebug.registerRep(this.DijitRep);
 	Firebug.registerRep(this.ConnectionRep);
+	Firebug.registerRep(this.SubscriptionRep);
 	Firebug.registerRep(this.ConnectionsInfoRep);
 	//Firebug.registerRep(this.DojoClassRep);	
 };
@@ -648,6 +683,7 @@ this.unregisterReps = function() {
 	Firebug.unregisterRep(this.DijitMainRep);
 	Firebug.unregisterRep(this.DijitRep);
 	Firebug.unregisterRep(this.ConnectionRep);
+	Firebug.unregisterRep(this.SubscriptionRep);
 	Firebug.unregisterRep(this.ConnectionsInfoRep);
 	//Firebug.unregisterRep(this.DojoClassRep);	
 };
