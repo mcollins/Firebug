@@ -55,6 +55,10 @@
 	cursor: default;
 }
 
+.inline-event {
+    color: red;
+}
+	
 .function {
     color: green;
     background-image:url('chrome://dojofirebugextension/skin/function.png');
@@ -63,6 +67,10 @@
 	padding: 2px;
 	padding-left: 20px;
 	cursor: default;
+}
+
+.inline-connection {
+    color: blue;
 }
 
 .connection {
@@ -94,6 +102,10 @@
 	padding-left: 20px;
 }
 
+.inline-subscription {
+    color: green;
+}
+
 .subscription {
     color: green;
     margin-left: 20px;
@@ -113,6 +125,11 @@
 	padding : 1px;
 	padding-left: 20px;
 }
+
+.inline-topic {
+    color: red;
+}
+
 
 .dojo-warning{
 	background-color:#D8E4F1;
