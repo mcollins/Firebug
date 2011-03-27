@@ -181,10 +181,19 @@ DojoModel.DojoAccessor.prototype =
 		_toArray: function(/*WidgetSet*/ registry) {
 			var ar = [];
 
-			//FIXME potential Xray issue
-//			registry.forEach(function(elem) {
-//				ar.push(elem);
-//			});
+			/*
+			 //with this version, the widget is not highlighted when user does "inspect"
+			 //but highlights are synch among All widgets, all conns, and all subs panels
+			var adder = function(elem) {
+				ar.push(elem);
+			};
+			DojoExtension._addMozillaExecutionGrants(adder);
+			registry.forEach(adder);
+			*/
+
+			 //with this version, the widget is highlighted when user does "inspect"
+			 //but highlights are not synched among All widgets, and both all conns, and all subs 
+			//panels
 			var hash = registry._hash;
 			var ar = [];
 			for(var id in hash){
@@ -235,11 +244,65 @@ DojoModel.DojoAccessor.prototype =
 		 * @return an object with the specific widget properties.
 		 */
 		/*Object*/getSpecificWidgetProperties: function(widget, context) {
-			var dojo = _dojo(context);
+			var dojo = _dojo(context);			
+			var tracker = context.connectionsAPI;
 			var props = {};
 
-			//TODO
-			//add "label" if the widget has it. Eg, "tab #3" in main.html
+			/* TODO
+			 */
+			
+			if(widget.title) {
+				props['title'] = widget.title;
+			}
+			if(widget.label) {
+				props['label'] = widget.label;
+			}
+			
+			if(widget.getParent) {
+				//it's a "Contained" widget (Contained.js)
+				props['parent'] = widget.getParent();
+			} else {
+				var parentNode = widget.domNode.parentNode;
+				var enc = this.getEnclosingWidget(context, parentNode);
+				if(enc) {
+					props['enclosing widget'] = enc;
+				}
+			}
+			
+			/* Returns all the widgets contained by this, i.e., all widgets underneath 
+			 * this.containerNode. Does not return nested widgets, nor widgets that are 
+			 * part of this widget's template. */
+			var children = widget.getChildren ? widget.getChildren() : widget.getDescendants();
+			if(children.length > 0) {
+				props['children'] = children;
+			}
+					
+			if(tracker) {
+				if(widget._connects) {
+					var connects = [];
+					widget._connects.forEach(function(array) {
+						array.forEach(function(handle) {
+							connects.push(tracker.getConnectionByHandle(handle));
+						}
+					)}, this);
+					if(connects.length > 0) {
+						props['connects'] = connects;
+					}
+				}
+				
+				if(widget._subscribes) {
+					var subs = widget._subscribes.map(function(handle) {
+						return tracker.getSubscriptionByHandle(handle);
+					}, this);
+					if(subs.length > 0) {
+						props['subscribes'] = subs;
+					}
+				}
+			}
+			
+			props['startup invoked'] = widget._started;
+			
+			props['attributeMap'] = widget.attributeMap;
 			
 			/* Declared Class */
 			//props['declaredClass'] = widget['declaredClass'];
@@ -247,32 +310,31 @@ DojoModel.DojoAccessor.prototype =
 			props['declaredClass'] = dojo.getObject(declaredClassName);
 			
 			/* Dom Node */
-			props['domNode'] = widget['domNode'];
-			
-			/* Returns all the widgets contained by this, i.e., all widgets underneath 
-			 * this.containerNode. Does not return nested widgets, nor widgets that are 
-			 * part of this widget's template. */
-			props['children'] = widget.getChildren ? widget.getChildren() : widget.getDescendants();
+			props['domNode'] = widget.domNode;
 			
 			/* Container Node */
-			props['containerNode'] = widget['containerNode'];
+			props['containerNode'] = widget.containerNode;
 			
 			/* Widget event list */
-			props['events'] = [];
-			for (prop in widget){
-				if (prop.substring(0,2) == 'on') props['events'].push(prop);
+			var events = props['events'] = [];
+			for (var propName in widget) {
+				//propName is string
+				if (propName.substring(0,2) == 'on') {
+					events.push(propName);
+				}
 			}
-			props['events'].sort();
+			events.sort();
 			
 			/* Widget dojoAttachPoint */
-			var attachPoint = props['dojoAttachPoint'] = {};
-			if (widget['_attachPoints']) {
+			if (widget._attachPoints && widget._attachPoints.length > 0) {
+				var attachPoint = props['dojoAttachPoint'] = {};
 				var ap = null;
 				for (var i = 0; i < widget['_attachPoints'].length; i++){
 					ap = widget['_attachPoints'][i];
 					attachPoint[ap] = widget[ap];
 				}
-			}
+				
+			} 
 			
 			return props;
 		}, 
