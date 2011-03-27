@@ -178,13 +178,30 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	 });
 	 	
 	// ***************************************************************
-	 
+//	/**
+//	 * install if needed
+//	 * (class method)
+//	 */
+//	this._installHashCodes = function(context) {
+//		var propName = HashCodeBasedDictionary.prototype.keyIdPropertyName;
+//		var clientFn = "var hashCodeFn = function() { console.log('entering _install'); var installed = Object.prototype." + propName + ";";
+//		clientFn += "if(!installed) { console.log('not installed. Installing'); Object.prototype." + propName + " = -1; }";
+//		clientFn += "console.dir(Object.prototype." + propName + "); }; ";
+//		clientFn += "hashCodeFn(); delete hashCodeFn";
+//		
+//		Firebug.Console.log(clientFn, context);
+//		Firebug.CommandLine.evaluate(clientFn, context);
+//		
+//			var installed = Object.prototype.sarasa;
+//			if(!installed) {
+//				Object.prototype.sarasa = -1;
+//			}
+//	};
+
 	/**
 	 * @class HashCodeBasedDictionary
 	 */
 	 var HashCodeBasedDictionary = function() {
-		// Key id property name
-		this.keyIdPropertyName = '_dojoExtHashCode';
 		 
 		// Next keys.
 		this._nextKey = 1;
@@ -197,14 +214,18 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		
 		// The values
 		this._values = [];
+
 	 };
 	 HashCodeBasedDictionary.prototype = extend(Map.prototype,{
+			// Key id property name
+			keyIdPropertyName : 'x_dojoExtHashCode',
+		 
 			// Associates the specified value with the specified key in this map
 			put: function (key, value){
 				var realKey = key[this.keyIdPropertyName];
-				if (!realKey) {
-					realKey = key[this.keyIdPropertyName] =
-						(this._deprecatedKeys.length > 0) ? this._deprecatedKeys.pop() : this._nextKey++;
+				if (!realKey || realKey == -1) {
+					realKey = (this._deprecatedKeys.length > 0) ? this._deprecatedKeys.pop() : this._nextKey++;					
+					this._injectKey(key, realKey);
 				}
 				this._keys[realKey] = key;
 				this._values[realKey] = value;
@@ -214,13 +235,13 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			// Returns the value to which this map maps the specified key
 			get: function (key){
 				var realKey = (key) ? key[this.keyIdPropertyName] : null;
-				return (realKey) ? this._values[realKey] : null;
+				return (realKey && realKey != -1) ? this._values[realKey] : null;
 			},
 
 			// Removes the mapping for this key from this map if it is present
 			remove: function (key){
 				var realKey = key[this.keyIdPropertyName];
-				if (realKey) {
+				if (realKey && realKey != -1) {
 					this._keys[realKey] = null;
 					this._values[realKey] = null;
 					this._deprecatedKeys.push(realKey);
@@ -251,7 +272,25 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 				this._keys.splice(0, this._keys.length);
 				this._values.splice(0, this._values.length);
 				this._values = null;
-			}		 
+			},
+			
+			_injectKey: function(/*Object*/obj, /*int*/ hashcode) {
+				/*
+				 * since Javascript 1.8.5 (FF 4) we can create propeties in objects
+				 * that are not visible in for..in loops in client web pages.
+				 * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/defineProperty 
+				 */
+				
+				if(Object.defineProperty) {
+					Object.defineProperty(obj, this.keyIdPropertyName, 
+							{value: hashcode, writable : false, enumerable : false, configurable : true});
+
+				} else {
+					//traditional way..
+					obj[this.keyIdPropertyName] = hashcode;
+				}
+			}
+			
 	 });
 	 
 	// ***************************************************************
@@ -467,13 +506,13 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 	  */
 	 var ConnectionsAPI = this.ConnectionsAPI = function(/*boolean*/ useHashCodeBasedDictionary){
 		 // Connections dictionary.
-		 this._connections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : new ArrayMap(); //new Dictionary();
+		 this._connections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : /*new ArrayMap();*/ new Dictionary();
 		 
 		 // Array of connections.
 		 this._connectionsArray = [];
 		 
 		 // Disconnections dictionary.
-		 this._disconnections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : new ArrayMap(); //new Dictionary();
+		 this._disconnections = (useHashCodeBasedDictionary) ? new HashCodeBasedDictionary() : /*new ArrayMap();*/ new Dictionary();
 		 
 		 // Subscriptions
 		 this._subscriptions = new StringMap();		 
@@ -535,7 +574,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * This function return (and create if it does not exist for the key) the objectInfo
 		  * for the object passed as parameter.		  
 		  */ 
-		 _getAndCreateIfRequiredObjectInfo: function(obj){
+		 _getAndCreateIfRequiredObjectInfo: function(obj) {
 			    var objectInfo = this._connections.get(obj);
 			    if (!objectInfo){
 			 	   objectInfo = new ObjectInfo(obj);
@@ -547,7 +586,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 /**
 		  * Remove a connection, given a dojo handle
 		  */
-		 removeConnection: function(/*Handle*/ handle){
+		 removeConnection: function(/*Handle*/ handle) {
 	 		   var con = this._disconnections.get(handle);
 	 		   
 	 		   if(con){
@@ -586,7 +625,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * Add a subscription
 		  */
 		 addSubscription: function(/*String*/ topic, /*Object|null*/ context, /*String|Function*/ method,
-					/*unsubscribe Handle*/ handle, callerInfo){
+					/*unsubscribe Handle*/ handle, callerInfo) {
 			 var subs = new Subscription(topic, context, method, callerInfo);
 			 var subsForTopic = this._subscriptions.get(topic);
 			 if (!subsForTopic) {
@@ -608,7 +647,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 /**
 		  * Remove a Subscription, given a dojo handle
 		  */
-		 removeSubscription: function(/*Handle*/ handle){
+		 removeSubscription: function(/*Handle*/ handle) {
 			 var subs = this._disconnections.get(handle);
 			 
 			 if (handle && (handle.length==2)){
@@ -635,14 +674,21 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 /**
 		  * Return an object that contain the connections for the parameter object.
 		  */
-		 getConnection: function(obj){
+		 /*Connection*/getConnection: function(/*Object: conn's source or context object*/obj) {
 			 return this._connections.get(obj);
+		 },
+		 
+		 /**
+		  * Return an object that contain the connections for the parameter object.
+		  */
+		 /*Connection*/getConnectionByHandle: function(/*dojo handle*/handle) {
+			 return this._disconnections.get(handle);
 		 },
 		 
 		 /**
 		  * Return an array with the objects with connections.
 		  */
-		 getObjectsWithConnections: function() {
+		 /*array*/getObjectsWithConnections: function() {
 			 return this._connections.getKeys();
 		 },
 		 
@@ -656,7 +702,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * this.ConnectionArraySorter.CONTEXT = 2;
 		  * this.ConnectionArraySorter.METHOD = 3;
 		  */
-		 /*Array<Connection>*/ getConnections: function(/*null|Array<int>*/ priorityCriteriaArray){
+		 /*Array<Connection>*/ getConnections: function(/*null|Array<int>*/ priorityCriteriaArray) {
 			 if (priorityCriteriaArray) {
 				 var sorter = new ConnectionArraySorter(this.getObjectsWithConnections(), priorityCriteriaArray);
 				 var cons = sorter.sortConnectionArray(this._connectionsArray);
@@ -669,7 +715,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 /**
 		  * Return the subscriptions map.
 		  */
-		 /*Object(Map)*/ getSubscriptions: function(){
+		 /*Object(Map)*/ getSubscriptions: function() {
 			 return this._subscriptions;
 		 },
 		 
@@ -677,7 +723,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * Return an array with all the registered subscriptions.
 		  * @return the list of existent subscriptions.
 		  */
-		 /*Array<Subscriptions>*/ getSubscriptionsList: function(){
+		 /*Array<Subscriptions>*/ getSubscriptionsList: function() {
 			 
 			 //xxxPERFORMANCE
 			 
@@ -693,7 +739,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * Returns is a disconnect handle is still being tracked 
 		  * @param handle The dojo disconnect handle returned by dojo.connect
 		  */
-		 /*Boolean*/ isHandleBeingTracked: function(/*DojoDisconnectHandler*/handle){
+		 /*Boolean*/ isHandleBeingTracked: function(/*DojoDisconnectHandler*/handle) {
 			 //FIXME this method is only used from tests? is it needed at all ?
 			 return (this._disconnections.get(handle) == null);
 		 },
@@ -701,7 +747,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 /**
 		  * Return the topics list.
 		  */
-		 /*Array<String>*/ getTopics: function(){
+		 /*Array<String>*/ getTopics: function() {
 			 return this.getSubscriptions().getKeys();
 		 },
 		 
@@ -709,15 +755,19 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * Return the subscriptions list for the topic passed as parameter.
 		  * @param topic The topic.
 		  */
-		 /*Array<Subscription>*/ subscriptionsForTopic: function(/*String*/topic){
+		 /*Array<Subscription>*/ subscriptionsForTopic: function(/*String*/topic) {
 			 return this.getSubscriptions().get(topic);
+		 },
+		 
+		 /*Subscription*/getSubscriptionByHandle: function(/*dojo handle*/ handle) {
+			 return this._disconnections.get(handle);
 		 },
 		 
 		 /**
 		  * Return true if there are any connection info registered for the object passed as parameter.
 		  * @param object The object.
 		  */
-		 /*boolean*/ areThereAnyConnectionsFor: function(/*object*/object){
+		 /*boolean*/ areThereAnyConnectionsFor: function(/*object*/object) {
 			 var objInfo = this.getConnection(object);
 			 return objInfo &&
 				 	!objInfo.getConnectionsTracker().isEmpty();
@@ -727,7 +777,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * Return true if there are any subscription info registered for the object passed as parameter.
 		  * @param object The object.
 		  */
-		 /*boolean*/ areThereAnySubscriptionFor: function(/*object*/object){
+		 /*boolean*/ areThereAnySubscriptionFor: function(/*object*/object) {
 			 var objInfo = this.getConnection(object);
 			 return objInfo &&
 				 	!objInfo.getSubscriptionsTracker().isEmpty();
@@ -736,7 +786,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 /**
 		  * Destructor
 		  */
-		 destroy: function(){
+		 destroy: function() {
 			 this._connections.destroy();
 			 delete this._connections;
 			 
