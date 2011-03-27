@@ -78,7 +78,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	};
 
 	//required as of FF 4
-	var _addMozillaExecutionGrants = function(fn) {
+	var _addMozillaExecutionGrants = this._addMozillaExecutionGrants = function(fn) {
 		if(!fn.__exposedProps__) {
 			fn.__exposedProps__ = {};
 		}		
@@ -1995,7 +1995,9 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         		dojoAccessor: dojoAccessor,
         		dojoDebugger: new DojoModel.DojoDebugger(dojoAccessor)
         };
+
         context.connectionsAPI = new DojoModel.ConnectionsAPI(_isHashCodeBasedDictionaryImplementationEnabled());
+        
         
         // FIXME: HACK to find out if the page need to be reloaded due to data inconsistencies issues.
         var dojo = DojoAccess._dojo(context);
@@ -2097,23 +2099,19 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 		   }
 		   
 		   if(!context.showInitialViewCall && dojo && (dojo.ready || dojo.addOnLoad)) {
-			   Firebug.Console.log("about to set addOnLoad", context);
 			   var showInitialViewCall = context.showInitialViewCall = function showInitialView() {
-				   Firebug.Console.log("executing addOnLoad", context);
-			       var panel = DojoExtension.dojofirebugextensionModel._getDojoPanel(context);
-			    	
+			       var panel = DojoExtension.dojofirebugextensionModel._getDojoPanel(context);			    	
 				   if (panel) {
 					   // Show the initial view.
 					   panel.showInitialView(context);
 				   }
 			   	};
-			   _addMozillaExecutionGrants(showInitialViewCall);
-			   
+			   _addMozillaExecutionGrants(showInitialViewCall);			   
 			   //dojo.addOnLoad
 			   var dojoReadyFn = (dojo.ready) ? dojo.ready : dojo.addOnLoad;
 			   dojoReadyFn.call(dojo, showInitialViewCall);
-			   Firebug.Console.log("set addOnLoad", context);
 		   }
+		  		   		  
        }
 	},
 	
@@ -2191,7 +2189,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 					   return ret; 
 				   }
 			
-				   var obj =  unwrapObject(args[0] || dojo.global);				   
+				   var obj =  unwrapObject(args[0] || dojo.global);			
 		   		   var event = unwrapObject(args[1]);				   
 
 			   		/* The context parameter could be null, in that case it will be determined according to the dojo.hitch implementation.
