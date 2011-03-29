@@ -972,6 +972,10 @@ Firebug.Chromebug = extend(Firebug.Module,
                     context =  Firebug.Chromebug.unreachablesContext;
                     FBTrace.sysout("buildEnumeratedSourceFiles NO context for script tag "+script.tag+" in "+script.fileName+" with globalsTag "+globalsTag);
                 }
+                else
+                {
+                    context.jsDebuggerCalledUs = true;
+                }
                 previousContext = context;
 
                 var sourceFile = context.sourceFileMap[url];
