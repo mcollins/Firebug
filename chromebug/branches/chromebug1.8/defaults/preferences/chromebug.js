@@ -177,3 +177,4 @@ pref("extensions.chromebug.DBG_ACTIVITYOBSERVER", false);    // Net panel's acti
 pref("extensions.chromebug.DBG_TOOLTIP", false);      // tooltip debugging      /*@explore*/
 pref("extensions.chromebug.DBG_HISTORY", false);      // panel navigation history                  /*@explore*/
 pref("extensions.chromebug.DBG_STORAGE", false);      // storageService                            /*@explore*/
+pref("extensions.chromebug.DBG_MODULES", false);      // moduleloading                            /*@explore*/
