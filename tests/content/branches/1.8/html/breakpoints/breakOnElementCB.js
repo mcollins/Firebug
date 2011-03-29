@@ -5,18 +5,18 @@ const BP_BREAKONREMOVE = 3;
 function runTest()
 {
     FBTest.sysout("html.breakpoints.CB; START");
-    FBTest.setPref("service.filterSystemURLs", false);
+    FBTest.setPref("filterSystemURLs", false);
 
-    var doNotFilter = FBTest.getPref("service.filterSystemURLs");
+    var doNotFilter = FBTest.getPref("filterSystemURLs");
 
-    FBTest.compare(false, doNotFilter, "Pref service.filterSystemURLs must not be set true");
+    FBTest.compare(false, doNotFilter, "Pref filterSystemURLs must not be set true");
     FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
 
 
     FBTestFirebug.openNewTab(basePath + "html/breakpoints/breakOnElement.html", function(win)
     {
-        var filter = FBTest.getPref("service.filterSystemURLs");
-        FBTest.compare(false, filter, "Pref service.filterSystemURLs must not be set true");
+        var filter = FBTest.getPref("filterSystemURLs");
+        FBTest.compare(false, filter, "Pref filterSystemURLs must not be set true");
         FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
 
         FBTestFirebug.openFirebug();

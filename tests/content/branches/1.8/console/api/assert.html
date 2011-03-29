@@ -13,7 +13,7 @@
 </p>
 
 <ol>
-<li>Make sure <i>extensions.firebug.service.filterSystemURLs</i> preference is set to true.
+<li>Make sure <i>extensions.firebug.filterSystemURLs</i> preference is set to true.
 If not, set it and reload the page.</li>
 <li>Open Firebug and enable the Console panel.</li>
 <li>Click on the <code style="color:green">Execute Test</code> button below.</li>
@@ -43,6 +43,6 @@ function onExecuteTest()
     console.assert(false, "negative with an object", {a: "b"}, 15, "asdfa");
 }
 </script>
-  
+
 </body>
 </html>

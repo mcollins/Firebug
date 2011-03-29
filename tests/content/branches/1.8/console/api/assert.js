@@ -7,11 +7,11 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            FBTest.setPref("service.filterSystemURLs", true);
+            FBTest.setPref("filterSystemURLs", true);
 
-            var doNotFilter = FBTest.getPref("service.filterSystemURLs");
+            var doNotFilter = FBTest.getPref("filterSystemURLs");
 
-            FBTest.compare(true, doNotFilter, "Pref service.filterSystemURLs must be set true");
+            FBTest.compare(true, doNotFilter, "Pref filterSystemURLs must be set true");
             FBTest.compare(true, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must be set true");
 
             var config = {tagName: "div", classes: "logRow logRow-errorMessage", counter: 2};
@@ -19,10 +19,10 @@ function runTest()
             {
                 verifyConsoleUI(config);
                 FW.Firebug.Console.clear();
-                FBTest.setPref("service.filterSystemURLs", false);
-                var filter = FBTest.getPref("service.filterSystemURLs");
-                FBTest.compare(false, filter, "Pref service.filterSystemURLs must not be set true");
-                FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
+                FBTest.setPref("filterSystemURLs", false);
+                var filter = FBTest.getPref("filterSystemURLs");
+                FBTest.compare(false, filter, "Pref filterSystemURLs must not be set true");
+                FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref filterSystemURLs must not be set true");
                 FBTest.waitForDisplayedElement("console", config, function(row)
                 {
                     verifyConsoleUI(config);

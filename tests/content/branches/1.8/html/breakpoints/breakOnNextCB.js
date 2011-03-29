@@ -1,7 +1,7 @@
 function runTest()
 {
     FBTest.sysout("html.breakpoints.CB; START");
-    FBTest.setPref("service.filterSystemURLs", false);
+    FBTest.setPref("filterSystemURLs", false);
 
 
     FBTestFirebug.openNewTab(basePath + "html/breakpoints/breakOnNext.html", function(win)
@@ -9,8 +9,8 @@ function runTest()
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableAllPanels();
 
-        var filter = FBTest.getPref("service.filterSystemURLs");
-        FBTest.compare(false, filter, "Pref service.filterSystemURLs must not be set true");
+        var filter = FBTest.getPref("filterSystemURLs");
+        FBTest.compare(false, filter, "Pref filterSystemURLs must not be set true");
         FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
 
         // A suite of asynchronous tests.
@@ -41,9 +41,9 @@ function breakOnMutation(win, buttonId, lineNo, callback)
 {
     FBTestFirebug.selectPanel("html");
 
-    var filter = FBTest.getPref("service.filterSystemURLs");
+    var filter = FBTest.getPref("filterSystemURLs");
 
-    FBTest.compare(false, filter, "Pref service.filterSystemURLs must not be set true");
+    FBTest.compare(false, filter, "Pref filterSystemURLs must not be set true");
     FBTest.compare(false, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must not be set true");
 
     var chrome = FW.Firebug.chrome;

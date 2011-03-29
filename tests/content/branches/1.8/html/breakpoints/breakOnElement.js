@@ -5,16 +5,16 @@ const BP_BREAKONREMOVE = 3;
 function runTest()
 {
     FBTest.sysout("html.breakpoints; START");
-    FBTest.setPref("service.filterSystemURLs", true);
+    FBTest.setPref("filterSystemURLs", true);
 
     FBTestFirebug.openNewTab(basePath + "html/breakpoints/breakOnElement.html", function(win)
     {
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableAllPanels();
 
-        var doNotFilter = FBTest.getPref("service.filterSystemURLs");
+        var doNotFilter = FBTest.getPref("filterSystemURLs");
 
-        FBTest.compare(true, doNotFilter, "Pref service.filterSystemURLs must be set true");
+        FBTest.compare(true, doNotFilter, "Pref filterSystemURLs must be set true");
         FBTest.compare(true, FW.Firebug.filterSystemURLs, "Pref Firebug.filterSystemURLs must be set true");
 
         // A suite of asynchronous tests.

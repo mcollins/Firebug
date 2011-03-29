@@ -1,7 +1,7 @@
 function runTest()
 {
     FBTest.sysout("net.breakpoints.CB; START");
-    FBTest.setPref("service.filterSystemURLs", false);
+    FBTest.setPref("filterSystemURLs", false);
 
     FBTestFirebug.openNewTab(basePath + "net/breakpoints/breakOnXHR.html", function(win)
     {
