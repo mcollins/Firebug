@@ -23,9 +23,9 @@ function runTest()
 
             // List of tasks for this test.
             var taskList = new FBTest.TaskList();
-            taskList.push(executeTest, doc, "debuggerSimple", 30, true);
-            taskList.push(executeTest, doc, "debuggerShallow", 36, true);
-            taskList.push(executeTest, doc, "debuggerDeep", 62, true);
+            taskList.push(executeTest, doc, "debuggerSimple", 31, true);
+            taskList.push(executeTest, doc, "debuggerShallow", 37, true);
+            taskList.push(executeTest, doc, "debuggerDeep", 63, true);
             taskList.push(executeTest, doc, "debuggerInXHR", 14, false); // Disable is not supported for XHR.
             taskList.push(executeTest, doc, "debuggerInScript", 16, true);
 
