@@ -18,14 +18,14 @@ function openOpenCloseClose()
         var placement = FBTest.FirebugWindow.Firebug.getPlacement();
         FBTest.compare("inBrowser", placement, "Firebug now open inBrowser");
 
-        if (FBTest.FirebugWindow.FirebugContext)
+        if (FBTest.FirebugWindow.Firebug.currentContext)
         {
-            var contextName = FBTest.FirebugWindow.FirebugContext.getName();
-            FBTest.ok(true, "chromeWindow.FirebugContext "+contextName);
-            FBTest.ok(contextName == openOpenCloseCloseURL, "FirebugContext set to "+openOpenCloseCloseURL);
+            var contextName = FBTest.FirebugWindow.Firebug.currentContext.getName();
+            FBTest.ok(true, "chromeWindow.Firebug.currentContext "+contextName);
+            FBTest.ok(contextName == openOpenCloseCloseURL, "Firebug.currentContext set to "+openOpenCloseCloseURL);
         }
         else
-            FBTest.ok(false, "no FirebugContext");
+            FBTest.ok(false, "no Firebug.currentContext");
 
         FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
