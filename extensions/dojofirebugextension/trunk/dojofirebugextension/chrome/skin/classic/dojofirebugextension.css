@@ -137,6 +137,9 @@
 	margin-bottom: 5px;
 	color: gray;
 	padding-left: 10px;
+	position: fixed;
+	left: 2px;
+	right: 18px;
 }
 
 .dojo-warning img{
@@ -354,7 +357,8 @@
 
 
 #menu_dojofirebugextension_inspect {
-    list-style-image: url(chrome://dojofirebugextension/skin/dojo-logo-icon.png);
+    /*list-style-image: url(chrome://dojofirebugextension/skin/dojo-logo-icon.png);*/
+    list-style-image: url(chrome://dojofirebugextension/skin/logo-icon-2.png);
 }
 
 /*************************************************************************************************/
