@@ -1,0 +1,2 @@
+content tracingconsole  chrome/content/tracingconsole/
+overlay chrome://firebug/content/firebugOverlay.xul         chrome://tracingconsole/content/tracingConsole.xul
