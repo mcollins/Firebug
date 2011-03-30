@@ -32,6 +32,33 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	var nsIInterfaceRequestor = Ci.nsIInterfaceRequestor;
 	var nsISelectionDisplay = Ci.nsISelectionDisplay;
 	var nsISelectionController = Ci.nsISelectionController;
+
+//	/*Object*/var unwrap = this.unwrap = function(/*Object*/ obj) {
+//		
+//	    if (typeof(obj) === 'undefined' || obj == null) {
+//	        return obj;
+//	    }
+//		
+//		var original = obj;
+//		if(obj.getWrappedValue) {
+//			obj = obj.getWrappedValue();
+//		}
+//		
+//	    try {
+//	        // XPCSafeJSObjectWrapper is not defined in Firefox 4.0
+//	        // this should be the only call to getWrappedValue in firebug
+//	        if (typeof(XPCSafeJSObjectWrapper) != "undefined")
+//	            return XPCSafeJSObjectWrapper(obj);
+//	        else if (typeof(unwrapped) == "object")
+//	            return XPCNativeWrapper.unwrap(obj);
+//	        else
+//	            return obj;
+//	    } catch (exc) {
+//	        if (FBTrace.DBG_DOJO)
+//	            FBTrace.sysout("DOJO unwrap FAILS for "+original+" cause: "+exc,{exc: exc, object: original, unwrapped: obj});
+//	    }
+//
+//	};
 	
 	/**
 	 * Scroll search found selection. 
@@ -97,17 +124,19 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     /**
      * verify if the hashCodeBasedDictionary implementation is enabled.
      */
-    var _isHashCodeBasedDictionaryImplementationEnabled = function(){
+    var _isHashCodeBasedDictionaryImplementationEnabled = this._isHashCodeBasedDictionaryImplementationEnabled = function(){
     	var value = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_MAP_IMPL);
     	return value;
     };
     
     /**
      * verify if the breakpoint place support is enabled.
+     * Note: this setting will be automatically disabled if useEventBasedProxy is enabled.
      */
     var _isBreakPointPlaceSupportDisabled = function(){
     	var value = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_BP_PLACE);
-    	return value;
+    	
+    	return value || _isUseEventBasedProxyEnabled();
     };
     
     /**
@@ -908,16 +937,19 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 		// DomHighlightSelector       
         this._domHighlightSelector = new DomHighlightSelector();
         
-        this._domHighlightSelector.addSelector("dojo-connection", function(selection, connection){
-    		return connection && ((connection['obj'] === selection) || (connection['context'] === selection));
+        this._domHighlightSelector.addSelector("dojo-connection", function(selection, connection) {
+        	var usingHashcodes = _isHashCodeBasedDictionaryImplementationEnabled();
+        	return connection && ((DojoModel.areEqual(connection['obj'], selection, usingHashcodes)) || (DojoModel.areEqual(connection['context'], selection, usingHashcodes)));
     	});
         
-        this._domHighlightSelector.addSelector("dojo-subscription", function(selection, subscription){
-    		return subscription && (subscription['context'] === selection);
+        this._domHighlightSelector.addSelector("dojo-subscription", function(selection, subscription) {
+        	var usingHashcodes = _isHashCodeBasedDictionaryImplementationEnabled();
+    		return subscription && (DojoModel.areEqual(subscription['context'], selection, usingHashcodes));
     	});
         
-        this._domHighlightSelector.addSelector("dojo-widget", function(selection, widget){
-    		return (widget === selection);
+        this._domHighlightSelector.addSelector("dojo-widget", function(selection, widget) {
+        	var usingHashcodes = _isHashCodeBasedDictionaryImplementationEnabled();
+    		return DojoModel.areEqual(widget, selection, usingHashcodes);
     	});		
 	},
 	
@@ -1263,6 +1295,9 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
      *  returns true is the given option is selected on this context
      */
     /*boolean*/_isOptionSelected: function(option, ctx) {
+    	if(!ctx.dojo) {
+    		return false;
+    	}
     	return (ctx.dojo.mainMenuSelectedOption) && (ctx.dojo.mainMenuSelectedOption == option); 
     },
     
@@ -2294,6 +2329,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
        testLists.push({
            extension: "dojofirebugextension",
            testListURL: "chrome://dojofirebugextension/content/fbtest/testlists/testList.html"
+           //testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
        });
    }
    
@@ -2311,4 +2347,6 @@ Firebug.registerPanel(DojoExtension.SubscriptionsSidePanel);
 Firebug.registerPanel(DojoExtension.DojoDOMSidePanel);
 Firebug.registerPanel(DojoExtension.DojoHTMLPanel);
 Firebug.registerStylesheet(DOJO_EXT_CSS_URL);
+
+Firebug.DojoExtension = DojoExtension;
 }});
