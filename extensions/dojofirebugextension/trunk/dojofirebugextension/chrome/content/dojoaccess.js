@@ -305,9 +305,9 @@ DojoModel.DojoAccessor.prototype =
 			props['attributeMap'] = widget.attributeMap;
 			
 			/* Declared Class */
-			//props['declaredClass'] = widget['declaredClass'];
-			var declaredClassName = this._getDeclaredClassName(widget);
-			props['declaredClass'] = dojo.getObject(declaredClassName);
+			props['declaredClass'] = widget['declaredClass'];
+//			var declaredClassName = this._getDeclaredClassName(widget);
+//			props['declaredClass'] = dojo.getObject(declaredClassName);
 			
 			/* Dom Node */
 			props['domNode'] = widget.domNode;
