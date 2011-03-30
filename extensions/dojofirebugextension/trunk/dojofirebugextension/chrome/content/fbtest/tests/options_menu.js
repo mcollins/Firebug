@@ -11,11 +11,14 @@ var WIDGET_OPTION = "widget_option";
  */
 function runTest()
 {	
+	setPreferences();
+	
 	FBTest.sysout("Options menu for dojo objects test START");
 	
 	FBTest.openURL(basePath + "objects_panel_support.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			win = FBTest.FirebugWindow.FBL.unwrapObject(win);

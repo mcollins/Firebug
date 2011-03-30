@@ -1,12 +1,16 @@
+
 // Test entry point.
 function runTest() {
-		
+	
+	setPreferences();
+	
 	FBTest.sysout("widget-destroy-test START");
 	FBTest.openURL(basePath + "widget-destroy-test.html", function(win) {
 
 		FBTest.openFirebug();
-//		FBTest.disableAllPanels();
+		FBTest.disableAllPanels();
 		FBTest.enableAllPanels();
+		enableDojoPanel();
 		
 	    FBTest.reload(function(win) {
 	    	win = FBTest.FirebugWindow.FBL.unwrapObject(win);
@@ -140,10 +144,11 @@ function verifyEverythingWasCleanedUp(win, panel, api, context, dijit, originalW
 	FBTest.compare(originalWidgets, panel.getWidgets(context).length, "registry should contain same number of widgets as in the beginning");	
 }
 
-function _toArray(/*WidgetSet*/ registry) {
-	var ar = [];
-	registry.forEach(function(elem) {
-		ar.push(elem);
-	});
-	return ar;
-}
+//function _toArray(/*WidgetSet*/ registry) {
+//	//FIXME este puede estar metiendo problemas con el == 
+//	var ar = [];
+//	registry.forEach(function(elem) {
+//		ar.push(elem);
+//	});
+//	return ar;
+//}

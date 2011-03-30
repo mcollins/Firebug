@@ -1,11 +1,14 @@
 // Test entry point.
 function runTest()
 {	
+	setPreferences();
+	
 	FBTest.sysout("connect_parameters test START");
 	
 	FBTest.openURL(basePath + "connect_parameters.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			win = FBTest.FirebugWindow.FBL.unwrapObject(win);
@@ -21,7 +24,7 @@ function runTest()
 		    	var dojoGlobal = api.getObjectsWithConnections()[0];
 		    	var objConnHandlerTest = win.objConnHandlerTest;
 		    	var objConnTargetTest = win.objConnTargetTest;
-		    	
+
 		    	verifyConnection(api, dojoGlobal, "methodGlobal1", dojoGlobal, "methodGlobal2", 'dojo.connect("methodGlobal1", "methodGlobal2");');
 				verifyConnection(api, dojoGlobal, "methodGlobal2", dojoGlobal, dojoGlobal.methodGlobal1, 'dojo.connect("methodGlobal2", methodGlobal1);');
 				verifyConnection(api, dojoGlobal, "methodGlobal3", dojoGlobal, "methodGlobal4", 'dojo.connect(null, "methodGlobal3", "methodGlobal4");');
@@ -52,7 +55,7 @@ function runTest()
 function verifyConnection(api, obj, event, context, method, connectionStatement){
 	var conInc = api.getConnection(obj).getIncommingConnectionsForEvent(event)[0];
 	var conOut = api.getConnection(context).getOutgoingConnectionsForMethod(method)[0];
-	FBTest.compare(conInc, conOut, "Connection registered for statement: '" + connectionStatement + "'.");
+	FBTest.compareHash(conInc, conOut, "Connection registered for statement: '" + connectionStatement + "'.");
 }
 
 function applyTests(context) {

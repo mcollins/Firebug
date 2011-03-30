@@ -3,6 +3,8 @@ window.FBTestTimeout = 60000; // override the default test timeout [ms].
 // Test entry point.
 function runTest()
 {	
+	setPreferences();
+	
 	FBTest.sysout("widget_connections test START");
 	
 	try {
@@ -23,6 +25,7 @@ function verifyWidgetConnections(testPageUrl, expectedIncomming, expectedOutgoin
 	FBTest.openURL(basePath + testPageUrl, function(win) {
 		FBTest.openFirebug();
 		FBTest.enableAllPanels();
+		enableDojoPanel();
 		
 	    FBTest.reload(function(win){
 	    	win = FBTest.FirebugWindow.FBL.unwrapObject(win);
@@ -63,11 +66,11 @@ function verifyWidgetConnections(testPageUrl, expectedIncomming, expectedOutgoin
 };
 
 function testNumberOfIncommingConnection(expected, connectionInfo){
-	FBTest.compare(expected, connectionInfo.getIncommingConnectionsEvents().length, "Number of events with incoming connections: " + expected);
+	FBTest.compareHash(expected, connectionInfo.getIncommingConnectionsEvents().length, "Number of events with incoming connections: " + expected);
 }
 
 function testNumberOfOutgoingConnection(expected, connectionInfo){
-	FBTest.compare(expected, connectionInfo.getOutgoingConnectionsMethods().length, "Number of functions with outgoing connections: " + expected);
+	FBTest.compareHash(expected, connectionInfo.getOutgoingConnectionsMethods().length, "Number of functions with outgoing connections: " + expected);
 }
 
 function applyTests(context) {

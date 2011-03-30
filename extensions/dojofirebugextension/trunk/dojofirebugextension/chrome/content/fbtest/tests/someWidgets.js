@@ -8,6 +8,7 @@ function runTest()
     
     //FBTest.ok(FBTest.isFirebugOpen(), "Firebug is not open!");
 	
+	setPreferences();
 	
 	FBTest.sysout("someWidgets START");
 	//FBTestFirebug.openNewTab(basePath + "inspector/InspectorTestIframe.htm?url=Issue68BoxExpected.htm", function(win) {});
@@ -15,6 +16,7 @@ function runTest()
 	FBTest.openURL(basePath + "someWidgets.html", function(win) {
 		win = FBTest.FirebugWindow.FBL.unwrapObject(win);
 	    FBTest.openFirebug();
+	    enableDojoPanel();
 
 	    try {
 	    	var panel = FW.FirebugChrome.selectPanel("dojofirebugextension"); //get our panel

@@ -1,11 +1,14 @@
 // Test entry point.
 function runTest()
 {	
-	FBTest.sysout("basic_connections test START");
+	setPreferences();
 	
+	FBTest.sysout("basic_connections test START");
+
 	FBTest.openURL(basePath + "basic_connections.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			win = FBTest.FirebugWindow.FBL.unwrapObject(win);
@@ -13,8 +16,12 @@ function runTest()
 			var context = FW.Firebug.currentContext; //context!
 			
 			try {
+				
+				FBTest.FirebugWindow.Firebug.Console.log("inicio test", context);
 		    	var api = context.connectionsAPI;
 		    	var conns = api.getConnections();
+		    	
+		    	FBTest.FirebugWindow.Firebug.Console.log("conns" + conns, context);
 		    	
 		    	// compare number of registered connections
 		        FBTest.compare(4, conns.length, "number of connections made should be 4");
@@ -23,16 +30,17 @@ function runTest()
 		        var con = null;
 		        
 		        // ObjA
+
 		        var objAConInfo = api.getConnection(win.objA);
 		        FBTest.compare(2, objAConInfo.getOutgoingConnectionsMethods().length, "ObjA has outgoing connections for 2 functions");
 		        	// 'funcTest'
 		        con = objAConInfo.getOutgoingConnectionsForMethod('funcTest')[0];
-		        FBTest.compare(con.obj, win.button , "The obj prop for outgoing connection for function 'funcTest' should be 'button'.");
-		        FBTest.compare(con.event, 'onclick' , "The event prop for outgoing connection for function 'funcTest' should be 'onclick'.");
+		        FBTest.compareHash(con.obj, win.button , "The obj prop for outgoing connection for function 'funcTest' should be 'button'.");
+		        FBTest.compareHash(con.event, 'onclick' , "The event prop for outgoing connection for function 'funcTest' should be 'onclick'.");
 		        	// win.objA.funcTest
 		        con = objAConInfo.getOutgoingConnectionsForMethod(win.objA.funcTest)[0];
-		        FBTest.compare(con.obj, win.button, "The obj prop for outgoing connection for function objA.funcTest should be button.");
-		        FBTest.compare(con.event, 'onblur', "The event prop for outgoing connection for function objA.funcTest should be 'onblur'.");
+		        FBTest.compareHash(con.obj, win.button, "The obj prop for outgoing connection for function objA.funcTest should be button.");
+		        FBTest.compareHash(con.event, 'onblur', "The event prop for outgoing connection for function objA.funcTest should be 'onblur'.");
 		        
 		        // Button
 		        var buttonConInfo = api.getConnection(win.button);

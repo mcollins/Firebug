@@ -1,11 +1,15 @@
 // Test entry point.
 function runTest()
 {	
+	
+	setPreferences();
+	
 	FBTest.sysout("Objects panel supprot test START");
 	
 	FBTest.openURL(basePath + "objects_panel_support.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			win = FBTest.FirebugWindow.FBL.unwrapObject(win);

@@ -5,11 +5,15 @@
 ***************************************************************************/
 function runTest()
 {	
+	
+	setPreferences();
+	
 	FBTest.sysout("menu_item test START");
 	
 	FBTest.openURL(basePath + "menu_item.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			win = FBTest.FirebugWindow.FBL.unwrapObject(win);

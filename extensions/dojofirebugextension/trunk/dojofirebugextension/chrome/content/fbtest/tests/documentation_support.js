@@ -4,11 +4,15 @@ var DOCUMENTATION_OPTION = "documentation_option";
 // Test entry point.
 function runTest()
 {	
+	
+	setPreferences();
+	
 	FBTest.sysout("Documentation support test START");
 	
 	FBTest.openURL(basePath + "documentation_support.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			try {

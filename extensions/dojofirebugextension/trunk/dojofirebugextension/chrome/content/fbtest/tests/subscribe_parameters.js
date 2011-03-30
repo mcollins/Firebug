@@ -1,11 +1,14 @@
 // Test entry point.
 function runTest()
 {	
+	setPreferences();
+	
 	FBTest.sysout("subscribe_parameters test START");
 	
 	FBTest.openURL(basePath + "subscribe_parameters.html", function(win) {
 		FBTest.openFirebug();
 	    FBTest.enableAllPanels();
+	    enableDojoPanel();
 	    
 		FBTest.reload(function(win){
 			win = FBTest.FirebugWindow.FBL.unwrapObject(win);
@@ -15,7 +18,7 @@ function runTest()
 			try {
 		    	var api = context.connectionsAPI;
 		    	var d = win.dojo;
-		    	
+		    		    	
 		    	var globalTestFunc = win.globalTestFunc;
 				var objTest = win.objTest;
 		    	
@@ -39,8 +42,11 @@ function runTest()
 
 function verify(api, topic, expectedScope, expectedMethod){
 	var sub = getSubscrition(api, topic);
-	FBTest.compare(expectedScope, sub.context, "For topic " + topic + " the scope is the expected one.");
-	FBTest.compare(expectedMethod, sub.method, "For topic " + topic + " the method is the expected one.");
+	FBTest.compareHash(expectedScope, sub.context, "For topic " + topic + " the scope is the expected one.");
+	var res = FBTest.compareHash(expectedMethod, sub.method, "For topic " + topic + " the method is the expected one.");
+	if(!res) {
+		FBTest.ok(false, "It's very likely that FF40's == is still returning false (incorrectly). Not happened with FF3.6");
+	}
 }
 
 //FIXME: the verify method does not work for dojo object. ??
@@ -49,7 +55,10 @@ function verifyForDojoObj(api, topic, expectedMethod){
 
 	//FIXME compare against actual "dojo" object , instead of checking for obj with connect and subscribe method to assume dojo obj!  
 	FBTest.ok(sub.context && sub.context.connect && sub.context.subscribe, "For topic " + topic + " the expected scope is dojo.");
-	FBTest.compare(expectedMethod, sub.method, "For topic " + topic + " the method is the expected one.");
+	var res = FBTest.compareHash(expectedMethod, sub.method, "For topic " + topic + " the method is the expected one.");
+	if(!res) {
+		FBTest.ok(false, "It's very likely that FF40's == is still returning false (incorrectly). Not happened with FF3.6");
+	}
 }
 
 function getSubscrition(api, topic){

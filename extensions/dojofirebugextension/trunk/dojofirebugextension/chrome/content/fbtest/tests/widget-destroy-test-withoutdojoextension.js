@@ -1,11 +1,14 @@
+
 // Test entry point.
 function runTest() {
 		
+	setPreferences();
+	
 	FBTest.sysout("widget-destroy-test START");
 	FBTest.openURL(basePath + "widget-destroy-test.html", function(win) {
 
 		FBTest.openFirebug();
-		FBTest.disableAllPanels();
+		disableDojoPanel();
 		
 	    FBTest.reload(function(win) {
 	    	with (FBTest.FirebugWindow.FBL) {
@@ -132,10 +135,13 @@ function verifyEverythingWasCleanedUp(win, dijit, originalWidgets, originalConne
 	FBTest.compare(originalWidgets, _toArray(dijit.registry).length, "registry should contain same number of widgets as in the beginning");	
 }
 
-function _toArray(/*WidgetSet*/ registry) {
-	var ar = [];
-	registry.forEach(function(elem) {
-		ar.push(elem);
-	});
-	return ar;
-}
+
+//function _toArray(/*WidgetSet*/ registry) {
+//	var ar = [];
+//	var clientFn = function(elem) {
+//		ar.push(elem);
+//	};
+//	FBTest._addMozillaExecutionGrants(clientFn);
+//	registry.forEach(clientFn);
+//	return ar;
+//}
