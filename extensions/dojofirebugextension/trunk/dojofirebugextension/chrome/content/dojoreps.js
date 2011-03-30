@@ -501,10 +501,11 @@ this.ConnectionsTableRep = domplate(
 		            				TD({"class": "superHeader", "colspan": "2"}, $STR('title.Target', DOJO_BUNDLE))
 			                  ),
 		            		TR({"class": "connectionsPropertyHeaders"},
-			                        TH({"class": "$priorityCriteriaArray|objectPriorityOrder", "onclick": "$sorterObject"}, $STR('title.Obj', DOJO_BUNDLE)),
-			                        TH({"class": "$priorityCriteriaArray|eventPriorityOrder", "onclick": "$sorterEvent"},$STR('title.Event', DOJO_BUNDLE)),
-			                        TH({"class": "$priorityCriteriaArray|contextPriorityOrder", "onclick": "$sorterContext"},$STR('title.Context', DOJO_BUNDLE)),
-			                        TH({"class": "$priorityCriteriaArray|methodPriorityOrder", "onclick": "$sorterMethod"},$STR('title.Method', DOJO_BUNDLE))
+		            				//TODO preyna sorted table: enable again!
+			                        TH({/*"class": "$priorityCriteriaArray|objectPriorityOrder", "onclick": "$sorterObject"*/}, $STR('title.Obj', DOJO_BUNDLE)),
+			                        TH({/*"class": "$priorityCriteriaArray|eventPriorityOrder", "onclick": "$sorterEvent"*/},$STR('title.Event', DOJO_BUNDLE)),
+			                        TH({/*"class": "$priorityCriteriaArray|contextPriorityOrder", "onclick": "$sorterContext"*/},$STR('title.Context', DOJO_BUNDLE)),
+			                        TH({/*"class": "$priorityCriteriaArray|methodPriorityOrder", "onclick": "$sorterMethod"*/},$STR('title.Method', DOJO_BUNDLE))
 			                  ),
 			            	FOR("con", "$connections",
 			                    TR({"class": "dojo-connection row-$null|changeLineType", _referencedObject: "$con"},

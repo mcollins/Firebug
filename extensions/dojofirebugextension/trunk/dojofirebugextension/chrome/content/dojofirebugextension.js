@@ -1458,8 +1458,11 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	
     	// Sort the connection array.
     	priorityCriteriaArray = context.priorityCriteriaArray || criterias; 
+
+    	//TODO preyna sorted table: enable again!
+//    	var cons = context.connectionsAPI.getConnections(priorityCriteriaArray);
     	
-    	var cons = context.connectionsAPI.getConnections(priorityCriteriaArray);
+    	var cons = context.connectionsAPI.getConnections();
     	
     	var document = this.document;
     	
@@ -2328,8 +2331,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
    onGetTestList: function(testLists) {
        testLists.push({
            extension: "dojofirebugextension",
-           testListURL: "chrome://dojofirebugextension/content/fbtest/testlists/testList.html"
-           //testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
+           //testListURL: "chrome://dojofirebugextension/content/fbtest/testlists/testList.html"
+           testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
        });
    }
    

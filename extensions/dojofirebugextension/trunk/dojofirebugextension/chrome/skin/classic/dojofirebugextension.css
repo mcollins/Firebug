@@ -163,11 +163,13 @@
 }
 
 .connections-table th:hover { 
-	text-decoration: underline; 
+/* TODO preyna sorted table: enable again! */	
+/*	text-decoration: underline; */ 
 }
 
 .connections-table th{
-	cursor: pointer;
+/* TODO preyna sorted table: enable again! */
+/*	cursor: pointer; */
 	padding-left: 20px;
 	padding-right: 20px;
 }
