@@ -10,6 +10,8 @@ const Cr = Components.results;
 const categoryManager = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
 const appShellService = Cc["@mozilla.org/appshell/appShellService;1"].getService(Ci.nsIAppShellService);
 
+const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
+
 const CMDLINE_FLAG = "fbtrace";
 
 Components.utils["import"]("resource://gre/modules/XPCOMUtils.jsm");
@@ -50,8 +52,24 @@ CommandLineHandler.prototype =
     {
         window = appShellService.hiddenDOMWindow;
 
+        window.dump("FBTrace; handling command line parameters\n");
+
         if (cmdLine.findFlag(CMDLINE_FLAG, false) < 0)
+        {
+            // Check if the "extensions.firebug.alwaysOpenTraceConsole" pref is set
+            var open = prefs.getBoolPref("extensions.firebug.alwaysOpenTraceConsole");
+            if (open)
+                this.openConsole(window, "extensions.firebug");
+
+            // xxxHonza, XXXjjb: isn't this hack? Any other way for Chromebug?
+            // Anyway, the blocker seems to be confused by the second window
+            // and doesn't unblock.
+            //open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
+            //if (open)
+            //    this.openConsole(window, "extensions.chromebug");
+
             return;
+        }
 
         try
         {
@@ -66,16 +84,6 @@ CommandLineHandler.prototype =
             // The default pref domain is used.
             if (cmdLine.handleFlag(CMDLINE_FLAG, false))
                 this.openConsole(window, "extensions.firebug");
-        }
-
-        try
-        {
-            // Handle flag with test URI specified. This throws an exception
-            // if the parameter isn't specified.
-        }
-        catch (e)
-        {
-            window.dump("FBTrace; command line handler EXCEPTION " + e + "\n");
         }
     },
 

@@ -59,7 +59,10 @@ var TraceConsole =
         this.loader = this.createLoader(this.prefDomain, "chrome://tracingconsole/content/");
 
         var modules = [];
-        modules.push("serializer");
+        modules.push("serializer"); // save to file, load from file
+
+        // Overrides the default Firebug.TraceModule implementation that only
+        // collects tracing listeners (customization of logs)
         modules.push("traceModule.js");
 
         var self = this;
