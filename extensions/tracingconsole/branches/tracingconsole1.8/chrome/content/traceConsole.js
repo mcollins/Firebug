@@ -40,7 +40,7 @@ var TraceConsole =
         // to this pref-domain will be displayed. The current domain is displyaed
         // in window title.
         this.prefDomain = args.prefDomain;
-        document.title = FBL.$STR("title.Tracing") + ": " + this.prefDomain + "X";
+        document.title = FBL.$STR("title.Tracing") + ": " + this.prefDomain;
 
         // Register listeners and observers
         traceService.addObserver(this, "firebug-trace-on-message", false);

@@ -3,7 +3,7 @@
     <script type="application/x-javascript" src="chrome://tracingconsole/content/traceFirebugOverlay.js"/>
 
     <commandset id="mainCommandSet">
-        <command id="cmd_openTraceConsoleX" oncommand="FBTraceFirebugOverlay.openConsole()"/>
+        <command id="cmd_openTraceConsole" oncommand="FBTraceFirebugOverlay.openConsole()"/>
     </commandset>
 
     <keyset id="mainKeyset">
@@ -12,8 +12,8 @@
 
     <!-- Overlay for Firebug menu -->
     <menupopup id="fbFirebugMenuPopup">
-        <menuitem id="menu_openTraceConsoleX" label="Open_Firebug_TracingX"
-            command="cmd_openTraceConsoleX" insertbefore="menu_aboutSeparator"
+        <menuitem id="menu_openTraceConsole" label="Open_Firebug_Tracing"
+            command="cmd_openTraceConsole" insertbefore="menu_aboutSeparator"
             class="fbInternational" key="key_openTraceConsole"/>
 
         <menu id="FirebugMenu_Options">
