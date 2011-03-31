@@ -22,7 +22,7 @@ var TraceConsoleLoader =
             // Require JS configuration
             var config = {};
             config.prefDomain = args.prefDomain;
-            config.baseUrl = "resources://tracingconsole/";
+            config.baseUrl = "chrome://tracingconsole/content/";
             config.paths = {"arch": "inProcess"};
 
             // Defalt globals for all modules loaded using this loader.
@@ -37,7 +37,11 @@ var TraceConsoleLoader =
             };
 
             // Create loader and load tracing module.
-            this.loader = new ModuleLoader(firebugScope, config);
+            var loader = new ModuleLoader(firebugScope, config);
+            loader.define(["traceModule.js"], function(traceModule)
+            {
+                traceModule.openConsole(config.prefDomain);
+            });
         }
         catch (err)
         {

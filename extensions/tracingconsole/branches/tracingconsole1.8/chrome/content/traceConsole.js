@@ -3,7 +3,12 @@
 // ************************************************************************************************
 // Shorcuts and Services
 
-Components.utils.import("resource://firebug/firebug-trace-service.js");
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
+Components.utils["import"]("resource://firebug/firebug-trace-service.js");
+Components.utils["import"]("resource://tracingconsole-firebug/moduleLoader.js");
+
 var traceService = traceConsoleService;
 
 const PrefService = Cc["@mozilla.org/preferences-service;1"];
@@ -32,13 +37,48 @@ var TraceConsole =
         var args = window.arguments[0];
 
         // Get pref domain is used for message filtering. Only logs that belong
-        // to this pref-domain will be displayed.
+        // to this pref-domain will be displayed. The current domain is displyaed
+        // in window title.
         this.prefDomain = args.prefDomain;
-        document.title = FBL.$STR("title.Tracing") + ": " + this.prefDomain;
+        document.title = FBL.$STR("title.Tracing") + ": " + this.prefDomain + "X";
 
         // Register listeners and observers
         traceService.addObserver(this, "firebug-trace-on-message", false);
         prefs.addObserver(this.prefDomain, this, false);
+
+        try
+        {
+            Firebug.initialize();
+        }
+        catch (e)
+        {
+            window.dump("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
+        }
+
+        // Load tracing console modules
+        this.loader = this.createLoader(this.prefDomain, "chrome://tracingconsole/content/");
+
+        var modules = [];
+        modules.push("serializer");
+        modules.push("traceModule.js");
+
+        var self = this;
+        this.loader.define(modules, function()
+        {
+            try
+            {
+                self.initializeConsole();
+            }
+            catch (e)
+            {
+                window.dump("FBTrace; " + e + "\n");
+            }
+        });
+    },
+
+    initializeConsole: function()
+    {
+        window.dump("FBTrace; initializeConsole, TraceModule: " + Firebug.TraceModule + "\n");
 
         // Initialize root node of the trace-console window.
         var consoleFrame = document.getElementById("consoleFrame");
@@ -47,8 +87,19 @@ var TraceConsole =
             return false;
         };
 
+        // Make sure the UI is localized.
+        Firebug.internationalizeUI(window.document);
+
+        if (!Firebug.TraceModule)
+        {
+            window.dump("FBTrace; Firebug.TraceModule == NULL\n");
+            return;
+        }
+
         this.consoleNode = consoleFrame.contentDocument.getElementById("panelNode-traceConsole");
-        Firebug.TraceModule.CommonBaseUI.initializeContent(this.consoleNode, this, this.prefDomain,
+
+        Firebug.TraceModule.CommonBaseUI.initializeContent(
+            this.consoleNode, this, this.prefDomain,
             FBL.bind(this.initializeContent, this));
 
         gFindBar = document.getElementById("FindToolbar");
@@ -61,8 +112,6 @@ var TraceConsole =
         // Notify listeners
         Firebug.TraceModule.onLoadConsole(window, logNode);
 
-        // Make sure the UI is localized.
-        Firebug.internationalizeUI(window.document);
         this.updateTimeInfo();
 
         // If the opener is closed the console must be also closed.
@@ -73,6 +122,53 @@ var TraceConsole =
         // Fetch all cached messages.
         for (var i=0; i<queue.length; i++)
             this.dump(queue[i]);
+
+        window.dump("FBTrace; initialization process done!\n");
+    },
+
+    createLoader: function(prefDomain, baseUrl)
+    {
+        try
+        {
+            // Require JS configuration
+            var config = {};
+            config.prefDomain = prefDomain;
+            config.baseUrl = baseUrl;
+            config.paths = {"arch": "inProcess"};
+
+            config.onDebug = function()
+            {
+                //window.dump("FBTrace; onDebug: " + arguments + "\n");
+                //Components.utils.reportError(arguments[0]);
+            }
+
+            config.onError = function()
+            {
+                window.dump("FBTrace; onError: " + arguments + "\n");
+                Components.utils.reportError(arguments[0]);
+            }
+
+            // Defalt globals for all modules loaded using this loader.
+            var firebugScope =
+            {
+                window : window,
+                Firebug: Firebug,
+                fbXPCOMUtils: fbXPCOMUtils,
+                FBL: FBL,
+                FirebugReps: FirebugReps,
+                domplate: domplate,
+                TraceConsole: this,
+            };
+
+            Firebug.loadConfiguration = config;
+
+            // Create loader and load tracing module.
+            return new ModuleLoader(firebugScope, config);
+        }
+        catch (err)
+        {
+            window.dump("FBTrace; EXCEPTION " + err + "\n");
+        }
     },
 
     updateTimeInfo: function()
@@ -107,7 +203,9 @@ var TraceConsole =
         window.close();
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // nsIObserver
+
     observe: function(subject, topic, data)
     {
         if (topic == "firebug-trace-on-message")
@@ -141,7 +239,7 @@ var TraceConsole =
         }
     },
 
-    // ********************************************************************************************
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Interface to the output nodes, going by the name outputNodes
 
     getScrollingNode: function()
@@ -165,7 +263,7 @@ var TraceConsole =
         return this.logs.firstChild;
     },
 
-    // ********************************************************************************************
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Message dump
 
     dump: function(message)
@@ -178,7 +276,9 @@ var TraceConsole =
         Firebug.TraceModule.MessageTemplate.dumpSeparator(this);
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Trace console toolbar commands
+
     onClearConsole: function()
     {
         FBL.clearNode(this.logs.firstChild);
@@ -191,143 +291,12 @@ var TraceConsole =
 
     onSaveToFile: function()
     {
-        try
-        {
-            var nsIFilePicker = Ci.nsIFilePicker;
-            var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
-            fp.init(window, null, nsIFilePicker.modeSave);
-            fp.appendFilter("Firebug Tracing Logs","*.ftl;");
-            fp.appendFilters(nsIFilePicker.filterAll);
-            fp.filterIndex = 1;
-            fp.defaultString = "firebug-tracing-logs.ftl";
-
-            var rv = fp.show();
-            if (rv == nsIFilePicker.returnOK || rv == nsIFilePicker.returnReplace)
-            {
-                var foStream = Cc["@mozilla.org/network/file-output-stream;1"]
-                    .createInstance(Ci.nsIFileOutputStream);
-                foStream.init(fp.file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
-
-                var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
-                var currLocale = Firebug.Options.getPref("general.useragent", "locale");
-                var systemInfo = Cc["@mozilla.org/system-info;1"].getService(Ci.nsIPropertyBag);
-
-                var log = { version: "1.0" };
-
-                // Firebug info version
-                log.firebug = Firebug.version;
-                log.app = {
-                    name: appInfo.name,
-                    version: appInfo.version,
-                    platformVersion: appInfo.platformVersion,
-                    buildID: appInfo.appBuildID,
-                    locale: currLocale
-                };
-                log.os = {
-                    name: systemInfo.getProperty("name"),
-                    version: systemInfo.getProperty("version")
-                };
-                log.date = (new Date()).toGMTString();
-                log.messages = [];
-
-                // Iterate over all logs and store it into a file.
-                var tbody = this.logs.firstChild;
-                for (var row = tbody.firstChild; row; row = row.nextSibling)
-                    this.saveMessage(log, row.repObject);
-
-                var jsonString = JSON.stringify(log, null, "  ");
-                foStream.write(jsonString, jsonString.length);
-                foStream.close();
-            }
-        }
-        catch (err)
-        {
-            alert(err.toString());
-        }
+        Firebug.TraceModule.onSaveToFile();
     },
 
     onLoadFromFile: function()
     {
-        try
-        {
-            var nsIFilePicker = Ci.nsIFilePicker;
-            var fp = Cc["@mozilla.org/filepicker;1"].getService(nsIFilePicker);
-            fp.init(window, null, nsIFilePicker.modeOpen);
-            fp.appendFilters(nsIFilePicker.filterAll);
-            fp.appendFilter("Firebug Tracing Logs", "*.ftl;");
-            fp.filterIndex = 1;
-
-            var rv = fp.show();
-            if (rv != nsIFilePicker.returnOK)
-                return;
-
-            var inputStream = Cc["@mozilla.org/network/file-input-stream;1"]
-                .createInstance(Ci.nsIFileInputStream);
-            inputStream.init(fp.file, -1, -1, 0); // read-only
-
-            // Read and parset the content
-            var jsonString = FBL.readFromStream(inputStream)
-            var log = JSON.parse(jsonString);
-            if (!log)
-            {
-                alert("No log data available.");
-                return;
-            }
-
-            log.filePath = fp.file.path;
-
-            var MessageTemplate = Firebug.TraceModule.MessageTemplate;
-            var TraceModule = Firebug.TraceModule;
-
-            // Create header, dump all logs and create footer.
-            MessageTemplate.dumpSeparator(this, MessageTemplate.importHeaderTag, log);
-            for (var i=0; i<log.messages.length; i++)
-            {
-                var logMsg = log.messages[i];
-                if (!logMsg.type)
-                    continue;
-                else if (logMsg.type == "separator")
-                    MessageTemplate.dumpSeparator(this);
-                else
-                    MessageTemplate.dump(new TraceModule.ImportedMessage(logMsg), this);
-            }
-            MessageTemplate.dumpSeparator(this, MessageTemplate.importFooterTag);
-        }
-        catch (err)
-        {
-            alert(err.toString());
-        }
-    },
-
-    saveMessage: function(log, message)
-    {
-        if (!message)
-            return;
-
-        var text = message.text;
-        text = text ? text.replace(reEndings, "") : "---";
-        text = text.replace(/"|'/g, "");
-
-        var msgLog = {
-            index: message.index,
-            text: message.text,
-            type: message.type ? message.type : "",
-            time: message.time,
-            stack: []
-        };
-
-        var stack = message.stack;
-        for (var i=0; stack && i<stack.length; i++)
-        {
-            var frame = stack[i];
-            msgLog.stack.push({
-                fileName: frame.fileName,
-                lineNumber: frame.lineNumber,
-                funcName: frame.funcName,
-            });
-        }
-
-        log.messages.push(msgLog);
+        Firebug.TraceModule.onLoadFromFile();
     },
 
     onRestartFirefox: function()

@@ -1,28 +1,27 @@
 /* See license.txt for terms of usage */
 
-/**
- * UI control of debug Logging for Firebug internals
- */
-define(["arch/options"], function() { with (FBL) {
+define([], function() { with (FBL) {
+
 // ************************************************************************************************
 // Shorcuts and Services
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 
-const clipboard = CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
+var clipboard = CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
+var wm = CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 
-const PrefService = Cc["@mozilla.org/preferences-service;1"];
-const prefs = PrefService.getService(Ci.nsIPrefBranch2);
-const prefService = PrefService.getService(Ci.nsIPrefService);
+var PrefService = Cc["@mozilla.org/preferences-service;1"];
+var prefs = PrefService.getService(Ci.nsIPrefBranch2);
+var prefService = PrefService.getService(Ci.nsIPrefService);
 
-const reDBG = /extensions\.([^\.]*)\.(DBG_.*)/;
-const reDBG_FBS = /DBG_FBS_(.*)/;
+var reDBG = /extensions\.([^\.]*)\.(DBG_.*)/;
+var reDBG_FBS = /DBG_FBS_(.*)/;
 
 var EOF = "<br/>";
 
 // Register locale file with strings for the Tracing Console window.
-Firebug.registerStringBundle("chrome://firebug/locale/firebug-tracing.properties");
+Firebug.registerStringBundle("chrome://tracingconsole/locale/firebug-tracing.properties");
 
 // ************************************************************************************************
 //  The controller for the prefDomain Model.
@@ -34,7 +33,7 @@ Firebug.TraceOptionsController = function(prefDomain, onPrefChangeHandler)
 {
     this.prefDomain = prefDomain;
 
-    Components.utils.import("resource://firebug/firebug-trace-service.js");
+    Components.utils.import("resource://tracingconsole-firebug/firebug-trace-service.js");
     this.traceService = traceConsoleService;
 
     this.addObserver = function()
@@ -173,6 +172,7 @@ Firebug.TraceModule = extend(Firebug.Module,
         Firebug.Module.initialize.apply(this, arguments);
 
         this.prefDomain = Firebug.Options.getPrefDomain(); // prefDomain is the calling app, firebug or chromebug
+        window.dump("FBTrace; trace module pref domain: " + this.prefDomain)
         FBTrace.DBG_OPTIONS = Firebug.Options.getPref(this.prefDomain, "DBG_OPTIONS");
 
         // Open console automatically if the pref says so.
@@ -198,7 +198,7 @@ Firebug.TraceModule = extend(Firebug.Module,
 
     getTraceConsoleURL: function()
     {
-        return "chrome://firebug/content/traceConsole.xul";
+        return "chrome://tracingconsole-firebug/content/traceConsole.xul";
     },
 
     onToggleOption: function(target)
@@ -278,17 +278,29 @@ Firebug.TraceModule = extend(Firebug.Module,
     // Trace console listeners
     onLoadConsole: function(win, rootNode)
     {
-        dispatch(this.fbListeners, "onLoadConsole", [win, rootNode]);
+        var win = wm.getMostRecentWindow("navigator:browser");
+        if (win)
+            dispatch(win.Firebug.TraceModule.fbListeners, "onLoadConsole", [win, rootNode]);
     },
 
     onUnloadConsole: function(win)
     {
-        dispatch(this.fbListeners, "onUnloadConsole", [win]);
+        var win = wm.getMostRecentWindow("navigator:browser");
+        if (win)
+            dispatch(win.Firebug.TraceModule.fbListeners, "onUnloadConsole", [win]);
     },
 
     onDump: function(message)
     {
-        dispatch(this.fbListeners, "onDump", [message]);
+        // Don't dispatch to listener in this scope - TraceConsole.xul
+        // We need to dispatch to listenres registered within Firebug
+        // which is browser.xul scope.
+        //dispatch(this.fbListeners, "onDump", [message]);
+
+        // Get browser window with Firebug.
+        var win = wm.getMostRecentWindow("navigator:browser");
+        if (win)
+            dispatch(win.Firebug.TraceModule.fbListeners, "onDump", [message]);
     },
 
     dump: function(message, outputNodes)
@@ -402,7 +414,7 @@ Firebug.TraceModule.PanelTemplate = domplate({
                             ),
                             DIV({"class": "traceInfoLogsText traceInfoText"},
                                 IFRAME({"class": "traceInfoLogsFrame",
-                                    src: "chrome://firebug/content/traceLogFrame.html"}
+                                    src: "chrome://tracingconsole/content/traceLogFrame.html"}
                                 )
                             ),
                             DIV({"class": "traceInfoOptionsText traceInfoText"})
@@ -1323,6 +1335,9 @@ Firebug.TraceModule.TraceMessage.prototype =
 
     getLabel: function(maxLength)
     {
+        if (!maxLength)
+            maxLength = 0;
+
         if (!this.text)
             return "";
 

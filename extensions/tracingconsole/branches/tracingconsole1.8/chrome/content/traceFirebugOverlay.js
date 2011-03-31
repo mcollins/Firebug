@@ -42,7 +42,7 @@ this.onToggleOption = function(target)
 this.openConsole = function(prefDomain, windowURL)
 {
     if (!prefDomain)
-        prefDomain = this.prefDomain;
+        prefDomain = "extensions.firebug";
 
     var self = this;
     FBL.iterateBrowserWindows("FBTraceConsoleX", function(win) {
@@ -77,7 +77,7 @@ this.openConsole = function(prefDomain, windowURL)
 
     this.consoleWindow = window.openDialog(
         windowURL,
-        "FBTraceConsole." + prefDomain,
+        "FBTraceConsoleX." + prefDomain,
         "chrome,resizable,scrollbars=auto,minimizable,dialog=no",
         args);
 },
