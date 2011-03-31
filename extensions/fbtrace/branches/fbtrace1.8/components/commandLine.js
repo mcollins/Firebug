@@ -54,17 +54,17 @@ CommandLineHandler.prototype =
 
         if (cmdLine.findFlag(CMDLINE_FLAG, false) < 0)
         {
-            // Check if the "extensions.firebug.alwaysOpenTraceConsole" pref is set
-            var open = prefs.getBoolPref("extensions.firebug.alwaysOpenTraceConsole");
-            if (open)
-                this.openConsole(window, "extensions.firebug");
-
             // xxxHonza, XXXjjb: isn't this hack? Any other way for Chromebug?
             // Anyway, the blocker seems to be confused by the second window
             // and doesn't unblock.
-            //open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
-            //if (open)
-            //    this.openConsole(window, "extensions.chromebug");
+            var open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
+            if (open)
+                this.openConsole(window, "extensions.chromebug");
+
+            // Check if the "extensions.firebug.alwaysOpenTraceConsole" pref is set
+            open = prefs.getBoolPref("extensions.firebug.alwaysOpenTraceConsole");
+            if (open)
+                this.openConsole(window, "extensions.firebug");
 
             return;
         }
@@ -94,7 +94,7 @@ CommandLineHandler.prototype =
             prefDomain: prefDomain,
         }
 
-        var tracingWindow = this.openWindow(window, "FBTraceConsole",
+        var tracingWindow = this.openWindow(window, "FBTraceConsole." + prefDomain,
             "chrome://fbtrace/content/traceConsole.xul", releaser);
 
         // Open blocker window (to block Chromebug or browser window opening till
@@ -103,7 +103,8 @@ CommandLineHandler.prototype =
             "modal,resizable,dialog=no,centerscreen",
             releaser);
 
-        window.dump("FBTrace; Command line: The tracing console window should be fulle ready now!\n\n");
+        window.dump("FBTrace; Command line: The tracing console window should be "+
+            "fully ready now: " + prefDomain + "\n\n");
 
         return tracingWindow;
     },

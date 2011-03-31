@@ -81,7 +81,7 @@ var TraceConsole =
 
     initializeConsole: function()
     {
-        window.dump("FBTrace; initializeConsole, TraceModule: " + Firebug.TraceModule + "\n");
+        window.dump("FBTrace; initializeConsole, " + this.prefDomain + "\n");
 
         // Initialize root node of the trace-console window.
         var consoleFrame = document.getElementById("consoleFrame");
@@ -126,7 +126,7 @@ var TraceConsole =
         for (var i=0; i<queue.length; i++)
             this.dump(queue[i]);
 
-        window.dump("FBTrace; initialization process done!\n");
+        window.dump("FBTrace; initialization process done: "+this.prefDomain+"\n");
 
         if (this.releaser)
         {

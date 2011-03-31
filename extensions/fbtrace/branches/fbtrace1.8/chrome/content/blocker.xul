@@ -9,11 +9,12 @@
     <script type="application/x-javascript">
     function armOnLoad(event)
     {
-        window.dump("------------ "+window.location+" load ---------------\n");
-        var releaser = window.arguments[0];
-        releaser.unblock = function()
+        window.releaser = window.arguments[0];
+        window.dump("------------ "+window.location+" load " + window.releaser.prefDomain + "\n");
+        window.releaser.unblock = function()
         {
             window.dump("------------ "+window.location+" unblock ---------------\n");
+            window.dump("------------ "+window.releaser.prefDomain+" ---------------\n");
             window.close();
             window.dump("------------ "+window.closed+" tracing console unblock done ---------------\n");
         }
