@@ -25,6 +25,10 @@
   <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
   <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
 
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="strings_firebug" src="chrome://firebug/locale/firebug.properties"/>
+  </stringbundleset>
+
   <!-- Embedded Firebug Files -->
   <script type="application/x-javascript" src="trace.js"/>
   <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/loader.js"/>
@@ -37,6 +41,7 @@
 
   <!-- Trace Console Application -->
   <script type="application/x-javascript" src="traceConsole.js"/>
+  <script type="application/x-javascript" src="unblocker.js"/>
 
   <!-- String Bundles -->
   <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>

@@ -279,14 +279,14 @@ Firebug.TraceModule = extend(Firebug.Module,
     onLoadConsole: function(win, rootNode)
     {
         var win = wm.getMostRecentWindow("navigator:browser");
-        if (win)
+        if (win && win.Firebug && win.Firebug.TraceModule)
             dispatch(win.Firebug.TraceModule.fbListeners, "onLoadConsole", [win, rootNode]);
     },
 
     onUnloadConsole: function(win)
     {
         var win = wm.getMostRecentWindow("navigator:browser");
-        if (win)
+        if (win && win.Firebug && win.Firebug.TraceModule)
             dispatch(win.Firebug.TraceModule.fbListeners, "onUnloadConsole", [win]);
     },
 
@@ -299,7 +299,7 @@ Firebug.TraceModule = extend(Firebug.Module,
 
         // Get browser window with Firebug.
         var win = wm.getMostRecentWindow("navigator:browser");
-        if (win)
+        if (win && win.Firebug && win.Firebug.TraceModule)
             dispatch(win.Firebug.TraceModule.fbListeners, "onDump", [message]);
     },
 

@@ -124,6 +124,12 @@ var TraceConsole =
             this.dump(queue[i]);
 
         window.dump("FBTrace; initialization process done!\n");
+
+        if (this.releaser)
+        {
+            Components.utils.reportError("TraceConsole releasing application thread.");
+            this.releaser.unblock.apply(this.releaser,[]);
+        }
     },
 
     createLoader: function(prefDomain, baseUrl)
