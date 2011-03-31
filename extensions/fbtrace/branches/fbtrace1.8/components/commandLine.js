@@ -89,13 +89,13 @@ CommandLineHandler.prototype =
     {
         var releaser =
         {
-            url: "chrome://tracingconsole/content/blocker.xul",
+            url: "chrome://fbtrace/content/blocker.xul",
             unblock: null, // set by blocker.xul, called by TraceConsole.xul
             prefDomain: prefDomain,
         }
 
         var tracingWindow = this.openWindow(window, "FBTraceConsole",
-            "chrome://tracingconsole/content/traceConsole.xul", releaser);
+            "chrome://fbtrace/content/traceConsole.xul", releaser);
 
         // Open blocker window (to block Chromebug or browser window opening till
         // the tracin console window is ready to receive logs).

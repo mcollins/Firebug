@@ -21,7 +21,7 @@ var reDBG_FBS = /DBG_FBS_(.*)/;
 var EOF = "<br/>";
 
 // Register locale file with strings for the Tracing Console window.
-Firebug.registerStringBundle("chrome://tracingconsole/locale/firebug-tracing.properties");
+Firebug.registerStringBundle("chrome://fbtrace/locale/firebug-tracing.properties");
 
 // ************************************************************************************************
 //  The controller for the prefDomain Model.
@@ -33,7 +33,7 @@ Firebug.TraceOptionsController = function(prefDomain, onPrefChangeHandler)
 {
     this.prefDomain = prefDomain;
 
-    Components.utils.import("resource://tracingconsole-firebug/firebug-trace-service.js");
+    Components.utils.import("resource://fbtrace-firebug/firebug-trace-service.js");
     this.traceService = traceConsoleService;
 
     this.addObserver = function()
@@ -198,7 +198,7 @@ Firebug.TraceModule = extend(Firebug.Module,
 
     getTraceConsoleURL: function()
     {
-        return "chrome://tracingconsole-firebug/content/traceConsole.xul";
+        return "chrome://fbtrace-firebug/content/traceConsole.xul";
     },
 
     onToggleOption: function(target)
@@ -356,8 +356,8 @@ Firebug.TraceModule.CommonBaseUI = {
         {
             var frameDoc = logTabIframe.contentWindow.document;
 
-            addStyleSheet(frameDoc, createStyleSheet(frameDoc, "chrome://tracingconsole-firebug/skin/panelbase.css"));
-            addStyleSheet(frameDoc, createStyleSheet(frameDoc, "chrome://tracingconsole-firebug/skin/traceConsole.css"));
+            addStyleSheet(frameDoc, createStyleSheet(frameDoc, "chrome://fbtrace-firebug/skin/panelbase.css"));
+            addStyleSheet(frameDoc, createStyleSheet(frameDoc, "chrome://fbtrace-firebug/skin/traceConsole.css"));
 
             var rootNode = frameDoc.getElementById("traceLogContent");
             outputNodes.setScrollingNode(rootNode);
@@ -439,7 +439,7 @@ Firebug.TraceModule.PanelTemplate = domplate({
                             ),
                             DIV({"class": "traceInfoLogsText traceInfoText"},
                                 IFRAME({"class": "traceInfoLogsFrame",
-                                    src: "chrome://tracingconsole/content/traceLogFrame.html"}
+                                    src: "chrome://fbtrace/content/traceLogFrame.html"}
                                 )
                             ),
                             DIV({"class": "traceInfoOptionsText traceInfoText"})

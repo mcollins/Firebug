@@ -4,7 +4,7 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
   <Description about="urn:mozilla:install-manifest">
-    <em:id>tracingconsole@getfirebug.com</em:id>
+    <em:id>fbtrace@getfirebug.com</em:id>
     <em:version>@VERSION@@RELEASE@</em:version>
 
     <!-- Firefox -->
@@ -22,6 +22,6 @@
     <em:creator>Jan Odvarko</em:creator>
     <em:homepageURL>http://getfirebug.com/releases/extensions/</em:homepageURL>
 
-    <em:updateURL>https://getfirebug.com/releases/tracingconsole/update.rdf</em:updateURL>
+    <em:updateURL>https://getfirebug.com/releases/fbtrace/update.rdf</em:updateURL>
   </Description>
 </RDF>

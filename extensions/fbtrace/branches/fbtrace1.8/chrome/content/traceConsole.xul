@@ -2,7 +2,7 @@
 
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
-<!-- <?xml-stylesheet href="chrome://tracingconsole-firebug/skin/traceConsole.css"?> -->
+<!-- <?xml-stylesheet href="chrome://fbtrace-firebug/skin/traceConsole.css"?> -->
 
 <!DOCTYPE window [
 <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
@@ -27,13 +27,13 @@
 
   <!-- Embedded Firebug Files -->
   <script type="application/x-javascript" src="trace.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/loader.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/xpcom.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/chrome.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/lib.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/domplate.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/firebug.js"/>
-  <script type="application/x-javascript" src="chrome://tracingconsole-firebug/content/reps.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/loader.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/xpcom.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/chrome.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/lib.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/domplate.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/firebug.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/reps.js"/>
 
   <!-- Trace Console Application -->
   <script type="application/x-javascript" src="traceConsole.js"/>
@@ -41,7 +41,7 @@
 
   <!-- String Bundles -->
   <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
-  <stringbundle id="trace_console" src="chrome://tracingconsole/locale/findbar.properties"/>
+  <stringbundle id="trace_console" src="chrome://fbtrace/locale/findbar.properties"/>
 
   <commandset id="mainCommandSet">
     <command id="cmd_clearConsole" oncommand="TraceConsole.onClearConsole()"/>

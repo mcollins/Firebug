@@ -7,7 +7,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 Components.utils["import"]("resource://firebug/firebug-trace-service.js");
-Components.utils["import"]("resource://tracingconsole-firebug/moduleLoader.js");
+Components.utils["import"]("resource://fbtrace-firebug/moduleLoader.js");
 
 var traceService = traceConsoleService;
 
@@ -56,7 +56,7 @@ var TraceConsole =
         }
 
         // Load tracing console modules
-        this.loader = this.createLoader(this.prefDomain, "chrome://tracingconsole/content/");
+        this.loader = this.createLoader(this.prefDomain, "chrome://fbtrace/content/");
 
         var modules = [];
         modules.push("serializer"); // save to file, load from file

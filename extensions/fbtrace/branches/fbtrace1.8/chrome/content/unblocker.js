@@ -8,13 +8,13 @@
 // embedded directory for the tracing console instance.
 window._firebugLoadConfig =
 {
-    baseUrl: "chrome://tracingconsole-firebug/content/",
+    baseUrl: "chrome://fbtrace-firebug/content/",
     prefDomain: "extensions.firebug"
 };
 
 // ********************************************************************************************* //
 
-var releaser = window.arguments[0];  // see tracingconsole/components/commandLine.js
+var releaser = window.arguments[0];  // see fbtrace/components/commandLine.js
 
 function onLoad(event)
 {

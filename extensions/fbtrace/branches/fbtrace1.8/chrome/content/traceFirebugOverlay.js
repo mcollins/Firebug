@@ -92,7 +92,7 @@ this.closeConsole = function(prefDomain)
 
 this.getTraceConsoleURL = function()
 {
-    return "chrome://tracingconsole/content/traceConsole.xul";
+    return "chrome://fbtrace/content/traceConsole.xul";
 }
 
 // Register load listener for command line arguments handling.

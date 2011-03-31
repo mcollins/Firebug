@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-Components.utils["import"]("resource://tracingconsole-firebug/firebug-trace-service.js");
+Components.utils["import"]("resource://fbtrace-firebug/firebug-trace-service.js");
 var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
 
 FBTrace.setScope(window);

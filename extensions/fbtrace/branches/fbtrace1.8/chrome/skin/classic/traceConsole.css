@@ -27,7 +27,7 @@
 
 .traceInfoCol {
     border-top: 1px solid #EEEEEE;
-    background: url(chrome://tracingconsole/skin/group.png) repeat-x #FFFFFF;
+    background: url(chrome://fbtrace/skin/group.png) repeat-x #FFFFFF;
     vertical-align: top;
 }
 
@@ -97,7 +97,7 @@
 }
 
 .messageRow .messageNameLabel {
-    background-image: url(chrome://tracingconsole/skin/win/twistyClosed.png);
+    background-image: url(chrome://fbtrace/skin/win/twistyClosed.png);
     background-repeat: no-repeat;
     background-position: 2px 2px;
 }
@@ -109,7 +109,7 @@
 }
 
 /*.messageRow */.opened > .messageCol > .messageNameLabel {
-    background-image: url(chrome://tracingconsole/skin/win/twistyOpen.png);
+    background-image: url(chrome://fbtrace/skin/win/twistyOpen.png);
 }
 
 /************************************************************************************************/
@@ -208,7 +208,7 @@
 
 .messageInfoCol {
     border-top: 1px solid #EEEEEE;
-    background: url(chrome://tracingconsole/skin/group.png) repeat-x #FFFFFF;
+    background: url(chrome://fbtrace/skin/group.png) repeat-x #FFFFFF;
 }
 
 .messageInfoBody {
@@ -336,7 +336,7 @@
 /************************************************************************************************/
 
 #clearConsole {
-    list-style-image: url("chrome://tracingconsole/skin/clear.png");
+    list-style-image: url("chrome://fbtrace/skin/clear.png");
 }
 
 #findConsole {
@@ -354,7 +354,7 @@
 }
 
 #loadFromFile {
-    list-style-image: url("chrome://tracingconsole/skin/up.png");
+    list-style-image: url("chrome://fbtrace/skin/up.png");
 }
 
 #closeFirefox {
