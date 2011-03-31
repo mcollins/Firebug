@@ -49,7 +49,7 @@
         </replace>
 
         <!-- Create final tracingConsole.xpi file -->
-        <zip destfile="${build.dir}/tracingConsole-${VERSION}${RELEASE}.xpi"
+        <zip destfile="${build.dir}/FBTrace-${VERSION}${RELEASE}.xpi"
             basedir="${build.dir}" update="true" />
 
         <!-- Generate update.rdf file -->
@@ -59,7 +59,7 @@
         </replace>
 
         <!-- Final version message -->
-        <echo message="TracingConsole version: ${VERSION}${RELEASE}"/>
+        <echo message="FBTrace version: ${VERSION}${RELEASE}"/>
     </target>
 
 </project>
