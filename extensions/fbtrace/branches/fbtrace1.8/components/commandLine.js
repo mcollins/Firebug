@@ -58,6 +58,7 @@ CommandLineHandler.prototype =
             // on the command line.
             // xxxHonza, XXXjjb: could we see whether chromebug is actually installed?
             // what if the flag is just left there.
+            // TODO: this code belongs to Chromebug!
             if (cmdLine.findFlag("chromebug", false) >= 0)
             {
                 var open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
