@@ -7,6 +7,7 @@ resource tracingconsole modules/
 resource tracingconsole-firebug chrome/firebug/modules/
 
 skin    tracingconsole classic/1.0 skin/classic/
+skin    tracingconsole-firebug classic/1.0 chrome/firebug/skin/classic/
 
 locale  tracingconsole en-US       locale/en-US/
 

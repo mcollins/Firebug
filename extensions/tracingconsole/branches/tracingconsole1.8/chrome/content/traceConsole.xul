@@ -2,7 +2,7 @@
 
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
-<!-- <?xml-stylesheet href="chrome://firebug/skin/traceConsole.css"?> -->
+<!-- <?xml-stylesheet href="chrome://tracingconsole-firebug/skin/traceConsole.css"?> -->
 
 <!DOCTYPE window [
 <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
