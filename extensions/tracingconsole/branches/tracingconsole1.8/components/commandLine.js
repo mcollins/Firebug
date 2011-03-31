@@ -46,8 +46,6 @@ CommandLineHandler.prototype =
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // nsICommandLineHandler
 
-    openFBTraceConsole: false,
-
     handle: function(cmdLine)
     {
         window = appShellService.hiddenDOMWindow;
@@ -89,9 +87,6 @@ CommandLineHandler.prototype =
 
     openConsole: function(window, prefDomain)
     {
-        // This info will be used by FBTest overlay as soon as the browser window is loaded.
-        this.openFBTraceConsole = true;
-
         var releaser =
         {
             url: "chrome://tracingconsole/content/blocker.xul",
@@ -99,7 +94,7 @@ CommandLineHandler.prototype =
             prefDomain: prefDomain,
         }
 
-        var tracingWindow = this.openWindow(window, "FBTraceConsoleX",
+        var tracingWindow = this.openWindow(window, "FBTraceConsole",
             "chrome://tracingconsole/content/traceConsole.xul", releaser);
 
         // Open blocker window (to block Chromebug or browser window opening till

@@ -17,15 +17,6 @@ var Ci = Components.interfaces;
 this.initialize = function()
 {
     window.removeEventListener("load", FBTraceFirebugOverlay.initialize, false);
-
-    var cmd = Cc["@mozilla.org/commandlinehandler/general-startup;1?type=FBTrace"].
-        getService(Ci.nsICommandLineHandler);
-
-    // Open console if the command line says so or if the pref says so.
-    // xxxHonza: implement the pref.
-    var cmd = cmd.wrappedJSObject ? cmd.wrappedJSObject : cmd;
-    if (cmd.openFBTraceConsole)
-        FBTraceFirebugOverlay.openConsole(cmd.testListURI);
 };
 
 this.onToggleOption = function(target)
@@ -45,7 +36,7 @@ this.openConsole = function(prefDomain, windowURL)
         prefDomain = "extensions.firebug";
 
     var self = this;
-    FBL.iterateBrowserWindows("FBTraceConsoleX", function(win) {
+    FBL.iterateBrowserWindows("FBTraceConsole", function(win) {
         if (win.TraceConsole && win.TraceConsole.prefDomain == prefDomain) {
             self.consoleWindow = win;
             return true;
@@ -77,7 +68,7 @@ this.openConsole = function(prefDomain, windowURL)
 
     this.consoleWindow = window.openDialog(
         windowURL,
-        "FBTraceConsoleX." + prefDomain,
+        "FBTraceConsole." + prefDomain,
         "chrome,resizable,scrollbars=auto,minimizable,dialog=no",
         args);
 },
@@ -88,7 +79,7 @@ this.closeConsole = function(prefDomain)
         prefDomain = this.prefDomain;
 
     var consoleWindow = null;
-    FBL.iterateBrowserWindows("FBTraceConsoleX", function(win) {
+    FBL.iterateBrowserWindows("FBTraceConsole", function(win) {
         if (win.TraceConsole && win.TraceConsole.prefDomain == prefDomain) {
             consoleWindow = win;
             return true;
