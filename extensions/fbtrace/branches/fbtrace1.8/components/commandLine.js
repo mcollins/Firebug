@@ -54,12 +54,16 @@ CommandLineHandler.prototype =
 
         if (cmdLine.findFlag(CMDLINE_FLAG, false) < 0)
         {
-            // xxxHonza, XXXjjb: isn't this hack? Any other way for Chromebug?
-            // Anyway, the blocker seems to be confused by the second window
-            // and doesn't unblock.
-            var open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
-            if (open)
-                this.openConsole(window, "extensions.chromebug");
+            // Open tracing console for Chromebug only if chromebug is specified
+            // on the command line.
+            // xxxHonza, XXXjjb: could we see whether chromebug is actually installed?
+            // what if the flag is just left there.
+            if (cmdLine.findFlag("chromebug", false) >= 0)
+            {
+                var open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
+                if (open) 
+                    this.openConsole(window, "extensions.chromebug");
+            }
 
             // Check if the "extensions.firebug.alwaysOpenTraceConsole" pref is set
             open = prefs.getBoolPref("extensions.firebug.alwaysOpenTraceConsole");
