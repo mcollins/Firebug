@@ -635,12 +635,13 @@ Firebug.Chromebug = extend(Firebug.Module,
             }
         }
 
+        context.onLoadWindowContent = true; // all Chromebug contexts are active
+        context.jsDebuggerCalledUs = true;  // jsd is always on
         if (FBTrace.DBG_ACTIVATION)
         {
-            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext '+kind+" name: "+context.getName(), context);
+            FBTrace.sysout('+++++++++++++++++++++++++++++++++ Chromebug.createContext '+kind+" name: "+context.getName()+" "+context.jsDebuggerCalledUs, context);
         }
 
-        context.onLoadWindowContent = true; // all Chromebug contexts are active
         return context;
     },
 
@@ -813,40 +814,6 @@ Firebug.Chromebug = extend(Firebug.Module,
 
 
     // ********************************************************
-    // implements Firebug.DebuggerListener
-
-    onPauseJSDRequested: function(rejection)
-    {
-        rejection.push(true);
-        FBTrace.sysout("chromebug onPauseJSDRequested: rejection ", rejection);
-    },
-
-    onJSDDeactivate: function(active, why)
-    {
-        FBTrace.sysout("chromebug onJSDDeactivate active: "+active+" why "+why);
-    },
-
-    onJSDActivate: function(active, why)  // just before hooks are set in fbs
-    {
-        if (Firebug.Chromebug.activated)
-            return;
-
-        if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("Chromebug onJSDActivate "+(this.jsContexts?"already have jsContexts":"take the stored jsContexts"));
-        try
-        {
-            Firebug.Chromebug.transferFromStartup();
-        }
-        catch(exc)
-        {
-            FBTrace.sysout("onJSDActivate fails "+exc, exc);
-        }
-        finally
-        {
-            Firebug.Chromebug.activated = true;
-            FBTrace.sysout("onJSDActivate exit");
-        }
-    },
 
     transferFromStartup: function()
     {

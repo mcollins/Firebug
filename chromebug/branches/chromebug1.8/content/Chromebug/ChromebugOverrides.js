@@ -304,12 +304,34 @@ var ChromebugOverrides = {
             FBTrace.sysout("ChromebugPanel.resumeFirebug\n");
     },
 
-    _setIsJSDActive: Firebug.setIsJSDActive,
-    setIsJSDActive: function(active)
+    onPauseJSDRequested: function(rejection)
     {
-        if (!active)
-            FBTrace.sysout("ChromebugOverrides jsd deactivation ! <-----------------------------------!!!");
-        ChromebugOverrides._setIsJSDActive(active);
+        rejection.push(true);
+        FBTrace.sysout("chromebug onPauseJSDRequested: rejection ", rejection);
+    },
+
+    _onJSDActivate: Firebug.JSDebugClient.onJSDActivate,
+    onJSDActivate: function(active, why)  // just before hooks are set in fbs
+    {
+        ChromebugOverrides._onJSDActivate(active, why);
+        if (Firebug.Chromebug.activated)
+            return;
+
+        //if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("Chromebug onJSDActivate "+(Firebug.Chromebug.jsContexts?"already have jsContexts":"take the stored jsContexts"));
+        try
+        {
+            Firebug.Chromebug.transferFromStartup();
+        }
+        catch(exc)
+        {
+            FBTrace.sysout("onJSDActivate fails "+exc, exc);
+        }
+        finally
+        {
+            Firebug.Chromebug.activated = true;
+            FBTrace.sysout("onJSDActivate exit");
+        }
     },
 
     tagBase: 1,
@@ -505,6 +527,9 @@ function overrideFirebugFunctions()
         Firebug.ActivableModule.isAlwaysEnabled = ChromebugOverrides.isAlwaysEnabled;
         Firebug.suspendFirebug = ChromebugOverrides.suspendFirebug;
         Firebug.resumeFirebug = ChromebugOverrides.resumeFirebug;
+        Firebug.JSDebugClient.onPauseJSDRequested = ChromebugOverrides.onPauseJSDRequested;
+        Firebug.JSDebugClient.onJSDDeactivate = ChromebugOverrides.onJSDDeactivate;
+        Firebug.JSDebugClient.onJSDActivate = ChromebugOverrides.onJSDActivate;
 
         top.Firebug.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
         top.Firebug.disableXULWindow = ChromebugOverrides.disableXULWindow;
