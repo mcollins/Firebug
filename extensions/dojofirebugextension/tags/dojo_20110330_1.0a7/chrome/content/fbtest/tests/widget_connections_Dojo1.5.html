@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head> 
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>Dojo Widgets Tests</title>
+
+	<script type="text/javascript">
+	    var djConfig = {
+	    	isDebug: true,
+		    parseOnLoad:true
+		}
+	</script>
+	
+    <!--  Google 1.5 -->
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/tundra/tundra.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>
+    
+    <script type="text/javascript">
+       dojo.require("dijit.form.Button");
+    </script>
+</head>
+
+<body class="tundra">
+	<button id="button2" dojoType="dijit.form.Button">Click me 2!</button>            
+
+<script type="text/javascript">
+dojo.addOnLoad(
+		function(){
+			var but2 = dijit.byId("button2");
+			but2.newMethod = function(event) {
+				alert("button2 clicked as well!");
+			};
+		}
+);
+
+var objA = {
+		funcTest: function(){
+			alert("Hello!");
+		}
+};
+
+</script>
+
+</body>
+</html>
