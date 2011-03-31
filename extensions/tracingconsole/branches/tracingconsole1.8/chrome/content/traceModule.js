@@ -279,8 +279,14 @@ Firebug.TraceModule = extend(Firebug.Module,
     onLoadConsole: function(win, rootNode)
     {
         var win = wm.getMostRecentWindow("navigator:browser");
-        if (win && win.Firebug && win.Firebug.TraceModule)
-            dispatch(win.Firebug.TraceModule.fbListeners, "onLoadConsole", [win, rootNode]);
+        if (!(win && win.Firebug && win.Firebug.TraceModule))
+            return;
+
+        var listeners = win.Firebug.TraceModule.fbListeners;
+        for (var i=0; i<listeners.length; i++)
+            listeners.onLoadConsoleExecuted = true;
+
+        dispatch(listeners, "onLoadConsole", [win, rootNode]);
     },
 
     onUnloadConsole: function(win)
@@ -290,17 +296,36 @@ Firebug.TraceModule = extend(Firebug.Module,
             dispatch(win.Firebug.TraceModule.fbListeners, "onUnloadConsole", [win]);
     },
 
-    onDump: function(message)
+    onDump: function(message, outputNodes)
     {
         // Don't dispatch to listener in this scope - TraceConsole.xul
         // We need to dispatch to listenres registered within Firebug
         // which is browser.xul scope.
         //dispatch(this.fbListeners, "onDump", [message]);
 
-        // Get browser window with Firebug.
+        // Get browser window with Firebug and distribute dump for customization.
         var win = wm.getMostRecentWindow("navigator:browser");
+        if (!(win && win.Firebug && win.Firebug.TraceModule))
+            return;
+
+        var consoleWin = outputNodes.logs.parentNode.ownerDocument.defaultView;
+        var rootNode = outputNodes.logs;
+
+        // Fire "onLoadConsole" for listeners that have been registered
+        // after the console has been opened.
+        var listeners = win.Firebug.TraceModule.fbListeners;
+        for (var i=0; i<listeners.length; i++)
+        {
+            var listener = listeners[i];
+            if (!listener.onLoadConsoleExecuted)
+            {
+                listener.onLoadConsoleExecuted = true;
+                dispatch([listeners[i]], "onLoadConsole", [consoleWin, rootNode]);
+            }
+        }
+
         if (win && win.Firebug && win.Firebug.TraceModule)
-            dispatch(win.Firebug.TraceModule.fbListeners, "onDump", [message]);
+            dispatch(listeners, "onDump", [message]);
     },
 
     dump: function(message, outputNodes)
@@ -924,7 +949,7 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
     dump: function(message, outputNodes, index)
     {
         // Notify listeners
-        Firebug.TraceModule.onDump(message);
+        Firebug.TraceModule.onDump(message, outputNodes);
 
         // xxxHonza: find better solution for checking an ERROR messages
         // (setup some rules).
