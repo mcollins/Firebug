@@ -16,7 +16,7 @@
       </Description>
     </em:targetApplication>
 
-    <em:name>TracingConsole</em:name>
+    <em:name>FBTrace</em:name>
     <em:description>Enables Firebug Tracing Console in Firebug final releases. Note that this
         console is enabled by default in 'X' Firebug releases.</em:description>
     <em:creator>Jan Odvarko</em:creator>
