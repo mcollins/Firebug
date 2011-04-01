@@ -67,7 +67,7 @@ Firebug.TraceOptionsController = function(prefDomain, onPrefChangeHandler)
             }
             else
             {
-                if (FBTrace.DBG_OPTIONS)
+                if (typeof(FBTrace) != "undefined" && FBTrace.DBG_OPTIONS)
                     FBTrace.sysout("traceModule.observe : "+data+"\n");
             }
         }
