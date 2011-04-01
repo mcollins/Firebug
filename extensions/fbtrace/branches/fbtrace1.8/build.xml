@@ -49,7 +49,7 @@
         </replace>
 
         <!-- Create final tracingConsole.xpi file -->
-        <zip destfile="${build.dir}/FBTrace-${VERSION}${RELEASE}.xpi"
+        <zip destfile="${build.dir}/fbTrace-${VERSION}${RELEASE}.xpi"
             basedir="${build.dir}" update="true" />
 
         <!-- Generate update.rdf file -->
