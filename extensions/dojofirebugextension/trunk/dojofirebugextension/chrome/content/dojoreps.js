@@ -116,6 +116,27 @@ this.DijitMainRep = domplate(FirebugReps.Obj,
 
 });
 
+/** Rep for dojo classes */
+this.DojoObjectRep = domplate(FirebugReps.Obj,
+{
+
+	tag: FirebugReps.OBJECTLINK(
+			"$object|getTitle"
+	),
+	shortTag: FirebugReps.OBJECTLINK(
+			"$object|getTitle"
+	),
+
+	supportsObject: function(object, type) {
+    	return object['declaredClass'] && (object['postMixInProperties'] == undefined);
+	},
+	
+	getTitle: function(object) {
+		return object['declaredClass'] + "{...}";
+	}
+
+});
+
 this.DijitRep = domplate(FirebugReps.Obj,
 {
 	tag: FirebugReps.OBJECTLINK(
@@ -644,49 +665,27 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 	}
 });
 
-/** Rep for dojo classes */
-/*
-this.DojoClassRep = domplate(FirebugReps.Obj,
-		{
-			tag: FirebugReps.OBJECTLINK(
-					"$object|getTitle"
-			),
-
-			shortTag: FirebugReps.OBJECTLINK(
-					"$object|getTitle"
-			),
-			
-			supportsObject: function(object, type) {
-			    return object['declaredClass'] ? 1000 : 0;
-			},
-			
-			getTitle: function(object){
-				return object['declaredClass'];
-			}
-
-		});
-*/
 
 //called by dojofirebugextension
 this.registerReps = function() {
 	Firebug.registerRep(this.DojoMainRep);
 	Firebug.registerRep(this.DijitMainRep);
+	Firebug.registerRep(this.DojoObjectRep);
 	Firebug.registerRep(this.DijitRep);
 	Firebug.registerRep(this.ConnectionRep);
 	Firebug.registerRep(this.SubscriptionRep);
-	Firebug.registerRep(this.ConnectionsInfoRep);
-	//Firebug.registerRep(this.DojoClassRep);	
+	Firebug.registerRep(this.ConnectionsInfoRep);	
 };
 
 //called by dojofirebugextension
 this.unregisterReps = function() {
 	Firebug.unregisterRep(this.DojoMainRep);
 	Firebug.unregisterRep(this.DijitMainRep);
+	Firebug.unregisterRep(this.DojoObjectRep);	
 	Firebug.unregisterRep(this.DijitRep);
 	Firebug.unregisterRep(this.ConnectionRep);
 	Firebug.unregisterRep(this.SubscriptionRep);
-	Firebug.unregisterRep(this.ConnectionsInfoRep);
-	//Firebug.unregisterRep(this.DojoClassRep);	
+	Firebug.unregisterRep(this.ConnectionsInfoRep);	
 };
 
 
