@@ -70,6 +70,9 @@ var TraceConsole =
         {
             try
             {
+                // "initialize" was already dispatched so, make sure it's called for
+                // the TraceModule just loaded.
+                Firebug.TraceModule.initialize();
                 self.initializeConsole();
             }
             catch (e)
