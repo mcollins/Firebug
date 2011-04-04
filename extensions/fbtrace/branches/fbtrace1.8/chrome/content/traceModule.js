@@ -867,9 +867,15 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
     optionMenu: function(label, option)
     {
         var checked = Firebug.Options.getPref(Firebug.TraceModule.prefDomain, option);
+
+        // The binding has to respect that the menu stays open even if the option
+        // has been clicked.
         return {label: label, type: "checkbox", checked: checked, nol10n: true,
-            command: bindFixed(Firebug.Options.setPref, Firebug.Options, Firebug.TraceModule.prefDomain,
-                option, !checked) };
+            command: function() {
+                var checked = Firebug.Options.getPref(Firebug.TraceModule.prefDomain, option);
+                Firebug.Options.setPref(Firebug.TraceModule.prefDomain, option, !checked);
+            },
+        };
     },
 
     getTooltip: function(message)
@@ -1514,6 +1520,10 @@ Firebug.TraceModule.TraceMessage.prototype =
             return this.ifaces;
 
         this.ifaces = [];
+
+        if (!this.obj)
+            return;
+
         for (var iface in Ci)
         {
             try
