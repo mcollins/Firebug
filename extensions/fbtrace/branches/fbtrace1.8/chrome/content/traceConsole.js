@@ -164,6 +164,7 @@ var TraceConsole =
                 Firebug: Firebug,
                 fbXPCOMUtils: fbXPCOMUtils,
                 FBL: FBL,
+                FBTrace: FBTrace,
                 FirebugReps: FirebugReps,
                 domplate: domplate,
                 TraceConsole: this,
