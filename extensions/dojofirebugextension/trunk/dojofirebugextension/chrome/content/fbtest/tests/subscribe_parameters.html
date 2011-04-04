@@ -29,8 +29,8 @@ dojo.addOnLoad(
 		function() {
 			var d = dojo;
 
-			var globalTestFunc = window.globalTestFunc = function(){};
-			var objTest = window.objTest = {testF: function(){}};
+			var globalTestFunc = window.globalTestFunc = function(){ alert("globalTestFunc"); };
+			var objTest = window.objTest = {testF: function(){ alert("testF"); }};
 
 			d.subscribe("Test1", null, "globalTestFunc");
 			d.subscribe("Test2", null, globalTestFunc);

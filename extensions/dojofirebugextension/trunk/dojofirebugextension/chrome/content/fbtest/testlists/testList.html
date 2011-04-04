@@ -7,12 +7,12 @@
 </head>
 <body>
 <script type="text/javascript">
-var driverBaseURI = "chrome://dojofirebugextension/content/fbtest/tests/";
-//var driverBaseURI = "http://dojofirebugextension/chrome/content/fbtest/tests/";
+//var driverBaseURI = "chrome://dojofirebugextension/content/fbtest/tests/";
+var driverBaseURI = "http://dojofirebugextension/chrome/content/fbtest/tests/";
 var baseURI = driverBaseURI;
 var testIncludes = ["testUtils.js"];
-var serverURI = 'chrome://dojofirebugextension/content/fbtest/tests/';
-//var serverURI = 'http://dojofirebugextension/chrome/content/fbtest/tests/';
+//var serverURI = 'chrome://dojofirebugextension/content/fbtest/tests/';
+var serverURI = 'http://dojofirebugextension/chrome/content/fbtest/tests/';
 
 var testList = [
 	{ group: "Dojo", uri: "widget-destroy-test-withoutdojoextension.js", desc: "verifies that creation/destruction of widgets don't leave references", testPage: "widget-destroy-test.html" },
