@@ -1,12 +1,21 @@
 /* See license.txt for terms of usage */
 
-define(["serializer"], function()
-{
+define(["serializer"], function() {
+
 // ********************************************************************************************* //
+// Constants 
+
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
+const reEndings = /\r\n|\r|\n/;
+
+// ********************************************************************************************* //
+// Serializer Implementation
 
 TraceConsole.Serializer =
 {
-    onSaveToFile: function()
+    onSaveToFile: function(console)
     {
         try
         {
@@ -48,7 +57,7 @@ TraceConsole.Serializer =
                 log.messages = [];
 
                 // Iterate over all logs and store it into a file.
-                var tbody = this.logs.firstChild;
+                var tbody = console.logs.firstChild;
                 for (var row = tbody.firstChild; row; row = row.nextSibling)
                     this.saveMessage(log, row.repObject);
 
@@ -59,11 +68,11 @@ TraceConsole.Serializer =
         }
         catch (err)
         {
-            alert(err.toString());
+            FBTrace.sysout("FBTrace; onSaveToFile EXCEPTION " + err, err);
         }
     },
 
-    onLoadFromFile: function()
+    onLoadFromFile: function(console)
     {
         try
         {
@@ -87,7 +96,7 @@ TraceConsole.Serializer =
             var log = JSON.parse(jsonString);
             if (!log)
             {
-                alert("No log data available.");
+                FBTrace.sysout("FBTrace; No log data available.");
                 return;
             }
 
@@ -97,22 +106,22 @@ TraceConsole.Serializer =
             var TraceModule = Firebug.TraceModule;
 
             // Create header, dump all logs and create footer.
-            MessageTemplate.dumpSeparator(this, MessageTemplate.importHeaderTag, log);
+            MessageTemplate.dumpSeparator(console, MessageTemplate.importHeaderTag, log);
             for (var i=0; i<log.messages.length; i++)
             {
                 var logMsg = log.messages[i];
                 if (!logMsg.type)
                     continue;
                 else if (logMsg.type == "separator")
-                    MessageTemplate.dumpSeparator(this);
+                    MessageTemplate.dumpSeparator(console);
                 else
-                    MessageTemplate.dump(new TraceModule.ImportedMessage(logMsg), this);
+                    MessageTemplate.dump(new TraceModule.ImportedMessage(logMsg), console);
             }
-            MessageTemplate.dumpSeparator(this, MessageTemplate.importFooterTag);
+            MessageTemplate.dumpSeparator(console, MessageTemplate.importFooterTag);
         }
         catch (err)
         {
-            alert(err.toString());
+            FBTrace.sysout("FBTrace; onLoadFromFile EXCEPTION " + err, err);
         }
     },
 

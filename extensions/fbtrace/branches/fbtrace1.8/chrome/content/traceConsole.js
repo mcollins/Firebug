@@ -20,7 +20,6 @@ var gFindBar;
 
 const reDBG = /extensions\.([^\.]*)\.(DBG_.*)/;
 const reDBG_FBS = /DBG_FBS_(.*)/;
-const reEndings = /\r\n|\r|\n/;
 
 // Cache messages that are fired before the content of the window is loaded.
 var queue = [];
@@ -304,12 +303,12 @@ var TraceConsole =
 
     onSaveToFile: function()
     {
-        Firebug.TraceModule.onSaveToFile();
+        TraceConsole.Serializer.onSaveToFile(this);
     },
 
     onLoadFromFile: function()
     {
-        Firebug.TraceModule.onLoadFromFile();
+        TraceConsole.Serializer.onLoadFromFile(this);
     },
 
     onRestartFirefox: function()
