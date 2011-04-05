@@ -390,3 +390,7 @@
 .traceOption[checked="true"] {
     background-color: #D7D7D7;
 }
+
+.traceInfoOptionsText[tabular="true"] .traceOption {
+    width: 160px;
+}

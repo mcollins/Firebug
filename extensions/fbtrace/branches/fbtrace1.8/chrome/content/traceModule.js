@@ -375,6 +375,11 @@ Firebug.TraceModule.CommonBaseUI = {
 
         // Initialize content for Options tab (a button for each DBG_ option).
         var optionsBody = parentNode.getElementsByClassName("traceInfoOptionsText").item(0);
+
+        // Customize layout of options.
+        var tabular = Firebug.Options.get("fbtrace.tabularOptionsLayout");
+        optionsBody.setAttribute("tabular", tabular);
+
         this.optionsController = new Firebug.TraceOptionsController(prefDomain, function updateButton(optionName, optionValue)
         {
             var button = parentNode.ownerDocument.getElementById(optionName);
@@ -444,7 +449,7 @@ Firebug.TraceModule.PanelTemplate = domplate({
                                 ),
                                 A({"class": "traceInfoGlobalTab traceInfoTab", onclick: "$onClickTab",
                                     view: "Global"},
-                                    $STR("Global")
+                                    $STR("Global Events")
                                 )
                             ),
                             DIV({"class": "traceInfoLogsText traceInfoText"},
