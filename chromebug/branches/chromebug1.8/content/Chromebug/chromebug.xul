@@ -90,10 +90,8 @@
 
     <script type="application/x-javascript"  src="chrome://chromebug/content/Chromebug.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugPanel.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/globalObserver.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
 
-    <script type="application/x-javascript" src="chrome://chromebug/content/tracePanel.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/firebugCache.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/html.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/css.js"/>
