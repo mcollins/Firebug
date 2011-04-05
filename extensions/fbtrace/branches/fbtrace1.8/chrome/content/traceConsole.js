@@ -51,7 +51,7 @@ var TraceConsole =
         }
         catch (e)
         {
-            window.dump("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
+            FBTrace.sysout("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
         }
 
         // Load tracing console modules
@@ -63,6 +63,7 @@ var TraceConsole =
         // Overrides the default Firebug.TraceModule implementation that only
         // collects tracing listeners (customization of logs)
         modules.push("traceModule.js");
+        modules.push("globalTab.js");
 
         var self = this;
         this.loader.define(modules, function()
@@ -76,14 +77,14 @@ var TraceConsole =
             }
             catch (e)
             {
-                window.dump("FBTrace; " + e + "\n");
+                FBTrace.sysout("FBTrace; " + e + "\n");
             }
         });
     },
 
     initializeConsole: function()
     {
-        window.dump("FBTrace; initializeConsole, " + this.prefDomain + "\n");
+        FBTrace.sysout("FBTrace; initializeConsole, " + this.prefDomain + "\n");
 
         // Initialize root node of the trace-console window.
         var consoleFrame = document.getElementById("consoleFrame");
@@ -97,7 +98,7 @@ var TraceConsole =
 
         if (!Firebug.TraceModule)
         {
-            window.dump("FBTrace; Firebug.TraceModule == NULL\n");
+            FBTrace.sysout("FBTrace; Firebug.TraceModule == NULL\n");
             return;
         }
 
@@ -128,7 +129,7 @@ var TraceConsole =
         for (var i=0; i<queue.length; i++)
             this.dump(queue[i]);
 
-        window.dump("FBTrace; initialization process done: "+this.prefDomain+"\n");
+        FBTrace.sysout("FBTrace; initialization process done: "+this.prefDomain+"\n");
 
         if (this.releaser)
         {
@@ -155,7 +156,7 @@ var TraceConsole =
 
             config.onError = function()
             {
-                window.dump("FBTrace; onError: " + arguments + "\n");
+                FBTrace.sysout("FBTrace; onError: " + arguments + "\n");
                 Components.utils.reportError(arguments[0]);
             }
 
@@ -179,7 +180,7 @@ var TraceConsole =
         }
         catch (err)
         {
-            window.dump("FBTrace; EXCEPTION " + err + "\n");
+            FBTrace.sysout("FBTrace; EXCEPTION " + err + "\n");
         }
     },
 

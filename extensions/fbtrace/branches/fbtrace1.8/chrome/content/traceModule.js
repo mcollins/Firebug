@@ -356,9 +356,6 @@ Firebug.TraceModule.CommonBaseUI = {
         {
             var frameDoc = logTabIframe.contentWindow.document;
 
-            addStyleSheet(frameDoc, createStyleSheet(frameDoc, "chrome://fbtrace-firebug/skin/panelbase.css"));
-            addStyleSheet(frameDoc, createStyleSheet(frameDoc, "chrome://fbtrace-firebug/skin/traceConsole.css"));
-
             var rootNode = frameDoc.getElementById("traceLogContent");
             outputNodes.setScrollingNode(rootNode);
 
@@ -407,14 +404,24 @@ Firebug.TraceModule.CommonBaseUI = {
             optionsBody.appendChild(button);
         }
 
+        try
+        {
+            // Initialize global options
+            var globalBody = parentNode.querySelector(".traceInfoGlobalText");
+            if (globalBody)
+                TraceConsole.GlobalTab.render(globalBody);
+        }
+        catch (e)
+        {
+            window.dump("FBTrace; globalOptions EXCEPTION " + e + "\n");
+        }
+
         // Select default tab.
         rep.selectTabByName(parentNode, "Logs");
 
         this.optionsController.addObserver();
     },
-
 };
-
 
 // ************************************************************************************************
 // Trace Console Rep
@@ -435,6 +442,10 @@ Firebug.TraceModule.PanelTemplate = domplate({
                                 A({"class": "traceInfoOptionsTab traceInfoTab", onclick: "$onClickTab",
                                     view: "Options"},
                                     $STR("Options")
+                                ),
+                                A({"class": "traceInfoGlobalTab traceInfoTab", onclick: "$onClickTab",
+                                    view: "Global"},
+                                    $STR("Global")
                                 )
                             ),
                             DIV({"class": "traceInfoLogsText traceInfoText"},
@@ -442,7 +453,8 @@ Firebug.TraceModule.PanelTemplate = domplate({
                                     src: "chrome://fbtrace/content/traceLogFrame.html"}
                                 )
                             ),
-                            DIV({"class": "traceInfoOptionsText traceInfoText"})
+                            DIV({"class": "traceInfoOptionsText traceInfoText"}),
+                            DIV({"class": "traceInfoGlobalText traceInfoText"})
                         )
                     )
                 )
@@ -1538,8 +1550,8 @@ Firebug.TraceModule.TraceMessage.prototype =
             }
             catch (err)
             {
-                onPanic("TraceMessage.getInterfaces: " + iface+" typeof(Ci[iface].prototype)="+
-                    typeof(Ci[iface].prototype), err);
+                //onPanic("TraceMessage.getInterfaces: " + iface+" typeof(Ci[iface].prototype)="+
+                //    typeof(Ci[iface].prototype), err);
             }
         }
         return this.ifaces;
@@ -1917,6 +1929,9 @@ Firebug.TraceModule.PropertyTree = domplate(Firebug.TraceModule.Tree,
 Firebug.registerModule(Firebug.TraceModule);
 Firebug.registerRep(Firebug.TraceModule.MessageTemplate);
 
+// ************************************************************************************************
+
 return Firebug.TraceModule;
+
 // ************************************************************************************************
 }});
