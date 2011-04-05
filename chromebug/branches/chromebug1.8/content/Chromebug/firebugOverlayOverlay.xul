@@ -12,7 +12,6 @@
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleInspecting" oncommand="Chromebug.DocumentScanner.toggleScanningDocuments(Firebug.currentContext)" />
-        <command id="cmd_clearTrace" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(Firebug.currentContext)" />
         <command id="cmd_refreshFirebugCache" oncommand="Firebug.Chromebug.FBCacheModule.refresh(Firebug.currentContext)"/>
         <command id="cmd_addNewExtensionLink" oncommand="Chromebug.ExtensionsPanel.prototype.addNewExtensionLink(event);"/>
     </commandset>
@@ -34,11 +33,6 @@
 
     <!-- Toolbars definition -->
     <hbox id="fbToolbarInner">
-
-        <hbox insertbefore="fbHTMLButtons" id="cbTraceButtons" collapsed="true">
-            <toolbarbutton label="Clear" class="toolbar-text-button"
-                tooltiptext="firebug.ClearTooltip" command="cmd_clearTracePanel"/>
-        </hbox>
 
         <hbox insertbefore="fbHTMLButtons" id="cbFBCacheButtons" collapsed="true">
             <toolbarbutton label="Refresh" class="toolbar-text-button"

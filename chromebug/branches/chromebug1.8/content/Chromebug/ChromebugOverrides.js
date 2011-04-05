@@ -544,13 +544,6 @@ function overrideFirebugFunctions()
             return Chromebug.DomWindowContext;
         };
 
-
-        Firebug.TraceModule.getTraceConsoleURL =  function getChromebugTraceConsoleURL()
-        {
-            return "chrome://fb4cb/content/traceConsole.xul";
-        };
-
-
         FBL.getRootWindow = function(win) { return win; };
 
         //Firebug.CommandLine.evaluate = ChromebugOverrides.commandLine.evaluate;

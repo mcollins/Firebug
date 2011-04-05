@@ -148,8 +148,7 @@
         <command id="cmd_search" oncommand="Firebug.Search.focus(Firebug.currentContext)" />
         <command id="cmd_toggleIntroduction" oncommand="Firebug.Chromebug.toggleIntroduction()" />
         <command id="cmd_imAnExpert" oncommand="Firebug.Chromebug.toggleIntroductionTrue()" />
-        <command id="cmd_clearTracePanel" oncommand="Firebug.Chromebug.TraceConsoleModule.clearPanel(Firebug.currentContext)"/>
-        <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.TraceModule.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
+        <command id="cmd_toggleCBTraceConsole" oncommand="Firebug.Chromebug.openConsole('extensions.chromebug', 'chrome://fb4cb/content/traceConsole.xul')"/>
         <command id="cmd_cbDumpFileTrack" oncommand="Chromebug.dumpFileTrack()"/>
         <command id="cmd_platformCc" oncommand="Firebug.Platform.Cc()"/>
         <command id="cmd_openProfileDir" oncommand="Firebug.Chromebug.openProfileDir(Firebug.currentContext)"/>
@@ -183,16 +182,17 @@
                 <menupopup onpopupshowing="Firebug.Chromebug.onOptionsShowing(this)">
                     <menuitem id="menu_firefox" command="cmd_firefox" key="key_firefox"
                               label="Open Firefox"/>
+                    <menuitem id="menu_openProfileDir" command="cmd_openProfileDir" label="Open Profile Directory"/>
                     <!-- <menuitem id="menu_xulExplorer" command="cmd_xulExplorer" key="key_xulExplorer"
                               label="Mark Finkle's XUL Explorer"/> -->
-                    <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
-                              label="XPCOM Explorer"/>
                     <menuitem id="menu_chromebugTraceConsole" command="cmd_toggleCBTraceConsole"
                             key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole" />
+                    <menuseparator/>
+                    <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
+                              label="XPCOM Explorer"/>
                     <menuitem id="menu_chromebugDumpFileTrack" command="cmd_cbDumpFileTrack"
                             key="key_cbDumpFileTrack" label="Dump Files Track To Disk"/>
                     <menuitem id="menu_platformCc" command="cmd_platformCc" label="Platform Component Classes"/>
-                    <menuitem id="menu_openProfileDir" command="cmd_openProfileDir" label="Open Profile Directory"/>
                     <menuseparator/>
                     <menuitem id="menu_exitFirefox" command="cmd_exitFirefox" label="Exit Firefox"/> <!-- xxxHonza: localization -->
                 </menupopup>

@@ -1282,8 +1282,14 @@ Firebug.Chromebug = extend(Firebug.Module,
     onMutateNode: function(event) {
         FBTrace.sysout("Firebug.Chromebug.onMutateNode\n");
     },
-    //**************************************************************************************
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Commands
+
+    openConsole: function(prefDomain, url)
+    {
+        alert("TBD: " + prefDomain + ", " + url + " (use about:config)");
+    },
 
     toggleIntroductionTrue: function()
     {
