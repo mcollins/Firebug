@@ -41,7 +41,7 @@
 
   <!-- String Bundles -->
   <stringbundle id="bundle_findBar" src="chrome://global/locale/findbar.properties"/>
-  <stringbundle id="trace_console" src="chrome://fbtrace/locale/findbar.properties"/>
+  <stringbundle id="strings_firebug" src="chrome://fbtrace-firebug/locale/firebug.properties"/>
 
   <commandset id="mainCommandSet">
     <command id="cmd_clearConsole" oncommand="TraceConsole.onClearConsole()"/>
