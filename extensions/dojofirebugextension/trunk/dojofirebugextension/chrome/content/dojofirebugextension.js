@@ -362,7 +362,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 		 * @return the proxied function
 		 */
     	getProxiedFunction : function (context, obj, method, funcPreInvocation, funcPostInvocation) {
-			var functionToProxy = obj[method];
+			var functionToProxy = obj[method]; //web page's function
 	    	var theProxy = function() {
 	    		
 	    		if(FBTrace.DBG_DOJO_DBG) {
@@ -2042,6 +2042,24 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         _setNeedsReload(context, (dojo && dojo["subscribe"]));
     },
 
+    /**
+     * Called after a context's page gets DOMContentLoaded
+     */
+    loadedContext: function(context) {
+    	if(context.showInitialViewCall) {
+    		//dojo.ready was registered. We don't need to do this.
+    		return;
+    	}
+    	
+    	var panel = this._getDojoPanel(context);
+    	
+    	if (panel) {
+	    	// Show the initial view.
+	    	panel.showInitialView(context);
+    	}
+    	
+    },
+    
     destroyContext: function(context, persistedState) {
     	Firebug.ActivableModule.destroyContext.apply(this, arguments);
   
@@ -2136,6 +2154,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 			   this._protectProxy(context, "_connect");
 		   }
 		   
+		   //register a dojo.ready callback
 		   if(!context.showInitialViewCall && dojo && (dojo.ready || dojo.addOnLoad)) {
 			   var showInitialViewCall = context.showInitialViewCall = function showInitialView() {
 			       var panel = DojoExtension.dojofirebugextensionModel._getDojoPanel(context);			    	
@@ -2170,50 +2189,6 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 		for (var i = 1; i < arguments.length; i++) {
 			dojo.connect(dojo, arguments[i], f);
 		}
-
-		
-	/* 
-	    //alternative code based on "eval" run on web page 
-		var a = arguments;
-		var clientDefenseFn = "var f = function() {}; f.internalClass = 'dojoext-added-code'; f.internaldesc = 'dojoext-protectProxt__parent__';";
-
-		var fnNames = "var names = [";	
-		for (var i = 1; i < a.length - 1; i++) {
-			fnNames += "'" + a[i] + "',";
-		}		
-		fnNames += "'" + a[a.length-1] + "'];";
-		
-		Firebug.Console.log(fnNames, context);
-		
-		var connectLogic = "for (var i = 0; i < names.length; i++) { dojo.connect(dojo, names[i], f); }";
-		
-		var evalExp = clientDefenseFn + fnNames + connectLogic + "\n";		
-		
-		Firebug.Console.log(evalExp, context);
-
-		if(FBTrace.DBG_DOJO_DBG) {  				
-			FBTrace.sysout("DOJO DEBUG: about to exec protectingProxy evaluate expr");
-		}
-
-		
-		Firebug.CommandLine.evaluate(evalExp, context);
-		
-		if(FBTrace.DBG_DOJO_DBG) {  				
-			FBTrace.sysout("DOJO DEBUG: protectingProxy. Args: ", a);
-			FBTrace.sysout("DOJO DEBUG: protectingProxy. Eval'd expr: ", evalExp);
-		}
-	*/
-		
-		/*
-		//this is privileged code. It's better to wrap the fns with client code.
-		var f = function(){};
-		f.internalClass = 'dojoext-added-code';
-		f.internaldesc = 'dojoext-protectProxt__parent__';
-
-		for (var i = 1; i < arguments.length; i++) {
-			dojo.connect(dojo, arguments[i], f);
-		}
-		*/
 	},
 
     _proxyConnect : function(context){
