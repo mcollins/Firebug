@@ -92,6 +92,8 @@ CommandLineHandler.prototype =
 
     openConsole: function(window, prefDomain)
     {
+        window.dump("FBTrace; try to openConsole for: " + prefDomain + "\n");
+
         var releaser =
         {
             url: "chrome://fbtrace/content/blocker.xul",

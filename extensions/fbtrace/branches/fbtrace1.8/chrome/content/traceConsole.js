@@ -33,6 +33,8 @@ var TraceConsole =
 
     initialize: function()
     {
+        window.dump("FBTrace; TraceConsole.initialize\n");
+
         var args = window.arguments[0];
 
         // Get pref domain is used for message filtering. Only logs that belong
@@ -41,24 +43,20 @@ var TraceConsole =
         this.prefDomain = args.prefDomain;
         document.title = FBL.$STR("title.Tracing") + ": " + this.prefDomain;
 
-        // Register listeners and observers
-        traceService.addObserver(this, "firebug-trace-on-message", false);
-        prefs.addObserver(this.prefDomain, this, false);
-
         try
         {
             Firebug.initialize();
         }
         catch (e)
         {
-            FBTrace.sysout("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
+            window.dump("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
         }
 
         // Load tracing console modules
         this.loader = this.createLoader(this.prefDomain, "chrome://fbtrace/content/");
 
         var modules = [];
-        modules.push("serializer"); // save to file, load from file
+        modules.push("serializer.js"); // save to file, load from file
 
         // Overrides the default Firebug.TraceModule implementation that only
         // collects tracing listeners (customization of logs)
@@ -70,6 +68,8 @@ var TraceConsole =
         {
             try
             {
+                window.dump("FBTrace; Core modules loaded\n");
+
                 // "initialize" was already dispatched so, make sure it's called for
                 // the TraceModule just loaded.
                 Firebug.TraceModule.initialize();
@@ -77,14 +77,18 @@ var TraceConsole =
             }
             catch (e)
             {
-                FBTrace.sysout("FBTrace; " + e + "\n");
+                window.dump("FBTrace; " + e + "\n");
             }
         });
     },
 
     initializeConsole: function()
     {
-        FBTrace.sysout("FBTrace; initializeConsole, " + this.prefDomain + "\n");
+        window.dump("FBTrace; initializeConsole, " + this.prefDomain + "\n");
+
+        // Register listeners and observers
+        traceService.addObserver(this, "firebug-trace-on-message", false);
+        prefs.addObserver(this.prefDomain, this, false);
 
         // Initialize root node of the trace-console window.
         var consoleFrame = document.getElementById("consoleFrame");
@@ -98,7 +102,7 @@ var TraceConsole =
 
         if (!Firebug.TraceModule)
         {
-            FBTrace.sysout("FBTrace; Firebug.TraceModule == NULL\n");
+            window.dump("FBTrace; Firebug.TraceModule == NULL\n");
             return;
         }
 

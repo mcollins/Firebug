@@ -172,16 +172,15 @@ Firebug.TraceModule = extend(Firebug.Module,
         Firebug.Module.initialize.apply(this, arguments);
 
         this.prefDomain = Firebug.Options.getPrefDomain(); // prefDomain is the calling app, firebug or chromebug
-        window.dump("FBTrace; trace module pref domain: " + this.prefDomain)
+        window.dump("FBTrace; Firebug.TraceModule.initialize: " + this.prefDomain + "\n");
         FBTrace.DBG_OPTIONS = Firebug.Options.getPref(this.prefDomain, "DBG_OPTIONS");
 
         // Open console automatically if the pref says so.
-        if (Firebug.Options.getPref(this.prefDomain, "alwaysOpenTraceConsole"))
-            this.openConsole();
+        //if (Firebug.Options.getPref(this.prefDomain, "alwaysOpenTraceConsole"))
+        //    this.openConsole();
 
-        if (FBTrace.DBG_OPTIONS)
-            FBTrace.sysout("traceModule.initialize: " + this.prefDomain+" alwayOpen:"+
-                Firebug.Options.getPref(this.prefDomain, "alwaysOpenTraceConsole"));
+        window.dump("traceModule.initialize: " + this.prefDomain+" alwayOpen:"+
+            Firebug.Options.getPref(this.prefDomain, "alwaysOpenTraceConsole"));
     },
 
     shutdown: function()

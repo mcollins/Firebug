@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define(["serializer"], function() {
+define([], function() {
 
 // ********************************************************************************************* //
 // Constants 
