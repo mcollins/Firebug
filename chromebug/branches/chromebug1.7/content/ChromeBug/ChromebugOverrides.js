@@ -399,7 +399,6 @@ function overrideFirebugFunctions()
     try {
         // Apply overrides
         top.Firebug.prefDomain = "extensions.chromebug";
-        top.Firebug.viewChrome = true;
         //top.Firebug.chrome.getLocationProvider = ChromebugOverrides.getLocationProvider;
         top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
         top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
