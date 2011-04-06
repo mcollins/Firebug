@@ -8,18 +8,11 @@ function runTest()
         {
             FBTestFirebug.selectPanel("net");
 
-            // Create listener for mutation events.
-            var doc = FBTestFirebug.getPanelDocument();
-            var recognizer = new MutationRecognizer(doc.defaultView, "tr",
-                {"class": "netRow category-xhr loaded"});
-
-            // Wait for a XHR log to appear in the Net panel.
-            recognizer.onRecognizeAsync(function (element)
+            FBTest.waitForDisplayedElement("net", null, function(netRow)
             {
-                // Expand XHR entry.
-                FBTest.click(element);
+                FBTest.click(netRow);
 
-                var rowInfoBody = element.nextSibling;
+                var rowInfoBody = netRow.nextSibling;
                 FBTest.ok(FW.FBL.hasClass(rowInfoBody, "netInfoRow"), "We need XHR entry body.");
 
                 var jsonTab = rowInfoBody.querySelector(".netInfoJSONTab");
