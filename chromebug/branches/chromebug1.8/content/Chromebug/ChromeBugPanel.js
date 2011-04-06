@@ -1288,7 +1288,17 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     openConsole: function(prefDomain, url)
     {
-        alert("TBD: " + prefDomain + ", " + url + " (use about:config)");
+        try
+        {
+            var tracing = CCSV("@mozilla.org/commandlinehandler/general-startup;1?type=FBTrace",
+                "nsICommandLineHandler");
+
+            tracing.wrappedJSObject.openConsole(window, prefDomain);
+        }
+        catch (err)
+        {
+            window.dump("chromebug; open tracing console " + err + "\n");
+        }
     },
 
     toggleIntroductionTrue: function()
@@ -1303,7 +1313,9 @@ Firebug.Chromebug = extend(Firebug.Module,
     toggleIntroduction: function()
     {
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("toggleIntroduction ", "Firebug.Chromebug.showIntroduction "+ Firebug.Chromebug.showIntroduction);
+            FBTrace.sysout("toggleIntroduction ", "Firebug.Chromebug.showIntroduction "+
+                Firebug.Chromebug.showIntroduction);
+
         Firebug.Chromebug.showIntroduction = !Firebug.Chromebug.showIntroduction;
 
         if (Firebug.Chromebug.showIntroduction)
