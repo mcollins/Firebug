@@ -23,11 +23,22 @@
 
 <br/><br/>
 
+<pre id="response"></pre>
+
 <script type="text/javascript">
 function executeTest(callback) 
 {
     var request = new XMLHttpRequest();
     request.open("POST", "issue2209.json", true);
+
+    request.onreadystatechange = function()
+    {
+        if (request.readyState == 4 && request.status == 200)
+        {
+            document.getElementById("response").innerHTML = request.responseText;
+        }
+    }
+
     request.send(null);
 }
 </script>
