@@ -149,6 +149,10 @@ FBTestApp.TestListLoader =
             FBTrace.sysout("fbtest.processTestList; driverBaseURI " + this.driverBaseURI +
                 ", serverURI " + this.testCasePath);
 
+        FBTestApp.TestConsole.testListPath = testListPath;
+        FBTestApp.TestConsole.testCasePath = testCasePath;
+        FBTestApp.TestConsole.driverBaseURI = driverBaseURI;
+
         var groups = [];
         var map = [];
 
