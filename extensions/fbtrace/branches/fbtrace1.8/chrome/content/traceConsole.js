@@ -363,6 +363,30 @@ var TraceConsole =
         fileLocal.initWithPath(path);
         fileLocal.launch();
     },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Options
+
+    onOptionsShowing: function(popup)
+    {
+        for (var child = popup.firstChild; child; child = child.nextSibling)
+        {
+            if (child.localName == "menuitem")
+            {
+                var option = child.getAttribute("option");
+                if (option)
+                {
+                    var checked = Firebug.Options.get(option);
+                    child.setAttribute("checked", checked);
+                }
+            }
+        }
+    },
+
+    onToggleOption: function(target)
+    {
+        FirebugChrome.onToggleOption(target);
+    }
 };
 
 // ************************************************************************************************

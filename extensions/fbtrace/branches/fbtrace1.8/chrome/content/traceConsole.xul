@@ -87,7 +87,7 @@
         label="tracing.cmd.Tools"
         tooltiptext="tracing.cmd.tip.Tools"
         type="menu">
-            <menupopup>
+            <menupopup onpopupshowing="TraceConsole.onOptionsShowing(this)">
                 <menuitem id="saveToFile"
                     label="tracing.cmd.Save" class="toolbar-image-button fbInternational"
                     tooltiptext="tracing.cmd.tip.Save"
@@ -109,6 +109,11 @@
                     label="tracing.cmd.Open Profile Directory" class="toolbar-image-button fbInternational"
                     tooltiptext="tracing.cmd.tip.Open Profile Directory"
                     command="cmd_openProfileDir"/>
+                <menuseparator />
+                <menuitem id="alwaysOpenTraceConsole"
+                    type="checkbox" label="Always_Open"
+                    oncommand="TraceConsole.onToggleOption(this)"
+                    class="fbInternational" option="alwaysOpenTraceConsole"/>
             </menupopup>
       </toolbarbutton>
       <toolbarseparator flex="1"/>
