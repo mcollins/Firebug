@@ -1,0 +1,3 @@
+content		onSourceFileCreated_extension_test		chrome/content/ xpcnativewrappers=no
+
+overlay		chrome://firebug/content/firebugOverlay.xul		chrome://onSourceFileCreated_extension_test/content/onSourceFileCreated_extension_test.xul
