@@ -41,7 +41,6 @@ FBL.ns(function() { with (FBL) {
 	    {
 			Firebug.Module.initContext.apply(this, arguments);
 
-			context.onSourceFileCreatedInvoked = false;
 			context.trackingAPI = this;
 			
 			var docPage = unwrapObject(context.window).document;
@@ -58,15 +57,6 @@ FBL.ns(function() { with (FBL) {
 			};			
 			_addMozillaExecutionGrants(getFn);
 			docPage.getTracked = getFn;			
-	    },
-
-	    /**
-	     * called on each dojo file loaded (actually for every file).
-	     * This way, we can detect when dojo.js is loaded and take action. 
-	     */
-	    onSourceFileCreated : function (context, sourceFile) {
-//	    	Firebug.Console.log("onSourceFileCreated " + sourceFile.href, context);
-	    	context.onSourceFileCreatedInvoked = true;
 	    },
 
 	    /**

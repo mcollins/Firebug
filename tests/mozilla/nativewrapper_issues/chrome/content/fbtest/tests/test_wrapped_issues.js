@@ -1,4 +1,3 @@
-// Test entry point.
 function runTest()
 {	
 
@@ -72,9 +71,7 @@ function runTest()
 				var tracked_str2 = api.getTracked("str2");
 				var tracked_complex2 = api.getTracked("complex2");
 				
-				debugger;
 				var unwrapped = XPCNativeWrapper.unwrap(tracked_fn2);
-
 				
 				
 				FBTest.progress("(3) About to compare: 'track' invocation (invoked from web page) returned objects, VS corresponding objects returned by 'getTracked' function (after also tracking them from FBTest code)");
@@ -87,7 +84,7 @@ function runTest()
 							
 				
 				FBTest.progress("(4) About to compare: 'track' invocation (invoked from web page) returned objects, VS those same tracked objects but returned from 'getTracked' function invoked from this FBTest JS code");
-				//FIXME this is the first test that fails...
+				//...this is the first test that fails...
 				FBTest.compare(trackResultInPage_fn2, tracked_fn2, "page track result vs chrome retrieved (object tracked in page), function == ");
 				FBTest.compare(trackResultInPage_fn2.toSource(), tracked_fn2.toSource(), "page track result vs chrome retrieved  (object tracked in page), function.toSource() == ");
 				FBTest.compare(undefined, trackResultInPage_fn2.wrappedJSObject, "wrappedJSObject is undefined");			
@@ -137,9 +134,7 @@ function runTest()
 
 				FBTest.progress("About to open alert dialog in page to avoid loosing console logs when test ends");				
 
-				FBTest.progress("About to check if onSourceFileCreated was invoked");
-				FBTest.compare(true, context.onSourceFileCreatedInvoked, "onSourceFileCreated was invoked");
-				
+			
 				
 				FBTest.progress("test_wrapped_issues test END");
 				
