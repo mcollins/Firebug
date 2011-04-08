@@ -27,11 +27,11 @@
 <script type="text/javascript">
 function onExecuteTest()
 {
-    console.count("a");
-    console.count("a");
-    console.count("a");
-    console.count("b");
-    console.count("b");
+    for (var i=0; i<3; i++)
+        console.count("a");
+
+    for (var j=0; j<2; j++)
+        console.count("b");
 }
 </script>
   

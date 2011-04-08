@@ -17,11 +17,11 @@ function runTest()
                 var rows = panelNode.getElementsByClassName("logRow");
                 if (FBTest.compare(2, rows.length, "There must be 2 logs displayed."))
                 {
-                    FBTest.compare(/a\s*3count.html\s*\(line 30\)/,
+                    FBTest.compare(/a\s*3count.html\s*\(line 31\)/,
                         rows[0].textContent,
                         "The proper message must be displayed.");
 
-                    FBTest.compare(/b\s*2count.html\s*\(line 33\)/,
+                    FBTest.compare(/b\s*2count.html\s*\(line 34\)/,
                         rows[1].textContent,
                         "The proper message must be displayed.");
                 }
