@@ -20,13 +20,15 @@ var DOJO_BUNDLE = "dojostrings";
 // GENERAL FUNCTIONS
 //****************************************************************
 
+//xxxPERFORMANCE ?
 var getRep = function(value) {
 	    var rep = Firebug.getRep(value);
 	    var tag = rep.shortTag || rep.tag;
 	    return tag;
 	};
 
-var getMethodLabel = function(method) {
+var getMethodLabel = this.getMethodLabel = function(method) {
+	
 	// TODO: method should not be undefined, but it happens. Alert this situation.
 	if(!method) {
 		return "undefined"; 
@@ -36,6 +38,7 @@ var getMethodLabel = function(method) {
 	if (typeof(method) == "string") {
 		label = method;
 	} else {
+		//xxxPERFORMANCE
 		var script = findScriptForFunctionInContext(Firebug.currentContext, method);			
 		try {
 			label = script ? getFunctionName(script, Firebug.currentContext) : method.name;

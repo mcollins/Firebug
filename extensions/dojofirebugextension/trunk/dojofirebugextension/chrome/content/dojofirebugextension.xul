@@ -7,6 +7,7 @@
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<script src="chrome://dojofirebugextension/content/inspector-patch.js" type="application/x-javascript"/>
     <script src="chrome://dojofirebugextension/content/dojomodel.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/filtering.js" type="application/x-javascript"/>
     <script src="chrome://dojofirebugextension/content/dojoaccess.js" type="application/x-javascript"/>
     <script src="chrome://dojofirebugextension/content/dojodebugger.js" type="application/x-javascript"/>
     <script src="chrome://dojofirebugextension/content/dojoreps.js" type="application/x-javascript"/>
@@ -45,6 +46,35 @@
                     label="&dojo.subscriptions.label;" class="toolbar-text-button"
                     type="radio" group="dojoOptions" 
                     tooltiptext="&dojo.subscriptions.tooltip;" command="cmd_dojofirebugextensionViewSubscriptions"/>
+
+				<span id="dojoFilter-boxes">
+	                <!-- count Box -->                
+					[Count:
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnCountBox" type="dojoConnCountBox" value="50"/>
+	                    <spacer flex="1"/>
+	                </vbox>                
+	                <!-- from box -->
+	                Start:
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnFromIndexBox" type="dojoConnFromIndexBox" value="0"/>
+	                    <spacer flex="1"/>
+	                </vbox>	
+	                <!-- query Box -->
+	                Filter:
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnFilterBox" type="dojoConnFilterBox"/>
+	                    <spacer flex="1"/>
+	                </vbox>
+	                <button id="dojoApplyFilterButton" label="Apply"
+	                	command="cmd_dojofirebugextensionViewConnectionsInTable"/>
+					]
+
+                </span>
+                    
            </hbox>
        </hbox>
     </toolbar>

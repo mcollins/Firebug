@@ -354,6 +354,38 @@
 	background-position:center;
 }
 
+#dojoFilter-boxes {
+	display: none;
+}
+
+#dojoConnFromIndexBox {
+	width: 50px;
+}
+
+#dojoConnCountBox {
+	width: 50px;
+}
+
+#dojoConnFilterBox {
+    margin-left: 0;
+    margin-right: 6px;
+    width: 100% !important;
+    /*display: block;*/
+    /*-moz-border-radius: 1px;*/
+}
+
+textbox[type="dojoConnFilterBox"] {
+    /* This prevents the drop shadow from appearing See nsLayoutUtils::GetFrameTransparency*/
+    -moz-border-radius: 1px;
+}
+
+.dojoConnFilterBox-attention {
+    color: red;
+    font-weight: bold;
+}
+
+
+
 /*************************************************************************************************/
 /* Firefox context menu */
 

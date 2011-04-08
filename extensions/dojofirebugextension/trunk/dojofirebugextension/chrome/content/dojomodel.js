@@ -866,13 +866,51 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		  * this.ConnectionArraySorter.CONTEXT = 2;
 		  * this.ConnectionArraySorter.METHOD = 3;
 		  */
-		 /*Array<Connection>*/ getConnections: function(/*null|Array<int>*/ priorityCriteriaArray) {
-			 if (priorityCriteriaArray) {
-				 var sorter = new ConnectionArraySorter(this.getObjectsWithConnections(), priorityCriteriaArray);
-				 var cons = sorter.sortConnectionArray(this._connectionsArray);
+		 /*Array<Connection>*/ getConnections: function(/*Object?*/filterArgs, /*Object*/ formatters, /*Array<int>?*/ priorityCriteriaArray) {
+			 
+			 var f = filterArgs;
+			 var theArray = this._connectionsArray; 
+			 			 
+			 if(f) {
+				 //ok..user wants some filtering..
+				 
+				 /* query rules ("trying" to follow dojo's FileReadStore style):
+				  		no starting/ending braces allowed...
+				  		commas are ANDs
+				  		there are no ORs yet
+				  		e.g: obj:string, event:string,...
+				  		
+						obj: string , check by tostring regex match?
+						event: string, event name
+						context: string (check by tostnrg)
+						method: string , check by method name
+						
+					also: if the query is a simple string without a reference to obj, evet, context, method
+					then that query string will be compared against all those 4 properties
+					* you can set queryOptions too (like in dojo) 
+				  */
+				 if(f.query) {					 
+					 theArray = DojoFilter.filter(f, theArray, formatters);
+				 }
+				 
+				 //slice the resulting array if needed
+				 var from = (f.from && f.from > 0) ? f.from : 0;
+				 var count = (f.count && f.count > 0 && f.count != theArray.length) ? f.count : theArray.length;  
+				 if(from != 0 || count != theArray.length) {					 
+					 var end = (count + from <= theArray.length) ? count + from : theArray.length;
+					 theArray = theArray.slice(from, end); 
+				 }
+			 }
+			
+	
+			if (priorityCriteriaArray) {
+				//FIXME change this by a timestmp!
+				var sorter = new ConnectionArraySorter(this.getObjectsWithConnections(), priorityCriteriaArray);
+				 var cons = sorter.sortConnectionArray(theArray);
 				 return cons;
+			 
 			 } else {
-				 return this._connectionsArray;
+				 return theArray;
 			 }
 		 },
 		 

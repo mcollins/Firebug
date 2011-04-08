@@ -94,6 +94,14 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	};
 
 	/**
+	 * Return the visibility value for the parameter.
+	 * @param visibility the visibility
+	 */
+	var _getVisibilityValue = function(visibility){
+		return visibility ? 'inherit' : 'none';
+	};
+	
+	/**
 	 * returns the current context.
 	 */
 	/*context*/var _safeGetContext = function(panel) {
@@ -277,6 +285,11 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 			this._setMessageBoxVisibility(false);
 		};
 		
+		this._getVisibilityValue = function(visibility){
+			return _getVisibilityValue(visibility);
+		};
+
+		
 		/**
 		 * Set message box visibility.
 		 */
@@ -302,14 +315,6 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 				}
 			}
 			return null;
-		};
-		
-		/**
-		 * Return the visibility value for the parameter.
-		 * @param visibility the visibility
-		 */
-		this._getVisibilityValue = function(visibility){
-			return visibility ? 'inherit' : 'none';
 		};
 		
 		/**
@@ -1307,9 +1312,10 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	var doc = this.panelNode.document;
     	$("widgetsButton", doc).checked = (option == SHOW_WIDGETS);
     	$("connectionsInTableButton", doc).checked = (option == SHOW_CONNECTIONS_TABLE);
+    	$("dojoFilter-boxes", doc).style.display = _getVisibilityValue(option == SHOW_CONNECTIONS_TABLE);
     	$("subscriptionsButton", doc).checked = (option == SHOW_SUBSCRIPTIONS);
     },
-    
+        
     /**
      * returns panel's main menu items
      * @override
@@ -1439,17 +1445,116 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     								  /*refreshSidePanel*/false, /*sidePanelView*/null), context);
     },
     
+    
+    /**
+     * creates the filtering criteria to ask for connections to the model.
+     * The criteria is built from user entered values in UI
+     */
+    /*obj|undefined if not valid*/_createConnectionsFilter: function(context) {
+    	
+    	//FIXME add somekind of validation
+    	var count = parseInt(Firebug.chrome.$("dojoConnCountBox").value, 10);
+    	var fromIndex = parseInt(Firebug.chrome.$("dojoConnFromIndexBox").value, 10);
+    	var query = Firebug.chrome.$("dojoConnFilterBox").value;
+    	
+    	if(!count || count == NaN) {
+    		count = undefined;
+    	}
+    	if(!fromIndex || fromIndex == NaN) {
+    		fromIndex = undefined;
+    	} 
+    	if(!query || query.trim().length == 0) {
+    		query = undefined;
+    	}
+
+    	
+    	var filteringCriteria = {};
+    	filteringCriteria['from'] = fromIndex;
+    	filteringCriteria['count'] = count;
+    	   	
+    	if(query) {
+    		var isJson = trimLeft(query).indexOf("{") == 0;    		
+    		if(isJson) {
+	        	var originUrl = context.window.location.href;
+	        	var queryObj = parseJSONString(query, originUrl);
+	    		if(!queryObj) {
+		    		//parsing ended in error . Notify user and exit...		    		
+		    		return;
+	    		}
+
+	    		//create "our" query . Valid keys: object, event, context and method.    	
+	        	var actualQuery = {};
+	        	if(queryObj.object) { actualQuery.obj = queryObj.object; }
+	        	if(queryObj.event) { actualQuery.event = queryObj.event; }
+	        	if(queryObj.context) { actualQuery.context = queryObj.context; }
+	        	if(queryObj.method) { actualQuery.method = queryObj.method; }
+	        	
+	        	if(queryObj.ignoreCase != undefined) { 
+	        		filteringCriteria.queryOptions = {};
+	        		filteringCriteria.queryOptions.ignoreCase = queryObj.ignoreCase; 
+	        	}
+
+    		} else {
+    			var actualQuery = query;
+    			//plainQueryOverFields note: 'method' must be the last, as it is expensive to format it.
+    			filteringCriteria.plainQueryOverFields = [ 'event' /*, 'obj', 'context'*/, 'method' ];
+    			//xxxPERFORMANCE
+    		}        
+        	filteringCriteria['query'] = actualQuery;
+    	}
+
+    	return filteringCriteria;
+    },
+    
+    /*object*/_initFormatters: function() {
+    	//Formatters that know how to "stringify" an object
+    	if(this.formatters) {
+    		//already init...exit
+    		return this.formatters;
+    	}
+    	
+    	var formatters = this.formatters = {};
+    	formatters['obj'] = formatters['context'] = { format: function(object) 
+    			{ 
+    				var rep = Firebug.getRep(object);
+    				if(rep && rep.getTitle) {
+    					return rep.getTitle(object);
+    				} else {
+    					return object.toString();
+    				}
+    			} 
+    	};
+    	formatters['method'] = { format: function(method) 
+    			{
+    				return DojoReps.getMethodLabel(method);
+    			}
+    	};    	
+    	
+    	return this.formatters;
+    },
+    
     /**
      * Render the Connections view
      * !Do not invoke this method directly. it must be just invoked from the updatePanelView method.
      */
     _renderConnectionsInTable: function(context) {
     	this._setOption(SHOW_CONNECTIONS_TABLE, context);
-    	
+
     	if(!context.connectionsAPI) {
     		return;
     	}
+    	
+    	var filteringCriteria = this._createConnectionsFilter(context);
+    	if(!filteringCriteria) {
+    		//parsing ended in error . Notify user and exit...
+    		setClass(Firebug.chrome.$("dojoConnFilterBox"), "dojoConnFilterBox-attention");
+    		return;
+    	}
 
+    	removeClass(Firebug.chrome.$("dojoConnFilterBox"), "dojoConnFilterBox-attention");
+    	
+    	var formatters = this._initFormatters();
+    	
 		// TODO: Add comments (priorityCriteriaArray)
     	var criterias = [DojoModel.ConnectionArraySorter.OBJ,
              			 DojoModel.ConnectionArraySorter.EVENT,
@@ -1461,8 +1566,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 
     	//TODO preyna sorted table: enable again!
 //    	var cons = context.connectionsAPI.getConnections(priorityCriteriaArray);
-    	
-    	var cons = context.connectionsAPI.getConnections();
+    	var cons = context.connectionsAPI.getConnections(filteringCriteria, formatters);
     	
     	var document = this.document;
     	
