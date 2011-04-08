@@ -604,6 +604,7 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
         if (active)
         {
             this.panelNode.ownerDocument.addEventListener("keypress", this.onKeyPress, true);
+            this.resizeEventTarget.addEventListener("resize", this.onResize, true);
 
             this.location = this.getDefaultLocation();
 
@@ -661,6 +662,10 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
         this.highlight(this.context.stopped);
 
         this.panelNode.ownerDocument.removeEventListener("keypress", this.onKeyPress, true);
+        this.resizeEventTarget.removeEventListener("resize", this.onResize, true);
+
+        if (FBTrace.DBG_PANELS)
+            FBTrace.sysout("script panel HIDE removed onResize eventhandler");
 
         var panelStatus = Firebug.chrome.getPanelStatusElements();
         FBL.hide(panelStatus, false);
@@ -833,6 +838,9 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
             //  the old sourcebox will be out of sync. Just remove it and start over.
             this.removeAllSourceBoxes();
             this.show(); // we are not passing state so I guess we could miss a restore
+
+            if (this.activeWarningTag)  // then show() reset the flag,
+                return;                 // obey it.
         }
 
         this.showSource(updatedCompilationUnit.getURL());
@@ -1054,7 +1062,7 @@ Firebug.ScriptPanel.prototype = extend(Firebug.SourceBoxPanel,
             serviceOptionMenu("TrackThrowCatch", "trackThrowCatch"),
             //"-",
             //1.2 option on toolbar this.optionMenu("DebuggerEnableAlways", enableAlwaysPref)
-            optionMenu("Show Break Notifications", "showBreakNotification")
+            optionMenu("firebug.breakpoint.showBreakNotifications", "showBreakNotification")
         ];
     },
 
@@ -1262,7 +1270,7 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
         var box = this.tag.replace(args, parentNode, this);
         var description = box.querySelector(".disabledPanelDescription");
         FirebugReps.Description.render(args.suggestion, description,
-            bind(this.reloadPageFromMemory, this));
+            bindFixed(Firebug.TabWatcher.reloadPageFromMemory,  Firebug.TabWatcher, Firebug.currentContext));
 
         return box;
     },

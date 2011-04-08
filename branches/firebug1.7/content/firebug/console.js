@@ -850,7 +850,7 @@ Firebug.ConsolePanel.prototype = extend(Firebug.ActivablePanel,
             this.getShowStackTraceMenuItem(),
             this.getStrictOptionMenuItem(),
             "-",
-            optionMenu("LargeCommandLine", "largeCommandLine"),
+            optionMenu("Command_Editor", "largeCommandLine"),
             optionMenu("commandLineShowCompleterPopup", "commandLineShowCompleterPopup")
         ];
     },

@@ -298,6 +298,9 @@ BreakOnNextCall.prototype =
 
     onFunctionCall: function(frame, type)
     {
+        if (!this.context || !this.context.sourceFileByTag)
+            return ERROR("onFunctionCall ERROR invalid context ");
+
         var lucky = this.context.getSourceFileByTag(frame.script.tag);
         if (!lucky) // then function running the frame is not in this context
         {
@@ -600,7 +603,7 @@ IntoStepper.prototype = extend(LineStepper.prototype,
  */
 function LogFunctionStepper()
 {
-    this.initialize();
+    //xxxjjb: not defined this.initialize();
 }
 
 LogFunctionStepper.prototype =
@@ -3954,7 +3957,7 @@ function ERROR(text, exc)
     {
         fbs.unhookInterrupts(); // Stop and clear everything
         fbs.unhookFunctions();
-        fbs.unhookScripts();
+        fbs.disableDebugger();
         jsdHandlers.list = [];
         consoleService.logStringMessage("ERROR: "+text);
 
@@ -3968,6 +3971,10 @@ function ERROR(text, exc)
     catch(exc)
     {
         consoleService.logStringMessage("ERROR in ERROR: "+exc);
+    }
+    finally
+    {
+        fbs.enableDebugger(); // we were enabled to get ERROR, so we hope all is cleared up now.
     }
 }
 

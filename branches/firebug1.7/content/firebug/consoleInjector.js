@@ -495,8 +495,9 @@ Firebug.Console.createConsole = function createConsole(context, win)
                 errorObject.objects.push(args[i]);
         }
 
-        var row = Firebug.Console.log(errorObject, context, "errorMessage", null, true); // noThrottle
-        row.scrollIntoView();
+        var row = Firebug.Console.log(errorObject, context, "errorMessage");
+        if (row)
+            row.scrollIntoView();
 
         return "_firebugIgnore";
     }

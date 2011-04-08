@@ -869,21 +869,10 @@ this.iterateWindows = function(win, handler)
 
 this.getRootWindow = function(win)
 {
-    var ff4b7HackWin = null; // let the loop run at least once.
     for (; win; win = win.parent)
     {
         if (!win.parent || win == win.parent || !(win.parent instanceof Window) )
             return win;
-
-        // Do the voodoo
-        var domWindowUtils = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
-
-        //FBTrace.sysout("getRootWindow at depth "+(depth++)+" win: "+FBL.safeGetWindowLocation(win)+"@"+domWindowUtils.outerWindowID+" hackWin "+ff4b7HackWin);
-
-        if (ff4b7HackWin && ff4b7HackWin === domWindowUtils.outerWindowID) // then the loop is not making progress
-            return win;
-        else  // store this loop value, because on FF4b7 win == win.parent will never be true.
-            ff4b7HackWin = domWindowUtils.outerWindowID ? domWindowUtils.outerWindowID : null;
     }
     return null;
 };
@@ -3136,12 +3125,12 @@ this.getStackSourceLink = function()
 {
     for (var frame = Components.stack; frame; frame = frame.caller)
     {
-        if (frame.filename && frame.filename.indexOf("chrome://firebug/") == 0)
+        if (frame.filename && frame.filename.indexOf("://firebug/") > 0)
         {
             for (; frame; frame = frame.caller)
             {
                 var firebugComponent = "/modules/firebug-";
-                if (frame.filename && frame.filename.indexOf("chrome://firebug/") != 0 &&
+                if (frame.filename && frame.filename.indexOf("://firebug/") < 0 &&
                     frame.filename.indexOf(firebugComponent) == -1)
                     break;
             }
@@ -3165,7 +3154,7 @@ this.getStackFrameId = function()
     for (var frame = Components.stack; frame; frame = frame.caller)
     {
         if (frame.languageName == "JavaScript"
-            && !(frame.filename && frame.filename.indexOf("chrome://firebug/") == 0))
+            && !(frame.filename && frame.filename.indexOf("://firebug/") > 0))
         {
             return frame.filename + "/" + frame.lineNumber;
         }
@@ -5663,6 +5652,8 @@ domMemberMap.Window =
     "localStorage",  // FF3.5
     "showModalDialog", // FF 3.0, MS IE4
 
+    "InstallTrigger",
+
     "getInterface",
 ];
 
@@ -7819,7 +7810,8 @@ this.shouldIgnore = function(name)
 
 function ERROR(exc)
 {
-    if (FBTrace) {
+    if (typeof(FBTrace) !== undefined)
+    {
         if (exc.stack) exc.stack = exc.stack.split('\n');
         FBTrace.sysout("lib.ERROR: "+exc, exc);
     }
@@ -7843,7 +7835,7 @@ function deprecated(msg, fnc)
         if (!this.nagged)
         {
             var explain = "Deprecated function, "+msg;
-            if (FBTrace)
+            if (typeof(FBTrace) !== undefined)
                 FBTrace.sysout(explain, getStackDump());
 
             var caller = Components.stack.caller;  // drop frame with deprecated()
