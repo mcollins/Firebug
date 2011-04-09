@@ -17,12 +17,7 @@
         <key id="key_openChromebugNowCommand" key="b" modifiers="control,shift"
                 command="cmd_openChromebugNow"/>
     </keyset>
-   <menupopup id="menu_ToolsPopup">
-            <menuitem id="menu_OpenChromebugNow" insertbefore="menu_firebug"
-                tooltiptext="Chromebug: Firebug for Chrome"
-                label="Use firefox.exe -chromebug "/>
-            <menuseparator insertbefore="menu_firebug"/>
-    </menupopup>
+
 
     <!-- SeaMonkey Tools menu -->
     <menupopup id="toolsPopup">
