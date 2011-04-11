@@ -32,7 +32,14 @@
                <include name="**/*.xul"/>
                <include name="**/*.properties"/>
                <include name="**/*.css"/>
+               <include name="**/*.html"/>
+               <include name="**/*.xml"/>
+               <include name="**/*.dtd"/>
                <include name="**/*.png"/>
+               <include name="**/*.gif"/>
+               <include name="**/*.ico"/>
+               <include name="**/*.manifest"/>
+               <include name="**/*.txt"/>
             </fileset>
         </copy>
 
