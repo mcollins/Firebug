@@ -22,7 +22,7 @@ function runTest()
                 FBTest.compare("quack\n", rows[0].textContent, "The first log must say: quack");
                 FBTest.compare("meow!!\n", rows[1].textContent, "The second log must say: meow!!");
 
-                FBTest.testDone("console.log.DONE");
+                FBTest.testDone("dynScriptLoad.DONE");
             });
 
             FBTest.clearConsole();
