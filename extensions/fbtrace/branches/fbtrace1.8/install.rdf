@@ -22,6 +22,6 @@
     <em:creator>Jan Odvarko</em:creator>
     <em:homepageURL>http://getfirebug.com/releases/extensions/</em:homepageURL>
 
-    <em:updateURL>https://getfirebug.com/releases/fbtrace/update.rdf</em:updateURL>
+    <em:updateURL>https://getfirebug.com/releases/fbtrace/@VERSION@/update.rdf</em:updateURL>
   </Description>
 </RDF>
