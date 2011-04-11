@@ -4,11 +4,14 @@
     The final xpi file should be located in a release directory -->
 <project name="tracingConsole" basedir="." default="build">
 
-    <!-- Directories -->
-    <property name="build.dir" value="release"/>
-
     <!-- Properties -->
     <property file="ant.properties"/>
+
+    <!-- Directories -->
+    <property name="build.dir" value="release"/>
+    <property name="deploy-xpi.dir" value="${GETFIREBUG}/releases/fbtrace/${VERSION}"/>
+
+    <available file="${GETFIREBUG}" property="deploy.dir.available"/>
 
     <!-- Clean -->
     <target name="clean">
@@ -65,8 +68,22 @@
             <replacefilter token="@RELEASE@" property="RELEASE"/>
         </replace>
 
-        <!-- Final version message -->
+        <!-- Final build message -->
         <echo message="FBTrace version: ${VERSION}${RELEASE}"/>
+
+        <!-- Deploy -->
+        <antcall target="deploy" />
+    </target>
+
+    <!-- Deploy if target available -->
+    <target name="deploy" if="deploy.dir.available">
+
+        <!-- Deploy xpi & update.rdf files -->
+        <copy file="${build.dir}/update.rdf" todir="${deploy-xpi.dir}" overwrite="true"/>
+        <copy file="${build.dir}/fbTrace-${VERSION}${RELEASE}.xpi" todir="${deploy-xpi.dir}" overwrite="true"/>
+
+        <!-- Final deploy message -->
+        <echo message="fbTrace-${VERSION}${RELEASE} deployed to: ${deploy-xpi.dir}"/>
     </target>
 
 </project>
