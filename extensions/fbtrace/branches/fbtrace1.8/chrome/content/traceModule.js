@@ -179,7 +179,7 @@ Firebug.TraceModule = extend(Firebug.Module,
         //if (Firebug.Options.getPref(this.prefDomain, "alwaysOpenTraceConsole"))
         //    this.openConsole();
 
-        window.dump("traceModule.initialize: " + this.prefDomain+" alwayOpen:"+
+        window.dump("traceModule.initialize: " + this.prefDomain+" alwaysOpen: "+
             Firebug.Options.getPref(this.prefDomain, "alwaysOpenTraceConsole"));
     },
 

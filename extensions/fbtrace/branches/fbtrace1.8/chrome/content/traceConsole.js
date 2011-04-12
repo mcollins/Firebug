@@ -8,8 +8,8 @@ const Ci = Components.interfaces;
 
 try
 {
-    Components.utils["import"](_firebugLoadConfig.baseLoaderUrl + "moduleLoader.js");
-    ModuleLoader.init(_firebugLoadConfig);
+    Components.utils["import"](FirebugConfig.baseLoaderUrl + "moduleLoader.js");
+    ModuleLoader.init(FirebugConfig);
 
     Components.utils["import"]("resource://fbtrace-firebug/firebug-trace-service.js");
 }
@@ -54,7 +54,7 @@ var TraceConsole =
 
         try
         {
-            Firebug.initialize();
+            Firebug.initialize(window.FirebugConfig);
         }
         catch (e)
         {
