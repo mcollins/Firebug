@@ -186,7 +186,7 @@
                     <!-- <menuitem id="menu_xulExplorer" command="cmd_xulExplorer" key="key_xulExplorer"
                               label="Mark Finkle's XUL Explorer"/> -->
                     <menuitem id="menu_chromebugTraceConsole" command="cmd_toggleCBTraceConsole"
-                            key="key_chromebugTraceConsole" label="Open Chromebug TraceConsole" />
+                            key="key_chromebugTraceConsole" label="Open Chromebug Tracing" />
                     <menuseparator/>
                     <menuitem id="menu_xpcomExplorer" command="cmd_xpcomExplorer" key="key_xpcomExplorer"
                               label="XPCOM Explorer"/>
