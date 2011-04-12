@@ -10,7 +10,7 @@ const Ci = Components.interfaces;
 
 const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
-Components.utils["import"]("resource://fbtrace-firebug/firebug-trace-service.js");
+Components.utils["import"]("resource://firebug/firebug-trace-service.js");
 
 //********************************************************************************************** //
 

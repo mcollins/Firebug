@@ -1,12 +1,25 @@
 /* See license.txt for terms of usage */
 
-Components.utils["import"]("resource://fbtrace-firebug/firebug-trace-service.js");
-var FBTrace = traceConsoleService.getTracer("extensions.chromebug");
+var FBTrace = {};
 
-FBTrace.setScope(window);
-function clearFBTraceScope()
+try
 {
-    window.removeEventListener('unload', clearFBTraceScope, true);
-    FBTrace.setScope(null);
+    // For backward compatibility, the tracing service is still in Firebug.
+    Components.utils["import"]("resource://firebug/firebug-trace-service.js");
+
+    FBTrace = traceConsoleService.getTracer("extensions.firebug");
+    FBTrace.setScope(window);
+
+    function clearFBTraceScope()
+    {
+        window.removeEventListener('unload', clearFBTraceScope, true);
+        FBTrace.setScope(null);
+    }
+
+    window.addEventListener('unload', clearFBTraceScope, true);
+    FBTrace.time("SCRIPTTAG_TIME");
 }
-window.addEventListener('unload', clearFBTraceScope, true);
+catch (err)
+{
+    dump("FBTrace; " + err);
+}
