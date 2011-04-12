@@ -18,7 +18,7 @@ function startup(aData, aReason)
 
         Cu.reportError("swarm.bootstrap startup phase "+state);
 
-        if (state ==  'opened') // then the install just began
+        if (state ===  'opened') // then the install just began
         {
             return;
         }
