@@ -61,13 +61,13 @@ CommandLineHandler.prototype =
             // TODO: this code belongs to Chromebug!
             if (cmdLine.findFlag("chromebug", false) >= 0)
             {
-                var open = prefs.getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
+                var open = getBoolPref("extensions.chromebug.alwaysOpenTraceConsole");
                 if (open) 
                     this.openConsole(window, "extensions.chromebug");
             }
 
             // Check if the "extensions.firebug.alwaysOpenTraceConsole" pref is set
-            open = prefs.getBoolPref("extensions.firebug.alwaysOpenTraceConsole");
+            open = getBoolPref("extensions.firebug.alwaysOpenTraceConsole");
             if (open)
                 this.openConsole(window, "extensions.firebug");
 
@@ -145,6 +145,19 @@ CommandLineHandler.prototype =
     // begins on 33th character.
     helpInfo: "  -" + CMDLINE_FLAG + " Open Firebug Tracing console \n"
 };
+
+// ********************************************************************************************* //
+
+function getBoolPref(prefName)
+{
+    try
+    {
+        return prefs.getBoolPref(prefName);
+    }
+    catch (err)
+    {
+    }
+}
 
 // ********************************************************************************************* //
 

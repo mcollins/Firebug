@@ -6,8 +6,17 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Components.utils["import"]("resource://firebug/firebug-trace-service.js");
-Components.utils["import"]("resource://fbtrace-firebug/moduleLoader.js");
+try
+{
+    Components.utils["import"](_firebugLoadConfig.baseLoaderUrl + "moduleLoader.js");
+    ModuleLoader.init(_firebugLoadConfig);
+
+    Components.utils["import"]("resource://fbtrace-firebug/firebug-trace-service.js");
+}
+catch (err)
+{
+    dump("TraceConsole; Loading modules EXCEPTION " + err + "\n");
+}
 
 var traceService = traceConsoleService;
 

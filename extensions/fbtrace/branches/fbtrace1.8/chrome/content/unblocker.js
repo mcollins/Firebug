@@ -30,10 +30,21 @@ function onLoad(event)
         if ((win.location.href === releaser.url) &&
             (releaser.prefDomain === win.releaser.prefDomain))
         {
-            TraceConsole.applicationReleased = true;
-            TraceConsole.releaser = releaser;
+            window.dump("-------- " + window.location + " blocker window found -----------------\n");
+
+            try
+            {
+                TraceConsole.applicationReleased = true;
+                TraceConsole.releaser = releaser;
+            }
+            catch (err)
+            {
+                window.dump("-------- unblocker EXCEPTION: " + err + "\n");
+            }
         }
     }
+
+    window.dump("-------- " + window.location + " unblocker done -----------------\n");
 }
 
 window.addEventListener("load", onLoad, false);
