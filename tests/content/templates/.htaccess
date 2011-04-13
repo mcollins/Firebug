@@ -1,4 +1,0 @@
-<IfModule rewrite_module>
-     AddType application/javascript .txt
-</IfModule>
-
