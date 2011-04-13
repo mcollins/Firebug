@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define([], function() { with (FBL) {
+define(["xpcom"], function() { with (FBL) {
 
 // ************************************************************************************************
 // Shorcuts and Services
@@ -19,6 +19,8 @@ var reDBG = /extensions\.([^\.]*)\.(DBG_.*)/;
 var reDBG_FBS = /DBG_FBS_(.*)/;
 
 var EOF = "<br/>";
+
+var XPCOM = TraceConsole.XPCOM;
 
 // Register locale file with strings for the Tracing Console window.
 Firebug.registerStringBundle("chrome://fbtrace/locale/firebug-tracing.properties");
@@ -750,12 +752,20 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
 
     onClickStackFrame: function(event)
     {
+        var url = event.target.innerHTML;
         var winType = "FBTraceConsole-SourceView";
         var lineNumber = event.target.getAttribute("lineNumber");
+        var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"].getService(Ci.nsIWindowWatcher);
 
-        event.target.ownerDocument.defaultView.openDialog("chrome://global/content/viewSource.xul",
-            winType, "all,dialog=no",
-            event.target.innerHTML, null, null, lineNumber, false);
+        // Put together arguments for the view-source window.
+        var args = Cc["@mozilla.org/supports-array;1"].createInstance(Ci.nsISupportsArray);
+        args.AppendElement(XPCOM.toSupportsString(url));
+        args.AppendElement(XPCOM.toSupportsString(""));
+        args.AppendElement(XPCOM.toSupportsString(""));
+        args.AppendElement(XPCOM.toSupportsString(lineNumber));
+
+        // Open/reuse the view source window.
+        ww.openWindow(window, "chrome://global/content/viewSource.xul", winType, "chrome", args);
     },
 
     onOpenDebugger: function(event)
