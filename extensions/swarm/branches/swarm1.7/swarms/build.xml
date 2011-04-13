@@ -1,17 +1,19 @@
 <?xml version="1.0" ?>
 
 <!-- -->
-<project name="swarmTest" basedir="." default="allFirefoxDirs">
+<project name="swarmTest" basedir="." default="bootstrapTest">
 
     <!-- Directories -->
     <property name="build.dir" value="../../build"/>
 
     <!-- Properties -->
+    <property name="firefoxVersion" value="Firefox-4.0"/>
     <!-- firefox.properties must provide property |firefox| value the full .exe name -->
     <property file="${firefoxVersion}/firefox.properties"/>
 
     <property file="${firefoxVersion}/swarm.properties"/>
     <property file="ant.properties"/>
+
     <!-- If the local.properties does not give a server, then default wins -->
     <property name="testListServer" value="https://getfirebug.com"/>
     <makeurl file="${basedir}/.." property="swarmServer"/>
@@ -19,6 +21,7 @@
     <target name="clean">
         <delete dir="${build.dir}/profile"/>
         <mkdir dir="${build.dir}/profile"/>
+        <mkdir dir="${build.dir}/profile/extensions"/>
     </target>
 
     <target name="allFirefoxDirs">
@@ -37,25 +40,29 @@
     </target>
 
     <target name="firefoxInstall" unless="$firefox.exists">
-        <echo message="Install Firefox from ${firefoxChannel}"/>
-        <echo message="And set property 'firefox=_exe name_' with forward slashes in ${basedir}/${firefoxVersion}/firefox.properties"/>
+        <echo message="Set property 'firefox=_exe name_' with forward slashes in ${basedir}/${firefoxVersion}/firefox.properties"/>
     </target>
 
     <target name="installSwarm" depends="alreadyInstalledSwarm"  if="firefox.exists" unless="annotations.exist">
         <!-- pre-install some preferences to avoid popup stuff during install run -->
          <copy file="user.js" todir="${build.dir}/profile"/>
+        <!-- pre-install the link to the swarm extension -->
+        <echo file="${build.dir}/profile/extensions/swarms@getfirebug.com" message="${basedir}\.."/>
         <exec executable="${firefox}">
             <arg value="-no-remote"/>
             <arg value="-profile"/>
              <arg value="${build.dir}/profile"/>
-            <arg value="${swarmServer}/${swarmURL}"/>
         </exec>
+    </target>
+
+    <target name="bootstrapTest" depends="clean, alreadyInstalledFirefox, installSwarm" if="firefox.exists">
+       <echo message="done?"/>
     </target>
 
     <target name="test" depends="alreadyInstalledFirefox, firefoxInstall, installSwarm" if="firefox.exists">
         <!-- first wait for the install to begin -->
         <waitfor maxwait="10" maxwaitunit="minute">
-            <available file="${build.dir}/profile/extensions/firebug@software.joehewitt.com"/>
+            <available file="${build.dir}/profile/extensions/firebug@software.joehewitt.com.xpi"/>
         </waitfor>
         <!-- then wait for the install process to exit -->
         <waitfor maxwait="10" maxwaitunit="minute">

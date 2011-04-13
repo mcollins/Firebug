@@ -2,6 +2,7 @@ var Cc = Components.classes;
 var Ci = Components.interfaces;
 var Cu = Components.utils;
 
+var cleanUpSwarmTab = null;
 //
 /*
  * bootstrap.js API
@@ -45,6 +46,15 @@ function shutdown(aData, aReason)
     var state = getTestingPhase();
     if (state ==  "installing") // then hopefully we are restarting to complete swarm install
     {
+        try
+        {
+            cleanUpSwarmTab();
+        }
+        catch(exc)
+        {
+            Cu.reportError("shutdown ERROR in cleanUpSwarmTab "+exc);
+        }
+
         setTestingPhase('restarting');
         Services.prefs.savePrefFile(null);
         return;
@@ -231,7 +241,7 @@ function installSwarms(swarms)
 
 function openSwarmTab(url, win, onSwarmTabReady)
 {
-    Cu.reportError("swarm.bootstrap opeSwarmTab "+url);
+    Cu.reportError("swarm.bootstrap openSwarmTab "+url);
     var swarmTab = win.gBrowser.addTab(url);
     var browserElement = win.gBrowser.getBrowserForTab(swarmTab);
 
@@ -240,7 +250,10 @@ function openSwarmTab(url, win, onSwarmTabReady)
         browserElement.removeEventListener('load', onSwarmPageLoaded, true);
 
         win.gBrowser.selectedTab = swarmTab;
-
+        cleanUpSwarmTab = function() {
+            win.gBrowser.removeTab(swarmTab);
+            win.alert("clean up "+url);
+        }
         onSwarmTabReady(event.target);
     }, true);
 
@@ -253,9 +266,9 @@ function openSwarmPageAndInstall(win)
     Cu.reportError("swarm.bootstrap win "+win+" isDOM "+(win instanceof Ci.nsIDOMWindow)+" win.location "+win.location);
 
     var chromeURI = "chrome://swarms/content/index.html";
-    var url = convertToFile(chromeURI) + "?installAll=true";
+    var swarmURL = convertToFile(chromeURI) + "?installAll=true";
 
-    openSwarmTab(url, win, function installAll(document)
+    openSwarmTab(swarmURL, win, function installAll(document)
     {
         setTestingPhase("installing");
         Cu.reportError("swarm openSwarmTab installing ");
