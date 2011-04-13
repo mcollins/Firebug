@@ -58,12 +58,21 @@ var TrackerObserver =
 	onPageLoad: function(aEvent) {
 	
 		var doc = aEvent.originalTarget.wrappedJSObject; // doc is document that triggered "onload" event
-
-		sysout("onPageLoad: " + doc.location.href);
 	
 		if(doc.location.href.search("mozilla_nativewrappers") == -1)
 		  return;
 
+		sysout("onPageLoad: " + doc.location.href);
+
+		// add event listener for page unload 
+		//aEvent.originalTarget.defaultView.addEventListener("unload", this.onPageUnload, true);
+
+		  
+		TrackerObserver._makeTheComparisons(doc);		  		 
+	},
+
+	_makeTheComparisons: function(doc) {
+		
 		var retrievedFn = doc.tracker.getTracked("fn");
 		var unwrappedOriginalFn = (doc.originalFn.wrappedJSObject) ? doc.originalFn.wrappedJSObject : doc.originalFn;
 		
@@ -77,9 +86,16 @@ var TrackerObserver =
 			var unwrappedRetrievedFn = XPCNativeWrapper.unwrap(retrievedFn);
 			sysout("comparison of XPCNativeWrapper.unwrap(fn) is: " + (unwrappedFromPage == unwrappedRetrievedFn));
 		}
-		  
-		// add event listener for page unload 
-		//aEvent.originalTarget.defaultView.addEventListener("unload", this.onPageUnload, true);
+
+		
+		//now with anArray (the 2nd thing tracked in client page)
+		var retrievedArray = doc.tracker.getTracked("array");
+		
+		sysout("comparison of anArray is: " + (doc.originalArray == retrievedArray));		
+		for(var i=0; i < retrievedArray.length; i++) {
+			sysout("comparison of anArray["+i+"] with type ("+typeof(retrievedArray[i])+") is: " + (doc.originalArray[i] == retrievedArray[i]));		
+		}
+			
 	},
 
 	onPageUnload: function(aEvent) {
