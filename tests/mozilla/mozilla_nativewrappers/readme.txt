@@ -1,7 +1,7 @@
 
 * Testing Mozilla native wrappers
 
-problem is noticed with FF 4 + fbug 1.7
+problem is noticed with FF 4  . In FF 3.6 it works ok  
 
 you need to install the extension , and open the file within the extension "mozilla_nativewrappers.html"
 
