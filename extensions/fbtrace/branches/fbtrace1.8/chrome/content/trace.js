@@ -4,8 +4,7 @@ var FBTrace = {};
 
 try
 {
-    // For backward compatibility, the tracing service is still in Firebug.
-    Components.utils["import"]("resource://firebug/firebug-trace-service.js");
+    Components.utils["import"]("resource://fbtrace/firebug-trace-service.js");
 
     FBTrace = traceConsoleService.getTracer("extensions.firebug");
     FBTrace.setScope(window);

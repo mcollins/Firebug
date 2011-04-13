@@ -33,7 +33,7 @@ Firebug.TraceOptionsController = function(prefDomain, onPrefChangeHandler)
 {
     this.prefDomain = prefDomain;
 
-    Components.utils["import"]("resource://firebug/firebug-trace-service.js");
+    Components.utils["import"]("resource://fbtrace/firebug-trace-service.js");
     this.traceService = traceConsoleService;
 
     this.addObserver = function()

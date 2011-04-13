@@ -11,7 +11,7 @@ try
     Components.utils["import"](FirebugConfig.baseLoaderUrl + "moduleLoader.js");
     ModuleLoader.init(FirebugConfig);
 
-    Components.utils["import"]("resource://firebug/firebug-trace-service.js");
+    Components.utils["import"]("resource://fbtrace/firebug-trace-service.js");
 }
 catch (err)
 {
