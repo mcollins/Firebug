@@ -25,7 +25,19 @@ function startup(aData, aReason)
         }
         else if (state === 'restarting') // then we came back after the install, yay
         {
+            var once = Services.prefs.getBoolPref("browser.sessionstore.resume_session_once");
+            if (once)
+            {
+                Services.prefs.setBoolPref("browser.sessionstore.resume_session_once", false);
+                Cu.reportError("blocked browser.sessionstore.resume_session_once "+once);
+            }
+
             Cu.reportError("ready to start testing");
+            hookXULWindows(function squashSwarmPage(xulWindow)
+            {
+                Cu.reportError("exit to start testing");
+                xulWindow.goQuitApplication();
+            });
             setTestingPhase("done");
             return;
         }
@@ -252,7 +264,6 @@ function openSwarmTab(url, win, onSwarmTabReady)
         win.gBrowser.selectedTab = swarmTab;
         cleanUpSwarmTab = function() {
             win.gBrowser.removeTab(swarmTab);
-            win.alert("clean up "+url);
         }
         onSwarmTabReady(event.target);
     }, true);
