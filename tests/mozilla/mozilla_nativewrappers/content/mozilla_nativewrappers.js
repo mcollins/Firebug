@@ -75,9 +75,10 @@ var TrackerObserver =
 		
 		var retrievedFn = doc.tracker.getTracked("fn");
 		var unwrappedOriginalFn = (doc.originalFn.wrappedJSObject) ? doc.originalFn.wrappedJSObject : doc.originalFn;
+		var retrievedFn_wrappedJSObject = (retrievedFn.wrappedJSObject) ? retrievedFn.wrappedJSObject : retrievedFn;
 		
 		sysout("comparison of fn is: " + (doc.originalFn == retrievedFn));		
-		sysout("comparison of fn.wrappedJSObject (if exists): " + (unwrappedOriginalFn == retrievedFn.wrappedJSObject));
+		sysout("comparison of fn.wrappedJSObject (if exists): " + (unwrappedOriginalFn == retrievedFn_wrappedJSObject));
 		sysout("comparison of fn.toSource() is: " + (doc.originalFn.toSource() == retrievedFn.toSource()));
 		  
 		 //if XPCNativeWrapper.unwrap is available...
