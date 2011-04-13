@@ -54,6 +54,7 @@ var TraceConsole =
 
         try
         {
+            window.FirebugConfig.prefDomain = this.prefDomain;
             Firebug.initialize(window.FirebugConfig);
         }
         catch (e)
