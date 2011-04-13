@@ -758,11 +758,11 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
         var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"].getService(Ci.nsIWindowWatcher);
 
         // Put together arguments for the view-source window.
-        var args = Cc["@mozilla.org/supports-array;1"].createInstance(Ci.nsISupportsArray);
-        args.AppendElement(XPCOM.toSupportsString(url));
-        args.AppendElement(XPCOM.toSupportsString(""));
-        args.AppendElement(XPCOM.toSupportsString(""));
-        args.AppendElement(XPCOM.toSupportsString(lineNumber));
+        var args = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
+        args.appendElement(XPCOM.toSupportsString(url), false);
+        args.appendElement(null, false);
+        args.appendElement(null, false);
+        args.appendElement(XPCOM.toSupportsInt32(lineNumber), false);
 
         // Open/reuse the view source window.
         ww.openWindow(window, "chrome://global/content/viewSource.xul", winType, "chrome", args);
