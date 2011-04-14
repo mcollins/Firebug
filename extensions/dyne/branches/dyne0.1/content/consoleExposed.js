@@ -2,7 +2,7 @@
 // win maybe an iframe inside of context.window.
 function createFirebugConsole(context, win)
 {
-    var console = {__exposedProperties__: {} };  // A Chrome object
+    var console = {__exposedProps__: {} };  // A Chrome object
 
     // ---- Exposed Properties of Chrome Object
     console.log = function log() { return logFormatted(arguments, "log"); }
@@ -182,27 +182,27 @@ function createFirebugConsole(context, win)
 
     console.firebug = Firebug.version;
 
-    console.__exposedProperties__.log = "r";
-    console.__exposedProperties__.debug = "r";
-    console.__exposedProperties__.info = "r";
-    console.__exposedProperties__.warn = "r";
-    console.__exposedProperties__.exception = "r";
-    console.__exposedProperties__.assert = "r";
-    console.__exposedProperties__.dir = "r";
-    console.__exposedProperties__.dirxml = "r";
-    console.__exposedProperties__.trace = "r";
-    console.__exposedProperties__.group = "r";
-    console.__exposedProperties__.groupEnd = "r";
-    console.__exposedProperties__.groupCollapsed = "r";
-    console.__exposedProperties__.time = "r";
-    console.__exposedProperties__.timeEnd = "r";
-    console.__exposedProperties__.profile = "r";
-    console.__exposedProperties__.profileEnd = "r";
-    console.__exposedProperties__.count = "r";
-    console.__exposedProperties__.clear = "r";
-    console.__exposedProperties__.table = "r";
-    console.__exposedProperties__.error = "r";
-    console.__exposedProperties__.firebug = "r";
+    console.__exposedProps__.log = "r";
+    console.__exposedProps__.debug = "r";
+    console.__exposedProps__.info = "r";
+    console.__exposedProps__.warn = "r";
+    console.__exposedProps__.exception = "r";
+    console.__exposedProps__.assert = "r";
+    console.__exposedProps__.dir = "r";
+    console.__exposedProps__.dirxml = "r";
+    console.__exposedProps__.trace = "r";
+    console.__exposedProps__.group = "r";
+    console.__exposedProps__.groupEnd = "r";
+    console.__exposedProps__.groupCollapsed = "r";
+    console.__exposedProps__.time = "r";
+    console.__exposedProps__.timeEnd = "r";
+    console.__exposedProps__.profile = "r";
+    console.__exposedProps__.profileEnd = "r";
+    console.__exposedProps__.count = "r";
+    console.__exposedProps__.clear = "r";
+    console.__exposedProps__.table = "r";
+    console.__exposedProps__.error = "r";
+    console.__exposedProps__.firebug = "r";
     // DBG console.uid = Math.random();
 
     // --- End Exposed Functions
