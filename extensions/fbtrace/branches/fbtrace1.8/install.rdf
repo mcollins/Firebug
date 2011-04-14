@@ -12,13 +12,12 @@
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>3.0</em:minVersion>
-        <em:maxVersion>4.2.*</em:maxVersion>
+        <em:maxVersion>6.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
 
     <em:name>FBTrace</em:name>
-    <em:description>Enables Firebug Tracing Console in Firebug final releases. Note that this
-        console is enabled by default in 'X' Firebug releases.</em:description>
+    <em:description>Tracing Console for Firebug.</em:description>
     <em:creator>Jan Odvarko</em:creator>
     <em:homepageURL>http://getfirebug.com/releases/extensions/</em:homepageURL>
 
