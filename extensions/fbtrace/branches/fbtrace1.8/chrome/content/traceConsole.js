@@ -127,28 +127,34 @@ var TraceConsole =
 
     initializeContent: function(logNode)
     {
-        this.logs = logNode;
-
-        // Notify listeners
-        Firebug.TraceModule.onLoadConsole(window, logNode);
-
-        this.updateTimeInfo();
-
-        // If the opener is closed the console must be also closed.
-        // (this console uses shared object from the opener (e.g. Firebug)
-        window.opener.addEventListener("close", this.onCloseOpener, true);
-        this.addedOnCloseOpener = true;
-
-        // Fetch all cached messages.
-        for (var i=0; i<queue.length; i++)
-            this.dump(queue[i]);
-
-        FBTrace.sysout("FBTrace; initialization process done: "+this.prefDomain+"\n");
-
-        if (this.releaser)
+        try
         {
-            Components.utils.reportError("TraceConsole releasing application thread.");
-            this.releaser.unblock.apply(this.releaser,[]);
+            this.logs = logNode;
+
+            // Notify listeners
+            Firebug.TraceModule.onLoadConsole(window, logNode);
+
+            this.updateTimeInfo();
+
+            // If the opener is closed the console must be also closed.
+            // (this console uses shared object from the opener (e.g. Firebug)
+            window.opener.addEventListener("close", this.onCloseOpener, true);
+            this.addedOnCloseOpener = true;
+
+            // Flush any cached messages (those that came since the firbug-trace-observer
+            // has been registered and now.
+            this.flushCachedMessages();
+
+            FBTrace.sysout("FBTrace; initialization process done: " + this.prefDomain + "\n");
+
+            if (this.releaser) {
+                Components.utils.reportError("TraceConsole releasing application thread.");
+                this.releaser.unblock.apply(this.releaser, []);
+            }
+        }
+        catch (err)
+        {
+            FBTrace.sysout("initializeContent; EXCEPTION " + err, err);
         }
     },
 
@@ -231,6 +237,37 @@ var TraceConsole =
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Asynchronous display
+
+    initLayoutTimer: function()
+    {
+        var layoutTimeout = Firebug.Options.getPref(this.prefDomain, "fbtrace.layoutTimeout");
+        if (typeof(layoutTimeout) == "undefined")
+            return;
+
+        if (layoutTimeout <= 0)
+            return;
+
+        if (this.layoutTimeout)
+            clearTimeout(this.layoutTimeout);
+
+        var handler = FBL.bindFixed(this.flushCachedMessages, this);
+        this.layoutTimeout = setTimeout(handler, layoutTimeout);
+    },
+
+    flushCachedMessages: function()
+    {
+        if (!this.logs || !queue.length)
+            return;
+
+        // Fetch all cached messages.
+        for (var i=0; i<queue.length; i++)
+            this.dump(queue[i]);
+
+        queue = [];
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // nsIObserver
 
     observe: function(subject, topic, data)
@@ -251,8 +288,10 @@ var TraceConsole =
                 messageInfo.type, data, messageInfo.obj, messageInfo.scope,
                 messageInfo.time);
 
+            this.initLayoutTimer();
+
             // If the content isn't loaded yet, remember all messages and insert them later.
-            if (this.logs)
+            if (this.logs && !this.layoutTimeout)
                 this.dump(message);
             else
                 queue.push(message);
