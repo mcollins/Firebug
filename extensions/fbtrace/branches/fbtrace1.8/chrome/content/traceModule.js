@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define(["xpcom"], function() { with (FBL) {
+define(["xpcom"], function(XPCOM) { with (FBL) {
 
 // ************************************************************************************************
 // Shorcuts and Services
@@ -19,8 +19,6 @@ var reDBG = /extensions\.([^\.]*)\.(DBG_.*)/;
 var reDBG_FBS = /DBG_FBS_(.*)/;
 
 var EOF = "<br/>";
-
-var XPCOM = TraceConsole.XPCOM;
 
 // Register locale file with strings for the Tracing Console window.
 Firebug.registerStringBundle("chrome://fbtrace/locale/firebug-tracing.properties");

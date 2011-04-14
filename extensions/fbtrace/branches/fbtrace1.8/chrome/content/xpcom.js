@@ -11,7 +11,7 @@ var Ci = Components.interfaces;
 // ************************************************************************************************
 // Shorcuts and Services
 
-TraceConsole.XPCOM =
+var XPCOM =
 {
     toSupportsString: function(string)
     {
@@ -30,7 +30,7 @@ TraceConsole.XPCOM =
 
 // ************************************************************************************************
 
-return TraceConsole.XPCOM;
+return XPCOM;
 
 // ************************************************************************************************
 }});
