@@ -757,15 +757,9 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
         var lineNumber = event.target.getAttribute("lineNumber");
         var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"].getService(Ci.nsIWindowWatcher);
 
-        // Put together arguments for the view-source window.
-        var args = Cc["@mozilla.org/array;1"].createInstance(Ci.nsIMutableArray);
-        args.appendElement(XPCOM.toSupportsString(url), false);
-        args.appendElement(null, false);
-        args.appendElement(null, false);
-        args.appendElement(XPCOM.toSupportsInt32(lineNumber), false);
-
-        // Open/reuse the view source window.
-        ww.openWindow(window, "chrome://global/content/viewSource.xul", winType, "chrome", args);
+        window.openDialog("chrome://global/content/viewSource.xul",
+            winType, "all,dialog=no",
+            url, null, null, lineNumber, false);
     },
 
     onOpenDebugger: function(event)
