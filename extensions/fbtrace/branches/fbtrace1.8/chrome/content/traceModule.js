@@ -755,7 +755,6 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
         var url = event.target.innerHTML;
         var winType = "FBTraceConsole-SourceView";
         var lineNumber = event.target.getAttribute("lineNumber");
-        var ww = Cc["@mozilla.org/embedcomp/window-watcher;1"].getService(Ci.nsIWindowWatcher);
 
         window.openDialog("chrome://global/content/viewSource.xul",
             winType, "all,dialog=no",
