@@ -148,7 +148,7 @@ var TraceConsole =
             FBTrace.sysout("FBTrace; initialization process done: " + this.prefDomain + "\n");
 
             if (this.releaser) {
-                Components.utils.reportError("TraceConsole releasing application thread.");
+                dump("TraceConsole releasing application thread.\n");
                 this.releaser.unblock.apply(this.releaser, []);
             }
         }
