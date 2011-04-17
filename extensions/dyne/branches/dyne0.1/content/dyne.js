@@ -387,12 +387,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
                 FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
             this.currentEditor = editor;
 
-            var console = createFirebugConsole(this.context, win);
-
-            if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("dyne.integrateOrion console ", console);
-            win.wrappedJSObject.console = console;
-
             this.attachUpdater();
         }
         catch(exc)
@@ -823,7 +817,7 @@ Firebug.Dyne.LocalSaver.prototype =
 // ************************************************************************************************
 
 Firebug.Dyne.MetaOrionPanel = function metaOrionPanel() {};
-Firebug.Dyne.MetaOrionPanel.prototype = extend(Firebug.Panel,
+Firebug.Dyne.MetaOrionPanel.prototype = extend(Firebug.DOMPanel.prototype,
 {
     name: "metaorion",
     title: "MetaOrion",
@@ -837,6 +831,8 @@ Firebug.Dyne.MetaOrionPanel.prototype = extend(Firebug.Panel,
     {
         if (this.setMetaOrionEditorObject(this.context))
         {
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.show metaOrion: ", this.metaOrion);
 
         }
         else
@@ -853,17 +849,22 @@ Firebug.Dyne.MetaOrionPanel.prototype = extend(Firebug.Panel,
         {
             this.metaOrion = {};
             var win = context.window.wrappedJSObject;
-            this.metaOrion.topContainer = win.dijit.byId('topContainer');
+            this.metaOrion.topContainer_Widget = win.dijit.byId('topContainer');
             if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("dyne.integrateOrion topContainer: "+this.metaOrion.topContainer, this.metaOrion.topContainer);
-            if (this.metaOrion.topContainer)
-                this.metaOrion.editor = this.metaOrion.topContainer._editorContainer._editor;
+                FBTrace.sysout("dyne.setMetaOrionEditorObject topContainer: "+this.metaOrion.topContainer, this.metaOrion.topContainer);
+            if (this.metaOrion.topContainer_Widget)
+                this.metaOrion.editorContainer = this.metaOrion.topContainer_Widget._editorContainer;
             if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("dyne.integrateOrion editor "+this.metaOrion.editor, this.metaOrion.editor);
+                FBTrace.sysout("dyne.setMetaOrionEditorObject editor "+this.metaOrion.editor, this.metaOrion.editor);
             if (this.metaOrion.editor)
                 return this.metaOrion.editor;
         }
         return false;
+    },
+
+    getDefaultSelection: function()
+    {
+        return this.metaOrion;
     },
 
     hide: function(state)

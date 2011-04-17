@@ -5,7 +5,6 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script src="chrome://dyne/content/dyne.js" type="application/x-javascript"/>
-    <script src="chrome://dyne/content/consoleExposed.js" type="application/x-javascript"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleJSEditor" oncommand="Firebug.Dyne.toggleJSEditing()"/>
