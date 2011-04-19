@@ -33,6 +33,7 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.CSSModule.registerEditor("Orion", this);
         Firebug.ScriptPanel.registerEditor("Source", Firebug.Dyne.JSTextAreaEditor);
         Firebug.ScriptPanel.registerEditor("Orion", this);
+        Firebug.NetMonitor.NetRequestTable.addListener(Firebug.Dyne.NetRequestTableListener);
     },
 
     showPanel: function(browser, panel)
@@ -655,13 +656,14 @@ Firebug.Dyne.CompilationUnitUpdater.prototype =
     {
         var changedLineIndex = this.model.getLineAtOffset(start);
         var lineText = this.model.getLine(changedLineIndex);
+        var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
+
         if (FBTrace.DBG_DYNE)
         {
-            FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged "+changedLineIndex+" "+lineText);
+            FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged "+changedLineNumber+" "+lineText);
             FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
         }
 
-        var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
         this.orionPanel.setSaveAvailable(true);
     },
 
@@ -911,6 +913,34 @@ Firebug.Dyne.WarningRep = domplate(Firebug.Rep,
      },
 
 });
+
+Firebug.Dyne.NetRequestTableListener = {
+    onCreateRequestEntry: function(netRequestTable, row){
+        FBTrace.sysout("Firebug.Dyne.NetRequestTableListener ", row);
+        if (row.repObject.responseStatus === 404) // then the file was not found
+        {
+            var headers = row.repObject.responseHeaders;
+            for(var i = 0; i < headers.length; i++)
+            {
+                if (headers[i].name === "X-Edit-Server")
+                {
+                    var debugCol = row.getElementsByClassName('netDebugCol')[0];
+                    debugCol.innerHTML = "<span class='orion404' onclick='Firebug.Dyne.NetRequestTableListener.addNewFile(event)'>add</span>";
+                    return;
+                }
+            }
+        }
+    },
+
+    addNewFile: function(event)
+    {
+        var button = event.target;
+        var row = FBL.getAncestorByClass(button, 'netRow');
+        var netFile = row.repObject;
+        var url = getEditURLbyNetFile(netFile);
+        window.alert("Need to create "+url);
+    }
+}
 // ************************************************************************************************
 // Registration
 
