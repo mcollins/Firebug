@@ -106,7 +106,7 @@ function aTestCallback(event)
     var span = document.createElement('span');
     span.innerHTML = event+" "+onAllocateString();
     editMe.appendChild(span);
-    console.log("aTestCallback set "+editMe.innerHTML);
+    //console.log("aTestCallback set "+editMe.innerHTML);
     if (leak)
         undoStack.push(span);
     editMe.removeChild(span);
