@@ -15,13 +15,17 @@ function leakOff() {leak = false;}
 
 <button id="allocateString">Allocate String</button> Click this button to allocate some strings.<br/>
 <button id="loadImage">Load Image</button> Click this button to load an image.<br/>
+<button id="fakeEdit">Fake Edit</button> Click this button to fake an edit.<br/>
 <div id="imageBox" style="height: 100px"></div>
+<div id="editMe"></div>
 
 <script type="text/javascript">
 var button1 = document.getElementById("allocateString");
 var button2 = document.getElementById("loadImage");
 button1.addEventListener("click", onAllocateString, false);
 button2.addEventListener("click", onLoadImage, false);
+var editButton = document.getElementById("fakeEdit");
+editButton.addEventListener('click', onEdit, false);
 
 var arr = [];
 function onAllocateString()
@@ -34,6 +38,7 @@ function onAllocateString()
     button.innerHMTL = "Allocate String "+arr.length;
     if (!leak)
         arr.pop();
+    return data;
 }
 
 var images = [];
@@ -57,6 +62,69 @@ function onLoadImage()
 
     if (!leak)
         images.pop();
+}
+
+var EventBroadcaster =
+{
+    hashTableOfCallbacks: {},
+
+    registerListenerForEvent: function(eventName /* string */, callback)
+    {
+        if (!EventBroadcaster.hashTableOfCallbacks[eventName])
+            EventBroadcaster.hashTableOfCallbacks[eventName] = [];
+        EventBroadcaster.hashTableOfCallbacks[eventName].push(callback);
+    },
+    unregisterListenerForEvent: function(eventName /* string */, callback)
+    {
+        var callbacks = EventBroadcaster.hashTableOfCallbacks[eventName];
+        if (callbacks)
+        {
+            var i = EventBroadcaster.hashTableOfCallbacks[eventName].indexOf(callback);
+            if (i >= 0)
+                  EventBroadcaster.hashTableOfCallbacks[eventName].splice(i,1);
+
+            if (!EventBroadcaster.hashTableOfCallbacks[eventName].length)
+                delete EventBroadcaster.hashTableOfCallbacks[eventName];
+        }
+    },
+    runListenersForEvent: function(eventName /* string */)
+    {
+        var callbacks = EventBroadcaster.hashTableOfCallbacks[eventName];
+        if (callbacks)
+        {
+            for (var i = 0; i < callbacks.length; i++)
+            {
+                callbacks[i].apply(null, [eventName]);
+            }
+        }
+    },
+};
+var undoStack = [];
+function aTestCallback(event)
+{
+    var editMe = document.getElementById('editMe');
+    var span = document.createElement('span');
+    span.innerHTML = event+" "+onAllocateString();
+    editMe.appendChild(span);
+    console.log("aTestCallback set "+editMe.innerHTML);
+    if (leak)
+        undoStack.push(span);
+    editMe.removeChild(span);
+}
+
+function onEdit()
+{
+    var aBunch = 10;
+    for (var i = 0; i < aBunch; i++)
+        EventBroadcaster.registerListenerForEvent("edit", aTestCallback);
+
+    EventBroadcaster.runListenersForEvent("edit");
+
+    if (leak)
+        aBunch = aBunch/2;
+
+    for (var i = 0; i < aBunch; i++)
+        EventBroadcaster.unregisterListenerForEvent("edit", aTestCallback);
 }
 </script>
 
