@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+</head>
+<body>
+
+<button id="allocateString">Allocate String</button> Click this button to allocate some strings.<br/>
+<button id="loadImage">Load Image</button> Click this button to load an image.<br/>
+<div id="imageBox" style="height: 100px"></div>
+
+<script type="text/javascript">
+var button1 = document.getElementById("allocateString");
+var button2 = document.getElementById("loadImage");
+button1.addEventListener("click", onAllocateString, false);
+button2.addEventListener("click", onLoadImage, false);
+
+var arr = [];
+function onAllocateString()
+{
+    var data = "";
+    for (var i=0; i<1000; i++)
+        data += "01234567890123456789012345678901234567890123456789";
+    arr.push(data);
+}
+
+var images = [];
+function onLoadImage()
+{
+    var box = document.getElementById("imageBox");
+    var button = document.getElementById("loadImage");
+    button.innerHTML = "Load Image";
+
+    var image = new Image();
+    image.width = 30;
+    image.height = 30;
+    image.onload = function() {
+        button.innerHTML = "Load Image DONE";
+    };
+    image.src = "http://getfirebug.com/header.png?random="+Math.random();
+    images.push(image);
+
+    box.appendChild(image);
+    button.innerHTML = "Load Image ...";
+}
+</script>
+
+</body>
+</html>
