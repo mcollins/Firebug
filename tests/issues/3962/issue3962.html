@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>Test Case for Issue #3962</title>
+</head>
+<body>
+
+<h1>Issue #3962</h1>
+
+<p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=3962">Issue #3962</a>
+- <span class="h3">{issue-summary}</span>.
+<br/>
+<i>Jan Odvarko, odvarko@gmail.com</i>
+</p>
+
+<ol>
+<li>Open Firebug and enable the Net panel.</li>
+<li>Click on the <code style="color:green">Execute Test</code> button below.</li>
+<li></li>
+<li></li>
+</ol>
+
+<script type="text/javascript">
+var request = new XMLHttpRequest();
+request.open("GET", "issue3962.php", true);
+request.send(null);
+
+var request = new XMLHttpRequest();
+request.open("GET", "issue3962-doesnotexist.php", true);
+request.send(null);
+</script>
+  
+</body>
+</html>
