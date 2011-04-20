@@ -126,6 +126,11 @@ function onEdit()
     for (var i = 0; i < aBunch; i++)
         EventBroadcaster.unregisterListenerForEvent("edit", aTestCallback);
 }
+
+// Test page load profiling.
+onAllocateString();
+onLoadImage();
+onEdit();
 </script>
 
 </body>
