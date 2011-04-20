@@ -300,7 +300,10 @@ DojoModel.DojoAccessor.prototype =
 				}
 			}
 			
-			props['startup invoked'] = widget._started;
+			if(widget._started != undefined) {
+				props['startup invoked'] = widget._started;
+			}
+			
 			
 			props['attributeMap'] = widget.attributeMap;
 			
