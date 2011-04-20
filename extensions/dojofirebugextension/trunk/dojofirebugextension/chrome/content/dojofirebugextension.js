@@ -33,33 +33,6 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	var nsISelectionDisplay = Ci.nsISelectionDisplay;
 	var nsISelectionController = Ci.nsISelectionController;
 
-//	/*Object*/var unwrap = this.unwrap = function(/*Object*/ obj) {
-//		
-//	    if (typeof(obj) === 'undefined' || obj == null) {
-//	        return obj;
-//	    }
-//		
-//		var original = obj;
-//		if(obj.getWrappedValue) {
-//			obj = obj.getWrappedValue();
-//		}
-//		
-//	    try {
-//	        // XPCSafeJSObjectWrapper is not defined in Firefox 4.0
-//	        // this should be the only call to getWrappedValue in firebug
-//	        if (typeof(XPCSafeJSObjectWrapper) != "undefined")
-//	            return XPCSafeJSObjectWrapper(obj);
-//	        else if (typeof(unwrapped) == "object")
-//	            return XPCNativeWrapper.unwrap(obj);
-//	        else
-//	            return obj;
-//	    } catch (exc) {
-//	        if (FBTrace.DBG_DOJO)
-//	            FBTrace.sysout("DOJO unwrap FAILS for "+original+" cause: "+exc,{exc: exc, object: original, unwrapped: obj});
-//	    }
-//
-//	};
-	
 	/**
 	 * Scroll search found selection. 
 	 */
@@ -244,7 +217,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	/**
 	 * This class admin the a message box.
 	 */
-	var ActionMessageBox = function(id, parentNode, msg, btnName, action){
+	var ActionMessageBox = function(id, parentNode, msg, btnName, action) {
 		// Message box identifier
 		this._actionMessageBoxId = "actionMessageBoxId-" + id; 
 		
@@ -259,41 +232,42 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 		
 		// The action
 		this._action = action;
-		
-		/**
+	};
+	ActionMessageBox.prototype = {
+
+			/**
 		 * Load the message box in the parentPanel
 		 * @param visibility boolean that define if the box should be visible or not.
 		 */
-		this.loadMessageBox = function(visibility){
+		loadMessageBox: function(visibility){
 			DojoReps.ActionMessageBox.tag.append({actionMessageBoxId: this._actionMessageBoxId,
 											  visibility: this._getVisibilityValue(visibility),
 											  message: this._message, btnName: this._btnName,
 											  actionMessageBox: this}, this._parentNode);
-		};
+		},
 		
 		/**
 		 * Show the message box (if it exist).
 		 */
-		this.showMessageBox = function(){
+		showMessageBox: function(){
 			this._setMessageBoxVisibility(true);
-		};
+		},
 		
 		/**
 		 * Hide the message box (if it exist).
 		 */
-		this.hideMessageBox = function(){
+		hideMessageBox: function(){
 			this._setMessageBoxVisibility(false);
-		};
+		},
 		
-		this._getVisibilityValue = function(visibility){
+		_getVisibilityValue: function(visibility){
 			return _getVisibilityValue(visibility);
-		};
-
+		},
 		
 		/**
 		 * Set message box visibility.
 		 */
-		this._setMessageBoxVisibility = function(visibility){
+		_setMessageBoxVisibility: function(visibility){
 			// FIXME: Use $() function. Find out why this._parentNode has no getElementById method.
 			//var msgbox = $(this._actionMessageBoxId, this._parentNode);
 			//var msgbox = this._parentNode.firstElementChild;
@@ -301,12 +275,12 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 			msgbox = (msgbox && (msgbox.id == this._actionMessageBoxId)) ? msgbox :null ;
 			
 			if (msgbox) msgbox.style.display = this._getVisibilityValue(visibility);
-		};
+		},
 		
 		/**
 		 * Find the msg box.
 		 */
-		this._getMessageBox = function(parentNode, boxId){
+		_getMessageBox: function(parentNode, boxId){
 			var children = parentNode.children;
 			for ( var int = 0; int < children.length; int++) {
 				var child = children[int];
@@ -315,14 +289,14 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 				}
 			}
 			return null;
-		};
+		},
 		
 		/**
 		 * Execute the action.
 		 */
-		this.executeAction = function(){
+		executeAction: function(){
 			this._action(this);
-		};
+		}
 	};
 	
 	/**
@@ -960,6 +934,11 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 	
 	// **********  Inspector related methods ************************
 	
+	_configureInspectorSupport: function(/*bool*/on) {
+		
+		this.inspectable = on;		
+	},
+	
     /**
      * Highlight a node using the frame highlighter.
      * Overridden here to avoid changing dojo extension panel contents all the time.  
@@ -996,8 +975,12 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     showInitialView: function(context) {
 		var widgets = this.getWidgets(context);
 		var connsAPI = context.connectionsAPI;
-		if (widgets.length > 0){
-			this.showWidgets(context);
+		
+		//enable inspector based on widget existence
+		this._configureInspectorSupport(widgets.length > 0);
+		
+		if (widgets.length > 0) {
+			this.showWidgets(context);			
 		} else if (connsAPI && connsAPI.getConnections().length > 0) {
 			this.showConnectionsInTable(context);
 		} else if (connsAPI && connsAPI.getSubscriptions().getKeys().length > 0) {
