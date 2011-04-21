@@ -2169,8 +2169,14 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
     	
     	// this test on name is a sign that this code belongs in panel.show()
 		var isdojofirebugextensionPanel = panel && panel.name == "dojofirebugextension";
-        var dojofirebugextensionButtons = browser.chrome.$("fbdojofirebugextensionButtons");
-        collapse(dojofirebugextensionButtons, !isdojofirebugextensionPanel);                              
+		if(!browser || !browser.chrome) {
+			return;
+		}
+	    
+		var dojofirebugextensionButtons = browser.chrome.$("fbdojofirebugextensionButtons");
+		if(dojofirebugextensionButtons) {
+			collapse(dojofirebugextensionButtons, !isdojofirebugextensionPanel);
+		}
     },
 
     /**
