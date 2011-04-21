@@ -47,7 +47,7 @@ var getMethodLabel = this.getMethodLabel = function(method) {
 			label = method.name;
 		}
 	}
-	return label + "()";
+	return label + ((label.indexOf(')') != -1) ? "" : "()");
 };
 	
 
