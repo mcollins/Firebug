@@ -21,6 +21,18 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 				 	((fn.target) && (fn.target.internalClass == "dojoext-added-code")));
 	 };
 
+	 var getDojoProxiedFunctionIfNeeded = this.getDojoProxiedFunctionIfNeeded = function(fn) {
+		 if(!fn || !isDojoExtProxy(fn)) {
+			 return fn;
+		 }
+		 
+		 //was proxied...get the original fn...
+		 while(fn && isDojoExtProxy(fn)) {			 
+			 fn = fn.proxiedFunction;			 
+		 }		 
+		 return fn;		
+	};	
+
 	var _isEnumerable = function(/*Object*/obj) {
 	     var t = typeof(obj);
 	     if (_isNumber(obj) || t == "boolean" || (t == "string" || t instanceof String)) {                
@@ -1291,8 +1303,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 			 },
 
 			 _getOriginalFunctionIfNeeded : function(fn) {
-			 	// TODO: fn should not be undefined, but it happens. Alert this situation.
-				return (fn && isDojoExtProxy(fn)) ? fn.proxiedFunction : fn;
+				 return getDojoProxiedFunctionIfNeeded(fn); 
 			 }	
 	 };
 	 
@@ -1328,7 +1339,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 		 },
 		 
 		 getEventFunction: function() {
-		 	return (isDojoExtProxy(this.originalFunction)) ? this.originalFunction.proxiedFunction : this.originalFunction;
+			return getDojoProxiedFunctionIfNeeded(this.originalFunction);
 		 }		 
 	 });
 	 
