@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Issue 4290: The script panel is taking over Firebug and it shouldn't</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      body {
+        background: #ffffff;
+        font: small arial, sans-serif;
+        margin: 5px auto;
+        width: 815px;
+      }
+      h1 {
+        font-size: large;
+        font-weight: normal;
+        padding: 1em 0;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: medium;
+        font-weight: normal;
+        padding: 0.5em 0;
+        text-transform: uppercase;
+        margin: 0;
+      }
+      ol {
+        margin:0;
+      }
+      ol li {
+        padding-bottom: 1em;
+      }
+      ul li {
+        padding: 0;
+      }
+      #content {
+        background: #9acbe4;
+        padding: 10px 20px;
+      }
+      #content div {
+        width: 200px;
+        margin: 5px 0;
+        padding: 5px;
+      }
+      #output {
+        width: auto!important;
+        background: #e8f0ff;
+      }
+    </style>
+    <script type="text/javascript">
+      <!--
+      var info = {time: null};
+
+      function getCurrentTime() {
+        var date = new Date();
+        var h = date.getHours();
+        var m = date.getMinutes();
+        var s = date.getSeconds();
+
+        info.time = (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+
+        return info.time;
+      }
+
+      function showCurrentTime() {
+        var time = getCurrentTime();
+
+        document.getElementById('time').innerHTML = 'The current time is ' + time;
+      }
+
+      function init() {
+        document.getElementById('showCurrentTime').addEventListener('click', showCurrentTime, false);
+      }
+
+      window.addEventListener('load',init,false);
+      //-->
+    </script>
+  </head>
+  <body>
+    <h1>Issue 4290: The script panel is taking over Firebug and it shouldn't</h1>
+    <div id="content">
+      <div id="output">
+        <input type="button" id="showCurrentTime" value="Show current time"/>
+        <div id="time"></div>
+      </div>
+      <ol>
+        <li>Disable the Script Panel</li>
+        <li>Switch to the DOM Panel</li>
+        <li>Set a breakpoint at info > date</li>
+        <li>Reload the page</li>
+        <li>Click the button <em>Get current time</em></li>
+      </ol>
+      <ul>
+        <li><strong>Observed:</strong> Script execution is halted and Firebug switches automatically to the deactivated Script Panel</li>
+        <li><strong>Expected:</strong> Breakpoints should not trigger as long as the Script Panel is deactivated</li>
+      </ul>
+    </div>
+  </body>
+</html>
