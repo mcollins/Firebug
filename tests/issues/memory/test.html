@@ -61,6 +61,8 @@ click handler and <i>onload</i> is a callback associated with created <code>Imag
 is asynchronous.</li>
 <li>The <i>images/content/used/raw</i> shows <b>29.3 KB</b> for Entire Session. This corresponds
 to one loaded image. You can check in the <b>Net</b> panel.</li>
+<li>Below the <i>Memory Profiler Results</i> you should see <i>Objects Added While Profiling</i>. If you open this list you will see the images added.
+Of course these objects may or may not be leaks, depending on the purpose of the  <i>onLoadImage</i> operation.</li>
 </ul>
 
 <br/>
@@ -84,6 +86,9 @@ to one loaded image. You can check in the <b>Net</b> panel.</li>
 <li>The more you clicking the button, the more memory for strings is allocated.</li>
 <li>Some strings are allocated even if you don't click the <i>Allocate Strings</i> button at all. This is because
 some strings are allocated by Firebug itself (also JavaScript) during the profiling session (TODO: could we not include this?).</li>
+<li>Below the <i>Memory Profiler Results</i> you should see <i>Objects Added While Profiling</i>. If you open this list you will see an array that has
+new entries from the <i>onAllocateString</i> operation.
+We currently don't track strings individual array elements or specifically, so this list is really just a hint on what changed.</li>
 </ul>
 
 <br/>
