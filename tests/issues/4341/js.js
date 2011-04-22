@@ -2,7 +2,7 @@ var imc = new Class({
 	request : function () {
 		var jsonRequest = new Request.JSON({
 			noCache: true,
-			url: 'http://compojoom.com/firebug/firebug.php',
+			url: 'firebug.php',
 			onSuccess: function(answer){
 
 				  if(answer.success == true) {

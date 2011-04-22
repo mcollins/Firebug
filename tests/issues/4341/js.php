@@ -4,7 +4,7 @@
     <title>Test firebug</title>
 
     
-    <script src="../plugins/system/mtupgrade/mootools.js" type="text/javascript"></script>
+    <script src="mootools.js" type="text/javascript"></script>
     <script src="js.js" type="text/javascript"></script>
   
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
