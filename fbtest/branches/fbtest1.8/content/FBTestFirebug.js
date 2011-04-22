@@ -1222,7 +1222,9 @@ this.waitForBreakInDebugger = function(chrome, lineNo, breakpoint, callback)
         function onSelectingPanel()
         {
             panelBar1.removeEventListener("selectingPanel", onSelectingPanel, false);
-            onPanelReady(sourceRow);
+            setTimeout(function() {
+                onPanelReady(sourceRow);
+            }, 200);
         }
         panelBar1.addEventListener("selectingPanel", onSelectingPanel, false);
     });
