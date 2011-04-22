@@ -22,7 +22,17 @@
     test = new imc;
     test.request();
     </pre>
-    
+
+<button id="testButton" onclick="onExecuteTest()">Execute Test</button>
+<br/>
+<script type="text/javascript">
+function onExecuteTest()
+{
+    test = new imc;
+    test.request();
+}
+</script>
+
     the php file has the following content: <br />
     <pre>
        
