@@ -12,8 +12,8 @@ function runTest()
             var tasks = new FBTest.TaskList();
             tasks.push(testExpression, "a={}.", false);
             tasks.push(testExpression, "1+do", true);
-            tasks.push(testExpression, "{}do", false);  // no brace matching yet
-            tasks.push(testExpression, "if(false)document.", false); // no brace matching yet
+            tasks.push(testExpression, "{}do", true);
+            tasks.push(testExpression, "if(false)document.", true);
             tasks.push(testExpression, "my_var.", true);
             tasks.push(testExpression, "0<i", true);
             tasks.push(testExpression, "$myvar.", true);
