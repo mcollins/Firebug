@@ -313,7 +313,7 @@ Firebug.TraceModule = extend(Firebug.Module,
         // Fire "onLoadConsole" for listeners that have been registered
         // after the console has been opened.
         var listeners = win.Firebug.TraceModule.fbListeners;
-        for (var i=0; i<listeners.length; i++)
+        for (var i=0; i<listeners && listeners.length; i++)
         {
             var listener = listeners[i];
             if (!listener.onLoadConsoleExecuted)
