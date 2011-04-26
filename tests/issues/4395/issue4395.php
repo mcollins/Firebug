@@ -1,5 +1,5 @@
 <?php
-  $firebugInstalled = (stripos( $_SERVER['USER-AGENT'] , 'firebug')!==false);
+  $firebugInstalled = (stripos($_SERVER['HTTP_USER_AGENT'], 'firebug') !== false);
 ?>
 <!DOCTYPE html>
 <html>
