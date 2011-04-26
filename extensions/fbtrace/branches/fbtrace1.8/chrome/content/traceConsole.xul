@@ -29,14 +29,13 @@
   var FirebugConfig = {
     baseLoaderUrl: "resource://fbtrace-firebug/",
     baseUrl: "chrome://fbtrace-firebug/content/",
-    coreModules: ["arch/options"]
+    coreModules: ["arch/options", "lib/xpcom"]
   };
   </script>
 
   <!-- Embedded Firebug Files -->
   <script type="application/x-javascript" src="trace.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/loader.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/xpcom.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/chrome.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/lib.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/domplate.js"/>
