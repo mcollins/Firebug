@@ -345,6 +345,7 @@ TraceBase.prototype.sysout = function(message, obj)
     try
     {
         traceConsoleService.dispatch(this.prefDomain, message, obj, this.scopeOfFBTrace);
+        delete this.scopeOfFBTrace;
     }
     catch(exc)
     {
