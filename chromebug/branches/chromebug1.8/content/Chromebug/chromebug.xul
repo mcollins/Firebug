@@ -57,7 +57,6 @@
     window.addEventListener('load', onLoad, false);
     </script>
     <script type="application/x-javascript" src="chrome://fb4cb/content/loader.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/xpcom.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
 
     <!-- BEGIN add scripts -->
