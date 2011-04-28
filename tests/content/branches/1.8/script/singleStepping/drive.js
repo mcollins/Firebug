@@ -45,7 +45,7 @@ function selectFile()
     if (found)
         breakOnNext(panel);
     else
-        FBTestFirebug.done("issue1603.DONE");
+        FBTestFirebug.testDone("issue1603.DONE");
 }
 
 function breakOnNext(panel)
