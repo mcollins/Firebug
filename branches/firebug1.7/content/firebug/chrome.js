@@ -1720,10 +1720,10 @@ function onSelectingPanel(event)
 }
 
 function onMouseScroll(event) {
-    if (FBL.isControlShift(event))
+    if (FBL.isControlAlt(event))
     {
         FBL.cancelEvent(event);
-        Firebug.changeTextSize(-event.detail);
+        Firebug.Options.changeTextSize(-event.detail);
     }
 }
 
@@ -1818,10 +1818,10 @@ function onPanelMouseDown(event)
     {
         this.lastMouseDownPosition = {x: event.screenX, y: event.screenY};
     }
-    else if (FBL.isMiddleClick(event, true) && FBL.isControlShift(event))
+    else if (FBL.isMiddleClick(event, true) && FBL.isControlAlt(event))
     {
         FBL.cancelEvent(event);
-        Firebug.setTextSize(0);
+        Firebug.Options.setTextSize(0);
     }
     else if (FBL.isMiddleClick(event) && Firebug.getRepNode(event.target))
     {

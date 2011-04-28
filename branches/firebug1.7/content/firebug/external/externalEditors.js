@@ -73,7 +73,8 @@ Firebug.ExternalEditors = extend(Firebug.Module,
         const editorPrefNames = ["label", "executable", "cmdline", "image"];
 
         externalEditors = [];
-        var list = Firebug.getPref(prefDomain, prefName).split(",");
+        var prefDomain = Firebug.Options.getPrefDomain();
+        var list = Firebug.Options.getPref(prefDomain, prefName).split(",");
         for (var i = 0; i < list.length; ++i)
         {
             var editorId = list[i];
@@ -85,7 +86,7 @@ Firebug.ExternalEditors = extend(Firebug.Module,
             {
                 try
                 {
-                    item[editorPrefNames[j]] = Firebug.getPref(prefDomain, prefName+"."+
+                    item[editorPrefNames[j]] = Firebug.Options.getPref(prefDomain, prefName+"."+
                         editorId+"."+editorPrefNames[j]);
                 }
                 catch(exc)
@@ -119,25 +120,27 @@ Firebug.ExternalEditors = extend(Firebug.Module,
     onEditorsShowing: function(popup)
     {
         var editors = this.getRegisteredEditors();
-        if ( editors.length > 0 )
+
+        FBL.eraseNode(popup);
+        for( var i = 0; i < editors.length; ++i )
         {
-            var lastChild = popup.lastChild;
-            FBL.eraseNode(popup);
-            for( var i = 0; i < editors.length; ++i )
+            if (editors[i] == "-")
             {
-                if (editors[i] == "-")
-                {
-                    FBL.createMenuItem(popup, "-");
-                    continue;
-                }
-                var item = {label: editors[i].label, image: editors[i].image,
-                                nol10n: true };
-                var menuitem = FBL.createMenuItem(popup, item);
-                menuitem.value = editors[i].id;
+                FBL.createMenuItem(popup, "-");
+                continue;
             }
-            FBL.createMenuItem(popup, "-");
-            popup.appendChild(lastChild);
+            var item = {label: editors[i].label, image: editors[i].image,
+                        nol10n: true };
+            var menuitem = FBL.createMenuItem(popup, item);
+            menuitem.value = editors[i].id;
         }
+        if ( editors.length > 0 )
+            FBL.createMenuItem(popup, "-");
+
+        FBL.createMenuItem(popup, {
+            label: FBL.$STR('firebug.Configure_Editors'),
+            option: 'openEditorList'
+        });        
     },
 
     openEditorList: function()
@@ -173,7 +176,8 @@ Firebug.ExternalEditors = extend(Firebug.Module,
             this.appendContextMenuItem(popup, target.innerHTML, target.getAttribute("lineNumber"));
     },
 
-    createContextMenuItem: function(doc){
+    createContextMenuItem: function(doc)
+    {
         var item = doc.createElement('menu');
         item.setAttribute('type', "splitmenu");
         item.setAttribute('iconic', "true");
@@ -208,7 +212,7 @@ Firebug.ExternalEditors = extend(Firebug.Module,
 
     onContextMenuCommand: function(event)
     {
-        if (event.target.hasAttribute('openEditorList'))
+        if (event.target.getAttribute('option') == 'openEditorList')
             this.openEditorList();
         else if(event.currentTarget.hasAttribute('openFromContext'))
             this.openContext(Firebug.currentContext, event.target.value);

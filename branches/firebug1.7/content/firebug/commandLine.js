@@ -655,17 +655,30 @@ Firebug.CommandLine = extend(Firebug.Module,
 
     destroyContext: function(context, persistedState)
     {
+        var panelState = getPersistedState(this, "console");
+        panelState.commandLineText = context.commandLineText
+
         this.autoCompleter.clear(this.getCompletionBox());
-         // more of our work is done in the Console
+        persistObjects(this, panelState);
+        // more of our work is done in the Console
     },
 
     showPanel: function(browser, panel)
     {
         var chrome = Firebug.chrome;
-        var value = panel ? panel.context.commandLineText : null;
+        var panelState = getPersistedState(this, "console");
+        var value = panel && panel.context.commandLineText ? panel.context.commandLineText : panelState.commandLineText;
+
+        if (!Firebug.currentContext)
+        {
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("commandLine.showPanel; ERROR NO CONTEXT");
+            return;
+        }
 
         var commandLine = this.getCommandLine(browser);
-        commandLine.value = value ? value : "";
+        Firebug.currentContext.commandLineText = value ? value : "";
+        commandLine.value = Firebug.currentContext.commandLineText;
 
         this.autoCompleter.hide(this.getCompletionBox());
     },

@@ -3858,6 +3858,11 @@ this.isControlShift = function(event)
     return (event.metaKey || event.ctrlKey) && event.shiftKey && !event.altKey;
 };
 
+this.isControlAlt = function(event)
+{
+    return (event.metaKey || event.ctrlKey) && !event.shiftKey && event.altKey;
+};
+
 this.isShift = function(event)
 {
     return event.shiftKey && !event.metaKey && !event.ctrlKey && !event.altKey;
@@ -6942,6 +6947,7 @@ this.cssKeywords =
         "DarkGoldenRod",
         "DarkGray",
         "DarkGreen",
+        "DarkGrey",
         "DarkKhaki",
         "DarkMagenta",
         "DarkOliveGreen",
@@ -6952,13 +6958,14 @@ this.cssKeywords =
         "DarkSeaGreen",
         "DarkSlateBlue",
         "DarkSlateGray",
+        "DarkSlateGrey",
         "DarkTurquoise",
         "DarkViolet",
         "DeepPink",
-        "DarkSkyBlue",
+        "DeepSkyBlue",
         "DimGray",
+        "DimGrey",
         "DodgerBlue",
-        "Feldspar",
         "FireBrick",
         "FloralWhite",
         "ForestGreen",
@@ -6970,6 +6977,7 @@ this.cssKeywords =
         "Gray",
         "Green",
         "GreenYellow",
+        "Grey",
         "HoneyDew",
         "HotPink",
         "IndianRed",
@@ -6984,14 +6992,15 @@ this.cssKeywords =
         "LightCoral",
         "LightCyan",
         "LightGoldenRodYellow",
-        "LightGrey",
+        "LightGray",
         "LightGreen",
+        "LightGrey",
         "LightPink",
         "LightSalmon",
         "LightSeaGreen",
         "LightSkyBlue",
-        "LightSlateBlue",
         "LightSlateGray",
+        "LightSlateGrey",
         "LightSteelBlue",
         "LightYellow",
         "Lime",
@@ -7044,6 +7053,7 @@ this.cssKeywords =
         "SkyBlue",
         "SlateBlue",
         "SlateGray",
+        "SlateGrey",
         "Snow",
         "SpringGreen",
         "SteelBlue",
@@ -7053,7 +7063,6 @@ this.cssKeywords =
         "Tomato",
         "Turquoise",
         "Violet",
-        "VioletRed",
         "Wheat",
         "White",
         "WhiteSmoke",
