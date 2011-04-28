@@ -8,9 +8,7 @@ const Ci = Components.interfaces;
 
 try
 {
-    Components.utils["import"](FirebugConfig.baseLoaderUrl + "moduleLoader.js");
-    ModuleLoader.init(FirebugConfig);
-
+    Components.utils["import"]("resource://moduleLoader/moduleLoader.js");
     Components.utils["import"]("resource://fbtrace/firebug-trace-service.js");
 }
 catch (err)
@@ -170,13 +168,20 @@ var TraceConsole =
 
             config.onDebug = function()
             {
-                //window.dump("FBTrace; onDebug: " + arguments + "\n");
+                window.dump("FBTrace; onDebug: ");
+                for(var i = 0; i < arguments.length; i++)
+                    window.dump(arguments[i] + ",");
+                window.dump(".\n");
                 //Components.utils.reportError(arguments[0]);
             }
 
             config.onError = function()
             {
                 FBTrace.sysout("FBTrace; onError: " + arguments + "\n");
+                window.dump("FBTrace; onError: ");
+                for(var i = 0; i < arguments.length; i++)
+                    window.dump(arguments[i] + ",");
+                window.dump(".\n");
                 Components.utils.reportError(arguments[0]);
             }
 

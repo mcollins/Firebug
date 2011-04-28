@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define(["xpcom"], function(XPCOM) { with (FBL) {
+define(["common/lib/xpcom"], function(XPCOM) { with (FBL) {
 
 // ************************************************************************************************
 // Shorcuts and Services

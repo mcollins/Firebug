@@ -293,6 +293,7 @@ var topics = [
     "xpcom-shutdown-threads",
     "xpinstall-download-started",
     "xpinstall-install-blocked",
+    "xul-overlay-merged",
     "xul-window-destroyed",
     "xul-window-registered"
 ];
