@@ -241,9 +241,9 @@
 
 .countOfWidgetsLabel {
 	margin-left: 1px;
-    /*background-image:url('chrome://dojofirebugextension/skin/subscription.gif');
+    background-image:url('chrome://dojofirebugextension/skin/widgetIcon.3.png');
     background-repeat:no-repeat;
-	background-position:left center;*/
+	background-position:left center;
 	padding: 2px;
 	padding-left: 20px;
 }
