@@ -230,7 +230,7 @@ DojoModel.DojoAccessor.prototype =
 		/*Widget*/getEnclosingWidget: function(/*fbug context*/ context, /*HTMLNode*/ node) {
 
 			var dijit = _dijit(context);
-			if(!dijit) {
+			if(!dijit || !dijit.getEnclosingWidget) {
 				return null;
 			}
 
