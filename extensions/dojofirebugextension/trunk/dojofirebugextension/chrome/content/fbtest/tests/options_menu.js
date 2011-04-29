@@ -41,10 +41,10 @@ function runTest()
 				// Check widget with connections
 				var widgetWithConnectionHtmlNode = panel.panelNode.getElementsByClassName("dojo-widget")[0];
 				options = panel.getContextMenuItems(widgetWithConnectionHtmlNode['referencedObject'], widgetWithConnectionHtmlNode, context);
-				FBTest.compare(10, options.length, "There should be 9 options for a widget part of a connection."); //we need to count "-" menuitems
+				FBTest.compare(9, options.length, "There should be 9 options for a widget part of a connection."); //we need to count "-" menuitems
 				FBTest.compare(3, getCountOfOptionsForType(options, CONNECTIONS_BP_OPTION), "There should be 3 'Break on' options for a widget within a connection.");
 				FBTest.compare(2, getCountOfOptionsForType(options, DOCUMENTATION_OPTION), "There should be 2 'Documentation' options for a widget within a connection.");
-				FBTest.compare(2, getCountOfOptionsForType(options, WIDGET_OPTION), "There should be 2 widget options for a widget within a connection.");
+				FBTest.compare(1, getCountOfOptionsForType(options, WIDGET_OPTION), "There should be 1 widget options for a widget within a connection.");
 				
 				// FIXME: Get a real widget without connections representation. There should be 2 widgets options.
 				// Check widget without connections

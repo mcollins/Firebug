@@ -143,7 +143,7 @@ this.DojoObjectRep = domplate(FirebugReps.Obj,
 this.DijitRep = domplate(FirebugReps.Obj,
 {
 	tag: FirebugReps.OBJECTLINK(
-		SPAN({"class":"dojo-widget $object|getDetachedClassName", _referencedObject: "$object"},
+		SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName", _referencedObject: "$object"},
 			'[',
 			SPAN({"class": "widgetId"}, "$object|getWidgetId"),
 			' ',
@@ -155,7 +155,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 	//TODO for detached css class, try using "$detached: $object|isDetached" .
 	// see: http://www.softwareishard.com/blog/domplate/domplate-examples-part-ii/
 	shortTag: FirebugReps.OBJECTLINK(
-		SPAN({"class":"dojo-widget $object|getDetachedClassName", _referencedObject: "$object"},
+		SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName", _referencedObject: "$object"},
 			'[',
 			SPAN({"class": "widgetId"}, "$object|getWidgetId"),
 			' ',
@@ -533,15 +533,15 @@ this.ConnectionsTableRep = domplate(
 			                  ),
 			            	FOR("con", "$connections",
 			                    TR({"class": "dojo-connection row-$null|changeLineType", _referencedObject: "$con"},
-			                        TD({"class": ""},
+			                        TD({"class":"dojo-conn-obj dojo-tracked-obj", _referencedObject: "$con.obj"},
 			                        	TAG("$con.obj|getRep", {object: "$con.obj", className: "object"})
 			                        ),
-			                        TD({"class": ""}, "$con.event"
+			                        TD({"class": "dojo-conn-event", _referencedObject: "$con.event"}, "$con.event"
 				                    ),
-				                    TD({"class": ""},
+				                    TD({"class":"dojo-conn-context dojo-tracked-obj", _referencedObject: "$con.context"},
 				                    	TAG("$con.context|getRep", {object: "$con.context", className: "object"})
 				                    ),
-				                    TD({"class": ""},
+				                    TD({"class": "dojo-conn-method", _referencedObject: "$con.method"},
 				                    	TAG(FirebugReps.OBJECTLINK("$title"),
 				                    			{object: "$con|getFunctionObject", className: "object", title: "$con.method|getMethodLabel"})
 				                    )

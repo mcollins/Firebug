@@ -351,10 +351,8 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 			var functionToProxy = obj[method]; //web page's function
 	    	var theProxy = function() {
 	    		
-	    		if(FBTrace.DBG_DOJO_DBG) {
-	    			
-	    			Firebug.Console.log("inner proxy invoked", context);
-	    			
+	    		if(FBTrace.DBG_DOJO_DBG) {	    			
+	    			Firebug.Console.log("inner proxy invoked", context);	    			
         			var a = arguments;    				
         			FBTrace.sysout("DOJO DEBUG: executing proxy for fn:" + method + ", args: ", a);
     			}
@@ -412,10 +410,8 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     		var protectedFunction = function() {
 
 
-    			if(FBTrace.DBG_DOJO_DBG) {
-    				
-    				Firebug.Console.log("protection proxy invoked", context);
-    				
+    			if(FBTrace.DBG_DOJO_DBG) {    			
+    				Firebug.Console.log("protection proxy invoked", context);    				
         			var a = arguments;    				
         			FBTrace.sysout("DOJO DEBUG: executing _protectProxyFromExceptions proxy. Args: ", a);
     			}
@@ -456,43 +452,9 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     			_addMozillaExecutionGrants(excProxy);
 
     			obj[functionToProxy] = excProxy; 
-    			
-    			
-/*				
- 				//alternative code based on "eval" run on web page
-    			context.dojo.proxyCounter = (context.dojo.proxyCounter || 0) + 1;
-    			
-    			var fieldName = "__dojoext_" + context.dojo.proxyCounter + "__" + functionToProxy; 
-    			//inject our fn (privileged) in page (unprivileged) code
-    			obj[fieldName] = this._protectProxyFromExceptions(context, this.getProxiedFunction(context, obj, functionToProxy, funcPreInvocation, funcPostInvocation));
-    			   			
-    			//now evaluate/create a "client function" that can execute the injected privileged function
-				//e.g: dojo[_connect] = function() { return this.__dojoext___connect(arguments); };"
-				
-    			var argsStr = "";
-    			for (var i = 0; i < expectedArgs -1; i++){
-    				argsStr += "a[" + i + "],";
-    			}
-    			argsStr += "a[" + (expectedArgs - 1) + "]";
-
-
-    			var clientFn = objClientName + "['" + functionToProxy + "'] = function() { console.log('" + objClientName + "." + fieldName  + " invoked with these args: ', arguments); var a = arguments; return " + objClientName + "." + fieldName + "(" + argsStr + "); };";
-
-    			if(FBTrace.DBG_DOJO_DBG) {
-        			Firebug.Console.log("DOJO DEBUG: proxyFunction method . Generated argsStr: " + argsStr, context);
-    				//var b = objClientName + "['" + functionToProxy + "'] = function() { console.log('" + objClientName + "." + fieldName  + " invoked with these args: ', arguments); var a = arguments; return " + objClientName + "." + fieldName + "(" + argsStr + "); };";
-    				Firebug.Console.log("DOJO DEBUG: proxyFunction method . Generated web page fn: " +  clientFn, context);
-    			}
-
-    			Firebug.CommandLine.evaluate(clientFn, context);
-				
-				if(FBTrace.DBG_DOJO_DBG) {
-					FBTrace.sysout("DOJO DEBUG: proxied function " + functionToProxy + ". Eval'd expr: ", clientFn);
-        			FBTrace.sysout("DOJO DEBUG: proxied function " + functionToProxy + ". Arguments: ", arguments);
-    			}
-*/    			
-				
+    			    		
 			} else {
+				
 				var msg = "Dojo Firebug Extension: A proxied function is attempted to be reproxied: " + functionToProxy +
 						  ". Please report the bug.";
 				Firebug.Console.log(msg, context, "error", FirebugReps.Text);
@@ -675,13 +637,29 @@ var DojoPanelMixin =  {
 				items = items.concat(docItems);
 			}
 		}
-		
+
 		// Check if the selected object is a widget
 		var widget = this._getReferencedObjectFromNodeWithType(target, "dojo-widget");
 		if (widget){
 			items = items.concat(this._getWidgetContextMenuItems(widget));
+		} 
+
+		// Check if the selected object at least has connections and/or subscriptions
+		var trackedObj = this._getReferencedObjectFromNodeWithType(target, "dojo-tracked-obj");
+		if(trackedObj) {
+			var hasConns = this._hasConnections(trackedObj); 
+			var hasSubs = this._hasSubscriptions(trackedObj); 
+			if(hasConns || hasSubs) {
+				items.push("-"); //separator
+			}
+			if(hasConns) {
+				items = items.concat(this._getMenuItemsForObjectWithConnections(trackedObj));
+			}
+			if(hasSubs) {
+				items = items.concat(this._getMenuItemsForObjectWithSubscriptions(trackedObj));
+			}
 		}
-		
+
 		// Check if the selected object is a connection event
 		var /*IncomingConnectionsDescriptor*/ incDesc = this._getReferencedObjectFromNodeWithType(target, "dojo-eventFunction");
 		if (incDesc){
@@ -710,7 +688,7 @@ var DojoPanelMixin =  {
 		return connNode.referencedObject;
     },
     
-    _getFunctionContextMenuItems: function(func, msgKey, label){
+    /*array*/_getFunctionContextMenuItems: function(func, msgKey, label){
     	var context = this.context;
 		var dojoDebugger = getDojoDebugger(context);
 
@@ -722,19 +700,12 @@ var DojoPanelMixin =  {
 	    ];
     },
     
-    _getWidgetContextMenuItems: function(widget){
-    	if (!widget)
-        return;
-
-    
-    	return [
-    	    "-",
-	        {label: $STR('menuitem.Show Connections', DOJO_BUNDLE), nol10n: true, command: bindFixed(this._showConnections, this, widget), disabled: !this._hasConnections(widget), optionType: WIDGET_OPTION},
-	        {label: $STR('menuitem.Show Subscriptions', DOJO_BUNDLE), nol10n: true, command: bindFixed(this._showSubscriptions, this, widget), disabled: !this._hasSubscriptions(widget), optionType: WIDGET_OPTION },
-    	];
+    /*array*/_getWidgetContextMenuItems: function(widget){
+    	//nothing to do
+    	return [];
     },
     
-    _getConnectionContextMenuItems: function(conn) {
+    /*array*/_getConnectionContextMenuItems: function(conn) {
 		var context = this.context;
 		
 		var dojoDebugger = getDojoDebugger(context);
@@ -766,7 +737,27 @@ var DojoPanelMixin =  {
 
     },
     
-    _getSubscriptionContextMenuItems: function(sub) {
+    /*array*/_getMenuItemsForObjectWithConnections: function(/*Object*/obj) {
+    	if (!obj) {
+    		return [];
+    	}
+        
+    	return [
+	        {label: $STR('menuitem.Show Connections', DOJO_BUNDLE), nol10n: true, command: bindFixed(this._showConnections, this, obj), disabled: !this._hasConnections(obj), optionType: WIDGET_OPTION}
+    	];    	
+    },
+
+    /*array*/_getMenuItemsForObjectWithSubscriptions: function(/*Object*/obj) {
+    	if (!obj) {
+    		return [];
+    	}
+        
+    	return [
+    	        {label: $STR('menuitem.Show Subscriptions', DOJO_BUNDLE), nol10n: true, command: bindFixed(this._showSubscriptions, this, obj), disabled: !this._hasSubscriptions(obj), optionType: WIDGET_OPTION },
+    	];    	
+    },
+
+    /*array*/_getSubscriptionContextMenuItems: function(sub) {
 		var context = this.context;
 		
 		var dojoDebugger = getDojoDebugger(context);
