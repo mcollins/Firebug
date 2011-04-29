@@ -5,6 +5,7 @@ overlay chrome://firebug/content/firebugOverlay.xul         chrome://fbtrace/con
 
 resource fbtrace modules/
 resource fbtrace-firebug chrome/firebug/modules/
+resource fbtrace_rjs chrome/
 
 resource moduleLoader chrome/firebug/modules/
 

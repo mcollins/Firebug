@@ -28,7 +28,8 @@
   <script type="application/x-javascript">
   var FirebugConfig = {
     baseLoaderUrl: "resource://fbtrace-firebug/",
-    baseUrl: "chrome://fbtrace-firebug/content/",
+    baseUrl: "resource://fbtrace_rjs/",
+    paths: {"arch": "firebug/content/inProcess", "common": "firebug/content"},
     coreModules: ["lib/options", "lib/xpcom"]
   };
   </script>

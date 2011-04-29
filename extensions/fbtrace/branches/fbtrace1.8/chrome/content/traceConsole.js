@@ -58,18 +58,19 @@ var TraceConsole =
         catch (e)
         {
             window.dump("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
+            return;
         }
 
         // Load tracing console modules
-        this.loader = this.createLoader(this.prefDomain, "chrome://fbtrace/content/");
+        this.loader = this.createLoader(this.prefDomain, "resource://fbtrace_rjs/");
 
         var modules = [];
-        modules.push("serializer.js"); // save to file, load from file
+        modules.push("content/serializer.js"); // save to file, load from file
 
         // Overrides the default Firebug.TraceModule implementation that only
         // collects tracing listeners (customization of logs)
-        modules.push("traceModule.js");
-        modules.push("globalTab.js");
+        modules.push("content/traceModule.js");
+        modules.push("content/globalTab.js");
 
         var self = this;
         this.loader.define(modules, function()
