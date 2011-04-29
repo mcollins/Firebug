@@ -33,6 +33,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	var nsISelectionDisplay = Ci.nsISelectionDisplay;
 	var nsISelectionController = Ci.nsISelectionController;
 
+//	//are we on top of FF4?
 //	var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 //	var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci.nsIVersionComparator);
 //
