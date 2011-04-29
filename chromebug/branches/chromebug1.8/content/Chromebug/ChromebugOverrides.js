@@ -275,8 +275,11 @@ var ChromebugOverrides = {
 
     skipSpy: function(win)
     {
+        if (!win)
+            return true;
+
         var uri = win.location.href; // don't attach spy to chromebug
-        if (uri &&  uri.indexOf("chrome://chromebug") == 0)
+        if (uri &&  uri.indexOf("chrome://chromebug") === 0)
                 return true;
     },
 
