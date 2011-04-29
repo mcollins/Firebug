@@ -83,7 +83,7 @@ FBTestApp.TestLogger =
         }
         else
         {
-            dir = CCIN("@mozilla.org/file/local;1", "nsILocalFile");
+            dir = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
             dir.initWithPath(path);
         }
 

@@ -284,7 +284,7 @@ var CouchDB =
     {
         try
         {
-            var request = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1", "nsIXMLHttpRequest");
+            var request = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
             request.open(options.type, options.url, true);
             request.setRequestHeader("Content-Type", options.contentType);
             request.onreadystatechange = function()

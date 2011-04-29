@@ -558,7 +558,7 @@ FBTestApp.TestResultTabView = domplate(
 
     insertXml: function(xml, parentNode)
     {
-        var parser = CCIN("@mozilla.org/xmlextras/domparser;1", "nsIDOMParser");
+        var parser = Cc["@mozilla.org/xmlextras/domparser;1"].createInstance(Ci.nsIDOMParser);
 
         // Create helper root element (for the case where there is no signle root).
         var tempXml = "<wrapper>" + xml + "</wrapper>";
