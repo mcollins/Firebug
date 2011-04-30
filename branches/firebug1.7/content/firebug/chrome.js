@@ -1723,7 +1723,7 @@ function onMouseScroll(event) {
     if (FBL.isControlAlt(event))
     {
         FBL.cancelEvent(event);
-        Firebug.Options.changeTextSize(-event.detail);
+        Firebug.changeTextSize(-event.detail);
     }
 }
 
@@ -1821,7 +1821,7 @@ function onPanelMouseDown(event)
     else if (FBL.isMiddleClick(event, true) && FBL.isControlAlt(event))
     {
         FBL.cancelEvent(event);
-        Firebug.Options.setTextSize(0);
+        Firebug.setTextSize(0);
     }
     else if (FBL.isMiddleClick(event) && Firebug.getRepNode(event.target))
     {
