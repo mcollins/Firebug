@@ -79,6 +79,7 @@ var toggleContainer = function(container){
 // REPS
 //****************************************************************
 
+
 this.DojoMainRep = domplate(FirebugReps.Obj,
 {
 	tag: FirebugReps.OBJECTLINK(
@@ -99,6 +100,7 @@ this.DojoMainRep = domplate(FirebugReps.Obj,
 
 });
 
+//************************************************************************************************
 this.DijitMainRep = domplate(FirebugReps.Obj,
 {
 	tag: FirebugReps.OBJECTLINK(
@@ -119,6 +121,7 @@ this.DijitMainRep = domplate(FirebugReps.Obj,
 
 });
 
+//************************************************************************************************
 /** Rep for dojo classes */
 this.DojoObjectRep = domplate(FirebugReps.Obj,
 {
@@ -140,6 +143,7 @@ this.DojoObjectRep = domplate(FirebugReps.Obj,
 
 });
 
+//************************************************************************************************
 this.DijitRep = domplate(FirebugReps.Obj,
 {
 	tag: FirebugReps.OBJECTLINK(
@@ -235,6 +239,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 		    
 });
 
+//************************************************************************************************
 this.ConnectionRep = domplate(FirebugReps.Obj,
 {
 	inspectable: false,
@@ -270,6 +275,7 @@ this.ConnectionRep = domplate(FirebugReps.Obj,
 	getRep: getRep
 });
 
+//************************************************************************************************
 this.SubscriptionRep = domplate(FirebugReps.Obj, {
 	inspectable: false,
 	
@@ -303,6 +309,7 @@ this.SubscriptionRep = domplate(FirebugReps.Obj, {
 	getRep: getRep
 });		
 
+//************************************************************************************************
 this.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
 {
 	inspectable: false,
@@ -325,6 +332,7 @@ this.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
 	getFunctionObject: getFunctionObject
 });
 
+//************************************************************************************************
 
 this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 {
@@ -474,6 +482,7 @@ var OutgoingConnectionsDescriptor = this.OutgoingConnectionsDescriptor = functio
 OutgoingConnectionsDescriptor.prototype = extend(DojoModel.FunctionLinkResolver.prototype, {});
 
 
+//************************************************************************************************
 this.SubscriptionsRep = domplate(FirebugReps.Obj,
 {
 	inspectable: false,
@@ -515,6 +524,7 @@ this.SubscriptionsRep = domplate(FirebugReps.Obj,
 	}
 });
 
+//************************************************************************************************
 this.ConnectionsTableRep = domplate(
 		{tag:
 			DIV({"id": "connections-table"},
@@ -577,6 +587,7 @@ this.ConnectionsTableRep = domplate(
 	}
 );
 
+//************************************************************************************************
 this.CounterLabel = domplate(FirebugReps.Obj,
 		{
 			inspectable: false,
@@ -586,11 +597,13 @@ this.CounterLabel = domplate(FirebugReps.Obj,
 					)
 		});
 
+//************************************************************************************************
 this.Messages = domplate({
 	infoTag: DIV({"class": "infoMessage"}, "$object"),
 	simpleTag: DIV({"class": "simpleMessage"}, "$object")
 });
 
+//************************************************************************************************
 this.ActionMessageBox = domplate({
 	tag: 
 		DIV({"class": "dojo-warning", "id": "$actionMessageBoxId", "style": "display: $visibility"},
@@ -604,13 +617,7 @@ this.ActionMessageBox = domplate({
 	}
 });
 
-var WidgetRootsSizerRow =
-    TR({"role": 'presentation'},
-        TD(),
-        TD({"width": "2%"}),
-        TD({"width": "98%"})
-    );
-
+//************************************************************************************************
 
 this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 {
@@ -668,6 +675,7 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 	}
 });
 
+//************************************************************************************************
 
 //called by dojofirebugextension
 this.registerReps = function() {
