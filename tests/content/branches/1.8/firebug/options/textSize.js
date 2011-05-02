@@ -23,8 +23,11 @@ function runTest()
 
                 // Decrease text size and verify
                 FW.FBL.$("cmd_decreaseTextSize").doCommand();
+                FW.FBL.$("cmd_decreaseTextSize").doCommand();  // twice because of rounding error in the font-size-adjust version.
                 FBTest.ok(normal > row.clientHeight,
-                    "Descreassed text size must be smaller than the default value.");
+                    "Decreased text size must be smaller than the default value.");
+
+                FW.FBL.$("cmd_normalTextSize").doCommand();
 
                 FBTest.testDone("textSize.DONE");
             });
