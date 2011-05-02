@@ -3,7 +3,19 @@
 <head>
   <title>Popup for memory leak</title>
 </head>
-<body>
+<body onload="onLoad()">
 <h1>Just a popup window</h1>
+<script>
+function onLoad()
+{
+    if (location.href.indexOf("autoclose") > 0)
+    {
+        setTimeout(function()
+        {
+            window.close();
+        }, 200);
+    }
+}
+</script>
 </body>
 </html>
