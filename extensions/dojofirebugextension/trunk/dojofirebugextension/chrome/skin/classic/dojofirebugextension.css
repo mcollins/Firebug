@@ -395,7 +395,7 @@
 }
 
 .widget-info-level-none .infoLevelToggle {
-	background-image:url('chrome://dojofirebugextension/skin/none_info_level.gif');
+	background-image:url('chrome://dojofirebugextension/skin/none_info_level.png');
 	background-repeat:no-repeat;
 	background-position:center;
 }
