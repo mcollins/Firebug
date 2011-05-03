@@ -1004,7 +1004,7 @@ this.typeCommand = function(string)
  * @param {String} tagName Name of the displayed element.
  * @param {String} class Class of the displayed element.
  */
-this.executeCommandAndVerify(callback, expression, expected, tagName, classes)
+this.executeCommandAndVerify = function(callback, expression, expected, tagName, classes)
 {
     FBTest.clearConsole();
 
