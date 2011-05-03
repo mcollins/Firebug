@@ -21,8 +21,8 @@ function runTest()
             FBTest.compare("red", editor.value, "Must be autocompleted to red.");
 
             // Testing up and down arrows covers issue 3671
-            // Type 'arrow-up' and verify completion (should be the previouis
-            // color startin with 'r').
+            // Type 'arrow-up' and verify completion (should be the previous
+            // color starting with 'r').
             FBTest.sendKey("UP", editor);
             FBTest.compare("royalBlue", editor.value, "Must be autocompleted to royalBlue.");
 
@@ -30,7 +30,7 @@ function runTest()
             FBTest.sendKey("DOWN", editor);
             FBTest.compare("red", editor.value, "Must be autocompleted again to red.");
 
-            // Type 'home' to move the cursor at the begginging and cancel the selection.
+            // Type 'home' to move the cursor at the beginning and cancel the selection.
             // Consequently type 'arrow-up' to get the (global) previous color.
             // DOM_VK_HOME doesn't work on MAC, press left 3x instead.
             FBTest.sendKey("LEFT", editor);
