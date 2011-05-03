@@ -16,13 +16,9 @@ function runTest()
 			var context = FW.Firebug.currentContext; //context!
 			
 			try {
-				
-				FBTest.FirebugWindow.Firebug.Console.log("inicio test", context);
 		    	var api = context.connectionsAPI;
 		    	var conns = api.getConnections();
-		    	
-		    	FBTest.FirebugWindow.Firebug.Console.log("conns" + conns, context);
-		    	
+		    		    	
 		    	// compare number of registered connections
 		        FBTest.compare(4, conns.length, "number of connections made should be 4");
 		        

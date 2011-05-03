@@ -44,14 +44,18 @@ var disconnectFirstConnection = function(){
 
 var button = dojo.byId('button');
 
+/*
 dojo.addOnLoad(
 		function() {
+	*/	
 			disconnectHandler = dojo.connect(button, "onclick", objA, "funcTest", true);
 			dojo.connect(button, "onblur", objA, objA.funcTest, true);
 			dojo.connect(button, "onclick", "functionGlobal");
 			dojo.connect(button, "onblur", functionGlobal);
+/*
 		}
 );
+*/
 
 </script>
 

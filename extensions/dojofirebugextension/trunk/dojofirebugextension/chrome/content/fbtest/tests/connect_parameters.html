@@ -40,8 +40,10 @@ function methodGlobal12(){};
 function methodGlobal13(){};
 function methodGlobal14(){};
 
+/*
 dojo.addOnLoad(
 		function() {
+*/			
 			var objConnTargetTest = window.objConnTargetTest = {
 					method1: function(){},
 					method2: function(){},
@@ -76,8 +78,10 @@ dojo.addOnLoad(
 			dojo.connect(objConnTargetTest, "method5", objConnHandlerTest, "methodHandler3");
 			dojo.connect(objConnTargetTest, "method6", objConnHandlerTest, objConnHandlerTest.methodHandler4);
 			dojo.connect("unexistentMethod", objConnHandlerTest, "methodHandler5");
+/*
 		}
 );
+*/
 
 </script>
 

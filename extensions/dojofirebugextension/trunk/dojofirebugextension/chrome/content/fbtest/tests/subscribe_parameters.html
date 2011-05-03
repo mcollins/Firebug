@@ -25,8 +25,10 @@
 
 <script type="text/javascript">
 
+/*
 dojo.addOnLoad(
 		function() {
+*/			
 			var d = dojo;
 
 			var globalTestFunc = window.globalTestFunc = function(){ alert("globalTestFunc"); };
@@ -38,8 +40,10 @@ dojo.addOnLoad(
 			d.subscribe("Test4", objTest, objTest.testF);
 			d.subscribe("Test5", "globalTestFunc");
 			d.subscribe("Test6", globalTestFunc);
+/*
 		}
 );
+*/
 
 </script>
 

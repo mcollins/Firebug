@@ -11,8 +11,8 @@
 	</script>
 	
      <!--  Google 1.5  -->
-     		<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/tundra/tundra.css">
-     		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/tundra/tundra.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js"></script>
     
     <script type="text/javascript">
        dojo.require("dojo.parser");       
@@ -47,16 +47,20 @@ var objC = {};
 var simpleButton = null;
 var widgetButton = null;
 
+
 dojo.addOnLoad(
 		function() {
+			
 			simpleButton = dojo.byId('simpleButton');
 			widgetButton = dijit.byId('widgetButton');
 
 			dojo.connect(simpleButton, "onclick", objA, "funcTest");
 			dojo.subscribe("TOPIC 1", objA, "funcTest");
 			dojo.subscribe("TOPIC 2", objB, "funcTest");
+			
 		}
 );
+
 
 </script>
 

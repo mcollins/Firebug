@@ -28,6 +28,10 @@ function runTest()
 	    	 * If using the dijit.registry.toArray() there should be 36 
 	    	 */
 	        FBTest.compare(36, widgets.length, "the must be 36 widgets");
+	        
+	        FBTest.compare(1, panel.getWidgetsRoots(context).length, "the must be 1 tree roots");
+	        
+	        
 	    	
 	    } catch (err) {
 	        FBTest.exception("Test: ", err);

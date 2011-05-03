@@ -43,15 +43,19 @@ var unsubscribeFirstSubscription = function(){
 	dojo.unsubscribe(unsubscribeHandler);
 }
 
+/*
 dojo.addOnLoad(
 		function() {
+*/			
 			unsubscribeHandler = dojo.subscribe("TOPIC 1", objA, "funcTestA");
 			dojo.subscribe("TOPIC 1", objB, "funcTestB");
 
 			dojo.subscribe("TOPIC 2", objA, objA.funcTestA);
 			dojo.subscribe("TOPIC 2", objB, objB.funcTestB);
+/*			
 		}
 );
+*/
 
 </script>
 
