@@ -4,13 +4,14 @@ function runTest()
     FBTest.progress("using module dependencies: " + baseLocalPath);
 
     Components.utils["import"]("resource://firebug/moduleLoader.js");
+    ModuleLoader.bootstrap("resource://firebug/require.js");
 
     var uid = Math.random();  // to give each test its own loader
 
     // Compute relative path and construct module loader.
     var baseUrl = baseLocalPath + "loader/dependencies/";
     var require = (new ModuleLoader(null, {
-        context: "foo"+uid,
+        context: "foo" + uid,
         baseUrl: baseUrl
     })).loadDepsThenCallback;
 

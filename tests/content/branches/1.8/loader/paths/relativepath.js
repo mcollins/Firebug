@@ -1,18 +1,19 @@
 function runTest()
 {
     FBTest.sysout("relativepath.START;");
-    FBTest.progress("using baseLocalPath: "+baseLocalPath);
+    FBTest.progress("using baseLocalPath: " + baseLocalPath);
 
     Components.utils["import"]("resource://firebug/moduleLoader.js");
+    ModuleLoader.bootstrap("resource://firebug/require.js");
 
     var uid = Math.random();  // to give each test is own loader
 
     // Compute relative path and construct module loader.
     var baseUrl = baseLocalPath + "loader/paths/";
     var require = (new ModuleLoader(null, {
-        context: "foo"+uid,
-        baseUrl: baseUrl}
-    )).loadDepsThenCallback;
+        context: "foo" + uid,
+        baseUrl: baseUrl
+    })).loadDepsThenCallback;
 
     require(["add.js", "subtract.js"], function(AddModule, SubtractModule)
     {

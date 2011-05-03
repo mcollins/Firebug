@@ -4,6 +4,7 @@ function runTest()
     FBTest.progress("using module dependencies: " + baseLocalPath);
 
     Components.utils["import"]("resource://firebug/moduleLoader.js");
+    ModuleLoader.bootstrap("resource://firebug/require.js");
 
     var uid = Math.random();  // to give each test its own loader
 
