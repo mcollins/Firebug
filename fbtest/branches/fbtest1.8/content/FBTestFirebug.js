@@ -988,10 +988,40 @@ this.typeCommand = function(string)
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
 
-    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+ " win "+panelBar1.browser.contentWindow);
+    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+
+        FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+
+        " win "+panelBar1.browser.contentWindow);
 
     for (var i=0; i<string.length; ++i)
         FBTest.synthesizeKey(string.charAt(i), win);
+}
+
+/**
+ * Helper function for executing expression on the command line.
+ * @param {Function} callback Appended by the test harness.
+ * @param {String} expression Expression to be executed.
+ * @param {String} expected Expected value displayed.
+ * @param {String} tagName Name of the displayed element.
+ * @param {String} class Class of the displayed element.
+ */
+this.executeCommandAndVerify(callback, expression, expected, tagName, classes)
+{
+    FBTest.clearConsole();
+
+    var config = {tagName: tagName, classes: classes};
+    FBTest.waitForDisplayedElement("console", config, function(row)
+    {
+        FBTest.compare(expected, row.textContent, "Verify: " +
+            expression + " SHOULD BE " + expected);
+
+        FBTest.clearConsole();
+
+        if (callback)
+            callback();
+    });
+
+    FBTest.progress("Execute expression: " + expression);
+    FBTest.executeCommand(expression);
 }
 
 // ************************************************************************************************
