@@ -153,12 +153,70 @@ DojoModel.DojoAccessor.prototype =
 			//diff versions of dojo..
 			return (reg.length) ? reg.length : reg._hash.length;
 		},
+
+		/**
+		 * returns widgets inside the given widget  
+		 * @return array
+		 */
+		/*array*/findWidgets: function(widget, /*fbug context*/ context) {
+			var dijit = _dijit(context);
+			if(!dijit) {
+				return [];
+			}
+
+			if(!dijit.findWidgets) {
+				return [];
+			}
+
+			return dijit.findWidgets(widget.domNode);
+		},
+
+		/**
+		 * returns the dijits roots 
+		 * @return array
+		 */
+		/*array*/getWidgetsRoots: function(/*fbug context*/ context) {
+			var dijit = _dijit(context);
+			if(!dijit) {
+				return [];
+			}
+
+			if(!dijit.findWidgets) {
+				return [];
+			}
+						
+			return dijit.findWidgets(unwrapObject(context.window).document);
+		},
+
+		/**
+		 * returns all detached dijits (widgets available in registry but not attached to document) 
+		 * @return array
+		 */
+		/*array*/getDetachedWidgets: function(/*fbug context*/ context) {
+			return this.getWidgets(context, this._isDetachedRoot);
+		},
+		
+		_isDetachedRoot: function(widget) {
+			var domNode = widget.domNode;
+			if(!domNode || !domNode.ownerDocument || !domNode.parentNode) {
+				return true;
+			}
+			return false;
+		},
+		
+		/*boolean*/isDetachedWidget: function(widget) {
+			var domNode = widget.domNode;
+			if(!domNode || !domNode.ownerDocument) {
+				return true;
+			}
+			return !FBL.isAncestor(domNode, domNode.ownerDocument);
+		},
 		
 		/**
 		 * returns the dijit widgets available on the dijit registry
 		 * @return array
 		 */
-		/*array*/getWidgets: function(/*fbug context*/ context) {
+		/*array*/getWidgets: function(/*fbug context*/ context, /*function?*/filter) {
 			//2nd impl : based on dijit.registry (this should include all widgets, and not only attached)
 			var dijit = _dijit(context);
 			if(!dijit) {
@@ -174,11 +232,11 @@ DojoModel.DojoAccessor.prototype =
 			 * avoid the "(arr instanceof Array) is false" problem.
 			 * See: http://bytes.com/topic/javascript/answers/91190-myarray-instanceof-array-fails-after-passing-different-page
 			 */
-			var ar = this._toArray(registry);
+			var ar = this._toArray(registry, filter);
 			return ar;
 		},
 		
-		_toArray: function(/*WidgetSet*/ registry) {
+		_toArray: function(/*WidgetSet*/ registry, /*function?*/filter) {
 			var ar = [];
 
 			/*
@@ -197,7 +255,9 @@ DojoModel.DojoAccessor.prototype =
 			var hash = registry._hash;
 			var ar = [];
 			for(var id in hash){
-				ar.push(hash[id]);
+				if(!filter || filter(hash[id])) {
+					ar.push(hash[id]);
+				}
 			}			
 			return ar;
 		},
@@ -238,6 +298,21 @@ DojoModel.DojoAccessor.prototype =
 			return dijit.getEnclosingWidget(unwrappedNode);					
 		},
 		
+		/*array*/getWidgetsExpandedPathToPageRoot: function(/*dijit*/widget, context) {
+			var dijit = _dijit(context);
+			if(!dijit || !dijit.getEnclosingWidget) {
+				return [];
+			}
+
+			var res = [];
+			var current = widget;
+			while(current != null) {
+				res.push(current);
+				current = dijit.getEnclosingWidget(current.domNode.parentNode);
+			}			
+			return res.reverse();
+		},
+		
 		/**
 		 * returns "high-level" specific widget properties.
 		 * @param widget the widget
@@ -247,9 +322,6 @@ DojoModel.DojoAccessor.prototype =
 			var dojo = _dojo(context);			
 			var tracker = context.connectionsAPI;
 			var props = {};
-
-			/* TODO
-			 */
 			
 			if(widget.title) {
 				props['title'] = widget.title;

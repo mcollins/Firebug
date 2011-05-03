@@ -24,6 +24,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	var DOJO_PREF_EVENT_BASED_PROXY_ENABLED = "dojofirebugextension.useHTMLEventBasedProxy";
 	var DOJO_PREF_MAX_SUGGESTED_CONNECTIONS = "dojofirebugextension.maxAllowedNumberOfConnectionsInTable";
 	var DOJO_PREF_MAX_SUGGESTED_SUBSCRIPTIONS = "dojofirebugextension.maxAllowedNumberOfSubscriptionsInTable";
+	var DOJO_PREF_WIDGETS_TREE = "dojofirebugextension.displayWidgetsAsTree";		
 	
 	//the name of our strings bundle
 	var DOJO_BUNDLE = "dojostrings";
@@ -107,7 +108,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	 */
     var _addStyleSheet = function(doc) {
     	appendStylesheet(doc, DOJO_EXT_CSS_URL);
-    };
+    };        
     
     /**
      * verify if the hashCodeBasedDictionary implementation is enabled.
@@ -134,7 +135,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     	var currentValue = _isBreakPointPlaceSupportDisabled();
     	Firebug.setPref(Firebug.prefDomain, DOJO_PREF_BP_PLACE, !currentValue);
     };
-    
+
     /**
      * verify if the html event based communication mechanism is enabled.
      */
@@ -142,7 +143,19 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     	var value = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_EVENT_BASED_PROXY_ENABLED);
     	return value;
     };
-        
+
+    var _switchWidgetsTreeEnabled = function() {
+    	var currentValue = _isWidgetsTreeEnabled();
+    	Firebug.setPref(Firebug.prefDomain, DOJO_PREF_WIDGETS_TREE, !currentValue);
+    };
+
+    var _isWidgetsTreeEnabled = this._isWidgetsTreeEnabled = function(){
+    	var value = Firebug.getPref(Firebug.prefDomain, DOJO_PREF_WIDGETS_TREE);
+    	return value;
+    };
+    
+    
+
     var _setNeedsReload = function(context, flag) {
     	context.needReload = flag;
     };
@@ -1312,6 +1325,8 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	        "-",
     	        { label: $STR('label.BreakPointPlaceEnable', DOJO_BUNDLE), nol10n: true, type: 'checkbox', disabled: _isUseEventBasedProxyEnabled(), checked: !_isBreakPointPlaceSupportDisabled(), command: bindFixed(this._switchConfigurationSetting, this, _switchBreakPointPlaceEnabled, context) },
     	        "-",
+    	        { label: $STR('label.WidgetsTreeEnabled', DOJO_BUNDLE), nol10n: true, type: 'checkbox', disabled: false, checked: _isWidgetsTreeEnabled(), command: bindFixed(this._switchWidgetsTreeMode, this, context) },    	        
+    	        "-",
     	        { label: $STR('label.About', DOJO_BUNDLE), nol10n: true, command: bindFixed(this.showAbout, this) },
     	        "-",
     	        { label: $STR('label.Refresh', DOJO_BUNDLE), nol10n: true, command: bindFixed(this.refresh, this) }
@@ -1381,6 +1396,25 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     },
 
     /**
+     * returns current page's widgets
+     */
+    /*array*/getWidgetsRoots: function(context) {
+    	var accessor = getDojoAccessor(context);
+    	if(!accessor) {
+    		return [];
+    	}
+    	return accessor.getWidgetsRoots(context);
+    },
+
+    _switchWidgetsTreeMode: function(context) {
+    	_switchWidgetsTreeEnabled();
+	 	if(this._isOptionSelected(SHOW_WIDGETS, context)) {
+	 		this.refresh();
+	 	}
+    	
+    },
+    
+    /**
      * Show the widget list.
      */
     showWidgets: function(context) {
@@ -1396,24 +1430,54 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     _renderWidgets: function(context) {
     	this._setOption(SHOW_WIDGETS, context);
     	
-    	var widgets = this.getWidgets(context);
+    	var useWidgetTree = _isWidgetsTreeEnabled();
     	
+    	var widgets = (useWidgetTree) ? this.getWidgetsRoots(context) : this.getWidgets(context);
 	    var areThereAnyWidgets = widgets.length > 0; 
-	   
-	    if(areThereAnyWidgets) {
-	    	// Function to show specific widget info.
-	    	//var funcWidgetProperties = getDojoAccessor(context).getSpecificWidgetProperties;
-			 // fn, thisObject, args => thisObject.fn(arguments, args);
-	    	var dojoAccessor = getDojoAccessor(context);
-	    	var fnGetHighLevelProps = dojoAccessor.getSpecificWidgetProperties;
-	    	
-	    	var funcWidgetProperties = bind(fnGetHighLevelProps, dojoAccessor, context);
-	    	
-	    	DojoReps.WidgetListRep.tag.append({object: widgets, propertiesToShow: funcWidgetProperties}, this.panelNode);
-	    } else {
+	    if(!areThereAnyWidgets) {
 	    	DojoReps.Messages.infoTag.append({object: $STR('warning.nowidgets.msg1', DOJO_BUNDLE)}, this.panelNode);
 	    	DojoReps.Messages.simpleTag.append({object: $STR("warning.nowidgets.msg2", DOJO_BUNDLE)}, this.panelNode);
-	  	}
+	    	return areThereAnyWidgets;
+	    }
+    	
+    	var dojoAccessor = getDojoAccessor(context);
+    	var fnGetHighLevelProps = dojoAccessor.getSpecificWidgetProperties;    	
+    	var funcWidgetProperties = bind(fnGetHighLevelProps, dojoAccessor, context);
+
+    	if(!useWidgetTree) {
+    		//plain list
+   		
+    		DojoReps.WidgetListRep.tag.append({object: widgets, propertiesToShow: funcWidgetProperties}, this.panelNode);
+    		
+    	} else {
+    		
+    		//tree
+    		var detachedWidgets = dojoAccessor.getDetachedWidgets(context);
+    		var detachedWidgetsFakeRoot = DojoReps.WidgetsTreeRep.createFakeTreeNode(detachedWidgets);
+    		if(detachedWidgets && detachedWidgets.length > 0) {
+        		//add the fake tree root to our widgets roots
+        		widgets.push(detachedWidgetsFakeRoot);    			
+    		}
+    		
+    		//get current selection
+	    	var selectionPath = [];
+	    	var mainSelection = _safeGetContext(this).dojoExtensionSelection;
+	    	var isWidget = mainSelection && dojoAccessor.isWidgetObject(mainSelection); 
+	    	if(isWidget) {
+	    		selectionPath = dojoAccessor.getWidgetsExpandedPathToPageRoot(mainSelection, context);	
+
+	    		//is also a detached widget?
+	    		if(dojoAccessor.isDetachedWidget(mainSelection)) {
+		    		//add fake widget as root of selectionPath
+		    		selectionPath = [detachedWidgetsFakeRoot].concat(selectionPath);
+		    	}
+	    	}
+	    	
+	    	//create treeNodes for the root widgets	    	
+	    	var treeRoots = DojoReps.WidgetsTreeRep.createWrappersForWidgets(widgets, selectionPath);	    	
+	    	DojoReps.WidgetsTreeRep.tag.append({object: treeRoots, propertiesToShow: funcWidgetProperties, expandPath: selectionPath}, this.panelNode);
+    	}
+
 	    return areThereAnyWidgets;
     },
 

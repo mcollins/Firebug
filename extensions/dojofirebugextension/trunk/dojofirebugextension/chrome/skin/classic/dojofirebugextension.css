@@ -288,10 +288,32 @@
 	padding-left: 15px;
 }
 
-.container-collapsed .collapsable-label{
+.container-collapsed .collapsable-label {
 	background-image:url('chrome://firebug/skin/win/twistyClosed.png');
 	background-repeat:no-repeat;
 	background-position:left center;
+	padding: 2px;
+	padding-left: 15px;
+}
+
+.children-opened .collapsable-children-label {
+	background-image:url('chrome://firebug/skin/win/twistyOpen.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 15px;
+}
+
+.children-collapsed .collapsable-children-label {
+	background-image:url('chrome://firebug/skin/win/twistyClosed.png');
+	background-repeat:no-repeat;
+	background-position:left center;
+	padding: 2px;
+	padding-left: 15px;
+}
+
+.collapsable-children-label.with-no-children {
+	background-image:none;
 	padding: 2px;
 	padding-left: 15px;
 }
@@ -308,19 +330,37 @@
 	display: none;
 }
 
-.widget-info-level-specific .widget-specific-data{
+.widget-info-level-specific .widget-specific-data {
 	display: inherit;
 }
 
-.widget-info-level-full .widget-specific-data{
+.widget-info-level-specific .widget-full-data {
 	display: none;
 }
 
-.widget-info-level-specific .widget-full-data{
+.widget-info-level-full .widget-full-data {
+	display: inherit;
+}
+
+.widget-info-level-full .widget-specific-data {
 	display: none;
 }
 
-.widget-info-level-full .widget-full-data{
+
+
+.children-opened .collapsable-children {
+	display: inherit;
+}
+
+.children-collapsed .collapsable-children {
+	display: none;
+}
+
+.widget-data.widget-data-collapsed {
+	display: none;
+}
+
+.widget-data.widget-data-opened {
 	display: inherit;
 }
 
@@ -353,6 +393,16 @@
 	background-repeat:no-repeat;
 	background-position:center;
 }
+
+.widget-info-level-none .infoLevelToggle {
+	background-image:url('chrome://dojofirebugextension/skin/none_info_level.gif');
+	background-repeat:no-repeat;
+	background-position:center;
+}
+
+.infoLevelToggle.not-displayed {
+	display: none;
+} 
 
 #dojoFilter-boxes {
 	display: none;

@@ -176,6 +176,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 	 * @return boolean
 	 */
 	/*boolean*/isDetached: function(/*dijit widget*/ widget) {
+		//FIXME should use the dojoAccessor version of this method.
 		var domNode = widget.domNode;
 		if(!domNode || !domNode.ownerDocument) {
 			return true;
@@ -639,7 +640,7 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
             )
 		),
 	
-	onContainerClick: function(event){
+	onContainerClick: function(event) {
     	if (!isLeftClick(event))
     		return;
 
@@ -672,6 +673,224 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 			Firebug.DOMPanel.DirTable.tag.append({object: ((decFunction) ? decFunction(obj) : obj)}, node);
 			removeClass(node, "not-loaded");
 		}
+	}
+});
+
+//************************************************************************************************
+
+
+this.WidgetsTreeRep = domplate({
+	//"object" is an array of widgets (the roots)
+	//expandPath will be an array of widgets
+	tag: DIV({"class": "widgets-tree", _decFunction:"$propertiesToShow", _expandPath: "$expandPath"},
+			FOR("wrapper", "$object",
+				DIV({style: "padding-left: $wrapper|indent"},
+					TAG("$widgetTreeRow", {wrapper: "$wrapper", level: 0})
+				)
+            )
+		),
+
+	widgetTreeRow:	DIV({"class": "collapsable-container container-collapsed collapsable-children-container $wrapper|shouldChildrenStartOpenedClass widget-info-level-none", _repWidget:"$wrapper.widget",
+							_level: "$level"},
+						DIV({"class": "widget-label"},
+								SPAN({"class": "collapsable-children-label $wrapper|hasChildrenClass", onclick: "$onChildrenContainerClick" },
+										TAG(this.DijitRep.tag, {object: "$wrapper.widget"})
+								),
+								SPAN({"class": "$wrapper|infoLevelToggleClass", onclick: "$onSwitchInfoLevelClick", title: $STR('widget.infoLevelToggle.tooltip', DOJO_BUNDLE)}, "&nbsp;")
+							),
+						DIV({"class": "widget-data widget-data-collapsed collapsable-content", _referencedObject:"$wrapper.widget"},
+								DIV({"class": "widget-specific-data not-loaded"}),
+								DIV({"class": "widget-full-data not-loaded"}),
+								DIV({"class": "widget-none-data not-loaded"})
+							),
+						DIV({"class": "collapsable-children", _referencedObject:"$wrapper.widget"},
+								DIV({"class": "children $wrapper|shouldChildrenBeLoadedClass"},
+									TAG("$loopChildren", {children: "$wrapper|getChildrenIfNeeded"})
+								)								
+						)						
+					),
+ 
+	loopChildren:	FOR("wrapper", "$children",
+						DIV({style: "padding-left: $wrapper|indent"},
+							TAG("$widgetTreeRow", {wrapper: "$wrapper", level: "$wrapper|level"})
+						)
+            		),
+
+    createFakeTreeNode: function(children) { 
+		return { 'isFakeRoot': true, 'id': 'Detached Widgets', 'declaredClass': '', 'children': children };
+	},    		
+	collapsedChildrenNode: 	DIV({"class": "children not-loaded"}),
+	
+	shouldChildrenStartOpenedClass: function(wrapper) {
+		var res = this._contains(wrapper.widget, wrapper.expandPath) ? "children-opened" : "children-collapsed";
+		return res;
+	},
+	shouldChildrenBeLoadedClass: function(wrapper) {
+		var res = this._contains(wrapper.widget, wrapper.expandPath) ? "" : "not-loaded";
+		return res;
+	},
+	_contains: function(widget, widgetsArray) {
+		//FIXME $$HACK XXXpreyna
+		if(widget.isFakeRoot) {
+			return widgetsArray[0] && widgetsArray[0].isFakeRoot;
+		}
+		var usingHashcodes = DojoExtension._isHashCodeBasedDictionaryImplementationEnabled();
+		for(var i=0;i<widgetsArray.length;i++) {	
+			if(DojoModel.areEqual(widget, widgetsArray[i], usingHashcodes)) {
+				return true;
+			}
+		}
+		return false;		
+	},
+
+	/*int*/level: function(wrapper) {
+		return wrapper.level ? parseInt(wrapper.level) : 0;
+	},
+	/*string*/indent: function(wrapper) {
+		return (this.level(wrapper) * 16) + "px";
+	},
+	
+	infoLevelToggleClass: function(wrapper) {
+		//FIXME do not explicitely use fakeNode
+		return wrapper.widget.isFakeRoot ? "not-displayed" : "infoLevelToggle";
+	},
+	getChildren: function(widget) {
+		//FIXME do not explicitely use fakeNode
+		if(widget.isFakeRoot) {
+			return widget.children;
+		}
+		var ctx = Firebug.currentContext;
+		var dojoAccessor = ctx.dojo.dojoAccessor;		
+		var children = dojoAccessor.findWidgets(widget, ctx);
+		return children;
+	},
+	hasChildren: function(widget) {
+		return this.getChildren(widget).length > 0;
+	},
+	hasChildrenClass: function(wrapper) {
+		return this.hasChildren(wrapper.widget) ? "with-children" : "with-no-children";
+	},
+	
+	_getDecFunction: function(node) {
+		var root = getAncestorByClass(node, "widgets-tree");
+		return root.decFunction;
+	},
+	_getExpandPath: function(node) {
+		var root = getAncestorByClass(node, "widgets-tree");
+		return root.expandPath;
+	},	
+	onChildrenContainerClick: function(event) {
+    	if (!isLeftClick(event))
+    		return;
+
+    	var elem = getAncestorByClass(event.target, "collapsable-children-container");
+
+    	if(!this.hasChildren(elem.repWidget)) {
+    		return;
+    	}
+    	var level = parseInt(elem.level);
+    	this.lazyChildrenLoad(elem, elem.repWidget, level + 1);
+    	this.toggleChildren(elem);
+  	},
+	
+	onSwitchInfoLevelClick: function(event) {
+    	if (!isLeftClick(event)) {
+    		return;
+    	}    	
+		var elem = getAncestorByClass(event.target, "collapsable-container");
+		
+		//FIXME do not explicitely use fakeNode
+		if(elem.repWidget.isFakeRoot) {
+			//it's the fake root
+			return;
+		}
+		
+		//clear displayed info
+		var nodes = getElementsByClass(elem, "widget-data");
+		var node = (nodes) ? nodes[0] : null;
+		if(node){
+			nodes.innerHTML = '';
+		}
+		
+		var needsToggle = true;
+		if(hasClass(elem, "widget-info-level-none")) {
+			removeClass(elem, "widget-info-level-none");
+			setClass(elem, "widget-info-level-specific");
+		} else if (hasClass(elem, "widget-info-level-specific")) {
+			removeClass(elem, "widget-info-level-specific");
+	      	setClass(elem, "widget-info-level-full");
+	      	needsToggle = false; //node already expanded...
+	    } else {
+	      	removeClass(elem, "widget-info-level-full");
+	  	    setClass(elem, "widget-info-level-none");
+	    }
+
+		if(needsToggle) {
+			//expand/collapse widget-data node
+			if(hasClass(node, "widget-data-collapsed")) {
+				removeClass(node, "widget-data-collapsed");
+				setClass(node, "widget-data-opened");
+			} else {
+				removeClass(node, "widget-data-opened");
+				setClass(node, "widget-data-collapsed");
+		    }			
+		}		
+
+		//needs to display info?
+		if(hasClass(node, "widget-data-opened")) {
+			var decFunction = this._getDecFunction(elem);
+			var objectToDisplay = (hasClass(elem, "widget-info-level-specific") && decFunction) ? decFunction(elem.repWidget) : elem.repWidget;  
+			Firebug.DOMPanel.DirTable.tag.replace({object: objectToDisplay}, node);
+		}		
+		
+	},
+	
+	toggleChildren: function(container){
+	    if(hasClass(container, "children-collapsed")) {
+	    	removeClass(container, "children-collapsed");
+	    	setClass(container, "children-opened");
+	    } else {
+	    	removeClass(container, "children-opened");
+		    setClass(container, "children-collapsed");
+	    }
+	},
+	
+	//display children
+	lazyChildrenLoad: function(parentNode, widget, level) {
+		var nodes = getElementsByClass(parentNode, "children");
+		var node = (nodes) ? nodes[0] : null;
+		if(node && hasClass(node, "not-loaded")) {
+			var expandPath = this._getExpandPath(node);
+			var childrenWrappers = this.getChildrenWrappers(widget, level, expandPath);
+			this.loopChildren.replace({'children': childrenWrappers}, node);
+			removeClass(node, "not-loaded");
+		}
+	},
+	
+	getChildrenIfNeeded: function(wrapper) {
+		var widget = wrapper.widget;
+		var level = wrapper.level;
+		if(!this._contains(widget, wrapper.expandPath)) {
+			//just don't return children if not included in expandPath
+			return []; 
+		}
+		return this.getChildrenWrappers(widget, level + 1, wrapper.expandPath);
+	},
+	
+	getChildrenWrappers: function(widget, childrenLevel, expandPath) {
+		var children = this.getChildren(widget);
+		var wrappers = [];
+		for (var i = 0; i < children.length; i++ ) {
+			wrappers.push({'widget': children[i], 'level': childrenLevel, 'expandPath': expandPath});
+		}
+		return wrappers;
+	},
+	createWrappersForWidgets: function(widgets, expandPath) {
+    	var wrappers = [];
+    	for(var i=0; i < widgets.length; i++) {
+    		wrappers.push({ 'widget': widgets[i], 'level': 0, 'expandPath': expandPath });
+    	}		
+    	return wrappers;
 	}
 });
 
