@@ -971,10 +971,14 @@ this.getPref = function(pref)
 // ************************************************************************************************
 // Command Line
 
-this.executeCommand = function(expr, chrome)
+this.executeCommand = function(expr, chrome, useCommandEditor)
 {
-    this.typeCommand(expr);
-    FBTest.pressKey(13, "fbCommandLine");
+    this.typeCommand(expr, useCommandEditor);
+
+    if(useCommandEditor)
+        FBTest.clickToolbarButton(chrome, "fbCmdLineRunButton");
+    else
+        FBTest.pressKey(13, "fbCommandLine");
 }
 
 this.typeCommand = function(string, useCommandEditor)
@@ -984,6 +988,7 @@ this.typeCommand = function(string, useCommandEditor)
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
+    this.setPref("largeCommandLine", useCommandEditor);
     FW.Firebug.chrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
