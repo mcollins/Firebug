@@ -33,8 +33,6 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
 
             this.contexts = {};
 
-
-
             if (host && port) {
                 this.connectClient(host, port);
             }
@@ -58,7 +56,6 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
             this.host = host;
             this.port = port;
             try {
-
                 this.transport = CrossfireModule.getClientTransport();
                 this.transport.addListener(this);
                 this.transport.open(host, port);
@@ -79,6 +76,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
         onConnectionStatusChanged: function( status) {
             if (status == CrossfireStatus.STATUS_CONNECTED_CLIENT) {
                 this.getBrowserContexts();
+                this.JavaScript.onActivateTool("script"); //Force script panel on
             }
         },
 
@@ -90,28 +88,23 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
          */
         fireEvent: function(event)
         {
-            if (FBTrace.DBG_CROSSFIRE_CLIENT)
-                FBTrace.sysout("CrossfireClient fireEvent: " + event);
-
             var contextId = event.context_id,
                 eventName = event.event,
                 data = event.data;
-/*
+
+            if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                FBTrace.sysout("CrossfireClient fireEvent: " + eventName);
+
             if (eventName == "onContextCreated") {
-                var btiContext = new BrowserContext();
-                this.contexts[contextId] = btiContext;
-                this.btiBrowser._contextCreated(btiContext);
+                var win = new ToolsInterface.Proxy("window", contextId, []);
+                var context = Firebug.TabWatcher.createContext(win,ToolsInterface.browser,ToolsInterface.BrowserContext)
+                this.contexts[contextId] = context;
             } else if (eventName == "onScript") {
-                var browserContext = this.contexts[contextId];
-                var ccu = new CompilationUnit(data.href, browserContext); //CrossfireClient.CrossfireCompilationUnit(data.href, contextId);
-                browserContext._addCompilationUnit(ccu);
+                var context = this.contexts[contextId];
+                var compilationUnit = new this.CompilationUnit(data.href, context, this); //FIXME: allow other kinds of scripts
+                this.dispatch("onCompilationUnit", [compilationUnit]);
             }
-*/
-            //FBL.dispatch(this.fbListeners, "onExecute", [packet]);
-
-            this.Browser.dispatch(eventName, data);
         },
-
 
         handleResponse: function( response) {
             if (FBTrace.DBG_CROSSFIRE_CLIENT)
@@ -140,21 +133,13 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
             this._sendCommand("listcontexts");
         },
 
-        /*
-        CrossfireCompilationUnit : FBL.extend(BTI.CompilationUnit, {
-
-            getSourceLines: function( context) {
-                CrossfireClient._sendCommand("scripts", {
-                    "context_id": context.Crossfire.crossfire_id
-                    });
-            }
-        })
-        */
 
         // ----- Browser Interface -----
+        /*
         Browser: function() {
             return CrossfireClient;
         },
+        */
 
         getTools: function() {
 
@@ -179,6 +164,21 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
         dispatch: function(eventName, args) {
             if (FBTrace.DBG_CROSSFIRE_DISPATCH)
                 FBTrace.sysout("dispatching " + eventName + " to " + this.listeners.length + "listeners");
+
+            if (eventName == "onCompilationUnit") {
+                var compilationUnit = args[0];
+                FBTrace.sysout("compilationUnit => " + compilationUnit);
+                FBTrace.sysout("compilationUnit.getSourceLines => " + compilationUnit.getSourceLines);
+                var btiBrowser = this;
+                compilationUnit.getSourceLines(-1, -1, function onLines(compilationUnit, firstLineNumber, lastLineNumber, lines)
+                {
+                    FBTrace.sysout("*** dispatch onSourceLines!!");
+                    btiBrowser.dispatch("onSourceLines", arguments);
+                    FBTrace.sysout("onSourceLines "+compilationUnit.getURL());
+                });
+            }
+
+
             for (var listener in this.listeners) {
                 try {
                     listener[eventName].apply(listener, args);
@@ -187,6 +187,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
                         FBTrace.sysout("failed to dispatch " + eventName + " to " + listener + ": " + e);
                 }
             }
+
         },
 
         onDebug: function()
@@ -349,7 +350,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
             {
                 if (FBTrace.DBG_CROSSFIRE_CLIENT)
                     FBTrace.sysout("CrossfireClient onActivateTool");
-                /*
+
                 if (FBTrace.DBG_ACTIVATION)
                     FBTrace.sysout("onActivateTool "+toolname+" = "+active);
 
@@ -361,7 +362,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
                         context.invalidatePanels('script');
                     });
                 }
-                */
+
             },
 
             /**

@@ -22,12 +22,27 @@ var Crossfire = Crossfire || {};
 
     };
     var commandLine = Components.classes["@almaden.ibm.com/crossfire/command-line-handler;1"].getService().wrappedJSObject;
+
+    top.FirebugConfig = top.FirebugConfig || {};
+
     if (commandLine.getServerPort()) {
-        FirebugLoadManager.arch = "remoteServer";
+        top.FirebugConfig.arch = "remoteServer";
+        top.FirebugConfig.paths = {
+                "arch": "firebug_rjs/inProcess",
+                "common": "firebug_rjs",
+                "crossfireModules":"crossfireModules"
+        }
     }
     else if ( (commandLine.getHost() && commandLine.getPort()) || typeof(CrossfireRemote) != "undefined" ) {
-        FirebugLoadManager.arch = "remoteClient";
+        top.FirebugConfig.arch = "remoteClient";
+        top.FirebugConfig.paths = {
+                "arch": "firebug_rjs/inProcess",
+                "common": "firebug_rjs",
+                "crossfireModules":"crossfireModules"
+        }
     }
+
+    FBTrace.sysout("*.*.*.*.* Crossfire-xul thinks FirebugConfig.arch should be => " + top.FirebugConfig.arch);
 
 
        // -----Crossfire UI functions -----
@@ -165,7 +180,7 @@ var Crossfire = Crossfire || {};
         var params = _getDialogParams(true);
         window.openDialog("chrome://crossfire/content/connect-dialog.xul", "crossfire-connect","chrome,modal,dialog", params);
         if (params.host && params.port) {
-            Firebug["CrossfireServer"].startServer(params.host, parseInt(params.port));
+            Firebug.ToolsInterface.startServer(params.host, parseInt(params.port));
         }
     };
 

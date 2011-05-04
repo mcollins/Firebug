@@ -39,7 +39,7 @@
                     labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"
                     tooltiptext="currently selected context"
                  />
-                 <toolbarbutton label="Open FBTrace" command="cmd_toggleTraceConsole" />
+                 <toolbarbutton label="Open FBTrace" command="cmd_openTraceConsole"/>
             </toolbar>
         </toolbox>
 

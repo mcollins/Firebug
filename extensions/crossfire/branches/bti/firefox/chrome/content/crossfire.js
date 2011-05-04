@@ -16,7 +16,7 @@ define(["crossfireModules/crossfire-status"], function(CrossfireStatus) {
      * @memberOf Crossfire
      * @type String
      */
-    var CROSSFIRE_VERSION = "0.3";
+    var CROSSFIRE_VERSION = "BTI";
 
     /**
      * @name CrossfireModule
@@ -229,6 +229,16 @@ define(["crossfireModules/crossfire-status"], function(CrossfireStatus) {
                     return false;
                 }
             }
+        },
+
+        /**
+         * @name getTool
+         * @description return the tool object registered for the given name.
+         * @function
+         * @param {String} name the name of the tool.
+         */
+        getTool: function( name) {
+            return this.registeredTools[name];
         },
 
         /**

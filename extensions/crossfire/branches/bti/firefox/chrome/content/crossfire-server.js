@@ -10,27 +10,23 @@ define(["crossfireModules/crossfire", "crossfireModules/crossfire-status"], func
  */
 var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
 
-    var CrossfireServer = FBL.extend(Firebug.Module,  {
-        contexts: [],
+    /**
+     * @name CrossfireServer
+     * @constructor
+     */
+    function CrossfireServer() {
+        this.contexts = [];
+        var commandLine = Components.classes["@almaden.ibm.com/crossfire/command-line-handler;1"].getService().wrappedJSObject;
+        var serverPort = commandLine.getServerPort();
+        if (serverPort) {
+            this.startServer("localhost", serverPort);
+        }
+        Firebug.registerModule(this);
+    }
+
+    CrossfireServer.prototype = FBL.extend(Firebug.Module,  {
         dispatchName: "CrossfireServer",
         toolName: "all", // receive all packets, regardless of 'tool' header
-
-        /**
-         * @name initialize
-         * @description Initializes Crossfire
-         * @function
-         * @private
-         * @memberOf CrossfireServer
-         * @extends Firebug.Module
-         */
-        initialize: function() {
-            var serverPort;
-            var commandLine = Components.classes["@almaden.ibm.com/crossfire/command-line-handler;1"].getService().wrappedJSObject;
-            serverPort = commandLine.getServerPort();
-            if (serverPort) {
-                this.startServer("localhost", serverPort);
-            }
-        },
 
         /**
          * @name startServer
@@ -50,7 +46,6 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             try {
                 //FIXME: should not have to call Firebug.CrossfireModule
                 this.transport = Firebug.CrossfireModule.getServerTransport();
-                this._addListeners();
                 this.transport.addListener(this);
 
                 this.transport.open(host, port);
@@ -60,6 +55,25 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             }
         },
 
+        /**
+         * @name onConnectionStatusChanged
+         * @description Called when the status of the transport's connection changes.
+         * @function
+         * @public
+         * @memberOf CrossfireServer
+         * @param {String} status the status to report
+         */
+        onConnectionStatusChanged: function( status) {
+            if (FBTrace.DBG_CROSSFIRE)
+                FBTrace.sysout("CrossfireServer onConnectionStatusChanged: " + status);
+            this.status = status;
+            if (status == CrossfireStatus.STATUS_CONNECTED_SERVER) {
+                this._addListeners();
+            } else if (status == CrossfireStatus.STATUS_WAIT_SERVER
+                    || status == CrossfireStatus.STATUS_DISCONNECTED) {
+                this._removeListeners();
+            }
+        },
 
         /**
          * @name _addListeners
@@ -72,9 +86,9 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             if (FBTrace.DBG_CROSSFIRE)
                 FBTrace.sysout("CROSSFIRE _addListeners");
 
-            Firebug.Console.addListener(this);
+            //Firebug.Console.addListener(this);
             Firebug.Debugger.addListener(this);
-            Firebug.HTMLModule.addListener(this);
+            //Firebug.HTMLModule.addListener(this);
         },
 
         /**
@@ -86,9 +100,9 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @since 0.3a1
          */
         _removeListeners: function() {
-            Firebug.Console.removeListener(this);
+            //Firebug.Console.removeListener(this);
             Firebug.Debugger.removeListener(this);
-            Firebug.HTMLModule.removeListener(this);
+            //Firebug.HTMLModule.removeListener(this);
         },
 
         /**
@@ -310,7 +324,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             if (command == "listcontexts") {
                 response = this.listContexts();
             } else if (command == "version") {
-                response =  { "version": CROSSFIRE_VERSION };
+                response =  { "version": CrossfireModule.CROSSFIRE_VERSION };
             } else if (command == "gettools") {
                 response = CrossfireModule.getTools();
             }
@@ -1540,10 +1554,48 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     FBTrace.sysout("CROSSFIRE: _sendEvent => " + event + " ["+data+"]");
                 this.transport.sendEvent(event, data);
             }
-        }
+        },
+
+        // ----- ToolsInterface -----
+        //Browser: {
+            getTool: function( name) {
+                return CrossfireModule.getTool( name);
+            },
+
+            registerTool: function(name, tool) {
+                if (FBTrace.DBG_CROSSFIRE)
+                    FBTrace.sysout("CrossfireServer registerTool: " + name + ", " + tool);
+                CrossfireModule.registerTool(name, tool);
+            },
+
+            dispatch: function(event, args) {
+                if (FBTrace.DBG_CROSSFIRE)
+                    FBTrace.sysout("CrossfireServer dispatch " + event + ", args: "+ args);
+                if (event == "onCompilationUnit") {
+                    var context = args[0];
+                    var url = args[1];
+                    FBTrace.sysout("dispatch::onCompilationUnit context is => " + context + " url is: " + url);
+
+                    //FIXME: copied from javascripttool.js
+                    var compilationUnit = new this.CompilationUnit(url, context);
+
+                    FBTrace.sysout("Kind is => " + args[2]);
+
+                    compilationUnit.kind = args[2];
+
+                    context.compilationUnits[url] = compilationUnit;
+
+                    // -----
+
+                    var context_href = context.window.location.href;
+
+                    var data = { "href": url, "context_href": context_href };
+                    this._sendEvent("onScript", {"context_id": context.Crossfire.crossfire_id, "data": data});
+                }
+            }
+        //},
+
     });
 
-    Firebug.registerModule(CrossfireServer);
-
-    return exports = Firebug.CrossfireServer = CrossfireServer;
+    return CrossfireServer;
 });

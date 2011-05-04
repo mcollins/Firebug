@@ -6,6 +6,15 @@ try {
     FBTrace = {};
 }
 
+//xxxMcollins new module loading hack
+top.FirebugConfig = top.FirebugConfig || {};
+top.FirebugConfig.arch = "remoteClient";
+top.FirebugConfig.paths = {
+        "arch": "firebug_rjs/inProcess",
+        "common": "firebug_rjs",
+        "crossfireModules":"crossfireModules"
+}
+
 var CrossfireRemote = {};
 
 CrossfireRemote.toolListLocator = function(xul_element) {
