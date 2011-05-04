@@ -976,12 +976,15 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
 
         // xxxHonza: find better solution for checking an ERROR messages
         // (setup some rules).
-        var text = message.text ? message.text.toUpperCase() : message.text;
-        if (text && (text.indexOf("ERROR") != -1 ||
-            text.indexOf("EXCEPTION") != -1 ||
-            text.indexOf("FAILS") != -1))
+        if (message.text && (message.text.indexOf("ERROR") != -1 ||
+            message.text.indexOf("EXCEPTION") != -1 ||
+            message.text.indexOf("FAILS") != -1))
         {
             message.type = "DBG_ERRORS";
+        }
+        else if (message.text && message.text.indexOf("firebug.") == 0)
+        {
+            message.type = "DBG_INITIALIZATION";
         }
 
         var scrollingNode = outputNodes.getScrollingNode();

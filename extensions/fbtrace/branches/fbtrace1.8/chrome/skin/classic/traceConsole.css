@@ -305,7 +305,11 @@
 
 /************************************************************************************************/
 
-/* Custom messages types */
+/* Custom messages types for Firebug */
+.DBG_INITIALIZATION {
+    color: rgb(98, 0, 64);
+}
+
 .DBG_WINDOWS {
     color: rgb(148, 121, 71);
 }
