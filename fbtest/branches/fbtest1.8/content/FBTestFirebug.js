@@ -1043,6 +1043,11 @@ this.clickContinueButton = function(chrome)
     this.clickToolbarButton(chrome, "fbContinueButton");
 }
 
+this.clickRerunButton = function(chrome)
+{
+    this.clickToolbarButton(chrome, "fbRerunButton");
+}
+
 /**
  * Simulates click on the Break On Next button that is available in main Firebug toolbar.
  * The specific action (e.g. break on next XHR or break on next HTML mutation) depends
