@@ -11,7 +11,6 @@ function runTest()
             var cmdLine = doc.getElementById("fbCommandLine");
 
             // Test Command Line
-            FBTestFirebug.setPref("largeCommandLine", false);
             cmdLine.value = ''; //xxxsz: Clear Command Line before typing the command - should probably be done inside typeCommand()
             FBTest.typeCommand("var test = 'Hello';");
   
