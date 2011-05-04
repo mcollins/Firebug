@@ -977,10 +977,10 @@ this.executeCommand = function(expr, chrome)
     FBTest.pressKey(13, "fbCommandLine");
 }
 
-this.typeCommand = function(string)
+this.typeCommand = function(string, useCommandEditor)
 {
     var doc = FW.Firebug.chrome.window.document;
-    var cmdLine = doc.getElementById("fbCommandLine");
+    var cmdLine = doc.getElementById(useCommandEditor ? "fbLargeCommandLine": "fbCommandLine");
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
