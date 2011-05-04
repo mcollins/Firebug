@@ -971,24 +971,31 @@ this.getPref = function(pref)
 // ************************************************************************************************
 // Command Line
 
-this.executeCommand = function(expr, chrome)
+this.executeCommand = function(expr, chrome, useCommandEditor)
 {
-    this.typeCommand(expr);
-    FBTest.pressKey(13, "fbCommandLine");
+    this.typeCommand(expr, useCommandEditor);
+
+    if(useCommandEditor)
+        FBTest.clickToolbarButton(chrome, "fbCmdLineRunButton");
+    else
+        FBTest.pressKey(13, "fbCommandLine");
 }
 
-this.typeCommand = function(string)
+this.typeCommand = function(string, useCommandEditor)
 {
     var doc = FW.Firebug.chrome.window.document;
-    var cmdLine = doc.getElementById("fbCommandLine");
+    var cmdLine = doc.getElementById(useCommandEditor ? "fbLargeCommandLine": "fbCommandLine");
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
+    this.setPref("largeCommandLine", useCommandEditor);
     FW.Firebug.chrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
 
-    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+ " win "+panelBar1.browser.contentWindow);
+    FBTest.sysout("typing "+string+" in to "+cmdLine+" focused on "+
+        FW.FBL.getElementCSSSelector(doc.commandDispatcher.focusedElement)+
+        " win "+panelBar1.browser.contentWindow);
 
     for (var i=0; i<string.length; ++i)
         FBTest.synthesizeKey(string.charAt(i), win);
