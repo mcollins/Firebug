@@ -64,7 +64,7 @@ function getModuleLoaderConfig(baseConfig)
             throw arguments[0];
         },
         //waitSeconds: 0,
-        debug: true,
+        debug: false,
         /* edit: function(errorMsg, errorURL, errorLineNumber)
         {
             window.alert(errorMsg+" "+errorURL+"@"+errorLineNumber);
@@ -140,7 +140,8 @@ var FBTraceConfig =
 };
 
 var config = getModuleLoaderConfig(FBTraceConfig);
-//Firebug.loadConfiguration = config;
+
+    window.dump("FBTrace; main.js begin module loading\n");
 
 require(config,
 [
