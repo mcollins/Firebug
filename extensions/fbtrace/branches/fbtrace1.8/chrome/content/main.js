@@ -131,24 +131,29 @@ var FBTraceConfig =
 {
     baseLoaderUrl: "resource://fbtrace-firebug/",
     baseUrl: "resource://fbtrace_rjs/",
-    paths: {"arch": "firebug/content/inProcess", "firebug": "firebug/content"},
+    paths: {
+        "arch": "firebug/content/inProcess",
+        "firebug": "firebug/content",
+        "fbtrace": "content"
+    },
     coreModules: ["lib/options", "lib/xpcom"]
 };
 
 var config = getModuleLoaderConfig(FBTraceConfig);
-Firebug.loadConfiguration = config;
+//Firebug.loadConfiguration = config;
 
 require(config,
 [
-    "firebug/lib/options",
-    "firebug/lib/xpcom",
-    "content/serializer", // save to file, load from file
-    "content/firebugExplorer",
+    "firebug/lib",
+    "firebug/domplate",
+    "firebug/firebug",
+    "fbtrace/serializer", // save to file, load from file
+    "fbtrace/firebugExplorer",
 
     // Overrides the default Firebug.TraceModule implementation that only
     // collects tracing listeners (customization of logs)
-    "content/traceModule",
-    "content/globalTab",
+    "fbtrace/traceModule",
+    "fbtrace/globalTab",
 ],
 function(someModule)
 {

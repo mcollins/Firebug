@@ -55,7 +55,7 @@ var TraceConsole =
             for( var p in args)
                 window.dump("args "+p+"\n");
             Firebug.initialize();
-            window.dump("traceConsole firebug is init\n");
+            window.dump("FBTrace; Firebug for Tracing Console is initialized\n");
             this.initializeConsole();
         }
         catch (exc)

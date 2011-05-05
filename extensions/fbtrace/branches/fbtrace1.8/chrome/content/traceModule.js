@@ -1,6 +1,11 @@
 /* See license.txt for terms of usage */
 
-define(["firebug/lib/xpcom"], function(XPCOM) { with (FBL) {
+define([
+    "firebug/lib",
+    "firebug/firebug",
+    "firebug/lib/xpcom"
+],
+function(FBL, Firebug, XPCOM) { with (FBL) {
 
 // ************************************************************************************************
 // Shortcuts and Services
@@ -8,8 +13,8 @@ define(["firebug/lib/xpcom"], function(XPCOM) { with (FBL) {
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-var clipboard = Firebug.XPCOM.CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
-var wm = Firebug.XPCOM.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
+var clipboard = XPCOM.CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
+var wm = XPCOM.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 
 var PrefService = Cc["@mozilla.org/preferences-service;1"];
 var prefs = PrefService.getService(Ci.nsIPrefBranch2);
@@ -167,6 +172,13 @@ Firebug.TraceModule = extend(Firebug.Module,
 {
     dispatchName: "traceModule",
 
+    addListener: function(listener)
+    {
+        if (!listener)
+            dump("\n\n\n++++++++++++++++++ NULL LISTENER ++++++++++++++++++\n\n\n");
+        Firebug.Module.addListener.apply(this, arguments);
+    },
+    
     initialize: function()
     {
         Firebug.Module.initialize.apply(this, arguments);
@@ -867,6 +879,14 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
         items.push("-");
 
         items.push({
+          label: $STR("tracing.cmd.Explore Firebug Scope"),
+          nol10n: true,
+          command: bindFixed(this.onExploreFirebug, this)
+        });
+
+        items.push("-");
+
+        items.push({
           label: $STR("tracing.cmd.Expand All"),
           nol10n: true,
           command: bindFixed(this.onExpandAll, this, message)
@@ -928,6 +948,11 @@ Firebug.TraceModule.MessageTemplate = domplate(Firebug.Rep,
     onCopyException: function(message)
     {
         copyToClipboard(message.getException());
+    },
+
+    onExploreFirebug: function()
+    {
+        TraceConsole.FirebugExplorer.dump();
     },
 
     onExpandAll: function(message)

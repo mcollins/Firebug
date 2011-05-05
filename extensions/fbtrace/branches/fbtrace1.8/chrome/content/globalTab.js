@@ -1,6 +1,10 @@
 /* See license.txt for terms of usage */
 
-define([], function() { with (FBL) {
+define([
+    "firebug/lib",
+    "firebug/lib/xpcom"
+],
+function(FBL, XPCOM) { with (FBL) {
 
 // ********************************************************************************************* //
 // Shorcuts and Services
@@ -8,7 +12,7 @@ define([], function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-const observerService = Firebug.XPCOM.CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
+const observerService = XPCOM.CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
 Components.utils["import"]("resource://fbtrace/firebug-trace-service.js");
 

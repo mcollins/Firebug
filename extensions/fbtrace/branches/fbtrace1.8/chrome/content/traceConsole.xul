@@ -27,15 +27,13 @@
 
   <!-- Embedded Firebug Files -->
   <script type="application/x-javascript" src="trace.js"/>
-  <script type="application/x-javascript" src="resource://firebug/require.js"/>
+  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/legacy.js"/>
+  <script type="application/x-javascript" src="resource://fbtrace-firebug/require.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/chrome.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/lib.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/domplate.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/firebug.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/reps.js"/>
+
   <!-- Trace Console Application -->
   <script type="application/x-javascript" src="traceConsole.js"/>
-  <script  type="application/x-javascript" src="chrome://fbtrace/content/main.js"/>
+  <script type="application/x-javascript" src="main.js"/>
   <script type="application/x-javascript" src="unblocker.js"/>
 
   <!-- String Bundles -->
