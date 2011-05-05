@@ -52,43 +52,18 @@ var TraceConsole =
 
         try
         {
-            window.FirebugConfig.prefDomain = this.prefDomain;
-            Firebug.initialize(window.FirebugConfig);
+            for( var p in args)
+                window.dump("args "+p+"\n");
+            Firebug.initialize();
+            window.dump("traceConsole firebug is init\n");
+            this.initializeConsole();
         }
-        catch (e)
+        catch (exc)
         {
-            window.dump("FBTrace; Firebug.initialize EXCEPTION " + e + "\n");
-            return;
+            var msg = exc.toString() +" "+(exc.fileName || exc.sourceName) + "@" + exc.lineNumber;
+            window.dump("FBTrace; Firebug.TraceModule.initialize EXCEPTION " + msg + "\n");
+            window.dump(FBL.getStackDump()+"\n");
         }
-
-        // Load tracing console modules
-        this.loader = this.createLoader(this.prefDomain, "resource://fbtrace_rjs/");
-
-        var modules = [];
-        modules.push("content/serializer.js"); // save to file, load from file
-
-        // Overrides the default Firebug.TraceModule implementation that only
-        // collects tracing listeners (customization of logs)
-        modules.push("content/traceModule.js");
-        modules.push("content/globalTab.js");
-
-        var self = this;
-        this.loader.define(modules, function()
-        {
-            try
-            {
-                window.dump("FBTrace; Core modules loaded\n");
-
-                // "initialize" was already dispatched so, make sure it's called for
-                // the TraceModule just loaded.
-                Firebug.TraceModule.initialize();
-                self.initializeConsole();
-            }
-            catch (e)
-            {
-                window.dump("FBTrace; " + e + "\n");
-            }
-        });
     },
 
     initializeConsole: function()

@@ -1,15 +1,15 @@
 /* See license.txt for terms of usage */
 
-define(["common/lib/xpcom"], function(XPCOM) { with (FBL) {
+define(["firebug/lib/xpcom"], function(XPCOM) { with (FBL) {
 
 // ************************************************************************************************
-// Shorcuts and Services
+// Shortcuts and Services
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
 
-var clipboard = CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
-var wm = CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
+var clipboard = Firebug.XPCOM.CCSV("@mozilla.org/widget/clipboard;1", "nsIClipboard");
+var wm = Firebug.XPCOM.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 
 var PrefService = Cc["@mozilla.org/preferences-service;1"];
 var prefs = PrefService.getService(Ci.nsIPrefBranch2);

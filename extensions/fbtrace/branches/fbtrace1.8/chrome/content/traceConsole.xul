@@ -25,26 +25,17 @@
   <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
   <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
 
-  <script type="application/x-javascript">
-  var FirebugConfig = {
-    baseLoaderUrl: "resource://fbtrace-firebug/",
-    baseUrl: "resource://fbtrace_rjs/",
-    paths: {"arch": "firebug/content/inProcess", "common": "firebug/content"},
-    coreModules: ["lib/options", "lib/xpcom"]
-  };
-  </script>
-
   <!-- Embedded Firebug Files -->
   <script type="application/x-javascript" src="trace.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/loader.js"/>
+  <script type="application/x-javascript" src="resource://firebug/require.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/chrome.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/lib.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/domplate.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/firebug.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/reps.js"/>
-
   <!-- Trace Console Application -->
   <script type="application/x-javascript" src="traceConsole.js"/>
+  <script  type="application/x-javascript" src="chrome://fbtrace/content/main.js"/>
   <script type="application/x-javascript" src="unblocker.js"/>
 
   <!-- String Bundles -->

@@ -8,7 +8,7 @@ define([], function() { with (FBL) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
+const observerService = Firebug.XPCOM.CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
 Components.utils["import"]("resource://fbtrace/firebug-trace-service.js");
 
