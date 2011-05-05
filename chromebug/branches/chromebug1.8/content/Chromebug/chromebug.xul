@@ -52,12 +52,8 @@
     }
     window.addEventListener('load', onLoad, false);
     </script>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/loader.js"/>
-    <script>
-    window.dump("after loader_______________________"+window.FirebugLoadManager);
-    </script>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
-
+    <script  data-main="main" type="application/x-javascript" src="resource://firebug/require.js"/>
     <!-- BEGIN add scripts -->
     <script type="application/x-javascript" src="chrome://fb4cb/content/lib.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
@@ -117,6 +113,7 @@
     <script type="application/x-javascript"  src="chrome://chromebug/content/extensions.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/xpcomExplorer.js"/>
+    <script type="application/x-javascript" src="chrome://chromebug/content/main.js"/>
 
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
