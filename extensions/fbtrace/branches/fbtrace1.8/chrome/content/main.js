@@ -1,3 +1,7 @@
+/* See license.txt for terms of usage */
+
+// ********************************************************************************************* //
+
 function getModuleLoaderConfig(baseConfig)
 {
     // Set configuration defaults.
@@ -78,54 +82,81 @@ function getModuleLoaderConfig(baseConfig)
     return config;
 }
 
-require.analyzeFailure = function(context, managers, specified, loaded) {
-    for (var i = 0; i < managers.length; i++) {
+require.analyzeFailure = function(context, managers, specified, loaded)
+{
+    for (var i = 0; i < managers.length; i++)
+    {
         var manager = managers[i];
-        context.config.onDebug("require.js ERROR failed to complete "+manager.fullName+" isDone:"+manager.isDone+" #defined: "+manager.depCount+" #required: "+manager.depMax);
+        context.config.onDebug("require.js ERROR failed to complete "+manager.fullName+
+            " isDone:"+manager.isDone+" #defined: "+manager.depCount+" #required: "+
+            manager.depMax);
+
         var theNulls = [];
         var theUndefineds = [];
         var theUnstrucks = manager.strikeList;
         var depsTotal = 0;
-        for( var depName in manager.deps) {
-            if (typeof (manager.deps[depName]) === "undefined") theUndefineds.push(depName);
-            if (manager.deps[depName] === null) theNulls.push(depName);
+
+        for(var depName in manager.deps)
+        {
+            if (typeof (manager.deps[depName]) === "undefined")
+                theUndefineds.push(depName);
+            if (manager.deps[depName] === null)
+                theNulls.push(depName);
+
             var strikeIndex = manager.strikeList.indexOf(depName);
             manager.strikeList.splice(strikeIndex, 1);
         }
-        context.config.onDebug("require.js: "+theNulls.length+" null dependencies "+theNulls.join(',')+" << check module ids.", theNulls);
-        context.config.onDebug("require.js: "+theUndefineds.length+" undefined dependencies: "+theUndefineds.join(',')+" << check module return values.", theUndefineds);
-        context.config.onDebug("require.js: "+theUnstrucks.length+" unstruck dependencies "+theUnstrucks.join(',')+" << check duplicate requires", theUnstrucks);
 
-        for (var j = 0; j < manager.depArray.length; j++) {
+        context.config.onDebug("require.js: "+theNulls.length+" null dependencies "+
+            theNulls.join(',')+" << check module ids.", theNulls);
+        context.config.onDebug("require.js: "+theUndefineds.length+" undefined dependencies: "+
+            theUndefineds.join(',')+" << check module return values.", theUndefineds);
+        context.config.onDebug("require.js: "+theUnstrucks.length+" unstruck dependencies "+
+            theUnstrucks.join(',')+" << check duplicate requires", theUnstrucks);
+
+        for (var j = 0; j < manager.depArray.length; j++)
+        {
             var id = manager.depArray[j];
             var module = manager.deps[id];
-            context.config.onDebug("require.js: "+j+" specified: "+specified[id]+" loaded: "+loaded[id]+" "+id+" "+module);
+            context.config.onDebug("require.js: "+j+" specified: "+specified[id]+" loaded: "+
+                loaded[id]+" "+id+" "+module);
         }
     }
 }
 
-var FBTraceConfig = {
-        baseLoaderUrl: "resource://fbtrace-firebug/",
-        baseUrl: "resource://fbtrace_rjs/",
-        paths: {"arch": "firebug/content/inProcess", "firebug": "firebug/content"},
-        coreModules: ["lib/options", "lib/xpcom"]
-      };
+// ********************************************************************************************* //
+// Modules
 
+var FBTraceConfig =
+{
+    baseLoaderUrl: "resource://fbtrace-firebug/",
+    baseUrl: "resource://fbtrace_rjs/",
+    paths: {"arch": "firebug/content/inProcess", "firebug": "firebug/content"},
+    coreModules: ["lib/options", "lib/xpcom"]
+};
 
 var config = getModuleLoaderConfig(FBTraceConfig);
 Firebug.loadConfiguration = config;
-require( config, [
-          "firebug/lib/options",
-          "firebug/lib/xpcom",
-          "content/serializer", // save to file, load from file
 
-          // Overrides the default Firebug.TraceModule implementation that only
-          // collects tracing listeners (customization of logs)
-          "content/traceModule",
-          "content/globalTab",
-      ], function(someModule) {
+require(config,
+[
+    "firebug/lib/options",
+    "firebug/lib/xpcom",
+    "content/serializer", // save to file, load from file
+    "content/firebugExplorer",
+
+    // Overrides the default Firebug.TraceModule implementation that only
+    // collects tracing listeners (customization of logs)
+    "content/traceModule",
+    "content/globalTab",
+],
+function(someModule)
+{
     if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
         FBTrace.sysout("FBTrace; main.js require!\n");
+
     Firebug.Options.initialize("extensions.firebug");
     Firebug.TraceModule.initialize();
 });
+
+// ********************************************************************************************* //
