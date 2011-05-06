@@ -975,7 +975,7 @@ this.executeCommand = function(expr, chrome, useCommandEditor)
 {
     this.typeCommand(expr, useCommandEditor);
 
-    if(useCommandEditor)
+    if (useCommandEditor)
         FBTest.clickToolbarButton(chrome, "fbCmdLineRunButton");
     else
         FBTest.pressKey(13, "fbCommandLine");
@@ -988,7 +988,9 @@ this.typeCommand = function(string, useCommandEditor)
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
-    this.setPref("largeCommandLine", useCommandEditor);
+    if (useCommandEditor)
+        FBTest.setPref("largeCommandLine", useCommandEditor);
+
     FW.Firebug.chrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
@@ -999,6 +1001,34 @@ this.typeCommand = function(string, useCommandEditor)
 
     for (var i=0; i<string.length; ++i)
         FBTest.synthesizeKey(string.charAt(i), win);
+}
+
+/**
+ * Helper function for executing expression on the command line.
+ * @param {Function} callback Appended by the test harness.
+ * @param {String} expression Expression to be executed.
+ * @param {String} expected Expected value displayed.
+ * @param {String} tagName Name of the displayed element.
+ * @param {String} class Class of the displayed element.
+ */
+this.executeCommandAndVerify = function(callback, expression, expected, tagName, classes)
+{
+    FBTest.clearConsole();
+
+    var config = {tagName: tagName, classes: classes};
+    FBTest.waitForDisplayedElement("console", config, function(row)
+    {
+        FBTest.compare(expected, row.textContent, "Verify: " +
+            expression + " SHOULD BE " + expected);
+
+        FBTest.clearConsole();
+
+        if (callback)
+            callback();
+    });
+
+    FBTest.progress("Execute expression: " + expression);
+    FBTest.executeCommand(expression);
 }
 
 // ************************************************************************************************
@@ -1013,6 +1043,11 @@ this.typeCommand = function(string, useCommandEditor)
 this.clickContinueButton = function(chrome)
 {
     this.clickToolbarButton(chrome, "fbContinueButton");
+}
+
+this.clickRerunButton = function(chrome)
+{
+    this.clickToolbarButton(chrome, "fbRerunButton");
 }
 
 /**

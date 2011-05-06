@@ -116,7 +116,11 @@ SearchResult.prototype =
     },
 
     removeValueAt: function(index, removeFromDb) {
-        this._results.splice(index, 1);
+        this.results.splice(index, 1);
+    },
+
+    getLabelAt: function(index) {
+        return this.results[index];
     },
 
     QueryInterface: function(aIID)
