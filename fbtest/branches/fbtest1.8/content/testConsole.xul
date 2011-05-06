@@ -27,9 +27,10 @@
 
     <!-- Firebug -->
     <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/legacy.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/>
-    <script type="application/x-javascript" src="chrome://firebug/content/lib.js"/>
-    <script type="application/x-javascript" src="chrome://firebug/content/domplate.js"/>
+    <script type="application/x-javascript" src="resource://firebug/require.js"/>
+    <script type="application/x-javascript" src="chrome://fbtest/content/main.js"/>
 
     <!-- FBTest -->
     <script type="application/x-javascript" src="chrome://fbtest/content/jsdiff.js"/>

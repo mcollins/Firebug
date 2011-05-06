@@ -975,7 +975,7 @@ this.executeCommand = function(expr, chrome, useCommandEditor)
 {
     this.typeCommand(expr, useCommandEditor);
 
-    if(useCommandEditor)
+    if (useCommandEditor)
         FBTest.clickToolbarButton(chrome, "fbCmdLineRunButton");
     else
         FBTest.pressKey(13, "fbCommandLine");
@@ -988,7 +988,9 @@ this.typeCommand = function(string, useCommandEditor)
     var panelBar1 = doc.getElementById("fbPanelBar1");
     var win = panelBar1.browser.contentWindow;
 
-    this.setPref("largeCommandLine", useCommandEditor);
+    if (useCommandEditor)
+        FBTest.setPref("largeCommandLine", useCommandEditor);
+
     FW.Firebug.chrome.window.focus();
     panelBar1.browser.contentWindow.focus();
     FBTest.focus(cmdLine);
