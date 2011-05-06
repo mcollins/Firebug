@@ -5,6 +5,7 @@ locale  chromebug en-US       locale/en-US/
 content fb4cb fb4cb/content/firebug/
 
 resource chromebug modules/
+resource chromebug_rjs content/Chromebug/
 
 # require js modules
 resource fb4cb fb4cb/content/firebug/
