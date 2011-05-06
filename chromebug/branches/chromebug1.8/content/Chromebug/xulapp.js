@@ -3,8 +3,10 @@
 define([
     "firebug/lib",
     "firebug/reps",
+    "firebug/domplate",
+    "firebug/dom"
 ],
-function(FBL, FirebugReps)
+function(FBL, FirebugReps, Domplate)
 {
 
 // ***********************************************************************************
@@ -364,9 +366,9 @@ Chromebug.XULAppModule = FBL.extend(Firebug.Module,
                 {
                     if (!Firebug.Chromebug.applicationReleased)  // then windows created could still be chromebug windows
                     {
-                        if (Chromebug.XULAppModule.isChromebugDOMWindow(global))
+                        if (Chromebug.XULAppModule.isChromebugDOMWindow(subject))
                         {
-                            FBTrace.sysout("createContext dropping chromebug DOM window "+FBL.safeGetWindowLocation(global));
+                            FBTrace.sysout("createContext dropping chromebug DOM window "+FBL.safeGetWindowLocation(subject));
                             return null;
                         }
                     }
@@ -867,36 +869,39 @@ Chromebug.XULAppPanel.prototype = FBL.extend(Firebug.DOMPanel.prototype,
 Chromebug.XULAppModule.WindowList = function()
 {
 }
+with (Domplate) {
 
-Chromebug.XULAppModule.WindowListRep = domplate(Firebug.Rep,
-{
-    supportsObject: function(object)
+    Chromebug.XULAppModule.WindowListRep = domplate(Firebug.Rep,
     {
-        return (object instanceof Chromebug.XULAppModule.WindowList) ? 10 : 0;
-    },
-
-    tag:
-        FirebugReps.OBJECTLINK("Window ", SPAN({"class": "objectPropValue"}, "$object|getLocation")),
-
-    getLocation: function(windowList)
-    {
-        var win = windowList['outer DOM window'];
-        try
+        supportsObject: function(object)
         {
-            return (win && win.location && !win.closed) ? getFileName(win.location.href) : "";
-        }
-        catch (exc)
-        {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("reps.Window window closed? "+exc, exc);
-        }
-    },
+                return (object instanceof Chromebug.XULAppModule.WindowList) ? 10 : 0;
+            },
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+            tag:
+                FirebugReps.OBJECTLINK("Window ", SPAN({"class": "objectPropValue"}, "$object|getLocation")),
 
-    className: "XULWindowList",
+            getLocation: function(windowList)
+            {
+                var win = windowList['outer DOM window'];
+                try
+                {
+                    return (win && win.location && !win.closed) ? getFileName(win.location.href) : "";
+                }
+                catch (exc)
+                {
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("reps.Window window closed? "+exc, exc);
+                }
+            },
 
-});
+            // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+            className: "XULWindowList",
+    });
+
+}
+
 
 // ************************************************************************************************
 // Registration
