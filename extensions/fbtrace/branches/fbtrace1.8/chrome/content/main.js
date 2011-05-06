@@ -146,6 +146,7 @@ var config = getModuleLoaderConfig(FBTraceConfig);
 require(config,
 [
     "firebug/lib",
+    "firebug/reps",
     "firebug/domplate",
     "firebug/firebug",
     "fbtrace/serializer", // save to file, load from file
