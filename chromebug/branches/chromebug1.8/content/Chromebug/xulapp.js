@@ -1,6 +1,11 @@
 /* See license.txt for terms of usage */
 
-FBL.ns(function() { with (FBL) {
+define([
+    "firebug/lib",
+    "firebug/reps",
+],
+function(FBL, FirebugReps)
+{
 
 // ***********************************************************************************
 // Shorcuts and Services
@@ -28,7 +33,7 @@ const reChromebug = /^chrome:\/\/chromebug\//;
 /**
  * Implementation of a Module & Panel for XULApp viewer.
  */
-Chromebug.XULAppModule = extend(Firebug.Module,
+Chromebug.XULAppModule = FBL.extend(Firebug.Module,
 {
 
     // ****************************************************
@@ -314,7 +319,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
         var enumerator = windowMediator.getEnumerator(null);  // null means all
         while(enumerator.hasMoreElements()) {
              var domWindow = enumerator.getNext();
-             var url = safeGetWindowLocation(domWindow);
+             var url = FBL.safeGetWindowLocation(domWindow);
              if (url)
                  domWindowsByURL[url] = domWindow;
              else
@@ -354,21 +359,21 @@ Chromebug.XULAppModule = extend(Firebug.Module,
             if (subject instanceof Ci.nsIDOMWindow)
             {
                 var id = FBL.getWindowId(subject);
-                var name = safeGetWindowLocation(subject);
+                var name = FBL.safeGetWindowLocation(subject);
                 if (name)
                 {
                     if (!Firebug.Chromebug.applicationReleased)  // then windows created could still be chromebug windows
                     {
                         if (Chromebug.XULAppModule.isChromebugDOMWindow(global))
                         {
-                            FBTrace.sysout("createContext dropping chromebug DOM window "+safeGetWindowLocation(global));
+                            FBTrace.sysout("createContext dropping chromebug DOM window "+FBL.safeGetWindowLocation(global));
                             return null;
                         }
                     }
                     var context = Firebug.Chromebug.getOrCreateContext(subject, name);
                     if (!context)
                     {
-                        FBTrace.sysout("watchChromeWindow ERROR no context for id: "+id+" "+safeGetWindowLocation(subject));
+                        FBTrace.sysout("watchChromeWindow ERROR no context for id: "+id+" "+FBL.safeGetWindowLocation(subject));
                         return;
                     }
                     Chromebug.XULAppModule.watchedWindows[id.inner] =  {win: subject, kind: 'chrome', context: context};
@@ -727,7 +732,7 @@ Chromebug.XULAppModule = extend(Firebug.Module,
     {
         var root = FBL.getRootWindow(domWindow);
         var theContainingXULWindow = Chromebug.XULAppModule.getXULWindowByRootDOMWindow(root);
-        if (Firebug.Chromebug.isChromebugURL(safeGetWindowLocation(theContainingXULWindow)))
+        if (Firebug.Chromebug.isChromebugURL(FBL.safeGetWindowLocation(theContainingXULWindow)))
             return true;
         else
             return false;
@@ -742,7 +747,7 @@ var Module = Chromebug.XULAppModule;
 
 Chromebug.XULAppPanel = function() {}
 
-Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
+Chromebug.XULAppPanel.prototype = FBL.extend(Firebug.DOMPanel.prototype,
 {
     name: panelName,
     title: "XUL Windows",
@@ -796,7 +801,7 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
 
     getDOMWindowDescription: function(domWindow)
     {
-        var url = safeGetWindowLocation(domWindow);
+        var url = FBL.safeGetWindowLocation(domWindow);
         var title = domWindow.document.title;
         var id = FBL.getWindowId(domWindow);
         var key = url +"("+id.outer+"."+id.inner+") - "+title;
@@ -827,7 +832,7 @@ Chromebug.XULAppPanel.prototype = extend(Firebug.DOMPanel.prototype,
         {
             var win = enumerator.getNext();
             if (win instanceof Ci.nsIDOMWindow)
-                FBTrace.sysout("xulapp show window "+safeGetWindowLocation(win));
+                FBTrace.sysout("xulapp show window "+FBL.safeGetWindowLocation(win));
             else
                 FBTrace.sysout("xulapp show not an nsIDOMWindow");
         }
@@ -902,4 +907,4 @@ Firebug.registerPanel(Chromebug.XULAppPanel);
 
 // ************************************************************************************************
 
-}});
+});

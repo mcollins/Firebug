@@ -52,64 +52,16 @@
     }
     window.addEventListener('load', onLoad, false);
     </script>
+
+    <script type="application/x-javascript" src="chrome://firebug/content/legacy.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/chrome.js"/>
-    <script  data-main="main" type="application/x-javascript" src="resource://firebug/require.js"/>
-    <!-- BEGIN add scripts -->
-    <script type="application/x-javascript" src="chrome://fb4cb/content/lib.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/domplate.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/insideOutBox.js"/>
 
-    <script type="application/x-javascript" src="chrome://fb4cb/content/firebug.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/sourceFile.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/tabWatcher.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/activation.js"/>
-
-    <script type="application/x-javascript" src="chrome://fb4cb/content/sourceCache.js"/>
-
-    <script type="application/x-javascript" src="chrome://fb4cb/content/tabCache.js"/>
-
-    <script type="application/x-javascript" src="chrome://fb4cb/content/lib/htmlLib.js"/>
-
-    <script type="application/x-javascript" src="chrome://fb4cb/content/reps.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/editor.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/infotip.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/commandLine.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/commandLinePopup.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/search.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/inspector.js"/>
-
-    <script type="application/x-javascript" src="chrome://fb4cb/content/plugin.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/breakpoint.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/console.js"/>
-
+    <script type="application/x-javascript" src="resource://firebug/require.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/Chromebug.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugPanel.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
-
     <script type="application/x-javascript" src="chrome://chromebug/content/firebugCache.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/html.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/css.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/layout.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/debuggerHalter.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/callstack.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/navigationHistory.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/dom.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/net.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/profiler.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/errors.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/spy.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/consoleInjector.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/jsonViewer.js"/>
 
-    <script type="application/x-javascript" src="chrome://fb4cb/content/consoleAPI.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/commandLineAPI.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/shortcuts.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/a11y.js"/>
-    <script type="application/x-javascript" src="chrome://fb4cb/content/a11y.js"/>
-
-    <!-- END -->
-    <script type="application/x-javascript"  src="chrome://chromebug/content/platform.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/xulapp.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/extensions.js"/>
     <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/xpcomExplorer.js"/>

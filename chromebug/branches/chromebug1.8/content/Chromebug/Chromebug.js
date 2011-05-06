@@ -1,4 +1,6 @@
 /* See license.txt for terms of usage */
+top.Chromebug = {}; // utility functions for Chromebug modules and ui
+
 FBL.ns(function xpcomExplorer() { with (FBL) {
 
 const Cc = Components.classes;
@@ -11,7 +13,7 @@ const reModules = /:\/\/(.*)\/modules\//; // chrome:// or file://
 const reWeb = /(^http:|^ftp:|^mailto:|^https:|^ftps:)\//;
 const reXUL = /\.xul$|\.xml$|^XStringBundle$/;
 
-top.Chromebug = {}; // utility functions for Chromebug modules and ui
+
 
 this.namespaceName = "Chromebug";
 

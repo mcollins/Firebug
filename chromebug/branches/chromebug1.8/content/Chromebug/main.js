@@ -6,7 +6,7 @@ function getModuleLoaderConfig(baseConfig)
     baseConfig.prefDomain = baseConfig.prefDomain || "extensions.chromebug";
     baseConfig.arch = baseConfig.arch ||  "firebug_rjs/inProcess";
     baseConfig.baseUrl = baseConfig.baseUrl || "resource://";
-    baseConfig.paths = baseConfig.paths || {"arch": "fb4cb/inProcess", "firebug": "fb4cb"};
+    baseConfig.paths = baseConfig.paths || {"arch": "fb4cb/inProcess", "firebug": "fb4cb", "chromebug": "chromebug_rjs"};
 
     // to give each XUL window its own loader (for now)
     var uid = Math.random();
@@ -60,71 +60,60 @@ function getModuleLoaderConfig(baseConfig)
 
             throw arguments[0];
         },
-        //waitSeconds: 0,
-        debug: true,
-        /* edit: function(errorMsg, errorURL, errorLineNumber)
-        {
-            window.alert(errorMsg+" "+errorURL+"@"+errorLineNumber);
-        },
-        edit: function(context, url, module)
-        {
-            FBTrace.sysout("opening window modal on "+url);
-            var a = {url: url};
-            return window.showModalDialog("chrome://firebug/content/external/editors.xul",{},
-                "resizable:yes;scroll:yes;dialogheight:480;dialogwidth:600;center:yes");
-        }
-        */
     };
 
     return config;
 }
 
-require.analyzeFailure = function(context, managers, specified, loaded) {
-    for (var i = 0; i < managers.length; i++) {
-        var manager = managers[i];
-        context.config.onDebug("require.js ERROR failed to complete "+manager.fullName+" isDone:"+manager.isDone+" #defined: "+manager.depCount+" #required: "+manager.depMax);
-        var theNulls = [];
-        var theUndefineds = [];
-        var theUnstrucks = manager.strikeList;
-        var depsTotal = 0;
-        for( var depName in manager.deps) {
-            if (typeof (manager.deps[depName]) === "undefined") theUndefineds.push(depName);
-            if (manager.deps[depName] === null) theNulls.push(depName);
-            var strikeIndex = manager.strikeList.indexOf(depName);
-            manager.strikeList.splice(strikeIndex, 1);
-        }
-        context.config.onDebug("require.js: "+theNulls.length+" null dependencies "+theNulls.join(',')+" << check module ids.", theNulls);
-        context.config.onDebug("require.js: "+theUndefineds.length+" undefined dependencies: "+theUndefineds.join(',')+" << check module return values.", theUndefineds);
-        context.config.onDebug("require.js: "+theUnstrucks.length+" unstruck dependencies "+theUnstrucks.join(',')+" << check duplicate requires", theUnstrucks);
 
-        for (var j = 0; j < manager.depArray.length; j++) {
-            var id = manager.depArray[j];
-            var module = manager.deps[id];
-            context.config.onDebug("require.js: "+j+" specified: "+specified[id]+" loaded: "+loaded[id]+" "+id+" "+module);
-        }
-    }
-}
+var config = getModuleLoaderConfig(window._firebugArchConfig || {});
+require.onError = config.onError;
 
-
-
-var config = getModuleLoaderConfig({});
-Firebug.loadConfiguration = config;
 require( config, [
-          "firebug/traceModule",
-          "firebug/lib/options",
-          "firebug/lib/xpcom",
-          "firebug/dragdrop",
-          "firebug/tabContext",  // should be loaded by being a dep of tabWatcher
-          "firebug/sourceBox",
-          "firebug/script",
-          "firebug/memoryProfiler",
-          "arch/tools",
-          "arch/firebugadapter",
-          "firebug/debugger",
-          "arch/javascripttool"
+                  "firebug/lib",
+                  "firebug/domplate",
+                  "firebug/firebug",
+                  "firebug/lib/options",
+                  "arch/tools",
+                  "arch/firebugadapter",
+                  "firebug/debugger",
+                  "arch/javascripttool",
+                  "firebug/traceModule",
+                  "firebug/lib/xpcom",
+                  "firebug/dragdrop",
+                  "firebug/tabWatcher",
+                  "firebug/sourceBox",
+                  "firebug/script",
+                  "firebug/memoryProfiler",
+                  "firebug/commandLine",
+                  "firebug/navigationHistory",
+                  "firebug/html",
+                  "firebug/css",
+                  "firebug/consoleInjector",
+                  "firebug/inspector",
+                  "firebug/layout",
+                  "firebug/net",
+                  "firebug/knownIssues",
+                  "firebug/tabCache",
+                  "firebug/activation",
+                  "firebug/sourceFile",
+                  "firebug/navigationHistory",
+                  "firebug/a11y",
+                  "firebug/shortcuts",
+                  "firebug/start-button/startButtonOverlay",
+                  "firebug/external/externalEditors",
+                  "firebug/callstack",
+                  "firebug/spy",
+                  "firebug/tableRep",
+                  "firebug/commandLinePopup",
+                  "firebug/commandLineExposed",
+                  "firebug/consoleExposed",
+                  "chromebug/platform",
+                  "chromebug/xulapp"
       ], function(someModule) {
     if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
-        FBTrace.sysout("main.js require!\n");
-    Firebug.Options.initialize("extensions.firebug");
+        FBTrace.sysout("chromebug main.js require!\n");
+    Components.utils.reportError("Chromebug main.js callback running");
+    Firebug.Options.initialize("extensions.chromebug");
     FirebugChrome.waitForPanelBar(true);
 });

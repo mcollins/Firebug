@@ -14,7 +14,7 @@
     <script type="application/x-javascript">
     function armOnLoad(event)
     {
-        window.dump("------------ "+window.location+" load ------------------------\n");
+        window.dump("------------ "+window.location+" load arm blocker ------------------------\n");
         var releaser = window.arguments[0];
         releaser.unblock = function()
         {
