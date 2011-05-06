@@ -108,7 +108,7 @@ var commandLineHandler = ChromebugCommandLineHandler.prototype = {
 
         var winFeatures = "modal,resizable,dialog=no,centerscreen";
 
-        win = window.openDialog(releaser.url, "_blank", winFeatures, releaser);
+        //win = window.openDialog(releaser.url, "_blank", winFeatures, releaser);
 
         return chromeBugWindow;
     },
