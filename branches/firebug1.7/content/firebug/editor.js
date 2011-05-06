@@ -953,10 +953,15 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
         var offset = textBox.selectionStart; // defines the cursor position
 
-        var found =  this.pickCandidates(textBox, offset, context, cycle, reverse, showGlobals);
+        var found = this.pickCandidates(textBox, offset, context, cycle, reverse, showGlobals);
 
-        if (completionBox && found)
+        if (completionBox)
+        {
+            if (found)
                 this.showCandidates(textBox, completionBox);
+            else
+                this.clear(completionBox);
+        }
 
         return found;
     };
@@ -998,7 +1003,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
             {
                 if (!expr)
                 {
-                    this.hide();
                     return false;
                 }
                 else if (lastExpr && lastExpr.indexOf(expr) != 0)
@@ -1009,7 +1013,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
                 {
                     candidates = null;
                     lastExpr = expr;
-                    this.hide();
                     return false;
                 }
             }
@@ -1035,7 +1038,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
                 else
                 {
                     // We can't complete unless we are at the ridge edge
-                    this.hide();
                     return false;
                 }
             }
@@ -1043,7 +1045,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
             if (!showGlobals && !preExpr && !expr && !postExpr)
             {
                 // Don't complete globals unless we are forced to do so.
-                this.hide();
                 return false;
             }
 
@@ -1057,7 +1058,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
                 var values = evaluator(preExpr, expr, postExpr, context);
                 if (!values)
                 {
-                    this.hide();
                     return false;
                 }
 
@@ -1083,7 +1083,6 @@ Firebug.AutoCompleter = function(getExprOffset, getRange, evaluator, selectMode,
 
         if (!candidates.length)
         {
-            this.hide();
             return false;
         }
 
