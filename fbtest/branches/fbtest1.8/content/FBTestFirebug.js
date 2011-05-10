@@ -175,10 +175,19 @@ this.setToKnownState = function()
     FBTest.sysout("FBTestFirebug setToKnownState");
 
     var Firebug = FBTest.FirebugWindow.Firebug;
+    if (Firebug.PanelActivation)
+    {
+        Firebug.PanelActivation.toggleAll("off");  // These should be done with button presses not API calls.
+        Firebug.PanelActivation.toggleAll("none");
+    }
+    else
+    {
+        Firebug.Activation.toggleAll("off");  // obsolete
+        Firebug.Activation.toggleAll("none");
+    }
+
     if (Firebug.Activation)
     {
-        Firebug.Activation.toggleAll("off");
-        Firebug.Activation.toggleAll("none");
         Firebug.Activation.clearAnnotations();
     }
     else
