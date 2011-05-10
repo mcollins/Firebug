@@ -3,7 +3,10 @@
 function allOpenAllClose()
 {
     FBTest.progress("All Close");
-    FW.Firebug.Activation.toggleAll("off");
+    if (FW.Firebug.PanelActivation)
+        FW.Firebug.PanelActivation.toggleAll("off");
+    else
+        FW.Firebug.Activation.toggleAll("off");
 
     window.allOpenAllCloseURL = FBTest.getHTTPURLBase()+"firebug/OpenFirebugOnThisPage.html";
 
@@ -15,7 +18,10 @@ function allOpenAllClose()
         FBTest.ok(!open, "Firebug starts closed");
 
         FBTest.progress("All Open");
-        FW.Firebug.Activation.toggleAll("on");
+        if (FW.Firebug.PanelActivation)
+            FW.Firebug.PanelActivation.toggleAll("on");
+        else
+            FW.Firebug.Activation.toggleAll("on");
 
         allOpened();  // allow UI to come up then check it
     });
@@ -63,7 +69,10 @@ function alsoOpened(win)
     if (number)
         FBTest.compare("2", number[1], "Should be 2 Firebugs now");
 
-    FW.Firebug.Activation.toggleAll("off");
+    if (FW.Firebug.PanelActivation)
+        FW.Firebug.PanelActivation.toggleAll("off");
+    else
+        FW.Firebug.Activation.toggleAll("off");
 
     var open = FW.Firebug.chrome.isOpen();
     FBTest.ok(!open, "Firebug closed by all off");
@@ -72,7 +81,10 @@ function alsoOpened(win)
     var number = /^(\d).*Firebugs/.exec(toolTip);
     FBTest.ok(!number, "Should be no Firebugs now");
 
-    FW.Firebug.Activation.toggleAll("none");
+    if (FW.Firebug.PanelActivation)
+        FW.Firebug.PanelActivation.toggleAll("none");
+    else
+        FW.Firebug.Activation.toggleAll("none");
 
 
 
