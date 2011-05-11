@@ -3,19 +3,14 @@ function runTest()
     FBTest.sysout("instanceof.START;");
     FBTest.progress("using module dependencies: " + baseLocalPath);
 
-    Components.utils["import"]("resource://firebug/moduleLoader.js");
-    ModuleLoader.bootstrap("resource://firebug/require.js");
-
-    var uid = Math.random();  // to give each test its own loader
-
     // Compute relative path and construct module loader.
     var baseUrl = baseLocalPath + "loader/instanceof/";
-    var require = (new ModuleLoader(null, {
-        context: "foo"+uid,
+    var config = {
+        context: baseUrl + Math.random(),  // to give each test its own loader,
         baseUrl: baseUrl
-    })).loadDepsThenCallback;
+    };
 
-    require(["reps.js"], function(Reps)
+    FW.require(config, ["reps"], function(Reps)
     {
         Reps.innerTest(FW, FBTest, window);
 
