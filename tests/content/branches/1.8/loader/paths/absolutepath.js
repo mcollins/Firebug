@@ -3,18 +3,14 @@ function runTest()
     FBTest.sysout("absolutepath.START;");
     FBTest.progress("using baseLocalPath: "+baseLocalPath);
 
-    Components.utils["import"]("resource://moduleloader/moduleLoader.js");
-    ModuleLoader.bootstrap("resource://moduleloader/require.js");
-
-    var uid = Math.random();  // to give each test is own loader
-    var require = (new ModuleLoader(null, {
-        context: "foo" + uid
-    })).loadDepsThenCallback;
-
     var baseUrl = baseLocalPath + "loader/paths/";
-    require([
-        baseUrl + "add.js",
-        baseUrl + "subtract.js"
+    var config = {
+        context: baseUrl + Math.random(),  // to give each test its own loader,
+    };
+
+    FW.require(config, [
+        baseUrl + "add",
+        baseUrl + "subtract"
     ],
     function(AddModule, SubtractModule)
     {
