@@ -179,21 +179,13 @@ this.setToKnownState = function()
     {
         Firebug.PanelActivation.toggleAll("off");  // These should be done with button presses not API calls.
         Firebug.PanelActivation.toggleAll("none");
+        Firebug.PanelActivation.clearAnnotations();
     }
-    else
+    else // obsolete, remove
     {
-        Firebug.Activation.toggleAll("off");  // obsolete
+        Firebug.Activation.toggleAll("off");
         Firebug.Activation.toggleAll("none");
-    }
-
-    if (Firebug.Activation)
-    {
         Firebug.Activation.clearAnnotations();
-    }
-    else
-    {
-        Firebug.toggleAll("off");
-        Firebug.toggleAll("none");
     }
 
     if (Firebug.isDetached())
