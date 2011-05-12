@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            FW.FirebugChrome.selectPanel("script");
+            FW.Firebug.chrome.selectPanel("script");
 
             // Wait for breakpoint hit, the breakpoint is set below.
             FBTest.waitForBreakInDebugger(null, 11, true, function()

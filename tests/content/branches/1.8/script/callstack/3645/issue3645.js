@@ -6,8 +6,8 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            FW.FirebugChrome.selectPanel("script");
-            FW.FirebugChrome.selectSidePanel("callstack");
+            FW.Firebug.chrome.selectPanel("script");
+            FW.Firebug.chrome.selectSidePanel("callstack");
 
             var tasks = new FBTest.TaskList();
             tasks.push(executeTest, win);

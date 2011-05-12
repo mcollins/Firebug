@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableNetPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("net");
+            var panel = FW.Firebug.chrome.selectPanel("net");
 
             var config = {tagName: "tr", classes: "netRow category-xhr hasHeaders loaded"};
             FBTest.waitForDisplayedElement("net", null, function(netRow)

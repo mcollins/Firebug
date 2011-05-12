@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("script");
+            var panel = FW.Firebug.chrome.selectPanel("script");
 
             var chrome = FW.Firebug.chrome;
             FBTest.waitForBreakInDebugger(chrome, 20, false, function(row)

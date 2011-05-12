@@ -12,7 +12,7 @@ function isEmpty(obj) {
 
 function testCommandLineForError()
 {
-    var panel = FW.FirebugChrome.selectPanel("console");
+    var panel = FW.Firebug.chrome.selectPanel("console");
     FBTest.progress("looking up command line in " + panel);
     FBTest.ok(panel, "The console panel is found ");
     

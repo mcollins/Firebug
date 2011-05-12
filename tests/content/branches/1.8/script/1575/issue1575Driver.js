@@ -50,7 +50,7 @@ function runTest()
 
 function checkWatchPanel()
 {
-    var chrome = FW.FirebugChrome;
+    var chrome = FW.Firebug.chrome;
     var panel = chrome.selectSidePanel("watches");
     var panelNode = panel.panelNode;
     var watchNewRow = FW.FBL.getElementByClass(panelNode, "watchEditBox");

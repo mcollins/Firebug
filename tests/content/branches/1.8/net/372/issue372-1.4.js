@@ -9,7 +9,7 @@ function runTest(request)
             win.runTest(function(request)
             {
                 // Expand the test request with params
-                var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
+                var panelNode = FW.Firebug.chrome.selectPanel("net").panelNode;
 
                 FBTestFirebug.expandElements(panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
                 FBTestFirebug.expandElements(panelNode, "netInfoPostTab");

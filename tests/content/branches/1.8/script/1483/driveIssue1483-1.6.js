@@ -15,7 +15,7 @@ function runTest()
         {
             FBTest.progress("issue1483.script panel enabled");
 
-            var panel = FW.FirebugChrome.selectPanel("script");
+            var panel = FW.Firebug.chrome.selectPanel("script");
             FBTest.compare("script", panel.name, "The Script panel should be selected");
 
             var found = FBTestFirebug.selectPanelLocationByName(panel, fileName);

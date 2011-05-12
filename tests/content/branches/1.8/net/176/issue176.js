@@ -17,7 +17,7 @@ function runTest()
 
             waitForDisplayedElement("net", config, function(row)
             {
-                var panel = FW.FirebugChrome.selectPanel("net");
+                var panel = FW.Firebug.chrome.selectPanel("net");
 
                 // Set "Flash" filter and wait for relayout.
                 FW.Firebug.NetMonitor.onToggleFilter(FW.Firebug.currentContext, "flash");

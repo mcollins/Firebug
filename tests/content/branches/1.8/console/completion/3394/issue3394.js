@@ -6,13 +6,13 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
 
             FBTest.typeCommand("loc");
 
             FBTest.synthesizeKey("VK_TAB", win); // 9 == tab
 
-            var doc = FW.FirebugChrome.window.document;
+            var doc = FW.Firebug.chrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
             FBTest.compare(/^location/, cmdLine.value,
                 "The autocomplete must produce: /^location/");

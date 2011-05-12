@@ -12,7 +12,7 @@ function runTest()
         var prefOrigValue = FBTestFirebug.getPref("showXMLHttpRequests");
         FBTestFirebug.setPref("showXMLHttpRequests", true);
 
-        FW.FirebugChrome.selectPanel("net");
+        FW.Firebug.chrome.selectPanel("net");
 
         // Reload test page.
         FBTestFirebug.enableNetPanel(function(win)

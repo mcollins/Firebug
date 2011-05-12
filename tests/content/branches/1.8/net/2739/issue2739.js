@@ -13,7 +13,7 @@ function runTest()
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableNetPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("net");
+            var panel = FW.Firebug.chrome.selectPanel("net");
 
             // Asynchronously wait for two requests beeing displayed.
             waitForResponse(panel);
@@ -53,7 +53,7 @@ function onVerifyResponses()
 
 function verifyResponses(netRow)
 {
-    var panel = FW.FirebugChrome.selectPanel("net");
+    var panel = FW.Firebug.chrome.selectPanel("net");
 
     FBTestFirebug.expandElements(panel.panelNode, "category-xhr");
     FBTestFirebug.expandElements(panel.panelNode, "netInfoResponseTab");

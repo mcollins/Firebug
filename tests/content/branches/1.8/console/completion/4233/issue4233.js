@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
 
             var tasks = new FBTest.TaskList();
             tasks.push(testExpression, "i", true);
@@ -84,7 +84,7 @@ function testExpression(callback, expr, popupOpened)
             "The completion popup should " + (popupOpened ? "" : "not ") +
             "be there for: " + expr);
 
-        var doc = FW.FirebugChrome.window.document;
+        var doc = FW.Firebug.chrome.window.document;
         var cmdLine = doc.getElementById("fbCommandLine");
         cmdLine.value = "";
 
@@ -97,7 +97,7 @@ function testExpression(callback, expr, popupOpened)
 
 function isCompletionPopupOpen()
 {
-    var doc = FW.FirebugChrome.window.document;
+    var doc = FW.Firebug.chrome.window.document;
     var popup = doc.getElementById("fbCommandLineCompletionList");
     return popup.state == "open";
 }

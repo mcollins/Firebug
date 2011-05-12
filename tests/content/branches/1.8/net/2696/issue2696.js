@@ -14,12 +14,12 @@ function runTest()
         FBTestFirebug.enableNetPanel(function(win)
         {
             // 3) Select Net panel
-            var panel = FW.FirebugChrome.selectPanel("net");
+            var panel = FW.Firebug.chrome.selectPanel("net");
 
             // Asynchronously wait for the request beeing displayed.
             onRequestDisplayed(function(netRow)
             {
-                var panel = FW.FirebugChrome.selectPanel("net");
+                var panel = FW.Firebug.chrome.selectPanel("net");
                 var netRow = FW.FBL.getElementByClass(panel.panelNode, "netRow", "category-xhr",
                     "hasHeaders", "loaded");
 

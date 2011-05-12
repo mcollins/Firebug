@@ -26,7 +26,7 @@ function runTest()
 
                 FBTest.sysout("issue1456.onResponse: ", row);
 
-                var panelNode = FW.FirebugChrome.selectPanel("net").panelNode;
+                var panelNode = FW.Firebug.chrome.selectPanel("net").panelNode;
 
                 var time = new Date().getTime();
                 FBTest.progress("onResponse selectPanel complete"+ (time - startTime)+"ms");

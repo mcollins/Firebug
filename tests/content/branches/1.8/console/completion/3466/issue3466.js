@@ -7,11 +7,11 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
 
             FBTest.typeCommand("dir(");
 
-            var doc = FW.FirebugChrome.window.document;
+            var doc = FW.Firebug.chrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
             FBTest.compare("dir(", cmdLine.value,
                 "Expected value must be in the command line now: " + cmdLine.value);

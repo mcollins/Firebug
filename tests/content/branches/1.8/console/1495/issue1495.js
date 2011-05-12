@@ -10,7 +10,7 @@ function runTest()
     {
         FBTestFirebug.enableConsolePanel(function()
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
 
             onAllFourRequestsDisplayed(function()
             {

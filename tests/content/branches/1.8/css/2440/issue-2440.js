@@ -8,7 +8,7 @@ function runTest()
         var FBL = FBTest.FirebugWindow.FBL;
         FBTestFirebug.pressToggleFirebug(true);
 
-        //FBTest.FirebugWindow.FirebugChrome.selectPanel("html", "css");
+        //FBTest.FirebugWindow.Firebug.chrome.selectPanel("html", "css");
         var testEl = win.document.getElementById("test");
         var panel = FBTestFirebug.getPanel("css");
         

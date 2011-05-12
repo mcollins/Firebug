@@ -23,7 +23,7 @@ function runTest()
                 FBTest.sysout("issue846.onRunTest " + responses.length);
 
                 // Expand all requests and select response bodies.
-                var panel = FW.FirebugChrome.selectPanel("net");
+                var panel = FW.Firebug.chrome.selectPanel("net");
                 FBTestFirebug.expandElements(panel.panelNode, "netRow", "category-xhr", "hasHeaders", "loaded");
                 FBTestFirebug.expandElements(panel.panelNode, "netInfoResponseTab");
 

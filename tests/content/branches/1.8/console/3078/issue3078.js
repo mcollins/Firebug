@@ -6,12 +6,12 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableAllPanels();
         
-        var panel = FW.FirebugChrome.selectPanel("console");
+        var panel = FW.Firebug.chrome.selectPanel("console");
         panel.clear();  // ensure that the console starts scrolled to bottom
         
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
             FBTest.ok(panel && (panel.name === "console"), "The console panel must be selected");
 
             var scrolled = FW.FBL.isScrolledToBottom(panel.panelNode);

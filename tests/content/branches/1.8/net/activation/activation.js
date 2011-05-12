@@ -16,11 +16,11 @@ function runTest()
     tab1 = FBTestFirebug.openNewTab(basePath + "net/activation/activation1.html", function(win) {
         FBTest.progress("Opened new tab at "+win.location);
         FBTestFirebug.openFirebug();
-        FW.FirebugChrome.selectPanel("net");
+        FW.Firebug.chrome.selectPanel("net");
         tab2 = FBTestFirebug.openNewTab(basePath + "net/activation/activation2.html", function() {
             FBTest.progress("Opened new tab at "+win.location);
             FBTestFirebug.openFirebug();
-            FW.FirebugChrome.selectPanel("net");
+            FW.Firebug.chrome.selectPanel("net");
             onRunTest();
         });
     });

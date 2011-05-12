@@ -6,8 +6,8 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("script");
-            var stackPanel = FW.FirebugChrome.selectSidePanel("callstack");
+            var panel = FW.Firebug.chrome.selectPanel("script");
+            var stackPanel = FW.Firebug.chrome.selectSidePanel("callstack");
 
             FBTest.waitForBreakInDebugger(FW.Firebug.chrome, 18, false, function(row)
             {

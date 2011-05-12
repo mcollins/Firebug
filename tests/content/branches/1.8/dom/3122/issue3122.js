@@ -12,7 +12,7 @@ function runTest()
             var chrome = FW.Firebug.chrome;
             FBTest.waitForBreakInDebugger(chrome, 35, false, function(sourceRow)
             {
-                FW.FirebugChrome.selectSidePanel("watches");
+                FW.Firebug.chrome.selectSidePanel("watches");
 
                 var row = FBTest.getWatchExpressionRow(null, "err");
                 FBTest.ok(row, "The 'err' expression must be in the watch panel.");

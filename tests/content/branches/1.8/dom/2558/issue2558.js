@@ -16,7 +16,7 @@ function runTest()
             FBTestFirebug.waitForBreakInDebugger(chrome, 31, false, function(sourceRow)
             {
                 FBTest.progress("issue2558; Halted on debugger keyword.");
-                FW.FirebugChrome.selectSidePanel("watches");
+                FW.Firebug.chrome.selectSidePanel("watches");
                 var watchPanel = FW.Firebug.currentContext.getPanel("watches", true);
                 FBTest.ok(watchPanel, "The watch panel must be there");
 

@@ -7,7 +7,7 @@ function runTest()
         FBTest.selectPanel("console");
         FBTest.enableConsolePanel(function(win)
         {
-            var doc = FW.FirebugChrome.window.document;
+            var doc = FW.Firebug.chrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
 
             // Make sure the console is focused and command line API loaded.

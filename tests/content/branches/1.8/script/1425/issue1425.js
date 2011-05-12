@@ -15,7 +15,7 @@ function runTest()
         {
             FBTest.progress("reloaded, ready to go");
 
-            var panel = FW.FirebugChrome.selectPanel("script");
+            var panel = FW.Firebug.chrome.selectPanel("script");
             FBTest.progress("Navigated to "+panel.name+" panel");
 
             // Select proper JS file.

@@ -10,7 +10,7 @@ function runTest()
         FBTestFirebug.enableNetPanel(function(win)
         {
             // Select Net panel
-            var panel = FW.FirebugChrome.selectPanel("net");
+            var panel = FW.Firebug.chrome.selectPanel("net");
 
             // The upload can take more time on slower connetions, so wait
             // for 5 sec at most, which is enough to repro the problem.

@@ -4,7 +4,7 @@ function runTest()
     FBTest.openNewTab(basePath + "dom/appCache/appCache.html", function(win)
     {
         FBTest.openFirebug();
-        FW.FirebugChrome.selectPanel("dom");
+        FW.Firebug.chrome.selectPanel("dom");
 
         var href = win.location.href;
         var i = href.lastIndexOf(".");

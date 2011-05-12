@@ -10,7 +10,7 @@ function runTest()
         FBTest.enableScriptPanel(function(win)
         {
             // 3) Select the Script panel
-            var panel = FW.FirebugChrome.selectPanel("script");
+            var panel = FW.Firebug.chrome.selectPanel("script");
 
             // Asynchronously wait for break in debugger.
             var chrome = FW.Firebug.chrome;

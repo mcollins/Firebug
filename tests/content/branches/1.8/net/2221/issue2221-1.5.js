@@ -15,7 +15,7 @@ function runTest()
             var doc = win.document;
 
             // Select the Net panel.
-            panel = FW.FirebugChrome.selectPanel("net");
+            panel = FW.Firebug.chrome.selectPanel("net");
             panel.clear();
 
             // Add listener to the target form IFrame.

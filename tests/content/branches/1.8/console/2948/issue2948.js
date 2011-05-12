@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
 
             // Define individual async tasks.
             var tasks = new FBTest.TaskList();

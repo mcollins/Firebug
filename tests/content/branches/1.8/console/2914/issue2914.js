@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panelNode = FW.FirebugChrome.selectPanel("console").panelNode;
+            var panelNode = FW.Firebug.chrome.selectPanel("console").panelNode;
 
             var errorNode = panelNode.querySelector(".objectBox.objectBox-errorMessage");
             var titleNode = errorNode.querySelector(".errorTitle");

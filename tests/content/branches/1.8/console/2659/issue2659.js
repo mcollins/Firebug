@@ -14,11 +14,11 @@ function runTest()
         FBTestFirebug.openFirebug();
         FBTestFirebug.enableConsolePanel(function(win)
         {
-            FW.FirebugChrome.selectPanel("console");
+            FW.Firebug.chrome.selectPanel("console");
             FBTestFirebug.reload(function()
             {
                 verifyNumberOfLogs(1);
-                FBTestFirebug.clickToolbarButton(FW.FirebugChrome, "fbConsolePersist");
+                FBTestFirebug.clickToolbarButton(FW.Firebug.chrome, "fbConsolePersist");
                 FBTestFirebug.reload(function()
                 {
                     verifyNumberOfLogs(2);

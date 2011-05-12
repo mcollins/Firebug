@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableNetPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("html");
+            var panel = FW.Firebug.chrome.selectPanel("html");
 
             // Search for 'Inspect This Element' within the HTML panel, which
             // automatically expands the tree.

@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
             onTextDisplayed(panel, "myProperty", function(elt)
             {
                 // Expand the property (the label must be clicked).

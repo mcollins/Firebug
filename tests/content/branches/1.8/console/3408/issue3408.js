@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("net");
+            var panel = FW.Firebug.chrome.selectPanel("net");
 
             var tasks = new FBTest.TaskList();
             tasks.push(testLog, win);

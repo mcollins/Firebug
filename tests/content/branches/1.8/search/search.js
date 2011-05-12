@@ -84,7 +84,7 @@ function executeLineSearch(text, reverse, caseSensitive, global, container, cont
 
     continuation = continuation || function() {};
 
-    var panel = FW.FirebugChrome.getSelectedPanel();
+    var panel = FW.Firebug.chrome.getSelectedPanel();
 
     var count = {};
     var lastMatch, firstMatch;
@@ -181,11 +181,11 @@ function executeSearchTestSuite(tests, container, continuation, exec) {
 function openAndSelectPanel(panelName) {
 
     if (FW.Firebug.currentContext.detached)
-        FW.FirebugChrome.focus();
+        FW.Firebug.chrome.focus();
     else
         FW.Firebug.showBar(true);
 
-    return FW.FirebugChrome.selectPanel(panelName);
+    return FW.Firebug.chrome.selectPanel(panelName);
 }
 
 function selectLocation(panel, re) {

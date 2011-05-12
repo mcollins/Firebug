@@ -7,12 +7,12 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("script");
+            var panel = FW.Firebug.chrome.selectPanel("script");
 
             // Asynchronously wait for break in debugger.
             FBTest.waitForBreakInDebugger(FW.Firebug.chrome, 18, false, function(row)
             {
-                var stackPanel = FW.FirebugChrome.selectSidePanel("callstack");
+                var stackPanel = FW.Firebug.chrome.selectSidePanel("callstack");
                 var panelNode = stackPanel.panelNode;
 
                 // There should be 4 frames.
@@ -31,8 +31,8 @@ function runTest()
                 FBTest.click(funcLink);
 
                 // Switch to another side panel and back.
-                FW.FirebugChrome.selectSidePanel("watches");
-                FW.FirebugChrome.selectSidePanel("callstack");
+                FW.Firebug.chrome.selectSidePanel("watches");
+                FW.Firebug.chrome.selectSidePanel("callstack");
 
                 frames = panelNode.querySelectorAll(".objectBox-stackFrame");
 

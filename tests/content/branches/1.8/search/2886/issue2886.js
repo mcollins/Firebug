@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            FW.FirebugChrome.selectPanel("script");
+            FW.Firebug.chrome.selectPanel("script");
 
             var tests = new FBTest.TaskList();
             tests.push(doSearch, "(!(this-is-accidental-regexpr))", 28, false);

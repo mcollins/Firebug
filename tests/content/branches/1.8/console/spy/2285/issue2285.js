@@ -6,7 +6,7 @@ function runTest()
     {
         FBTestFirebug.enableConsolePanel(function()
         {
-            var panel = FW.FirebugChrome.selectPanel("console");
+            var panel = FW.Firebug.chrome.selectPanel("console");
 
             // Run test implemented on the page.
             win.document.addEventListener("test-done", function(event)

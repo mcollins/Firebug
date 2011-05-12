@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableNetPanel(function(win)
         {
-            FW.FirebugChrome.selectPanel("html");
+            FW.Firebug.chrome.selectPanel("html");
 
             // Search for 'myElement' within the HTML panel, which
             // automatically expands the tree.
@@ -20,7 +20,7 @@ function runTest()
                 // Reset clipboard content.
                 FBTest.clearClipboard();
 
-                var stylePanel = FW.FirebugChrome.selectSidePanel("css");
+                var stylePanel = FW.Firebug.chrome.selectSidePanel("css");
                 var node = stylePanel.panelNode.querySelector(".cssSelector");
                 FBTest.executeContextMenuCommand(node, "fbCopyStyleDeclaration", function()
                 {

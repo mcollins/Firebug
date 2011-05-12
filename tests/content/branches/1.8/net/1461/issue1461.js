@@ -7,7 +7,7 @@ function runTest()
         // Open Firebug UI and enable Net panel.
         FBTestFirebug.enableNetPanel(function(win)
         {
-            var panel = FW.FirebugChrome.selectPanel("net");
+            var panel = FW.Firebug.chrome.selectPanel("net");
 
             var panelNode = FW.Firebug.currentContext.getPanel("net").panelNode;
             FBTestFirebug.expandElements(panelNode, "netRow", "category-html", "hasHeaders", "loaded");
