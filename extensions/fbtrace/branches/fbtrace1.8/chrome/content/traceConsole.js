@@ -414,7 +414,7 @@ var TraceConsole =
 
     onToggleOption: function(target)
     {
-        FirebugChrome.onToggleOption(target);
+        Firebug.chrome.onToggleOption(target);
     }
 };
 

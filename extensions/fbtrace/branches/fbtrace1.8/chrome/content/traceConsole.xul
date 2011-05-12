@@ -29,7 +29,6 @@
   <script type="application/x-javascript" src="trace.js"/>
   <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/legacy.js"/>
   <script type="application/x-javascript" src="resource://fbtrace-firebug/require.js"/>
-  <script type="application/x-javascript" src="chrome://fbtrace-firebug/content/chrome.js"/>
 
   <!-- Trace Console Application -->
   <script type="application/x-javascript" src="traceConsole.js"/>
@@ -126,8 +125,8 @@
   </toolbox>
 
   <popupset id="mainPopupSet">
-    <menupopup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
-    <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
+    <menupopup id="fbContextMenu" onpopupshowing="return Firebug.chrome.onContextShowing(event);" />
+    <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return Firebug.chrome.onTooltipShowing(event);"/>
   </popupset>
 
   <vbox flex="1">

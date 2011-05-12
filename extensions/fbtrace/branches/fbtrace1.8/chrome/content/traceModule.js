@@ -214,7 +214,7 @@ Firebug.TraceModule = extend(Firebug.Module,
 
     onToggleOption: function(target)
     {
-        window.FirebugChrome.onToggleOption(target);
+        window.Firebug.chrome.onToggleOption(target);
 
         // Open automatically if set to "always open", close otherwise.
         if (Firebug.getPref(Firebug.prefDomain, "alwaysOpenTraceConsole"))
