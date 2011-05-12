@@ -143,8 +143,8 @@
     </menupopup>-->
 
     <popupset id="mainPopupSet">
-        <menupopup id="fbContextMenu" onpopupshowing="return FirebugChrome.onContextShowing(event);" />
-        <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return FirebugChrome.onTooltipShowing(event);"/>
+        <menupopup id="fbContextMenu" onpopupshowing="return Firebug.chrome.onContextShowing(event);" />
+        <tooltip id="fbTooltip" class="fbURLMenuItem" onpopupshowing="return Firebug.chrome.onTooltipShowing(event);"/>
     </popupset>
 
     <hbox flex="3">

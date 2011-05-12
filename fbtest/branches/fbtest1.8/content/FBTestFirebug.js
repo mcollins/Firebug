@@ -1493,7 +1493,7 @@ this.selectSourceLine = function(url, lineNo, category, chrome, callback)
     if (chrome)
         chrome.select(sourceLink);
     else
-        FBTest.FirebugWindow.FirebugChrome.select(sourceLink);
+        FBTest.FirebugWindow.Firebug.chrome.select(sourceLink);
 
     if (!callback)
         return;

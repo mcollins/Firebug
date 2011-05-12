@@ -35,7 +35,7 @@ this.initialize = function()
 
 this.onToggleOption = function(target)
 {
-    FirebugChrome.onToggleOption(target);
+    Firebug.chrome.onToggleOption(target);
 
     // Open automatically if set to "always open", close otherwise.
     if (Firebug.getPref(Firebug.prefDomain, "alwaysOpenTestConsole"))
