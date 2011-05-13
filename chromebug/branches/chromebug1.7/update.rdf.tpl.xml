@@ -11,8 +11,8 @@
           <targetApplication>
             <r:Description>
               <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
-              <minVersion>0.8</minVersion>
-              <maxVersion>4.0</maxVersion>
+              <minVersion>3.6</minVersion>
+              <maxVersion>4.2.*</maxVersion>
               <updateLink>https://getfirebug.com/releases/chromebug/chromebug-@VERSION@@RELEASE@.xpi</updateLink>
             </r:Description>
           </targetApplication>
