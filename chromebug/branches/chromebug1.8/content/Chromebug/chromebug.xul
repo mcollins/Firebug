@@ -51,6 +51,8 @@
         }
     }
     window.addEventListener('load', onLoad, false);
+
+    top.Chromebug = {};
     </script>
 
     <script type="application/x-javascript" src="chrome://firebug/content/legacy.js"/>
@@ -60,14 +62,6 @@
     <script type="application/x-javascript" src="chrome://firebug/content/firefox/panelBarWaiter.js"/>
 
     <script type="application/x-javascript" src="resource://firebug/require.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/Chromebug.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugPanel.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/domWindowContext.js"/>
-    <script type="application/x-javascript" src="chrome://chromebug/content/firebugCache.js"/>
-
-    <script type="application/x-javascript"  src="chrome://chromebug/content/extensions.js"/>
-    <script type="application/x-javascript"  src="chrome://chromebug/content/ChromebugOverrides.js"/>
-    <script type="application/x-javascript" src="chrome://chromebug/content/xpcomExplorer.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/main.js"/>
 
     <commandset id="mainCommandSet">
@@ -94,7 +88,7 @@
         <command id="cmd_xpcomExplorer" oncommand="Firebug.Chromebug.openXPCOMExplorer()"/>
         <command id="cmd_reload" disabled="true" oncommand="Firebug.Chromebug.reload()"/>
         <command id="cmd_reloadSkipCache" oncommand="Firebug.Chromebug.reload(true)"/>
-        <command id="cmd_toggleOrient" oncommand="FirebugChrome.toggleOrient()" />
+        <command id="cmd_toggleOrient" oncommand="Firebug.chrome.toggleOrient()" />
         <command id="cmd_toggleInterfaceList" oncommand="Firebug.Chromebug.toggleInterfaceList()" checked="false"/>
         <command id="cmd_search" oncommand="Firebug.Search.focus(Firebug.currentContext)" />
         <command id="cmd_toggleIntroduction" oncommand="Firebug.Chromebug.toggleIntroduction()" />
@@ -169,22 +163,22 @@
                     </menu>
 
                     <menu label="firebug.Options">
-                        <menupopup onpopupshowing="return FirebugChrome.onOptionsShowing(this);">
+                        <menupopup onpopupshowing="return Firebug.chrome.onOptionsShowing(this);">
                             <menuitem type="checkbox" label="firebug.AlwaysOpenInWindow"
-                                      oncommand="FirebugChrome.onToggleOption(this)"
+                                      oncommand="Firebug.chrome.onToggleOption(this)"
                                       option="openInWindow"/>
 
                             <menuitem type="checkbox" label="firebug.ShowTooltips"
-                                      oncommand="FirebugChrome.onToggleOption(this)"
+                                      oncommand="Firebug.chrome.onToggleOption(this)"
                                       option="showInfoTips"/>
 
                             <menuitem type="checkbox" label="firebug.ShadeBoxModel"
-                                      oncommand="FirebugChrome.onToggleOption(this)"
+                                      oncommand="Firebug.chrome.onToggleOption(this)"
                                       option="shadeBoxModel"/>
 
                            <menuitem id="ChromebugMenu_Options_alwaysOpenTraceConsole"
                                     type="checkbox" label="Always Open Chromebug Tracing"
-                                    oncommand="FirebugChrome.onToggleOption(this)"
+                                    oncommand="Firebug.chrome.onToggleOption(this)"
                                     option="alwaysOpenTraceConsole"/>
                         </menupopup>
                     </menu>
@@ -295,7 +289,7 @@
             <label id="fbStatusText"/>
         </statusbarpanel>
 
-        <menupopup id="fbStatusContextMenu" onpopupshowing="FirebugChrome.onOptionsShowing(this)">
+        <menupopup id="fbStatusContextMenu" onpopupshowing="Firebug.chrome.onOptionsShowing(this)">
             <menuitem id="menu_detachFirebug"
                 label="firebug.DetachFirebug" command="cmd_toggleDetachFirebug" type="checkbox"/>
             <menuseparator/>

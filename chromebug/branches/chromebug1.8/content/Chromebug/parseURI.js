@@ -1,7 +1,15 @@
 /* See license.txt for terms of usage */
-top.Chromebug = {}; // utility functions for Chromebug modules and ui
 
-FBL.ns(function xpcomExplorer() { with (FBL) {
+
+define([
+        "firebug/lib",
+        "firebug/firebug"
+        ],
+function parseURIFactory(FBL, Firebug)
+{
+
+
+with (FBL) {
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -311,7 +319,7 @@ Chromebug.SourceFileListBase.prototype = extend(new Firebug.Listener(),
                 FBTrace.sysout("AllFilesList.onSelectLocation context "+context.getName()+" url:"+url, description);
             Firebug.Chromebug.selectContext(context);
 
-            FirebugChrome.select(unit, "script", "watch", true);  // SourceFile
+            Firebug.chrome.select(unit, "script", "watch", true);  // SourceFile
             this.setCurrentLocation(description);
         }
         else
@@ -332,6 +340,7 @@ Chromebug.connectedList = function(xul_element, list)
     return list;
 }
 
+} // with FBL
 
-
-}});
+return Chromebug.parseWebURI;
+});

@@ -175,8 +175,8 @@ XPCOMExplorer.overlayListLocator = function(xul_element)
                         object.context = context;
                     }
                 }
-                FirebugChrome.showContext(object.context);
-                FirebugChrome.selectPanel("HTML");
+                Firebug.chrome.showContext(object.context);
+                Firebug.chrome.selectPanel("HTML");
 
                 FBTrace.sysout("XPCOMExplorer.overlayList onSelectLocation object", object);
             }
@@ -195,7 +195,7 @@ XPCOMExplorer.componentList = extend(new Chromebug.SourceFileListBase(),
     {
         var object = event.currentTarget.repObject;
         if (object)
-            FirebugChrome.select(object, "script", null, true);  // SourceFile
+            Firebug.chrome.select(object, "script", null, true);  // SourceFile
         else
             FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);
     }
@@ -305,13 +305,13 @@ XPCOMExplorer.jsContextList = {
                 else
                 {
                     FBTrace.sysout("onSelectLocation no context, showing global");
-                    FirebugChrome.select(global, "DOM", null, true);
+                    Firebug.chrome.select(global, "DOM", null, true);
                 }
             }
             else
             {
                 FBTrace.sysout("XPCOMExplorer.jsContextList onSelectLocation: FAILED to no globalObject in jscontext\n");
-                FirebugChrome.select(object, "script", null, true);  // jscontext
+                Firebug.chrome.select(object, "script", null, true);  // jscontext
             }
         }
         else
@@ -453,7 +453,7 @@ XPCOMExplorer.interfaceList = {
                 var url = docBase + ifaceName;
                 openWindow( "navigator:browser", url );
                 window.open(url, "navigator:browser");
-                FirebugChrome.select(Components.interfaces[ifaceName]);
+                Firebug.chrome.select(Components.interfaces[ifaceName]);
             }
             else
                 FBTrace.sysout("onSelectLocation FAILED, no repObject in currentTarget", event.currentTarget);

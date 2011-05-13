@@ -2,8 +2,9 @@ define([
     "firebug/lib",
     "firebug/reps",
     "firebug/domplate",
+    "firebug/lib/string",
 ],
-function(FBL, FirebugReps, Domplate)
+function(FBL, FirebugReps, Domplate, STR)
 {
 
 const Cc = Components.classes;
@@ -22,7 +23,7 @@ Firebug.Platform =
                 wrapped[p] = new Firebug.Platform.ComponentClass(Cc[p]);
         }
 
-        FirebugChrome.select(wrapped);
+        Firebug.chrome.select(wrapped);
     },
 
      showDOMWindowInZOrder: function()
@@ -33,7 +34,7 @@ Firebug.Platform =
                                         .getService(Components.interfaces.nsIWindowMediator);
             return wm.getZOrderDOMWindowEnumerator("", true);
         });
-        FirebugChrome.select(obj);
+        Firebug.chrome.select(obj);
     },
 
     //-----------------------------------------------------------------------------------------------
@@ -61,7 +62,7 @@ with(Domplate) {
                 {
                     try
                     {
-                        var p = safeToString( object );
+                        var p = STR.safeToString( object );
                         if (p.indexOf('[xpconnect wrapped') == 0)
                             return 2;
                     }
@@ -76,7 +77,7 @@ with(Domplate) {
                 {
                     try
                     {
-                        var p = safeToString(object);
+                        var p = STR.safeToString(object);
                         var m = this.reXPConnect.exec(p);
                         return m[1];
                     }
@@ -134,7 +135,7 @@ with(Domplate) {
 
                 supportsObject: function(object, type)
                 {
-                     return (safeToString(object) == "[object nsXPCComponents_Classes]");
+                     return (STR.safeToString(object) == "[object nsXPCComponents_Classes]");
                 },
 
                 getTitle: function(aClass)
@@ -181,7 +182,7 @@ with(Domplate) {
                     {
                         var svcOrObj = self.getServiceOrCreateInstance(object);
                         //FBTrace.sysout("platform.selectService "+object.name, svcOrObj);
-                        FirebugChrome.select(svcOrObj);
+                        Firebug.chrome.select(svcOrObj);
                         FBL.cancelEvent(event);
                     }
                 },

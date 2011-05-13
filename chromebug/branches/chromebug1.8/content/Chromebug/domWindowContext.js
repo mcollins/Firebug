@@ -1,6 +1,13 @@
 /* See license.txt for terms of usage */
 
-FBL.ns(function() { with (FBL) {
+define([
+        "chromebug/chromebug",
+        "firebug/firebug",
+        "firebug/tabContext",
+        ],
+function domWindowContextFactory(Chromebug, Firebug)
+{
+
 
 // ************************************************************************************************
 // Constants
@@ -68,7 +75,7 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
         FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":" no window ")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
 }
 
-Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
+Chromebug.DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
 {
     setName: function(name)
     {
@@ -123,7 +130,7 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
             var context = Firebug.Chromebug.getOrCreateContext(domWindow, safeGetWindowLocation(domWindow)); // subwindow
 
             if (!context.onUnload)
-                context.onUnload = bind(context.unloadHandler, context)
+                context.onUnload = FBL.bind(context.unloadHandler, context)
             domWindow.addEventListener("unload", context.onUnload, true);
 
             if (FBTrace.DBG_CHROMEBUG) FBTrace.sysout("ChromebugPanel.domWindowWatcher created context with id="+context.uid+" and outerDOMWindow.location.href="+outerDOMWindow.location.href+"\n");
@@ -186,5 +193,5 @@ Chromebug.DomWindowContext.prototype = extend(Firebug.TabContext.prototype,
 
 });
 
-
-}});
+return Chromebug.DomWindowContext;
+});

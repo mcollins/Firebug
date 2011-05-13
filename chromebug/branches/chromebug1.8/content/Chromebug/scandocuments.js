@@ -209,10 +209,10 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     {
         this.keyListeners =
         [
-            FirebugChrome.keyCodeListen("RETURN", null, bindFixed(this.stopScanningDocuments, this)),
-            FirebugChrome.keyCodeListen("ESCAPE", null, bindFixed(this.stopScanningDocuments, this, true)),
-            FirebugChrome.keyCodeListen("UP", isControl, bindFixed(this.inspectNodeBy, this, "up"), true),
-            FirebugChrome.keyCodeListen("DOWN", isControl, bindFixed(this.inspectNodeBy, this, "down"), true),
+            Firebug.chrome.keyCodeListen("RETURN", null, bindFixed(this.stopScanningDocuments, this)),
+            Firebug.chrome.keyCodeListen("ESCAPE", null, bindFixed(this.stopScanningDocuments, this, true)),
+            Firebug.chrome.keyCodeListen("UP", isControl, bindFixed(this.inspectNodeBy, this, "up"), true),
+            Firebug.chrome.keyCodeListen("DOWN", isControl, bindFixed(this.inspectNodeBy, this, "down"), true),
         ];
 
         Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
@@ -234,7 +234,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
         if (this.keyListeners)  // XXXjjb for some reason this is null some times...
         {
             for (var i = 0; i < this.keyListeners.length; ++i)
-                FirebugChrome.keyIgnore(this.keyListeners[i]);
+                Firebug.chrome.keyIgnore(this.keyListeners[i]);
             delete this.keyListeners;
         }
 

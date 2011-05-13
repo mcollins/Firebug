@@ -1,18 +1,30 @@
 /* See license.txt for terms of usage */
 
 
-FBL.ns(function chromebug() { with (FBL) {
+define([
+    "firebug/lib",
+    "firebug/firebug",
+    "firebug/firefox/firefox",
+    "chromebug/chromebug",
+    "firebug/lib/xpcom",
+    "firebug/firefox/window",
+    "firebug/sourceFile",
+    "firebug/debugger",
+       ],
+function overrideFactory(FBL, Firebug, Firefox, Chromebug, XPCOM, WIN)
+{
+
 
 const Ci = Components.interfaces;
 const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
-const inIDOMUtils = CCSV("@mozilla.org/inspector/dom-utils;1", "inIDOMUtils");
+const inIDOMUtils = XPCOM.CCSV("@mozilla.org/inspector/dom-utils;1", "inIDOMUtils");
 
 var ChromebugOverrides = {
 
     //****************************************************************************************
     // Overrides
 
-    // Override FirebugChrome
+    // Override ChromeObject
     syncTitle: function()
     {
         window.document.title = "Chromebug";
@@ -260,19 +272,6 @@ var ChromebugOverrides = {
         return sourceFile;
     },
 
-    // Override
-    // Override FBL
-    getBrowserForWindow: function(win)
-    {
-        var browsers = Firebug.Chromebug.getBrowsers();
-        for (var i=0; i < browsers.length; ++i)
-        {
-            var browser = browsers[i];
-            if (browser.contentWindow == win)
-                return browser;
-        }
-    },
-
     skipSpy: function(win)
     {
         if (!win)
@@ -428,20 +427,20 @@ ChromebugOverrides.commandLine = {
         },
 }
 //**************************************************************************
-function overrideFirebugFunctions()
+ChromebugOverrides.override = function(Firefox, ChromeObject)
 {
     try {
         // Apply overrides
-        top.Firebug.prefDomain = "extensions.chromebug";
-        top.Firebug.viewChrome = true;
-        //top.Firebug.chrome.getLocationProvider = ChromebugOverrides.getLocationProvider;
-        top.Firebug.chrome.getBrowsers = bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
-        top.Firebug.chrome.getCurrentBrowser = bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
-        top.Firebug.chrome.getCurrentURI = bind(Firebug.Chromebug.getCurrentURI, Firebug.Chromebug);
+        Firebug.prefDomain = "extensions.chromebug";
+        Firebug.viewChrome = true;
+        //ChromeObject.getLocationProvider = ChromebugOverrides.getLocationProvider;
+        Firefox.getBrowsers = FBL.bind(Firebug.Chromebug.getBrowsers, Firebug.Chromebug);
+        Firefox.getCurrentBrowser = FBL.bind(Firebug.Chromebug.getCurrentBrowser, Firebug.Chromebug);
+        Firefox.getCurrentURI = FBL.bind(Firebug.Chromebug.getCurrentURI, Firebug.Chromebug);
 
         // We set context on user control only
-        ChromebugOverrides.firebugSetFirebugContext = top.Firebug.chrome.setFirebugContext;
-        top.Firebug.chrome.setFirebugContext = function(context)
+        ChromebugOverrides.firebugSetFirebugContext = ChromeObject.setFirebugContext;
+        ChromeObject.setFirebugContext = function(context)
         {
             if (!context)
             {
@@ -466,8 +465,8 @@ function overrideFirebugFunctions()
                 FBTrace.sysout("Chromebug skips showContext ");
         }
 
-        Firebug.Chromebug.chromeSelect = Firebug.chrome.select;
-        Firebug.chrome.select = function(object, panelName, sidePanelName, forceUpdate)
+        Firebug.Chromebug.chromeSelect = ChromeObject.select;
+        ChromeObject.select = function(object, panelName, sidePanelName, forceUpdate)
         {
             // Some objects need to cause context changes.
             if (object instanceof StackFrame)
@@ -488,40 +487,40 @@ function overrideFirebugFunctions()
 
 
         Firebug.Chromebug.firebugSyncResumeBox = Firebug.syncResumeBox;
-        top.Firebug.syncResumeBox = function(context)
+        Firebug.syncResumeBox = function(context)
         {
             if (context) Firebug.Chromebug.firebugSyncResumeBox(context);
         }
 
-        top.Firebug.chrome.syncTitle = ChromebugOverrides.syncTitle;
+        ChromeObject.syncTitle = ChromebugOverrides.syncTitle;
 
-        top.Firebug.Inspector.FrameHighlighter.prototype.doNotHighlight = function(element)
+        Firebug.Inspector.FrameHighlighter.prototype.doNotHighlight = function(element)
         {
              return false;
         };
 
-        top.Firebug.HTMLLib.ElementWalker.prototype.getTreeWalker = ChromebugOverrides.getTreeWalker;
-        top.Firebug.HTMLPanel.prototype.getTreeWalker             = ChromebugOverrides.getTreeWalker;
+        Firebug.HTMLLib.ElementWalker.prototype.getTreeWalker = ChromebugOverrides.getTreeWalker;
+        Firebug.HTMLPanel.prototype.getTreeWalker             = ChromebugOverrides.getTreeWalker;
 
-        top.Firebug.HTMLLib.ElementWalker.prototype.getFirstChild = ChromebugOverrides.getFirstChild;
-        top.Firebug.HTMLPanel.prototype.getFirstChild             = ChromebugOverrides.getFirstChild;
+        Firebug.HTMLLib.ElementWalker.prototype.getFirstChild = ChromebugOverrides.getFirstChild;
+        Firebug.HTMLPanel.prototype.getFirstChild             = ChromebugOverrides.getFirstChild;
 
-        top.Firebug.HTMLLib.ElementWalker.prototype.getNextSibling = ChromebugOverrides.getNextSibling;
-        top.Firebug.HTMLPanel.prototype.getNextSibling             = ChromebugOverrides.getNextSibling;
+        Firebug.HTMLLib.ElementWalker.prototype.getNextSibling = ChromebugOverrides.getNextSibling;
+        Firebug.HTMLPanel.prototype.getNextSibling             = ChromebugOverrides.getNextSibling;
 
-        top.Firebug.HTMLLib.ElementWalker.prototype.getParentNode = ChromebugOverrides.getParentNode;
-        top.Firebug.HTMLPanel.prototype.getParentNode             = ChromebugOverrides.getParentNode;
+        Firebug.HTMLLib.ElementWalker.prototype.getParentNode = ChromebugOverrides.getParentNode;
+        Firebug.HTMLPanel.prototype.getParentNode             = ChromebugOverrides.getParentNode;
 
-        top.Firebug.Inspector.onInspectingMouseOver = ChromebugOverrides.onInspectingMouseOver;
+        Firebug.Inspector.onInspectingMouseOver = ChromebugOverrides.onInspectingMouseOver;
 
-        top.Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
-        top.Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
-        top.Firebug.Debugger.breakNowURLPrefix = "chrome://fb4cb/",
-        top.Firebug.Debugger.getContextByFrame = ChromebugOverrides.getContextByFrame;
-        top.Firebug.ScriptPanel.prototype.showThisCompilationUnit = ChromebugOverrides.showThisCompilationUnit;
-        top.Firebug.SourceFile.getSourceFileByScript = ChromebugOverrides.getSourceFileByScript;
+        Firebug.Debugger.supportsWindow = ChromebugOverrides.supportsWindow;
+        Firebug.Debugger.supportsGlobal = ChromebugOverrides.supportsGlobal;
+        Firebug.Debugger.breakNowURLPrefix = "chrome://fb4cb/",
+        Firebug.Debugger.getContextByFrame = ChromebugOverrides.getContextByFrame;
+        Firebug.ScriptPanel.prototype.showThisCompilationUnit = ChromebugOverrides.showThisCompilationUnit;
+        Firebug.SourceFile.getSourceFileByScript = ChromebugOverrides.getSourceFileByScript;
 
-        top.Firebug.showBar = function() {
+        Firebug.showBar = function() {
             if (FBTrace.DBG_CHROMEBUG)
                 FBTrace.sysout("ChromebugPanel.showBar NOOP\n");
         }
@@ -535,9 +534,8 @@ function overrideFirebugFunctions()
         Firebug.JSDebugClient.onJSDDeactivate = ChromebugOverrides.onJSDDeactivate;
         Firebug.JSDebugClient.onJSDActivate = ChromebugOverrides.onJSDActivate;
 
-        top.Firebug.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
-        top.Firebug.disableXULWindow = ChromebugOverrides.disableXULWindow;
-        FBL.getBrowserForWindow = ChromebugOverrides.getBrowserForWindow;
+        WIN.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
+        Firebug.disableXULWindow = ChromebugOverrides.disableXULWindow;
 
         for (var p in Chromebug.Activation)
             Firebug.Activation[p] = Chromebug.Activation[p];
@@ -549,12 +547,7 @@ function overrideFirebugFunctions()
 
         FBL.getRootWindow = function(win) { return win; };
 
-        //Firebug.CommandLine.evaluate = ChromebugOverrides.commandLine.evaluate;
-        //Firebug.CommandLine.onCommandLineFocus = ChromebugOverrides.commandLine.onCommandLineFocus;
         Firebug.CommandLine.isAttached = ChromebugOverrides.commandLine.isAttached;
-        // Trace message coming from Firebug should be displayed in Chromebug's panel
-        //
-        //Firebug.setPref("extensions.firebug", "enableTraceConsole", "panel");
 
         try
         {
@@ -629,5 +622,6 @@ Chromebug.Activation =
     }
 };
 
-overrideFirebugFunctions();
-}});
+return ChromebugOverrides;
+
+});

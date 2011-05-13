@@ -81,6 +81,8 @@ if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
 
 require( config, [
                   "firebug/chrome", // must be first to match arg ChromeFactory
+                  "firebug/firefox/firefox",
+                  "chromebug/ChromebugOverrides",
                   "firebug/lib",
                   "firebug/domplate",
                   "firebug/firebug",
@@ -121,11 +123,26 @@ require( config, [
                   "firebug/panelActivation",
                   "firebug/consoleExposed",
                   "chromebug/platform",
-                  "chromebug/xulapp"
-      ], function(ChromeFactory) {
+                  "chromebug/xulapp",
+                  "chromebug/domWindowContext",
+      ],
+function(ChromeFactory, Firefox, ChromebugOverrides)
+{
     if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
-        FBTrace.sysout("chromebug main.js require!\n");
+    {
+        var theArgs = {ChromeFactory: ChromeFactory, Firefox: Firefox, ChromebugOverrides: ChromebugOverrides};
+        FBTrace.sysout("chromebug main.js require", theArgs);
+    }
+
     Components.utils.reportError("Chromebug main.js callback running");
+
     Firebug.Options.initialize("extensions.chromebug");
-    window.panelBarWaiter.waitForPanelBar(ChromeFactory);
+
+    FBTrace.sysout("chromebug main calling waitForPanelBar()");
+    window.panelBarWaiter.waitForPanelBar(ChromeFactory, function completeInitialization(chrome)
+    {
+        FBTrace.sysout("chromebug main applying overrides");
+        ChromebugOverrides.override(Firefox, chrome);
+    });
+
 });

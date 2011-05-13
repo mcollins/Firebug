@@ -462,7 +462,7 @@ Chromebug.XULAppModule = FBL.extend(Firebug.Module,
         var newTag = "tag-"+this.xulWindowTagSeed++;
         this.xulWindowTags.push(newTag);  // co-indexed arrays
 
-        dispatch(this.fbListeners, "onXULWindowAdded", [xul_window, outerDOMWindow]);
+        FBL.dispatch(this.fbListeners, "onXULWindowAdded", [xul_window, outerDOMWindow]);
 
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Chromebug.XULAppModule.addXULWindow "+outerDOMWindow.location.href+ " complete length="+this.xulWindows.length, " index="+this.getXULWindowIndex(xul_window));
@@ -712,7 +712,7 @@ Chromebug.XULAppModule = FBL.extend(Firebug.Module,
     addStyleSheet: function()
     {
         var panelType = Firebug.getPanelType(panelName);
-        var doc = FirebugChrome.getPanelDocument(panelType);
+        var doc = Firebug.chrome.getPanelDocument(panelType);
 
         // Make sure the stylesheet isn't appended twice.
         if ($("cbXULApps", doc))

@@ -42,7 +42,7 @@ Firebug.Chromebug.FBCacheModule = extend(Firebug.Module,
     addStyleSheet: function()
     {
         var panelType = Firebug.getPanelType(panelName);
-        var doc = FirebugChrome.getPanelDocument(panelType);
+        var doc = Firebug.chrome.getPanelDocument(panelType);
 
         // Make sure the stylesheet isn't appended twice.
         if ($("cbFBCache", doc))

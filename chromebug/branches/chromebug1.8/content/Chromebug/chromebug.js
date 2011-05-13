@@ -18,7 +18,16 @@
  *
  */
 
-FBL.ns(function chromebug() { with (FBL) {
+define([
+        "firebug/lib",
+        "firebug/firebug",
+        "firebug/lib/string",
+        "chromebug/parseURI",
+       ], function chromebugPanelFactory(FBL, Firebug, STR)
+{
+
+
+with (FBL) {
 
 // ************************************************************************************************
 
@@ -135,7 +144,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         var browserNameFrom = "global.location";
         if (global && global instanceof Window && !global.closed && global.location)
         {
-            var browserName = safeToString(global.location);
+            var browserName = STR.safeToString(global.location);
         }
         else if (isDataURL(browserName))
         {
@@ -164,13 +173,13 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         if (!browser.currentURI)
         {
-            FBTrace.sysout("createBrowser create name from "+browserNameFrom+" gave browserName "+browserName+' FAILED makeURI ' + (global?safeToString(global):"no global"), global );
+            FBTrace.sysout("createBrowser create name from "+browserNameFrom+" gave browserName "+browserName+' FAILED makeURI ' + (global?STR.safeToString(global):"no global"), global );
         }
 
         this.fakeTabBrowser.browsers[browser.tag] = browser;
         this.fakeTabBrowser.selectedBrowser = this.fakeTabBrowser.browsers[browser.tag];
         this.fakeTabBrowser.currentURI = browser.currentURI; // allows Firebug.TabWatcher to showContext
-        FBTrace.sysout("createBrowser "+browser.tag+" global:"+(global?safeToString(global):"no global")+" for browserName "+browserName+" from "+browserNameFrom);
+        FBTrace.sysout("createBrowser "+browser.tag+" global:"+(global?STR.safeToString(global):"no global")+" for browserName "+browserName+" from "+browserNameFrom);
         return browser;
     },
 
@@ -333,7 +342,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     restructureUI: function()
     {
-        Firebug.setChrome(FirebugChrome, "detached"); // 1.4
+        Firebug.setChrome(Firebug.chrome, "detached"); // 1.4
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -409,11 +418,11 @@ Firebug.Chromebug = extend(Firebug.Module,
         var panelName = previousState.panelName;
 
         if (sourceLink)
-            FirebugChrome.select(sourceLink, panelName);
+            Firebug.chrome.select(sourceLink, panelName);
         else if (panelName)
-            FirebugChrome.selectPanel(panelName);
+            Firebug.chrome.selectPanel(panelName);
         else
-            FirebugChrome.selectPanel('trace');
+            Firebug.chrome.selectPanel('trace');
 
         // Keep trying, this method will be asynchronously called again.
     },
@@ -538,7 +547,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         {
             event.currentTarget.removeEventListener("close", this.onUnloadTopWindow, true);
             FBTrace.sysout("onUnloadTopWindow ", event);
-            FirebugChrome.shutdown();
+            Firebug.chrome.shutdown();
         }
         catch(exc)
         {
@@ -612,7 +621,7 @@ Firebug.Chromebug = extend(Firebug.Module,
             else // we don't know what we are doing
                 global.console = Firebug.Console.createConsole(context, global);
 
-            var url = safeToString(global ? global.location : null);
+            var url = STR.safeToString(global ? global.location : null);
             if (isDataURL(url))
             {
                 var lines = context.sourceCache.load(url);
@@ -724,7 +733,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 if (context.global)
                 {
                     if (context.global == global)
-                        FBTrace.sysout("getContextByGlobal; global "+safeToString(global)+" no match for "+context.getName());
+                        FBTrace.sysout("getContextByGlobal; global "+STR.safeToString(global)+" no match for "+context.getName());
                 }
                 else
                     FBTrace.sysout("getContextByGlobal; no global in "+context.getName());
@@ -770,7 +779,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     destroyContext: function(context)
     {
-        let context_window_location = safeGetWindowLocation(context.window);
+        var context_window_location = safeGetWindowLocation(context.window);
         this.blockedWindowLocations[context_window_location] = 1;
         setTimeout(function cleanUpNoCreateList()
         {
@@ -918,7 +927,7 @@ Firebug.Chromebug = extend(Firebug.Module,
                 var global = globals[globalsTag];
                 if (global)
                 {
-                    if (Firebug.Chromebug.isChromebugURL(safeToString(global.location)))
+                    if (Firebug.Chromebug.isChromebugURL(STR.safeToString(global.location)))
                     {
                         delete globalTagByScriptTag[script.tag];
                         return;
@@ -1862,7 +1871,7 @@ Firebug.Chromebug.contextList =
     {
         return Firebug.Chromebug.eachContext(function matchURL(context)
         {
-            if (safeToString(context.global.location) === url)
+            if (STR.safeToString(context.global.location) === url)
                 return context;
         });
     }
@@ -2005,5 +2014,8 @@ Firebug.registerModule(Firebug.Chromebug);
 Firebug.registerStringBundle("chrome://chromebug/locale/chromebug.properties");
 
 // ************************************************************************************************
-}});
+} // with FBL
+
+return Firebug.Chromebug;
+});
 
