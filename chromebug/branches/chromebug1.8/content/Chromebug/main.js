@@ -40,13 +40,11 @@ function getModuleLoaderConfig(baseConfig)
                 window.dump("Loader; onDebug:"+msg+"\n");
             }
         },
-        onError: function()
+        onError: function(exc)
         {
-            var msg = "";
-            for (var i = 0; i < arguments.length; i++)
-                msg += arguments[i]+", ";
+            var msg = exc.toString() +" "+(exc.fileName || exc.sourceName) + "@" + exc.lineNumber;
 
-            Components.utils.reportError("Loader; onError:"+msg);  // put something out for sure
+            Components.utils.reportError("Loader; Error: "+msg);  // put something out for sure
             window.dump("Loader; onError:"+msg+"\n");
             if (!this.FBTrace)
             {
@@ -56,9 +54,12 @@ function getModuleLoaderConfig(baseConfig)
             }
 
             if (this.FBTrace.DBG_ERRORS || this.FBTrace.DBG_MODULES)
-                this.FBTrace.sysout.apply(this.FBTrace, arguments);
+                this.FBTrace.sysout("Loader; Error: "+msg, exc);
 
-            throw arguments[0];
+            if (exc instanceof Error)
+                throw arguments[0];
+            else
+                throw new Error(msg);
         },
     };
 
@@ -69,7 +70,17 @@ function getModuleLoaderConfig(baseConfig)
 var config = getModuleLoaderConfig(window._firebugArchConfig || {});
 require.onError = config.onError;
 
+if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
+{
+    if (FBTrace.DBG_MODULES)
+        config.debug = true;
+
+    FBTrace.sysout("chromebug main.js; Loading Firebug modules...");
+    var startLoading = new Date().getTime();
+}
+
 require( config, [
+                  "firebug/chrome", // must be first to match arg ChromeFactory
                   "firebug/lib",
                   "firebug/domplate",
                   "firebug/firebug",
@@ -83,16 +94,16 @@ require( config, [
                   "firebug/dragdrop",
                   "firebug/tabWatcher",
                   "firebug/sourceBox",
-                  "firebug/script",
+                  "firebug/scriptPanel",
                   "firebug/memoryProfiler",
                   "firebug/commandLine",
                   "firebug/navigationHistory",
-                  "firebug/html",
-                  "firebug/css",
+                  "firebug/htmlPanel",
+                  "firebug/cssPanel",
                   "firebug/consoleInjector",
                   "firebug/inspector",
                   "firebug/layout",
-                  "firebug/net",
+                  "firebug/netPanel",
                   "firebug/knownIssues",
                   "firebug/tabCache",
                   "firebug/activation",
@@ -107,13 +118,14 @@ require( config, [
                   "firebug/tableRep",
                   "firebug/commandLinePopup",
                   "firebug/commandLineExposed",
+                  "firebug/panelActivation",
                   "firebug/consoleExposed",
                   "chromebug/platform",
                   "chromebug/xulapp"
-      ], function(someModule) {
+      ], function(ChromeFactory) {
     if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
         FBTrace.sysout("chromebug main.js require!\n");
     Components.utils.reportError("Chromebug main.js callback running");
     Firebug.Options.initialize("extensions.chromebug");
-    FirebugChrome.waitForPanelBar(true);
+    window.panelBarWaiter.waitForPanelBar(ChromeFactory);
 });

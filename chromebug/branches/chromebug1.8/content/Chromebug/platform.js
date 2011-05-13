@@ -379,4 +379,5 @@ FirebugReps.RefreshableEnumerator = domplate(FirebugReps.Arr,
 
 Firebug.registerRep(FirebugReps.RefreshableEnumerator);
 */
+return Firebug.Platform;
 });

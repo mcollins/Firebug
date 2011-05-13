@@ -4,7 +4,7 @@ define([
     "firebug/lib",
     "firebug/reps",
     "firebug/domplate",
-    "firebug/dom"
+    "firebug/domPanel"
 ],
 function(FBL, FirebugReps, Domplate)
 {
@@ -909,6 +909,8 @@ with (Domplate) {
 Firebug.registerRep(Chromebug.XULAppModule.WindowListRep);
 Firebug.registerModule(Chromebug.XULAppModule);
 Firebug.registerPanel(Chromebug.XULAppPanel);
+
+return Chromebug.XULAppModule;
 
 // ************************************************************************************************
 
