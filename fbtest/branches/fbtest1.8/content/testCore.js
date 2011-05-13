@@ -61,10 +61,6 @@ window.addEventListener("unload", FBTestApp.shutdown, false);
 // Helper method for passing arguments into an existing window.
 window.initWithParams = function(args)
 {
-    // These are intentionaly a global variables.
-    FBTrace = args.firebugWindow.FBTrace;
-    Firebug = args.firebugWindow.Firebug;
-
     // Get default test list and optional test to be executed from the command line.
     var testListURI = args.testListURI;
     if (testListURI && testListURI.indexOf("#") > 0)

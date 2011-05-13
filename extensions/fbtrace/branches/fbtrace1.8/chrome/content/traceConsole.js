@@ -54,7 +54,10 @@ var TraceConsole =
         {
             for( var p in args)
                 window.dump("args "+p+"\n");
-            Firebug.initialize();
+
+            // Firebug is already initialized in main.js (where chrome is created).
+            // Firebug.initialize();
+
             window.dump("FBTrace; Firebug for Tracing Console is initialized\n");
             this.initializeConsole();
         }

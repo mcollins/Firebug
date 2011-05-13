@@ -142,6 +142,7 @@ var config = getModuleLoaderConfig(FBTestConfig);
 
 require(config,
 [
+    "firebug/chrome",
     "firebug/lib",
     "firebug/domplate",
     "firebug/lib/options",
@@ -149,13 +150,16 @@ require(config,
     "firebug/firebug",
     "firebug/traceModule",
 ],
-function (FBL)
+function (ChromeFactory, FBL, Domplate, Options, XPCOM, Firebug)
 {
     if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
         FBTrace.sysout("FBTrace; main.js require!\n");
 
     Firebug.Options.initialize("extensions.firebug");
     Firebug.TraceModule.initialize();
+
+    var chrome = ChromeFactory.createFirebugChrome(window);
+    chrome.initialize();
 });
 
 // ********************************************************************************************* //
