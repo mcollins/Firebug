@@ -3,9 +3,10 @@
 define([
     "firebug/lib",
     "firebug/firebug",
-    "firebug/lib/xpcom"
+    "firebug/lib/xpcom",
+    "firebug/reps",
 ],
-function(FBL, Firebug, XPCOM) { with (FBL) {
+function(FBL, Firebug, XPCOM, FirebugReps) { with (FBL) {
 
 // ************************************************************************************************
 // Shortcuts and Services
@@ -1906,7 +1907,7 @@ Firebug.TraceModule.Tree = domplate(Firebug.Rep,
         var tag = rep.shortTag ? rep.shortTag : rep.tag;
         var valueType = typeof(value);
 
-        var hasChildren = hasProperties(value) && !(value instanceof ErrorCopy) &&
+        var hasChildren = hasProperties(value) && !(value instanceof FirebugReps.ErrorCopy) &&
             (valueType == "function" || (valueType == "object" && value != null)
             || (valueType == "string" && value.length > Firebug.stringCropLength));
 
