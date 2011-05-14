@@ -3,9 +3,10 @@
 define([
         "chromebug/chromebug",
         "firebug/firebug",
+        "firebug/firefox/window",
         "firebug/tabContext",
         ],
-function domWindowContextFactory(Chromebug, Firebug)
+function domWindowContextFactory(Chromebug, Firebug, WIN)
 {
 
 
@@ -17,7 +18,7 @@ const Ci = Components.interfaces;
 //************************************************************************************************
 
 
-Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
+var DomWindowContext = function(global, browser, chrome, persistedState)
 {
     var tabContext = new Firebug.TabContext(global, browser, Firebug.chrome, persistedState);
     for (var n in tabContext)
@@ -38,7 +39,7 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
     {
         this.window = global;
         var id = FBL.getWindowId(global);
-        this.setName(safeGetWindowLocation(global)+"("+id.outer+","+id.inner+")")
+        this.setName(WIN.safeGetWindowLocation(global)+"("+id.outer+","+id.inner+")")
     }
     else
     {
@@ -72,10 +73,10 @@ Chromebug.DomWindowContext = function(global, browser, chrome, persistedState)
         persistedState.enabled = "enable";
 
     if (FBTrace.DBG_CHROMEBUG)
-        FBTrace.sysout("Chromebug.domWindowContext "+(this.window?"has window ":" no window ")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
+        FBTrace.sysout("DomWindowContext "+(this.window?"has window ":" no window ")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
 }
 
-Chromebug.DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
+DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
 {
     setName: function(name)
     {
@@ -110,7 +111,7 @@ Chromebug.DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
         }
 
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
+            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+WIN.safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (context)
@@ -127,7 +128,7 @@ Chromebug.DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
         }
         else
         {
-            var context = Firebug.Chromebug.getOrCreateContext(domWindow, safeGetWindowLocation(domWindow)); // subwindow
+            var context = Firebug.Chromebug.getOrCreateContext(domWindow, WIN.safeGetWindowLocation(domWindow)); // subwindow
 
             if (!context.onUnload)
                 context.onUnload = FBL.bind(context.unloadHandler, context)
@@ -192,6 +193,6 @@ Chromebug.DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
     },
 
 });
-
-return Chromebug.DomWindowContext;
+FBTrace.sysout("domWindowContext.js DomWindowContext", DomWindowContext);
+return DomWindowContext;
 });

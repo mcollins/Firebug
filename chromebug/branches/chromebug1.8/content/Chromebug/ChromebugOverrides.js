@@ -6,12 +6,14 @@ define([
     "firebug/firebug",
     "firebug/firefox/firefox",
     "chromebug/chromebug",
+    "chromebug/domWindowContext",
     "firebug/lib/xpcom",
     "firebug/firefox/window",
+    "firebug/lib/htmlLib",
     "firebug/sourceFile",
     "firebug/debugger",
        ],
-function overrideFactory(FBL, Firebug, Firefox, Chromebug, XPCOM, WIN)
+function overrideFactory(FBL, Firebug, Firefox, Chromebug,DomWindowContext, XPCOM, WIN, HTMLLib)
 {
 
 
@@ -339,23 +341,6 @@ var ChromebugOverrides = {
     tagBase: 1,
     tags:[],
 
-    getTabIdForWindow: function(win)
-    {
-        if (! (win instanceof Ci.nsIDOMWindow) )  // eg net.js getWindowForRequest gives null
-            return null;
-
-        var tab = Firebug.getTabForWindow(win);
-        if (tab)
-            return tab.linkedPanel;
-
-        if (!win.chromebugTag)
-            win.chromebugTag = ChromebugOverrides.tagBase++;
-        if (win.chromebugTag)
-            return win.chromebugTag;
-
-        if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("ChromebugOverrides.getTabIdForWindow no id ", win);
-    },
 
     // Override Firebug.disableXULWindow
     disableXULWindow: function()
@@ -486,8 +471,8 @@ ChromebugOverrides.override = function(Firefox, ChromeObject)
         };
 
 
-        Firebug.Chromebug.firebugSyncResumeBox = Firebug.syncResumeBox;
-        Firebug.syncResumeBox = function(context)
+        Firebug.Chromebug.firebugSyncResumeBox = ChromeObject.syncResumeBox;
+        ChromeObject.syncResumeBox = function(context)
         {
             if (context) Firebug.Chromebug.firebugSyncResumeBox(context);
         }
@@ -499,16 +484,16 @@ ChromebugOverrides.override = function(Firefox, ChromeObject)
              return false;
         };
 
-        Firebug.HTMLLib.ElementWalker.prototype.getTreeWalker = ChromebugOverrides.getTreeWalker;
+        HTMLLib.ElementWalker.prototype.getTreeWalker = ChromebugOverrides.getTreeWalker;
         Firebug.HTMLPanel.prototype.getTreeWalker             = ChromebugOverrides.getTreeWalker;
 
-        Firebug.HTMLLib.ElementWalker.prototype.getFirstChild = ChromebugOverrides.getFirstChild;
+        HTMLLib.ElementWalker.prototype.getFirstChild = ChromebugOverrides.getFirstChild;
         Firebug.HTMLPanel.prototype.getFirstChild             = ChromebugOverrides.getFirstChild;
 
-        Firebug.HTMLLib.ElementWalker.prototype.getNextSibling = ChromebugOverrides.getNextSibling;
+        HTMLLib.ElementWalker.prototype.getNextSibling = ChromebugOverrides.getNextSibling;
         Firebug.HTMLPanel.prototype.getNextSibling             = ChromebugOverrides.getNextSibling;
 
-        Firebug.HTMLLib.ElementWalker.prototype.getParentNode = ChromebugOverrides.getParentNode;
+        HTMLLib.ElementWalker.prototype.getParentNode = ChromebugOverrides.getParentNode;
         Firebug.HTMLPanel.prototype.getParentNode             = ChromebugOverrides.getParentNode;
 
         Firebug.Inspector.onInspectingMouseOver = ChromebugOverrides.onInspectingMouseOver;
@@ -534,7 +519,6 @@ ChromebugOverrides.override = function(Firefox, ChromeObject)
         Firebug.JSDebugClient.onJSDDeactivate = ChromebugOverrides.onJSDDeactivate;
         Firebug.JSDebugClient.onJSDActivate = ChromebugOverrides.onJSDActivate;
 
-        WIN.getTabIdForWindow = ChromebugOverrides.getTabIdForWindow;
         Firebug.disableXULWindow = ChromebugOverrides.disableXULWindow;
 
         for (var p in Chromebug.Activation)
@@ -542,7 +526,8 @@ ChromebugOverrides.override = function(Firefox, ChromeObject)
 
         Firebug.getContextType = function getChromebugContextType()
         {
-            return Chromebug.DomWindowContext;
+            FBTrace.sysout("Firebug.getContextType DomWindowContext ",DomWindowContext);
+            return DomWindowContext;
         };
 
         FBL.getRootWindow = function(win) { return win; };

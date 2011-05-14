@@ -22,8 +22,9 @@ define([
         "firebug/lib",
         "firebug/firebug",
         "firebug/lib/string",
+        "chromebug/domWindowContext",
         "chromebug/parseURI",
-       ], function chromebugPanelFactory(FBL, Firebug, STR)
+       ], function chromebugPanelFactory(FBL, Firebug, STR, DomWindowContext)
 {
 
 
@@ -208,7 +209,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
 
-        Firebug.syncResumeBox(context);
+        Firebug.chrome.syncResumeBox(context);
     },
 
     dispatchName: "chromebug",
@@ -635,7 +636,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         else
         {
             var browser = Firebug.Chromebug.createBrowser(global, name);
-            var context = Firebug.TabWatcher.createContext(global, browser, Chromebug.DomWindowContext);
+            var context = Firebug.TabWatcher.createContext(global, browser, DomWindowContext);
             if (global+"" === "[object Sandbox]")
             {
                 kind = "Sandbox";
