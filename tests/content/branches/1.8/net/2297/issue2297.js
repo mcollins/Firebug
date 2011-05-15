@@ -36,7 +36,7 @@ function runTest()
                 "There must be a Network Error with proper URL");
 
             // Verify status bar text
-            var statusText = FW.document.getElementById("fbStatusText");
+            var statusText = FW.top.document.getElementById("fbStatusText");
             FBTest.compare("1 Error", statusText.value,
                 "There must be 1 Error displayed in the status bar");
 
