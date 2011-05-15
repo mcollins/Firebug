@@ -534,6 +534,10 @@ this.closeDetachedFirebug = function()
     return result;
 }
 
+this.getBrowser = function()
+{
+    return FW.top.document.getElementById("content");
+}
 // ************************************************************************************************
 // URLs
 
@@ -544,7 +548,7 @@ this.closeDetachedFirebug = function()
  */
 this.openNewTab = function(url, callback)
 {
-    var tabbrowser = FW.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
 
     // Open new tab and mark as 'test' so it can be closed automatically.
     var newTab = tabbrowser.addTab(url);
@@ -565,7 +569,7 @@ this.openNewTab = function(url, callback)
  */
 this.openURL = function(url, callback)
 {
-    var tabbrowser = FW.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     var currTab = tabbrowser.selectedTab;
 
     // Get the current tab and wait till the new URL is loaded.
@@ -584,7 +588,7 @@ this.openURL = function(url, callback)
  */
 this.reload = function(callback)
 {
-    var tabbrowser = FW.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     var currTab = tabbrowser.selectedTab;
 
     // Get the current tab and wait till it's reloaded.
