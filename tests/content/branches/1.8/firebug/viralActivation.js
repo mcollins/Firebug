@@ -36,7 +36,7 @@ function sameTabOpen(win, path)
 {
     var link = win.document.getElementById("sameTabOpen");
     var url = link.getAttribute("href");
-    var tabbrowser = FW.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
     browser.addEventListener("load", function loadedBrowser()
     {

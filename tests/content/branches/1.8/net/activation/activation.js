@@ -44,7 +44,7 @@ function onRunTest(window)
 
 function selectTabAndVerify(tab, callback)
 {
-    var tabbrowser = FW.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     tabbrowser.selectedTab = tab;
 
     var win = tab.linkedBrowser.contentWindow;

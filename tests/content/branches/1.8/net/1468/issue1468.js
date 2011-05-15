@@ -17,7 +17,7 @@ function runTest()
             var userFile = doc.getElementById("userFile");
             userFile.value = file.path;
 
-            var tabbrowser = FW.getBrowser();
+            var tabbrowser = FBTestFirebug.getBrowser();
             var browser = tabbrowser.getBrowserForTab(tabbrowser.selectedTab);
             browser.addEventListener("load", function()
             {

@@ -9,7 +9,7 @@ function runTest()
     FBTestFirebug.setPref("activateSameOrigin", false);
     FBTest.progress("The Activate Same Origin Option is false for this test");
 
-    var tabbrowser = FW.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     var noFirebugTab = tabbrowser.selectedTab;
 
     FBTestFirebug.openNewTab(basePath + "firebug/NeverOpenFirebugOnThisPage.html", function(win)
