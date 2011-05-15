@@ -675,7 +675,7 @@ this.cleanUpTestTabs = function()
 
     FBTestFirebug.cleanUpListeners();
 
-    var tabbrowser = FBTest.FirebugWindow.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     var removeThese = [];
     for (var i = 0; i < tabbrowser.mTabs.length; i++)
     {
@@ -704,7 +704,7 @@ this.closeFirebugOnAllTabs = function()
 {
     FBTest.progress("closeFirebugOnAllTabs");
 
-    var tabbrowser = FBTest.FirebugWindow.getBrowser();
+    var tabbrowser = FBTestFirebug.getBrowser();
     for (var i = 0; i < tabbrowser.mTabs.length; i++)
     {
         var tab = tabbrowser.mTabs[i];
