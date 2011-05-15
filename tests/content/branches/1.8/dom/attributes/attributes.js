@@ -16,9 +16,10 @@ function runTest()
     FBTest.openNewTab(basePath + "dom/attributes/attributes.html", function(win)
     {
         FBTest.openFirebug();
- 
+
         FBTest.enableConsolePanel(function(win)
         {
+            FBTest.progress("console enabled, creating task list");
             var tasks = new FBTest.TaskList();
             tasks.push(testDomPanel);
 
@@ -76,5 +77,6 @@ function executeCommandAndVerify(callback, expression, expected, tagName, classe
         callback();
     });
 
+    FBTest.progress("execute "+expression);
     FBTest.executeCommand(expression);
 }
