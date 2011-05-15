@@ -59,7 +59,7 @@ function checkIsDisabled(panelName, module)
 
     FBTest.ok(!selectedPanel, "The selected panel should be null");
 
-    var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
+    var icon = FW.top.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+panelName+" should NOT be marked on the Firebug Statusbar Icon, icon="+icon);
 }
 
@@ -74,6 +74,6 @@ function checkIsEnabled(panelName, module)
     if (selectedPanel.disabledBox)
         FBTest.compare("true", selectedPanel.disabledBox.getAttribute('collapsed'), "The "+panelName+" should not have the disabled message");
 
-    var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
+    var icon = FW.top.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare("on", icon+"", "The "+panelName+" should be marked on the Firebug Statusbar Icon");
 }

@@ -32,7 +32,7 @@ function runTest()
 
                     // Step 5 & 6.
                     nextStep(function() {
-                        var tabbrowser = FBTest.FirebugWindow.getBrowser();
+                        var tabbrowser = FBTestFirebug.getBrowser();
                         tabbrowser.removeTab(tabbrowser.selectedTab);
 
                         // Step 7.

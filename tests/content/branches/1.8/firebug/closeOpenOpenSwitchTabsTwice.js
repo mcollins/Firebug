@@ -69,11 +69,11 @@ function runTest()
 
 function checkIconOff(panelName)
 {
-    var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
+    var icon = FW.top.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.ok(!icon || (icon != "on"), "The "+panelName+" should NOT be marked on the Firebug Statusbar Icon, it is "+icon);
 }
 
 function checkIconOn(panelName)
 {
-    var icon = FW.document.getElementById('fbStatusIcon').getAttribute(panelName);
+    var icon = FW.top.document.getElementById('fbStatusIcon').getAttribute(panelName);
     FBTest.compare(icon+"", "on", "The "+panelName+" should be marked on the Firebug Statusbar Icon");}

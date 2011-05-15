@@ -57,7 +57,7 @@ function alsoOpened(win)
     var placement = FW.Firebug.getPlacement();
     FBTest.compare("minimized", placement, "Firebug minimized");
 
-    var statusbarIcon = FW.document.getElementById('fbStatusIcon');
+    var statusbarIcon = FW.top.document.getElementById('fbStatusIcon');
 
     var toolTip = statusbarIcon.getAttribute("tooltiptext");
     var number = /^(\d).*Firebugs/.exec(toolTip);
