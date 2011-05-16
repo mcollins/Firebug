@@ -62,8 +62,8 @@ function disableConsole(callback)
 
 function verifyConsolePopup(shouldBeVisible)
 {
-    var preview = FW.document.getElementById("fbCommandPopup");
-    var splitter = FW.document.getElementById("fbCommandPopupSplitter");
+    var preview = FW.Firebug.chrome.$("fbCommandPopup");
+    var splitter = FW.Firebug.chrome.$("fbCommandPopupSplitter");
 
     var previewCollapsed = preview.getAttribute("collapsed");
     var splitterCollapsed = splitter.getAttribute("collapsed");

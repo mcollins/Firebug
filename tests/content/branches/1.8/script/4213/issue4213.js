@@ -38,7 +38,7 @@ function verifyLocation(expected)
 //xxxHonza: will be part of FBTest 1.7b14
 function getCurrentLocation()
 {
-    var locationList = FW.document.getElementById("fbLocationList");
+    var locationList = FW.Firebug.chrome.$("fbLocationList");
     return locationList.label;
 };
 

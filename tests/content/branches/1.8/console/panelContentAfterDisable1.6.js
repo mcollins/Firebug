@@ -15,9 +15,9 @@ function runTest()
         {
             FBTest.disableConsolePanel(function()
             {
-                var cmdBox = FW.document.getElementById("fbCommandBox");
-                var splitter = FW.document.getElementById("fbPanelSplitter");
-                var sidePanel = FW.document.getElementById("fbSidePanelDeck");
+                var cmdBox = FW.Firebug.chrome.$("fbCommandBox");
+                var splitter = FW.Firebug.chrome.$("fbPanelSplitter");
+                var sidePanel = FW.Firebug.chrome.$("fbSidePanelDeck");
 
                 FBTest.ok(cmdBox.collapsed, "Command line must be hidden");
                 FBTest.ok(splitter.collapsed, "Splitter must be hidden");

@@ -148,7 +148,9 @@ function FBTest_waitForHtmlMutation(chrome, tagName, callback)
         var unmutated = new MutationRecognizer(view, tagName, null, null, attributes);
         unmutated.onRecognizeAsync(function onUnMutate(node)
         {
-            callback(node);
+            setTimeout(function() {
+                callback(node);
+            }, 200);
         });
     });
 }

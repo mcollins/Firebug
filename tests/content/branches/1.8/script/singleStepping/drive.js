@@ -53,8 +53,7 @@ function breakOnNext(panel)
     FBTestFirebug.clickBreakOnNextButton(FW.Firebug.chrome);
     FBTest.progress("The breakOnNext button was pushed");
 
-    var doc = FW.document;
-    var button = doc.getElementById("fbBreakOnNextButton");
+    var button = FW.Firebug.chrome.$("fbBreakOnNextButton");
     FBTest.compare("false", button.getAttribute("breakable"), "The button is armed for break")
 
     FBTest.progress("Listen for exeline true, meaning the breakOnNext hit");

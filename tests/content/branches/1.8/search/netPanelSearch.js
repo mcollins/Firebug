@@ -52,12 +52,12 @@ function runTest()
 // Set search box value and global search options.
 function doSearch(text, reverse, caseSensitive, responseBody, callback)
 {
-    FW.document.getElementById("fbSearchBox").value = text;
+    FW.Firebug.chrome.$("fbSearchBox").value = text;
     FBTestFirebug.setPref("searchCaseSensitive", caseSensitive);
     FBTestFirebug.setPref("netSearchResponseBody", responseBody);
 
     // Press enter key within the search box.
-    FBTest.focus(FW.document.getElementById("fbSearchBox"));
+    FBTest.focus(FW.Firebug.chrome.$("fbSearchBox"));
     FBTest.pressKey(13, "fbSearchBox");
 }
 

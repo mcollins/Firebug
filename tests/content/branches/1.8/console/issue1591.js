@@ -16,7 +16,7 @@ function testCommandLineForError()
     FBTest.progress("looking up command line in " + panel);
     FBTest.ok(panel, "The console panel is found ");
     
-    var clickTarget = FW.document.getElementById("fbCommandLine");
+    var clickTarget = FW.Firebug.chrome.$("fbCommandLine");
 
     FBTest.progress("command line: " + clickTarget);
     FBTest.focus(clickTarget);

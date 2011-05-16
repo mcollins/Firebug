@@ -1,15 +1,15 @@
 function executeSearch(text, reverse, caseSensitive, global) {
 
-    FW.document.getElementById("fbSearchBox").value = text;
+    FW.Firebug.chrome.$("fbSearchBox").value = text;
     FBTestFirebug.setPref("searchCaseSensitive", caseSensitive);
     FBTestFirebug.setPref("searchGlobal", global);
 
     if (!reverse) {
         FBTest.progress("pressKey 13@"+"fbSearchBox");
-        FBTest.pressKey(13, "fbSearchBox"); // FW.document.getElementById("fbSearchBox"),
+        FBTest.pressKey(13, "fbSearchBox"); // FW.Firebug.chrome.$("fbSearchBox"),
     } else {
         FBTest.progress("fbSearchPrev");
-        var prevButton = FW.document.getElementById("fbSearchPrev");
+        var prevButton = FW.Firebug.chrome.$("fbSearchPrev");
         FBTest.ok(prevButton, "We can locate the prev button");
         if (prevButton)
             FBTest.click(prevButton);
