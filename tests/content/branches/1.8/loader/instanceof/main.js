@@ -10,7 +10,8 @@ function runTest()
         baseUrl: baseUrl
     };
 
-    FW.require(config, ["reps"], function(Reps)
+    var require = FBTest.getRequire();
+    require(config, ["reps"], function(Reps)
     {
         Reps.innerTest(FW, FBTest, window);
 

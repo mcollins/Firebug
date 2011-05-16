@@ -10,7 +10,8 @@ function runTest()
         baseUrl: baseUrl
     };
 
-    FW.require(config, ["module-a"], function(A)
+    var require = FBTest.getRequire();
+    require(config, ["module-a"], function(A)
     {
         var message = A.getMessage();
         FBTest.compare("Hello World!", message, "The message from modules must match.");

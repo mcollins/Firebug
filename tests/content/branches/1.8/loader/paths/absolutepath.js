@@ -1,14 +1,15 @@
 function runTest()
 {
     FBTest.sysout("absolutepath.START;");
-    FBTest.progress("using baseLocalPath: "+baseLocalPath);
+    FBTest.progress("using baseLocalPath: " + baseLocalPath);
 
     var baseUrl = baseLocalPath + "loader/paths/";
     var config = {
         context: baseUrl + Math.random(),  // to give each test its own loader,
     };
 
-    FW.require(config, [
+    var require = FBTest.getRequire();
+    require(config, [
         baseUrl + "add",
         baseUrl + "subtract"
     ],

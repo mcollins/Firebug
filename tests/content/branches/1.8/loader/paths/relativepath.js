@@ -10,7 +10,8 @@ function runTest()
         baseUrl: baseUrl
     };
 
-    FW.require(config, ["add", "subtract"], function(AddModule, SubtractModule)
+    var require = FBTest.getRequire();
+    require(config, ["add", "subtract"], function(AddModule, SubtractModule)
     {
         FBTest.compare(3, AddModule.add(1, 2), "The add module must be properly loaded");
         FBTest.compare(2, SubtractModule.subtract(3, 1), "The subtract module must be properly loaded");
