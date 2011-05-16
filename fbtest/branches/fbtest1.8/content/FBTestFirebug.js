@@ -2098,4 +2098,16 @@ this.getDOMPropertyRow = function(chrome, propName)
 }
 
 // ************************************************************************************************
+// Module Loader
+
+this.getRequire = function()
+{
+    if (typeof(FW.require) !== "undefined")
+        return FW.require;
+
+    var fbMainFrame = FW.document.getElementById("fbMainFrame");
+    return fbMainFrame.contentWindow.require;
+}
+
+// ************************************************************************************************
 }).apply(FBTest);
