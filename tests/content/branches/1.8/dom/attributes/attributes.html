@@ -15,7 +15,10 @@
 
 <ol>
 <li>Enable Firebug enable the console panel</li>
-<li>Select the HTML panel and search for "Inspect Me"</li>
+<!-- Since the test searches for 'Inspect ' + 'Me' string in the HTML panel,
+    make sure the same keyword is not used in the description or anywhere
+    else on this page. -->
+<li>Select the HTML panel and search for "Inspect <span>Me</span>"</li>
 <li>Right click on the element and pick 'Inspect in DOM tab'.</li>
 <li>You should see a list of attributes in the DOM panel, something as follows:<br/>
 <code>[style="color:green", name="testName", id="testId"]</code>
