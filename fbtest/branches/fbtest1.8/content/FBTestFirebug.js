@@ -342,11 +342,11 @@ function __doEventDispatch(aTarget, aCharCode, aKeyCode, aHasShift)
     if (aTarget && aTarget instanceof Node)
         aTarget = aTarget;
     else if (aTarget)
-        aTarget = FBTest.FirebugWindow.document.getElementById(aTarget);
+        aTarget = FW.Firebug.chrome.$(aTarget);
     else
-        aTarget= FBTest.FirebugWindow.document.documentElement;
+        aTarget = FW.Firebug.chrome.window.document.documentElement;
 
-    var doc = aTarget.ownerDocument
+    var doc = aTarget.ownerDocument;
 
     var event = doc.createEvent("KeyEvents");
     event.initKeyEvent("keydown", true, true, doc.defaultView,
@@ -470,11 +470,10 @@ this.closeFirebug = function()
  */
 this.isFirebugOpen = function()
 {
-    var browserDocument = FW.document;
-    var fbContentBox = browserDocument.getElementById('fbContentBox');
+    var fbContentBox = FW.Firebug.chrome.$('fbContentBox');
     var collapsedFirebug = fbContentBox.getAttribute("collapsed");
     FBTest.sysout("isFirebugOpen collapsedFirebug " + collapsedFirebug);
-    return (collapsedFirebug=="true") ? false : true;
+    return (collapsedFirebug == "true") ? false : true;
 };
 
 /**
@@ -822,7 +821,7 @@ this.selectSidePanel = function(panelName, chrome)
 this.selectPanelTab = function(name, doc)
 {
     if (!doc)
-        doc = FW.document;
+        doc = FW.Firebug.chrome.window.document;
 
     var panelTabs = doc.getElementById("fbPanelBar1-panelTabs");
     for (var child = panelTabs.firstChild; child; child = child.nextSibling)
@@ -846,7 +845,7 @@ this.selectPanelTab = function(name, doc)
 this.getSelectedPanelTab = function(doc)
 {
     if (!doc)
-        doc = FW.document;
+        doc = FW.Firebug.chrome.window.document;
 
     var panelTabs = doc.getElementById("fbPanelBar1-panelTabs");
     for (var child = panelTabs.firstChild; child; child = child.nextSibling)
@@ -860,7 +859,7 @@ this.getSelectedPanelTab = function(doc)
 /* selected panel on UI (not via context) */
 this.getSelectedPanel = function()
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    var panelBar1 = FW.Firebug.chrome.$("fbPanelBar1");
     return panelBar1.selectedPanel; // may be null
 }
 
@@ -870,20 +869,20 @@ this.getSelectedPanel = function()
  */
 this.getPanelDocument = function()
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar1");
+    var panelBar1 = FW.Firebug.chrome.$("fbPanelBar1");
     return panelBar1.browser.contentDocument;
 }
 
 this.getSidePanelDocument = function()
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar2");
+    var panelBar1 = FW.Firebug.chrome.$("fbPanelBar2");
     return panelBar1.browser.contentDocument;
 }
 
 /* user sees panel tab disabled? */
 this.isPanelTabDisabled = function(name)
 {
-    var panelBar1 = FW.document.getElementById("fbPanelBar1-panelTabs");
+    var panelBar1 = FW.Firebug.chrome.$("fbPanelBar1-panelTabs");
     for (var child = panelBar1.firstChild; child; child = child.nextSibling)
     {
         var label = child.getAttribute("label").toLowerCase();
@@ -1192,7 +1191,8 @@ this.getSourceLineNode = function(lineNo, chrome)
 
     var panel = chrome.getSelectedPanel();
     var sourceBox = panel.selectedSourceBox;
-    FBTest.ok(sourceBox, "getSourceLineNode needs selectedSourceBox in panel "+panel.name);
+    if (!FBTest.ok(sourceBox, "getSourceLineNode needs selectedSourceBox in panel " + panel.name))
+        return false;
 
     var sourceViewport =  FW.FBL.getChildByClass(sourceBox, 'sourceViewport');
     if (!sourceViewport)
@@ -1482,7 +1482,7 @@ this.selectPanelLocationByName = function(panel, name)
  */
 this.getCurrentLocation = function()
 {
-    var locationList = FW.document.getElementById("fbLocationList");
+    var locationList = FW.Firebug.chrome.$("fbLocationList");
     return locationList.label;
 };
 
@@ -1601,7 +1601,7 @@ this.waitForDisplayedText = function(panelName, text, callback)
 this.waitForPanel = function(panelName, callback)
 {
 
-    panelBar1 = FW.document.getElementById("fbPanelBar1");
+    panelBar1 = FW.Firebug.chrome.$("fbPanelBar1");
     panelBar1.addEventListener("selectingPanel",function onSelectingPanel(event)
     {
         var panel = panelBar1.selectedPanel;
@@ -1642,7 +1642,7 @@ this.searchInScriptPanel = function(searchText, callback)
     FBTest.waitForDisplayedElement("script", config, callback);
 
     // Set search string into the search box.
-    var searchBox = FW.document.getElementById("fbSearchBox");
+    var searchBox = FW.Firebug.chrome.$("fbSearchBox");
     searchBox.value = searchText;
 
     // Setting the 'value' property doesn't fire an 'input' event so,
@@ -1663,7 +1663,7 @@ this.searchInHtmlPanel = function(searchText, callback)
     var panel = FBTest.selectPanel("html");
 
     // Set search string into the search box.
-    var searchBox = FW.document.getElementById("fbSearchBox");
+    var searchBox = FW.Firebug.chrome.$("fbSearchBox");
     searchBox.value = searchText;
 
     // The listener is automatically removed when the test window
