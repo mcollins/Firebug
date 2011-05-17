@@ -280,6 +280,10 @@
 	color:highlighttext !important;
 }
 
+.tree-selection .widgets-tree-node {	
+	border-color: highlight !important;
+}
+
 .container-opened .collapsable-label{
 	background-image:url('chrome://firebug/skin/win/twistyOpen.png');
 	background-repeat:no-repeat;
@@ -346,7 +350,10 @@
 	display: none;
 }
 
-
+.widget-data {
+    background-color: #DDFFDD;
+    border: 1px solid #009900;
+}
 
 .children-opened .collapsable-children {
 	display: inherit;
@@ -382,19 +389,19 @@
 	cursor: pointer;
 }
 
-.widget-info-level-specific .infoLevelToggle{
+.widget-info-level-specific > .widget-label > .infoLevelToggle{
 	background-image:url('chrome://dojofirebugextension/skin/specific_info_level.gif');
 	background-repeat:no-repeat;
 	background-position:center;
 }
 
-.widget-info-level-full .infoLevelToggle{
+.widget-info-level-full > .widget-label > .infoLevelToggle{
 	background-image:url('chrome://dojofirebugextension/skin/full_info_level.gif');
 	background-repeat:no-repeat;
 	background-position:center;
 }
 
-.widget-info-level-none .infoLevelToggle {
+.widget-info-level-none > .widget-label > .infoLevelToggle{
 	background-image:url('chrome://dojofirebugextension/skin/none_info_level.png');
 	background-repeat:no-repeat;
 	background-position:center;
