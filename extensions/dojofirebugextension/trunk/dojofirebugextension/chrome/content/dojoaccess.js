@@ -353,6 +353,7 @@ DojoModel.DojoAccessor.prototype =
 				if(widget._connects) {
 					var connects = [];
 					widget._connects.forEach(function(array) {
+						//FIXME it seems this array.forEach fails with dojo 1.7 (error: array.forEach is not a function)
 						array.forEach(function(handle) {
 							connects.push(tracker.getConnectionByHandle(handle));
 						}
