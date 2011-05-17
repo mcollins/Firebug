@@ -65,7 +65,7 @@
     </commandset>
 
     <keyset id="mainKeyset">
-        <key id="key_find" key="&findOnCmd.commandkey;" command="cmd_find" modifiers="accel"/>
+        <key id="key_find" key="f" command="cmd_find" modifiers="accel"/>
         <key id="key_runAll" key="l" command="cmd_runAll" modifiers="accel"/>
         <key id="key_close"  key="w" command="cmd_close" modifiers="accel"/>
     </keyset>
