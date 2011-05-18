@@ -143,37 +143,47 @@ FBTestApp.TestCouchUploader =
 
     getExtensions: function(callback)
     {
-        var application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.extIApplication);
-
-        function collectExtensions(extensions)
+        try
         {
-            // Put together a list of installed extensions.
-            var result = [];
-            for (var i=0; i<extensions.all.length; i++)
+            var application = Cc["@mozilla.org/fuel/application;1"].getService(Ci.extIApplication);
+
+            function collectExtensions(extensions)
             {
-                var ext = extensions.all[i];
-                result.push({
-                    name: ext.name,
-                    id: ext.id,
-                    enabled: ext.enabled
+                // Put together a list of installed extensions.
+                var result = [];
+                for (var i=0; i<extensions.all.length; i++)
+                {
+                    var ext = extensions.all[i];
+                    result.push({
+                        name: ext.name,
+                        id: ext.id,
+                        enabled: ext.enabled
+                    });
+                }
+                callback(result);
+            }
+
+            if (application.extensions)
+            {
+                collectExtensions(application.extensions);
+            }
+            else if (application.getExtensions)
+            {
+                application.getExtensions(function(extensions)
+                {
+                    collectExtensions(extensions);
                 });
             }
-            callback(result);
-        }
-
-        if (application.extensions)
-        {
-            collectExtensions(application.extensions);
-        }
-        else if (application.getExtensions)
-        {
-            application.getExtensions(function(extensions)
+            else
             {
-                collectExtensions(extensions);
-            });
+                callback([]);
+            }
         }
-        else
+        catch (e)
         {
+            if (FBTrace.DBG_ERRORS)
+                FBTrace.sysout("testCouchUploader.getExtensions; EXCEPTION " + e, e);
+
             callback([]);
         }
     },
