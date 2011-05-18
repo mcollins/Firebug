@@ -79,4 +79,22 @@
         </exec>
     </target>
 
+    <target name="just-launch-ff" depends="alreadyInstalledFirefox, firefoxInstall, installSwarm" if="firefox.exists">
+            <!-- first wait for the install to begin -->
+            <waitfor maxwait="10" maxwaitunit="minute">
+                <available file="${build.dir}/profile/extensions/firebug@software.joehewitt.com.xpi"/>
+            </waitfor>
+            <!-- then wait for the install process to exit -->
+            <waitfor maxwait="10" maxwaitunit="minute">
+                <not>
+                    <available file="${build.dir}/profile/parent.lock"/>
+                </not>
+            </waitfor>
+            <exec executable="${firefox}" output="${build.dir}/justLaunchFF.txt">
+                <arg value="-no-remote"/>
+                <arg value="-profile"/>
+                <arg value="${build.dir}/profile"/>
+            </exec>
+        </target>
+
 </project>
