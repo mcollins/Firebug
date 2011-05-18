@@ -318,8 +318,26 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         FBTrace.sysout("dyne.createOrionBox load listener added "+location+" Firebug.jsDebuggerOn "+Firebug.jsDebuggerOn);
     },
 
+    getOrionEditorURL: function(url, ourEditor)
+    {
+        var hash = url.indexOf('#');
+        var frontHalf = url.substr(0, hash);
+        var segments = frontHalf.split('/');
+        //                 http:          /                   /   localhost:8080
+        var newFrontHalf = segments[0] + '/' + segments[1] + '/' +segments[2] + '/';
+
+        var backHalf = url.substr(hash);
+        return newFrontHalf + ourEditor + backHalf;
+    },
+
     insertOrionScripts: function(parentElement, url)
     {
+        var ourEditor = "examples/embeddededitor.html";
+
+        var editorURL = this.getOrionEditorURL(url, ourEditor);
+
+        FBTrace.sysout("insertOrionScripts remap "+url+" to "+editorURL);
+
         var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
         parentElement.innerHTML = "<iframe src='"+url+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
