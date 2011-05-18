@@ -64,8 +64,26 @@ this.open = function(testListURI)
         return true;
     });
 
+    // Get the right firebug window. It can be browser.xul or fbMainFrame <iframe>
+    var firebugWindow;
+    if (typeof(window.require) !== "undefined")
+    {
+        firebugWindow = window;
+    }
+    else
+    {
+        var fbMainFrame = window.document.getElementById("fbMainFrame");
+        firebugWindow = fbMainFrame.contentWindow;
+    }
+
+    if (!firebugWindow)
+    {
+        FBTrace.sysout("FBTest.open; Failed to get Firebug window!");
+        return;
+    }
+
     var args = {
-        firebugWindow: window,
+        firebugWindow: firebugWindow,
         testListURI: testListURI
     };
 
