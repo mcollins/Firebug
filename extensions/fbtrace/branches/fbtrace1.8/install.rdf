@@ -7,6 +7,15 @@
     <em:id>fbtrace@getfirebug.com</em:id>
     <em:version>@VERSION@@RELEASE@</em:version>
 
+    <!-- Any suitably modern toolkit application -->
+    <em:targetApplication>
+      <Description>
+        <em:id>toolkit@mozilla.org</em:id>
+        <em:minVersion>1.9.2</em:minVersion>
+        <em:maxVersion>2.2.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
     <!-- Firefox -->
     <em:targetApplication>
       <Description>
