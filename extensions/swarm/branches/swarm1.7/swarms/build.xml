@@ -72,6 +72,7 @@
         </waitfor>
         <exec executable="${firefox}" output="${build.dir}/fbtestOutput.txt">
             <arg value="-no-remote"/>
+            <arg value="-jsconsole"/>
             <arg value="-profile"/>
             <arg value="${build.dir}/profile"/>
             <arg value="-runFBTests"/>
