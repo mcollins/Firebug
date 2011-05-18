@@ -2,13 +2,8 @@ var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].getService(Ci
 var appInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
 var FF4OrHigher = versionChecker.compare(appInfo.version, "4.0b8") >= 0;
 
-var expectedValue = FF4OrHigher ?
-    "[style=\"color:green\", name=\"testName\", id=\"testId\"]" :
-    "[style=\"color: green;\", name=\"testName\", id=\"testId\"]";
-
-var expectedValue2 = FF4OrHigher ?
-    "style=\"color:green\"" :
-    "style=\"color: green;\"";
+var expectedValue = /[style=\"color:\s*green\", name=\"testName\", id=\"testId\"]/;
+var expectedValue2 = /style=\"color:\s*green\"/;
 
 function runTest()
 {
