@@ -70,7 +70,7 @@
                 <available file="${build.dir}/profile/parent.lock"/>
             </not>
         </waitfor>
-        <exec executable="${firefox}" output="${build.dir}/fbtestOutput.txt">
+        <exec executable="${firefox}"  output="${build.dir}/fbtestOutput.txt">
             <arg value="-no-remote"/>
             <arg value="-jsconsole"/>
             <arg value="-profile"/>
