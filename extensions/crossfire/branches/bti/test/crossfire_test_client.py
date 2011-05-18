@@ -12,13 +12,16 @@
 # Usage:
 # $> python crossfire_test_client.py [<host>] <port>
 #
+# On Windows platforms, try installing the pyreadline package.
+#
 
 import json, readline, socket, sys, threading, time
 
 current_seq = 0
 
 HANDSHAKE_STRING = "CrossfireHandshake"
-TOOL_STRING = "console,net,inspector,dom,debugger"
+TOOL_STRING = "console,net,inspector,dom"
+#TOOL_STRING = "net,debugger"
 
 class CrossfireClient:
 
@@ -232,6 +235,7 @@ class Command:
 
 Commands = [
     "entercontext",
+    "updatecontext",
     "listcontexts",
     "version",
     "continue",
@@ -250,7 +254,10 @@ Commands = [
     "changebreakpoint",
     "clearbreakpoint",
     "inspect",
-    "lookup"
+    "lookup",
+    "gettools",
+    "enabletools",
+    "disabletools"
 ]
 
 COMMAND_PROMPT = 'Crossfire x> '
@@ -349,7 +356,7 @@ if __name__ == "__main__":
               json.dump(packet, sys.stdout, sort_keys=True, indent=2)
               print "\n" + COMMAND_PROMPT,
 
-              readline.redisplay()
+              #readline.redisplay()
 
               if 'event' in packet and packet['event'] == "closed":
                   quit()

@@ -5,19 +5,30 @@ function runTest() {
     Components.utils.import("resource://crossfire/SocketTransport.js");
 
     var CrossfireModule = FBTest.FirebugWindow.CrossfireModule;
+    var CrossfireClient = FBTest.FirebugWindow.CrossfireClient;
 
-    var status = CrossfireModule.status;
-    FBTest.sysout("Connecting crossfire client on port 5000.  Status is : " + status);
-    CrossfireModule.connectClient("localhost", 5000);
+    var status = CrossfireClient.status;
+    var port = 5678;
+    FBTest.sysout("Connecting crossfire client on port " + port + ".  Status is : " + status);
+    FBTest.FirebugWindow.setTimeout(function() {
+        CrossfireClient.connectClient("localhost", port);
+    });
 
-    setTimeout(function() {
-        FBTest.ok(!(CrossfireModule.status == status), "CrossfireModule status changed");
-        FBTest.sysout("Status is: " + CrossfireModule.status);
+    setTimeout(function checkStatus() {
+        var newStatus = CrossfireClient.status;
+        FBTest.ok((newStatus == CROSSFIRE_STATUS.STATUS_CONNECTING || newStatus == CROSSFIRE_STATUS.STATUS_CONNECTED_CLIENT), "CrossfireModule status changed from: " + status + " to: " +newStatus);
+        status = newStatus;
+        FBTest.sysout("Status is: " + status);
 
-        FBTest.ok(CrossfireModule.status == CROSSFIRE_STATUS.STATUS_CONNECTED_CLIENT);
+        if (newStatus == CROSSFIRE_STATUS.STATUS_CONNECTING) {
+            FBTest.sysout("Waiting for connection... ");
+            setTimeout(checkStatus, 1000);
+        } else {
+            FBTest.ok(newStatus == CROSSFIRE_STATUS.STATUS_CONNECTED_CLIENT);
+            FBTestFirebug.testDone("clientTest.finished");
+        }
 
-        FBTestFirebug.testDone("clientTest.finished");
-    }, 3000);
+    }, 2000);
 
 
 }

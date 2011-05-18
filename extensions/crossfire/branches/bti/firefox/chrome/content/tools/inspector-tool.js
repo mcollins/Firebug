@@ -1,19 +1,23 @@
 /* See license.txt for terms of usage */
-define(["crossfireModules/crossfire.js","crossfireModules/crossfire-status.js", "crossfireModules/tools/tool-listener.js"], function( CrossfireModule, CrossfireStatus, ToolListener) {
 
-    /**
-     * Crossfire Inspector Tool
-     */
-    function InspectorTool() {
+/**
+ * Crossfire Inspector Tool
+ */
+FBL.ns(function() {
+
+    Crossfire.InspectorTool = function InspectorTool() {
 
     };
 
-    InspectorTool.prototype = FBL.extend(ToolListener, {
+    Crossfire.InspectorTool.prototype = FBL.extend(Crossfire.ToolListener, {
         toolName: "inspector",
         commands: ["inspect"],
         events: ["onInspectNode"],
 
         onRegistered: function() {
+            if (FBTrace.DBG_CROSSFIRE) {
+                FBTrace.sysout("CROSSFIRE inspectorTool onRegistered");
+            }
             Firebug.Inspector.addListener(this);
         },
 
@@ -25,11 +29,12 @@ define(["crossfireModules/crossfire.js","crossfireModules/crossfire-status.js", 
             var response;
             if (request.command == "inspect") {
                 var context = CrossfireModule.findContext(request.context_id);
+                var contextid;
                 if (context) {
                     response = this.doInspect(context, args);
+                    contextid = context.Crossfire.crossfire_id;
                 }
-
-                this.transport.sendResponse(request.command, request.seq, response, true, true, this.toolName);
+                this.transport.sendResponse(request.command, request.seq, contextid, response, true, true, this.toolName);
             }
         },
 
@@ -99,7 +104,7 @@ define(["crossfireModules/crossfire.js","crossfireModules/crossfire-status.js", 
          * @param node the node being inspected
          */
         onInspectNode: function(context, node) {
-            if (this.status == CrossfireStatus.STATUS_CONNECTED_SERVER) {
+            if (this.status == "connected_server") {
                 node = node.wrappedJSObject;
                 if (FBTrace.DBG_CROSSFIRE) {
                     FBTrace.sysout("CROSSFIRE onInspectNode", node);
@@ -143,6 +148,4 @@ define(["crossfireModules/crossfire.js","crossfireModules/crossfire-status.js", 
         }
 
     });
-
-    return InspectorTool;
 });

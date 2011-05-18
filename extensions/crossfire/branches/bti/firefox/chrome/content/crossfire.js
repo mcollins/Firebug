@@ -1,11 +1,11 @@
 /* See license.txt for terms of usage */
 
+
 /**
  * @name Crossfire
  * @description Firebug extension to add support for remote debug protocol.
  * @public
  */
-
 define(["firebug/lib",
         "firebug/firebug",
         "crossfireModules/crossfire-ui",
@@ -29,6 +29,7 @@ define(["firebug/lib",
      */
     var CrossfireModule = FBL.extend(Firebug.Module,  {
         contexts: [],
+        refs: [],
         dispatchName: "Crossfire",
         toolName: "all", // receive all packets, regardless of 'tool' header
         version: CROSSFIRE_VERSION,
@@ -42,6 +43,34 @@ define(["firebug/lib",
          * @extends Firebug.Module
          */
         initialize: function() {
+        if (FBTrace.DBG_CROSSFIRE)
+            FBTrace.sysout("CROSSFIRE initialize");
+            // -- add tools --
+            //TODO: load tools conditionally upon enablement
+            //Components.utils.import("resource://crossfire/tools/console-tool.js");
+            var consoleTool = new Crossfire.ConsoleTool();
+            if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                FBTrace.sysout("CROSSFIRE created ConsoleTool: " + consoleTool);
+            this.registerTool("console", consoleTool);
+
+            //Components.utils.import("resource://crossfire/tools/inspector-tool.js");
+            var inspectorTool = new Crossfire.InspectorTool();
+            if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                FBTrace.sysout("CROSSFIRE created InspectorTool: " + inspectorTool);
+            this.registerTool("inspector", inspectorTool);
+
+            //Components.utils.import("resource://crossfire/tools/net-tool.js");
+            var netTool = new Crossfire.NetTool();
+            if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                FBTrace.sysout("CROSSFIRE created NetTool: " + netTool);
+            this.registerTool("net", netTool);
+
+            //Components.utils.import("resource://crossfire/tools/dom-tool.js");
+            var domTool = new Crossfire.DomTool();
+            if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                FBTrace.sysout("CROSSFIRE created DomTool: " + domTool);
+            this.registerTool("dom", domTool);
+
             // initialize refs
             this._clearRefs();
         },
@@ -111,6 +140,12 @@ define(["firebug/lib",
                 this.clientTransport.close();
             }
             this._clearRefs();
+
+            this.unregisterTool("console");
+            this.unregisterTool("inspector");
+            this.unregisterTool("net");
+            this.unregisterTool("dom");
+
         },
 
         /**
@@ -156,10 +191,6 @@ define(["firebug/lib",
                     response = this.deactivateTool(toolName);
                 }
             }
-
-            //CrossfireModule.getServerTransport().sendResponse(command, request.seq, response, this.running, response);
-
-
         },
 
         // ----- Crossfire Protocol Extensions (Tools API) -----
@@ -177,6 +208,9 @@ define(["firebug/lib",
                 this.registeredTools[toolName] = toolListener;
                 if (toolListener.onRegistered) {
                     toolListener.onRegistered();
+                }
+                if (this.status == "connected_server") {
+                    this.registeredTools[toolName].onTransportCreated(this.serverTransport);
                 }
             } catch(e) {
                 if (FBTrace.DBG_CROSSFIRE_TOOLS)
@@ -202,6 +236,52 @@ define(["firebug/lib",
             }
         },
 
+        enableTools: function( tools) {
+            if (typeof tools == "string" ) {
+                try {
+                    this.activateTool(tools);
+                } catch (e1) {
+                    if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                        FBTrace.sysout("CROSSFIRE: enableTools fails: " +e1);
+                    return false;
+                }
+            } else {
+                for (var t in tools) {
+                     try {
+                        this.activateTool(tools[t]);
+                    } catch (e2) {
+                        if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                            FBTrace.sysout("CROSSFIRE: enableTools fails for " + t + " , " +e2);
+                        return false;
+                    }
+                }
+            }
+            return this.getTools();
+        },
+
+        disableTools: function( tools) {
+            if (typeof tools == "string" ) {
+                try {
+                    this.deactivateTool(tools);
+                } catch (e1) {
+                    if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                        FBTrace.sysout("CROSSFIRE: disableTools fails: " +e1);
+                    return false;
+                }
+            } else {
+                for (var t in tools) {
+                     try {
+                        this.deactivateTool(tools[t]);
+                    } catch (e2) {
+                        if (FBTrace.DBG_CROSSFIRE_TOOLS)
+                            FBTrace.sysout("CROSSFIRE: disableTool fails for " + t + " , " +e2);
+                        return false;
+                    }
+                }
+            }
+            return this.getTools();
+        },
+
         // called by transport listener after receiving tool string in handshake
         activateTool: function( toolName) {
             if (toolName in this.registeredTools) {
@@ -214,6 +294,7 @@ define(["firebug/lib",
                      } else if ( this.status == this.status == CrossfireStatus.STATUS_CONNECTED_SERVER) {
                          this.registeredTools[toolName].onTransportCreated(this.serverTransport);
                      }
+                     this.registeredTools[toolName].activated = true;
                      return true;
                  } catch (e) {
                      FBTrace.sysout("exception deactivationg tool: " + e);
@@ -228,6 +309,7 @@ define(["firebug/lib",
                     FBTrace.sysout("Crossfire activating tool: " + toolName);
                 try {
                     this.registeredTools[toolName].onTransportDestroyed(this.transport);
+                    this.registeredTools[toolName].activated = false;
                     return true;
                 } catch (e) {
                     FBTrace.sysout("exception deactivationg tool: " + e);
@@ -255,7 +337,7 @@ define(["firebug/lib",
         getTools: function() {
             var tools = [];
             for (var name in this.registeredTools) {
-                tools.push({"toolName": name });
+                tools.push({"toolName": name, "enabled": this.registeredTools[name].activated });
             }
             return { "tools": tools };
         },
@@ -426,12 +508,24 @@ define(["firebug/lib",
                 o["proto"] = this._getRef(obj.prototype);
             }
             return o;
+        },
+
+        // FBTest listener
+        onGetTestList: function(testLists)
+        {
+            if (FBTrace.DBG_CROSSFIRE)
+                FBTrace.sysout("CROSSFIRE onGetTestList");
+
+            testLists.push({
+                extension: "Crossfire",
+                testListURL: "chrome://crossfire/content/fbtest/testList.html"
+            });
         }
+
     });
 
     // register module
     Firebug.registerModule(CrossfireModule);
 
-    return exports = Firebug.CrossfireModule = CrossfireModule;
-//enifed
+	return CrossfireModule;
 });

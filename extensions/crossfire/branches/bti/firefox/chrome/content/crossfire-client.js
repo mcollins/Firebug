@@ -107,12 +107,18 @@ define(["firebug/ToolsInterface",
                 //var win = new ToolsInterface.Proxy("window", contextId, []);
                 //var context = Firebug.TabWatcher.createContext(win,ToolsInterface.browser,ToolsInterface.BrowserContext)
                 this.contexts[contextId] = context;
+                //var btiContext = new BrowserContext();
+                //this.contexts[contextId] = btiContext;
+                //this.btiBrowser._contextCreated(btiContext);
             } else if (eventName == "onScript") {
                 var context = this.contexts[contextId];
                 FBTrace.sysout("*.*.* CrossfireClient onScript ");
                 var compilationUnit = new ToolsInterface.CompilationUnit(data.href, context, this); //FIXME: allow other kinds of scripts
                 FBTrace.sysout("*.*.* CrossfireClient compilationUnit is => " + compilationUnit);
                 Firebug.ToolsInterface.browser.dispatch("onCompilationUnit", [compilationUnit]);
+                //var browserContext = this.contexts[contextId];
+                //var ccu = new CompilationUnit(data.href, browserContext); //CrossfireClient.CrossfireCompilationUnit(data.href, contextId);
+                //browserContext._addCompilationUnit(ccu);
             }
         },
 
@@ -420,7 +426,6 @@ define(["firebug/ToolsInterface",
 
     // register module
     Firebug.registerModule(CrossfireClient);
-
-    return exports = Firebug.CrossfireClient = CrossfireClient;
-// enifed
+    
+    return CrossfireClient;
 });
