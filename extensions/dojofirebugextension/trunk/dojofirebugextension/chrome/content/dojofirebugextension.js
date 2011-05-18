@@ -1143,7 +1143,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     
     _showReloadBoxIfNeeded: function(context) { 
 		// Verify if the context is consistent.
-	    if (_needsReload(context)/*context.needReload*/) {
+	    if (_needsReload(context)) {
 	    	/* Message box for Reload page */
 	        var conMsgBox = new ActionMessageBox("MsgBox", this.panelNode, 
 	        												$STR('warning.pageNeedToBeReload', DOJO_BUNDLE),
@@ -1450,13 +1450,19 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     		DojoReps.WidgetListRep.tag.append({object: widgets, propertiesToShow: funcWidgetProperties}, this.panelNode);
     		
     	} else {
-    		
     		//tree
+    		var useFakeRootForDetached = false;
+
     		var detachedWidgets = dojoAccessor.getDetachedWidgets(context);
-    		var detachedWidgetsFakeRoot = DojoReps.WidgetsTreeRep.createFakeTreeNode(detachedWidgets);
+    		
+    		var detachedWidgetsFakeRoot = DojoReps.WidgetsTreeRep.createFakeTreeNode(detachedWidgets);    		
     		if(detachedWidgets && detachedWidgets.length > 0) {
-        		//add the fake tree root to our widgets roots
-        		widgets.push(detachedWidgetsFakeRoot);    			
+    			if(useFakeRootForDetached) {
+            		//add the fake tree root to our widgets roots
+            		widgets.push(detachedWidgetsFakeRoot);    			    				
+    			} else {
+    				widgets = widgets.concat(detachedWidgets);
+    			}
     		}
     		
     		//get current selection
@@ -1467,7 +1473,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
 	    		selectionPath = dojoAccessor.getWidgetsExpandedPathToPageRoot(mainSelection, context);	
 
 	    		//is also a detached widget?
-	    		if(dojoAccessor.isDetachedWidget(mainSelection)) {
+	    		if(useFakeRootForDetached && dojoAccessor.isDetachedWidget(mainSelection)) {
 		    		//add fake widget as root of selectionPath
 		    		selectionPath = [detachedWidgetsFakeRoot].concat(selectionPath);
 		    	}
@@ -2462,7 +2468,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
        testLists.push({
            extension: "dojofirebugextension",
            //testListURL: "chrome://dojofirebugextension/content/fbtest/testlists/testList.html"
-           testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
+           //testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
+           testListURL: "http://fbug.googlecode.com/svn/extensions/dojofirebugextension/trunk/dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
        });
    }
    
