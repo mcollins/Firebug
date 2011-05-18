@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 
-<?xul-overlay href="chrome://firebug/content/browserOverlay.xul"?>
+<!-- ?xul-overlay href="chrome://firebug/content/browserOverlay.xul"? -->
+<!-- ?xul-overlay href="chrome://firebug/content/firebugOverlay.xul"? -->
+
 <?xml-stylesheet href="chrome://firebug/content/firebug.css"?>
 <?xml-stylesheet href="chrome://firebug/skin/window.css"?>
 
@@ -20,14 +22,30 @@
         width="800" height="600"
         persist="screenX,screenY,width,height,sizemode">
 
+
+    <!--script type="application/javascript" src="resource://firebug/require.js"/-->
+    <!--script type="application/javascript" src="chrome://crossfire/content/crossfire-client-loader.js"/-->
+
+
+    <!--script type="application/x-javascript" src="chrome://firebug/content/trace.js"/-->
+    <!--script type="application/x-javascript" src="chrome://firebug/content/legacy.js"/-->
+    <!--script type="application/x-javascript" src="chrome://firebug/content/chrome.js"/-->
+
+    <script type="application/x-javascript">
+       window.Firebug = {};
+    </script>
+
+
     <script type="application/javascript" src="chrome://remote-client/content/crossfire-remote-client.js"/>
+
+    <script type="application/javascript" src="chrome://crossfire/content/crossfire-xul.js"/>
 
     <vbox id="appcontent" flex="1">
         <toolbox>
             <toolbar>
                  <toolbarbutton class="button-control"
                     tooltiptext="Connect..."
-                    onclick="Crossfire.connect()">
+                    onclick="CrossfireUI.connect()">
                     <image id="crossfireButton"/>
                 </toolbarbutton>
                 <toolbarbutton id="crossfireToolList"
@@ -64,7 +82,7 @@
             <command id="cmd_toggleOrient" oncommand="FirebugChrome.toggleOrient()"/>
         </commandset>
 
-        <keyset id="mainKeyset">
+        <!--keyset id="mainKeyset">
             <key id="key_undo" key="&undoCmd.key;" modifiers="accel"/>
             <key id="key_redo" key="&undoCmd.key;" modifiers="accel,shift"/>
             <key id="key_cut" key="&cutCmd.key;" modifiers="accel"/>
@@ -75,16 +93,23 @@
             <key key="&reloadCmd.commandkey;" command="cmd_reload" modifiers="accel" id="key_reload"/>
             <key key="&reloadCmd.commandkey;" command="cmd_reload" modifiers="accel,shift"/>
             <key id="key_closeWindow" key="w" command="cmd_closeWindow" modifiers="accel"/>
-        </keyset>
+        </keyset-->
 
         <broadcasterset id="mainBroadcasterSet"/>
 
         <popupset id="mainPopupSet"/>
 
+        <!-- FB 1.7 XUL Window -->
         <!-- Entire Firebug UI -->
-        <vbox id="fbContentBox" flex="1" collapsed="false">
-        </vbox>
+        <!-- vbox id="fbContentBox" flex="1" collapsed="false" persist="height" -->
+        <!-- /vbox-->
 
+        <!-- FB 1.8 IFrame -->
+        <!-- Firebug panel -->
+        <!--splitter id="fbContentSplitter" collapsed="true"/-->
+        <vbox persist="height" id="fbMainFrame" collapsed="true">
+            <iframe id="firebugFrame" flex="2" src="chrome://firebug/content/firebugFrame.xul"/>
+        </vbox>
     </vbox>
 
     <vbox id="browser-bottombox">
@@ -94,9 +119,12 @@
 
     <script type="application/javascript">
         addEventListener("load", function() {
-            // hack firebug to make it look like we want it to
-            document.getElementById("fbWindowButtons").setAttribute("style","display:none");
-            document.getElementById("fbContentBox").collapsed = false;
+            document.getElementById("firebugFrame").addEventListener("load", function(win) {
+                // hack firebug to make it look like we want it to
+                //var doc = win.document;
+                document.getElementById("fbWindowButtons").setAttribute("style","display:none");
+                document.getElementById("fbContentBox").collapsed = false;
+            }, false);
         }, false);
     </script>
 </window>

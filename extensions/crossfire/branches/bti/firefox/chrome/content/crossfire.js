@@ -6,7 +6,10 @@
  * @public
  */
 
-define(["crossfireModules/crossfire-status"], function(CrossfireStatus) {
+define(["firebug/lib",
+        "firebug/firebug",
+        "crossfireModules/crossfire-ui",
+        "crossfireModules/crossfire-status"], function(FBL, Firebug, CrossfireUI, CrossfireStatus) {
 
     /**
      * @name CROSSFIRE_VERSION
@@ -122,7 +125,9 @@ define(["crossfireModules/crossfire-status"], function(CrossfireStatus) {
             if (FBTrace.DBG_CROSSFIRE)
                 FBTrace.sysout("CROSSFIRE onConnectionStatusChanged: " + status);
             this.status = status;
-            Firebug.Crossfire.updateStatus(status);
+
+            if (CrossfireUI)
+                CrossfireUI.updateStatus(status);
 
             // xxxMcollins: standalone client hack
             if (this.status == CrossfireStatus.STATUS_CONNECTED_CLIENT

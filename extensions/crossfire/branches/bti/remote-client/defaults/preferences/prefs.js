@@ -1,12 +1,15 @@
+/* set our XUL file to be the default UI */
 pref("toolkit.defaultChromeURI", "chrome://remote-client/content/crossfire-remote-client.xul");
 pref("toolkit.defaultChromeFeatures", "");
 pref("toolkit.singletonWindowType", true);
-pref("extensions.logging.enabled", true);
 
+/* extensions prefs */
+pref("extensions.logging.enabled", true);
 pref("extensions.dss.enabled", false);
 pref("extensions.dss.switchPending", false);
 pref("extensions.ignoreMTimeChanges", false);
 
+/* xpinstall */
 pref("xpinstall.dialog.confirm", "chrome://mozapps/content/xpinstall/xpinstallConfirm.xul");
 pref("xpinstall.dialog.progress.skin", "chrome://mozapps/content/extensions/extensions.xul?type=themes");
 pref("xpinstall.dialog.progress.chrome", "chrome://mozapps/content/extensions/extensions.xul?type=extensions");
@@ -26,3 +29,6 @@ pref("extensions.firebug.DBG_CROSSFIRE_FRAMES", false);
 pref("extensions.firebug.DBG_CROSSFIRE_TRANSPORT", true);
 pref("extensions.firebug.DBG_CROSSFIRE_TOOLS", false);
 pref("extensions.firebug.crossfire.loopbackOnly", false);
+
+/* fbtrace prefs */
+pref("extensions.firebug-tracing-service.DBG_toOSConsole", true);

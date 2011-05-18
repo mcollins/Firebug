@@ -1,6 +1,11 @@
 /* See license.txt for terms of usage */
 
-define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], function (CrossfireModule, CrossfireStatus) {
+define(["firebug/ToolsInterface",
+        "firebug/lib",
+        "firebug/firebug",
+        "crossfireModules/crossfire",
+        "crossfireModules/crossfire-status"],
+        function (ToolsInterface, FBL, Firebug, CrossfireModule, CrossfireStatus) {
 
     function CrossfireClient() {
         this.contexts = {};
@@ -16,6 +21,7 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
         dispatchName: "CrossfireClient",
         toolName: "all", // receive all packets, regardless of 'tool' header
         //listeners: [],
+        responseListeners: {},
 
         /*
          * @name initialize
@@ -96,13 +102,17 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
                 FBTrace.sysout("CrossfireClient fireEvent: " + eventName);
 
             if (eventName == "onContextCreated") {
-                var win = new ToolsInterface.Proxy("window", contextId, []);
-                var context = Firebug.TabWatcher.createContext(win,ToolsInterface.browser,ToolsInterface.BrowserContext)
+                FBTrace.sysout("*.*.* FIXME: do something to create a context!!");
+                //FIXME
+                //var win = new ToolsInterface.Proxy("window", contextId, []);
+                //var context = Firebug.TabWatcher.createContext(win,ToolsInterface.browser,ToolsInterface.BrowserContext)
                 this.contexts[contextId] = context;
             } else if (eventName == "onScript") {
                 var context = this.contexts[contextId];
-                var compilationUnit = new this.CompilationUnit(data.href, context, this); //FIXME: allow other kinds of scripts
-                this.dispatch("onCompilationUnit", [compilationUnit]);
+                FBTrace.sysout("*.*.* CrossfireClient onScript ");
+                var compilationUnit = new ToolsInterface.CompilationUnit(data.href, context, this); //FIXME: allow other kinds of scripts
+                FBTrace.sysout("*.*.* CrossfireClient compilationUnit is => " + compilationUnit);
+                Firebug.ToolsInterface.browser.dispatch("onCompilationUnit", [compilationUnit]);
             }
         },
 
@@ -112,11 +122,19 @@ define(["crossfireModules/crossfire","crossfireModules/crossfire-status",], func
             if (response.command == "listcontexts") {
                 //TODO: create BTI BrowserContexts?
             }
+
+            var responseListener = this.responseListeners[response.request_seq];
+            if (responseListener) {
+                if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                    FBTrace.sysout("CrossfireClient handleResponse found listener => " + responseListener);
+                responseListener.apply({},response);
+                delete this.responseListeners[response.request_seq];
+            }
         },
 
-        _sendCommand: function( command, data) {
-            //TODO:
-            this.transport.sendRequest(command, data);
+        _sendCommand: function( command, data, callback) {
+            var requestSeq = this.transport.sendRequest(command, data);
+            this.responseListeners[requestSeq] = callback;
         },
 
         // tools

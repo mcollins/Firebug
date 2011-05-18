@@ -4,19 +4,22 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
 
-    <script type="application/javascript" src="chrome://crossfire/content/crossfire-xul.js"/>
+    <!-- xxxMcollins hard-coded to server arch for now -->
+    <!--script type="application/javascript" src="resource://firebug/require.js"/-->
+
+    <!--script type="application/javascript" src="chrome://crossfire/content/crossfire-server-loader.js"/-->
+
 
     <!-- Firefox 3.6 Status Bar Icon -->
     <statusbar id="status-bar">
-        <statusbarpanel id="crossfireStatusBar" context="crossfireContextMenu" onmousedown="Crossfire.onStatusClick(this)">
+        <statusbarpanel id="crossfireStatusBar" context="crossfireContextMenu" onmousedown="CrossfireUI.onStatusClick(this)">
             <image id="crossfireIcon" class="disconnected" tooltiptext="Crossfire: no status set"/>
         </statusbarpanel>
         <menupopup id="crossfireStatusMenu">
-            <menuitem id="menu_startCrossfireServer" label="Start Server" onclick="Crossfire.startServer()"/>
-            <menuitem id="menu_connectCrossfireClient" label="Connect as client" onclick="Crossfire.connect()"/>
-            <!-- menuitem id="menu_connectCrossfireClient" label="Connect as client" onclick="Crossfire.Firefox.onConnect()"/-->
-            <menuitem id="menu_loopbackCrossfire" class="hidden" label="Loopback" onclick="Crossfire.Loopback.openFirebugClient()"/>
-            <menuitem id="menu_disconnectCrossfire" class="hidden" label="Disconnect..." onclick="Crossfire.disconnect()"/>
+            <menuitem id="menu_startCrossfireServer" label="Start Server" onclick="CrossfireUI.startServer()"/>
+            <menuitem id="menu_connectCrossfireClient" label="Connect as client" onclick="CrossfireUI.connect()"/>
+            <!-- menuitem id="menu_loopbackCrossfire" class="hidden" label="Loopback" onclick="Crossfire.Loopback.openFirebugClient()"/-->
+            <menuitem id="menu_disconnectCrossfire" class="hidden" label="Disconnect..." onclick="CrossfireUI.disconnect()"/>
         </menupopup>
     </statusbar>
 

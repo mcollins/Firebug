@@ -87,7 +87,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 FBTrace.sysout("CROSSFIRE _addListeners");
 
             //Firebug.Console.addListener(this);
-            Firebug.Debugger.addListener(this);
+            //Firebug.Debugger.addListener(this);
             //Firebug.HTMLModule.addListener(this);
         },
 
@@ -101,7 +101,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          */
         _removeListeners: function() {
             //Firebug.Console.removeListener(this);
-            Firebug.Debugger.removeListener(this);
+            //Firebug.Debugger.removeListener(this);
             //Firebug.HTMLModule.removeListener(this);
         },
 
