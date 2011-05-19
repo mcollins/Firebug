@@ -8,8 +8,7 @@
  */
 define(["firebug/lib",
         "firebug/firebug",
-        "crossfireModules/crossfire-ui",
-        "crossfireModules/crossfire-status"], function(FBL, Firebug, CrossfireUI, CrossfireStatus) {
+        "crossfireModules/crossfire-status"], function(FBL, Firebug, CrossfireStatus) {
 
     /**
      * @name CROSSFIRE_VERSION
@@ -47,29 +46,27 @@ define(["firebug/lib",
             FBTrace.sysout("CROSSFIRE initialize");
             // -- add tools --
             //TODO: load tools conditionally upon enablement
-            //Components.utils.import("resource://crossfire/tools/console-tool.js");
+            /*
             var consoleTool = new Crossfire.ConsoleTool();
             if (FBTrace.DBG_CROSSFIRE_TOOLS)
                 FBTrace.sysout("CROSSFIRE created ConsoleTool: " + consoleTool);
             this.registerTool("console", consoleTool);
 
-            //Components.utils.import("resource://crossfire/tools/inspector-tool.js");
             var inspectorTool = new Crossfire.InspectorTool();
             if (FBTrace.DBG_CROSSFIRE_TOOLS)
                 FBTrace.sysout("CROSSFIRE created InspectorTool: " + inspectorTool);
             this.registerTool("inspector", inspectorTool);
 
-            //Components.utils.import("resource://crossfire/tools/net-tool.js");
             var netTool = new Crossfire.NetTool();
             if (FBTrace.DBG_CROSSFIRE_TOOLS)
                 FBTrace.sysout("CROSSFIRE created NetTool: " + netTool);
             this.registerTool("net", netTool);
 
-            //Components.utils.import("resource://crossfire/tools/dom-tool.js");
             var domTool = new Crossfire.DomTool();
             if (FBTrace.DBG_CROSSFIRE_TOOLS)
                 FBTrace.sysout("CROSSFIRE created DomTool: " + domTool);
             this.registerTool("dom", domTool);
+            */
 
             // initialize refs
             this._clearRefs();
@@ -161,8 +158,14 @@ define(["firebug/lib",
                 FBTrace.sysout("CROSSFIRE onConnectionStatusChanged: " + status);
             this.status = status;
 
-            if (CrossfireUI)
-                CrossfireUI.updateStatus(status);
+            if (this.panel) {
+                try {
+                    this.panel.refresh(status);
+                } catch (ex) {
+                    if (FBTrace.DBG_CROSSFIRE)
+                        FBTrace.sysout("Crossfire failed to update panel status.");
+                }
+            }
 
             // xxxMcollins: standalone client hack
             if (this.status == CrossfireStatus.STATUS_CONNECTED_CLIENT
@@ -527,5 +530,5 @@ define(["firebug/lib",
     // register module
     Firebug.registerModule(CrossfireModule);
 
-	return CrossfireModule;
+    return CrossfireModule;
 });

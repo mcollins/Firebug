@@ -182,6 +182,7 @@ require(config,
 [
      "crossfireModules/crossfire",
      "crossfireModules/crossfire-ui",
+     "crossfireModules/crossfire-panel",
      "firebug/chrome",
      "firebug/lib",
      "firebug/firebug",

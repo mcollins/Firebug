@@ -178,50 +178,53 @@ if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
 
 require(config,
 [
+ "crossfireModules/crossfire",
+ "crossfireModules/crossfire-ui",
+ "crossfireModules/crossfire-panel",
  "firebug/chrome",
  "firebug/lib",
  "firebug/firebug",
-    "arch/firebugadapter",
-    "arch/javascripttool",
-    "firebug/debugger",
-    "firebug/traceModule",
-    "firebug/dragdrop",
-    "firebug/tabWatcher",
-    "firebug/scriptPanel",
-    "firebug/memoryProfiler",
-    "firebug/commandLine",
-    "firebug/navigationHistory",
-    "firebug/htmlPanel",
-    "firebug/cssPanel",
-    "firebug/consoleInjector",
-    "firebug/inspector",
-    "firebug/layout",
-    "firebug/netPanel",
-    "firebug/knownIssues",
-    "firebug/tabCache",
-    "firebug/activation",
-    "firebug/panelActivation",
-    "firebug/sourceFile",
-    "firebug/navigationHistory",
-    "firebug/a11y",
-    "firebug/shortcuts",
-    "firebug/start-button/startButtonOverlay",
-    "firebug/external/externalEditors",
-    "firebug/callstack",
-    "firebug/spy",
-    "firebug/tableRep",
-    "firebug/commandLinePopup",
-    "firebug/commandLineExposed",
-    "firebug/consoleExposed"
+"arch/firebugadapter",
+"arch/javascripttool",
+"firebug/debugger",
+"firebug/traceModule",
+"firebug/dragdrop",
+"firebug/tabWatcher",
+"firebug/scriptPanel",
+//"firebug/memoryProfiler",
+"firebug/commandLine",
+"firebug/navigationHistory",
+"firebug/htmlPanel",
+"firebug/cssPanel",
+"firebug/consoleInjector",
+"firebug/inspector",
+"firebug/layout",
+//"firebug/netPanel",
+//"firebug/knownIssues",
+"firebug/tabCache",
+"firebug/activation",
+"firebug/panelActivation",
+"firebug/sourceFile",
+"firebug/navigationHistory",
+"firebug/a11y",
+"firebug/shortcuts",
+"firebug/start-button/startButtonOverlay",
+//"firebug/external/externalEditors",
+"firebug/callstack",
+"firebug/spy",
+"firebug/tableRep",
+"firebug/commandLinePopup",
+"firebug/commandLineExposed",
+"firebug/consoleExposed"
 ],
-function(ChromeFactory, FBL, Firebug)
+function(CrossfireModule, CrossfireUI, CrossfirePanel, ChromeFactory, FBL, Firebug)
 {
     try
     {
         if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
         {
             var delta = (new Date().getTime()) - startLoading;
-            FBTrace.sysout("crossfire-client-loader.js; Firebug modules loaded using RequireJS in "+delta+" ms");
+            FBTrace.sysout("crossfire-server-loader.js; Firebug modules loaded using RequireJS in "+delta+" ms");
         }
 
         Firebug.Options.initialize("extensions.firebug");

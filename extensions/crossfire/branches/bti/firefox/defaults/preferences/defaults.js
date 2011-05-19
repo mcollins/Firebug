@@ -5,4 +5,5 @@ pref("extensions.firebug.DBG_CROSSFIRE_TOOLS", false);
 pref("extensions.firebug.DBG_CROSSFIRE_CLIENT", false);
 pref("extensions.firebug.DBG_CROSSFIRE_DISPATCH", false);
 pref("extensions.firebug.DBG_CROSSFIRE_BPS", false);
+pref("extensions.firebug.DBG_CROSSFIRE_PANEL", false);
 pref("extensions.firebug.crossfire.loopbackOnly", true);
