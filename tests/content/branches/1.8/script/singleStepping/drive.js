@@ -123,7 +123,7 @@ function stepOut()
 }
 
 var stepOutLineNo = 2;
-var stepOutFileName = "index.html";
+var stepOutFileName = "onclick";
 
 function checkstepOut()
 {
