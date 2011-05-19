@@ -8,8 +8,7 @@ function runTest()
         {
             var panel = FW.Firebug.chrome.selectPanel("console");
 
-            FBTest.typeCommand("loc");
-
+            FBTest.clearAndTypeCommand("loc");
             FBTest.synthesizeKey("VK_TAB", win); // 9 == tab
 
             var doc = FW.Firebug.chrome.window.document;

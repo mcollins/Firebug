@@ -9,7 +9,7 @@ function runTest()
         {
             var panel = FW.Firebug.chrome.selectPanel("console");
 
-            FBTest.typeCommand("dir(");
+            FBTest.clearAndTypeCommand("dir(");
 
             var doc = FW.Firebug.chrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
