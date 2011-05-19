@@ -6,31 +6,37 @@ function runTest()
         FBTest.openFirebug();
         FBTest.enableConsolePanel(function(win)
         {
-            var panel = FW.Firebug.chrome.selectPanel("console");
+            FW.Firebug.chrome.selectPanel("console");
+
             var doc = FW.Firebug.chrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
 
             // Test Command Line
-            cmdLine.value = ''; //xxxsz: Clear Command Line before typing the command - should probably be done inside typeCommand()
-            FBTest.typeCommand("var test = 'Hello';");
+            FBTest.clearAndTypeCommand("var test = 'Hello';");
   
-            FBTest.synthesizeKey("VK_F5", win);
+            // Reload and check if the text persists.
+            FBTest.reload(function()
+            {
+                FBTest.compare("var test = 'Hello';", cmdLine.value,
+                    "Content of Command Line must be: var test = 'Hello';");
 
-            FBTest.compare("var test = 'Hello';", cmdLine.value,
-                "Content of Command Line must be: var test = 'Hello';");
+                // Click on the 'Command Editor' button to swich to multiline command line. 
+                FBTest.clickToolbarButton(null, "fbCommandToggleSmall");
 
-            // Test Command Editor
-            FBTestFirebug.setPref("largeCommandLine", true);
-            cmdLine = doc.getElementById("fbLargeCommandLine");
-            cmdLine.value = '';
-            FBTest.typeCommand("var test = 'World';", true);
-  
-            FBTest.synthesizeKey("VK_F5", win);
+                FBTest.clearAndTypeCommand("var test = 'World';", true);
 
-            FBTest.compare("var test = 'World';", cmdLine.value,
-            "Content of Command Editor must be: var test = 'World';");
+                // Reload again and check if the text persists even in the
+                // multi line command line.
+                FBTest.reload(function()
+                {
+                    var cmdLine = doc.getElementById("fbLargeCommandLine");
+                    FBTest.compare("var test = 'World';", cmdLine.value,
+                        "Content of Command Editor must be: var test = 'World';");
+                    FBTest.clearCommand(true);
 
-            FBTest.testDone("issue4087.DONE");
+                    FBTest.testDone("issue4087.DONE");
+                });
+            });
         });
     });
 }

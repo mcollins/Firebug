@@ -12,6 +12,7 @@ function runTest()
 
             // Make sure the console is focused and command line API loaded.
             FBTest.focus(cmdLine);
+            FBTest.clearCommand();
 
             // Set command line expression and press Tab key.
             FBTest.typeCommand("doc");

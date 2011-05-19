@@ -11,8 +11,7 @@ function runTest()
             var cmdLine = doc.getElementById("fbCommandLine");
 
             // Test Command Line
-            cmdLine.value = ''; //xxxsz: Clear Command Line before typing the command - should probably be done inside typeCommand()
-            FBTest.typeCommand("document.getElementById()");
+            FBTest.clearAndTypeCommand("document.getElementById()");
             FBTest.synthesizeKey("VK_LEFT", win);
             FBTest.typeCommand("ab");
 
