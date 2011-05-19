@@ -197,6 +197,8 @@ this.setToKnownState = function()
     // Console preview is hiden by default
     if (this.isConsolePreviewVisible())
         this.clickConsolePreviewButton();
+
+    // xxxHonza: xxxJJB how clear the persisted panel state?
 };
 
 // ************************************************************************************************
@@ -977,12 +979,25 @@ this.getPref = function(pref)
 
 this.executeCommand = function(expr, chrome, useCommandEditor)
 {
-    this.typeCommand(expr, useCommandEditor);
+    this.clearAndTypeCommand(expr, useCommandEditor);
 
     if (useCommandEditor)
         FBTest.clickToolbarButton(chrome, "fbCmdLineRunButton");
     else
         FBTest.pressKey(13, "fbCommandLine");
+}
+
+this.clearCommand = function(useCommandEditor)
+{
+    var doc = FW.Firebug.chrome.window.document;
+    var cmdLine = doc.getElementById(useCommandEditor ? "fbLargeCommandLine": "fbCommandLine");
+    cmdLine.value = "";
+}
+
+this.clearAndTypeCommand = function(string, useCommandEditor)
+{
+    FBTest.clearCommand(useCommandEditor);
+    FBTest.typeCommand(string, useCommandEditor);
 }
 
 this.typeCommand = function(string, useCommandEditor)
