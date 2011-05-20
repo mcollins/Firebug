@@ -108,7 +108,7 @@ function onMutateRemovedRace(callback, win, id)
 
 function waitForHtmlMutation(chrome, tagName, object, callback)
 {
-    FBTest_waitForHtmlMutation(chrome, tagName, function(node)
+    FBTest.waitForHtmlMutation(chrome, tagName, function(node)
     {
         if (object)
         {
@@ -122,35 +122,5 @@ function waitForHtmlMutation(chrome, tagName, object, callback)
         }
 
         callback(node);
-    });
-}
-
-// ********************************************************************************************* //
-
-// xxxHonza: remove as soon as it's part of FBTest 1.7b11
-function FBTest_waitForHtmlMutation(chrome, tagName, callback)
-{
-    if (!chrome)
-        chrome = FW.Firebug.chrome;
-
-    var panel = FBTest.selectPanel("html");
-
-    var doc = FBTest.getPanelDocument();
-    var view = doc.defaultView;
-    var attributes = {"class": "mutated"};
-
-    // Wait for mutation event. The HTML panel will set "mutate" class on the
-    // corresponding element.
-    var mutated = new MutationRecognizer(view, tagName, attributes);
-    mutated.onRecognizeAsync(function onMutate(node)
-    {
-        // Now wait till the HTML panel unhighlight the element (removes the mutate class)
-        var unmutated = new MutationRecognizer(view, tagName, null, null, attributes);
-        unmutated.onRecognizeAsync(function onUnMutate(node)
-        {
-            setTimeout(function() {
-                callback(node);
-            }, 200);
-        });
     });
 }
