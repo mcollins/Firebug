@@ -1,1 +1,1 @@
-For Firebug documentation see: [http://getfirebug.com/wiki/index.php/Main_Page http://getfirebug.com/wiki/index.php/Main_Page]
+For documentation about Firebug please see the [http://getfirebug.com/wiki/ Wiki at getfirebug.com]
