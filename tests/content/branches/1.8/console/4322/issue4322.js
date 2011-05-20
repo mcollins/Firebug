@@ -17,7 +17,7 @@ function runTest()
                     "The error title must match.");
 
                 var link = row.querySelector(".objectLink.objectLink-sourceLink");
-                FBTest.compare("issue4322.html (line 28)", link.textContent,
+                FBTest.compare(FW.FBL.$STRF("Line", ["issue4322.html", 28]), link.textContent,
                     "The source link must match.");
 
                 FBTest.testDone("issue4322.DONE");

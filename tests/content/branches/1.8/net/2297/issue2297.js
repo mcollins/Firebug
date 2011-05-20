@@ -37,7 +37,7 @@ function runTest()
 
             // Verify status bar text
             var statusText = FW.top.document.getElementById("fbStatusText");
-            FBTest.compare("1 Error", statusText.value,
+            FBTest.compare(FW.FBL.$STRP("plural.Error_Count2", [1]), statusText.value,
                 "There must be 1 Error displayed in the status bar");
 
             FBTestFirebug.setPref("showNetworkErrors", prefOrigValue);

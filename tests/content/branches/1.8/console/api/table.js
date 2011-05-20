@@ -17,7 +17,8 @@ function runTest()
             var text2 = "firstNamelastNameagedesc\"Susan\"\"Doyle\"32\"mother\"\"John\"\"Doyle\"33\"father\"\"Lily\"\"Doyle\"5undefined\"Mike\"\"Doyle\"8undefined";
             var table2 = {cols: 4, rows: 4, content: text2};
 
-            var table3 = {cols: 1, rows: 3, content: "Object Properties\"propA\"\"propB\"\"propC\""};
+            var table3 = {cols: 1, rows: 3, content: FW.FBL.$STR("firebug.reps.table.ObjectProperties") +
+                "\"propA\"\"propB\"\"propC\""};
             var table4 = table2;
             var table5 = {cols: 2, rows: 3, content: "12233445"};
             var table6 = {cols: 2, rows: 3, content: "2nd3rd233445"};

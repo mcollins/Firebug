@@ -49,10 +49,11 @@ function verifyConsoleUI(config)
         return;
 
     // Verify the first assert message.
-    var reExpectedLog1 = /negative\s*console.assert\(false,\s*\"negative\"\);\s*assert.html\s*\(line\s*42\)/
+    var reExpectedLog1 = new RegExp("negative\\s*console\.assert\\(false,\\s*\"negative\"\\);\\s*" +
+        FW.FBL.$STRF("Line", ["assert.html", 42]).replace(/([\\"'\(\)])/g, "\\$1"));
     if (!FBTest.compare(reExpectedLog1, rows[0].textContent,
         "The log must be something like as follows: " +
-        "negative    console.assert(false, \"negative\");\r\nassert.html (line 42)"))
+        "negative    console.assert(false, \"negative\");\r\n" + FW.FBL.$STRF("Line", ["assert.html", 42])))
         return;
 
     // Verify the second assert message.

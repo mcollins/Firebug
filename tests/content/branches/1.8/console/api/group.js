@@ -32,7 +32,8 @@ function test1(callback)
         var group = panelNode.getElementsByClassName(
             "logRow logRow-group logGroup opened")[0];
 
-        FBTest.compare(/Group1\s*log\s*group.html\s*\(line 37\)/,
+        FBTest.compare(new RegExp("Group1\\s*log\\s*" +
+            FW.FBL.$STRF("Line", ["group.html", 37]).replace(/([\\"'\(\)])/g, "\\$1")),
             group.textContent, "The group must contain one log message");
 
         callback();
@@ -62,7 +63,8 @@ function test2(callback)
             "logRow logRow-group logGroup")[0];
 
         FBTest.ok(!FW.FBL.hasClass("opened"), "The group must be collapsed by default");
-        FBTest.compare(/Group2\s*log\s*group.html\s*\(line 45\)/,
+        FBTest.compare(new RegExp("Group2\\s*log\\s*" +
+            FW.FBL.$STRF("Line", ["group.html", 45]).replace(/([\\"'\(\)])/g, "\\$1")),
             group.textContent, "The group must contain one log message");
 
         callback();

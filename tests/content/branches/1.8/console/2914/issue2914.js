@@ -26,7 +26,8 @@ function runTest()
             // Verify stack trace.
             var traceNode = errorNode.querySelector(".errorTrace");
             FBTest.compare(
-                "logError()issue2...me.html (line 10)issue2914-innerFrame.html()issue2...me.html (line 12)",
+                "logError()" + FW.FBL.$STRF("Line", ["issue2...me.html", 10]) + 
+                    "issue2914-innerFrame.html()" + FW.FBL.$STRF("Line", ["issue2...me.html", 12]),
                 traceNode.textContent,
                 "The stack trace must be properly displayed.");
 

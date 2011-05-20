@@ -32,7 +32,7 @@ function runTest()
                     "The 'fib' function was called exactly 242785 times.");
                 FBTest.compare("100%", profileRows[1].childNodes[2].textContent,
                     "Only the 'fib' function was executed.");
-                FBTest.compare(/profile.html\s*\(line 33\)/,
+                FBTest.compare(FW.FBL.$STRF("Line", ["profile.html", 33]),
                     profileRows[1].childNodes[8].textContent,
                     "The source link must be correct.");
 

@@ -9,7 +9,8 @@ function runTest()
             var config = {tagName: "div", classes: "logRow logRow-info"};
             FBTest.waitForDisplayedElement("console", config, function(row)
             {
-                var reTextContent = /This is a test info\s*info.html\s*\(line\s*30\)/;
+                var reTextContent = new RegExp("This is a test info\\s*" +
+                    FW.FBL.$STRF("Line", ["info.html", 30]).replace(/([\\"'\(\)])/g, "\\$1"));
                 FBTest.compare(reTextContent, row.textContent, "The proper message must be displayed.");
                 FBTest.testDone("console.info.DONE");
             });

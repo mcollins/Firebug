@@ -38,10 +38,10 @@ function checkConsoleSourceLinks(elt)
     FBTest.compare("2 sourcelinks", links.length+" sourcelinks", "The test case shows two source links");
 
     var initLink = links[0].firstChild; // after R4847 there is a div around the text of the link
-    FBTest.compare("issue882.html (line 10)", initLink.innerHTML, "Line 10 should be linked");
+    FBTest.compare(FW.FBL.$STRF("Line", ["issue882.html", 10]), initLink.innerHTML, "Line 10 should be linked");
 
     var externalLink = links[1].firstChild;
-    FBTest.compare("external.js (line 2)", externalLink.innerHTML, "Line 2 of external.js should be linked");
+    FBTest.compare(FW.FBL.$STRF("Line", ["external.js", 2]), externalLink.innerHTML, "Line 2 of external.js should be linked");
 
     // Now set a new recognizer for the highlight in the script panel
     var panelWindow = FBTestFirebug.getPanelDocument().defaultView;
