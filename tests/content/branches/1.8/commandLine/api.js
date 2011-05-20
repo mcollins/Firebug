@@ -37,6 +37,7 @@ function runTest()
             tasks.push(executeAndVerify, "values(b)", "[7, \"a\"]",
                 "span", "objectBox objectBox-array");
 
+            // xxxsz: Doesn't work for translated UIs
             tasks.push(executeAndVerify, "table(a)", "Object Properties10",
                 "div", "logRow logRow-table");
 
