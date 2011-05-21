@@ -216,7 +216,6 @@ this.DijitRep = domplate(FirebugReps.Obj,
 		
 		//unwrapObject to avoid error "Access to property denied"  code: "1010" in chrome://firebug/content/inspector.js
 		Firebug.Inspector.highlightObject(unwrapObject(domElem), context);
-		
 	},
 	
 	_getHtmlNode: function(widget) {
@@ -705,8 +704,9 @@ this.WidgetsTreeRep = domplate({
 						DIV({"class": "widget-label"},
 								SPAN({"class": "collapsable-children-label $wrapper|hasChildrenClass", onclick: "$onChildrenContainerClick" },
 										TAG(this.DijitRep.tag, {object: "$wrapper.widget"})
-								),
+								)/*, //DEPRECATED
 								SPAN({"class": "$wrapper|infoLevelToggleClass", onclick: "$onSwitchInfoLevelClick", title: $STR('widget.infoLevelToggle.tooltip', DOJO_BUNDLE)}, "&nbsp;")
+								*/
 							),
 						DIV({"class": "widget-data widget-data-collapsed collapsable-content", _referencedObject:"$wrapper.widget"},
 								DIV({"class": "widget-specific-data not-loaded"}),
@@ -763,6 +763,7 @@ this.WidgetsTreeRep = domplate({
 		return (this.level(wrapper) * 16) + "px";
 	},
 	
+	//DEPRECATED
 	infoLevelToggleClass: function(wrapper) {
 		//FIXME do not explicitely use fakeNode
 		return wrapper.widget.isFakeRoot ? "not-displayed" : "infoLevelToggle";
@@ -784,6 +785,7 @@ this.WidgetsTreeRep = domplate({
 		return this.hasChildren(wrapper.widget) ? "with-children" : "with-no-children";
 	},
 	
+	//DEPRECATED
 	_getDecFunction: function(node) {
 		var root = getAncestorByClass(node, "widgets-tree");
 		return root.decFunction;
@@ -806,6 +808,7 @@ this.WidgetsTreeRep = domplate({
     	this.toggleChildren(elem);
   	},
 	
+  	//DEPRECATED
 	onSwitchInfoLevelClick: function(event) {
     	if (!isLeftClick(event)) {
     		return;
