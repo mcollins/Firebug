@@ -1348,11 +1348,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	this.openAboutDialog();
     },
 
-    /*
-     * method copied from chrome.js
-     */
-    openAboutDialog: function()
-    {
+    openAboutDialog: function() {
         if (FBTrace.DBG_WINDOWS)
             FBTrace.sysout("dojofirebugextension.openAboutDialog");
 
@@ -1911,7 +1907,7 @@ DojoExtension.DojoInfoSidePanel.prototype = extend(Firebug.Panel,
 var SimplePanelPlusMixin = extend(Firebug.Panel, DojoPanelMixin);
 SimplePanelPlusMixin = extend(SimplePanelPlusMixin, {
 	/**
-	 * The select method is extended to assure that the selected object
+	 * The select method is extended to ensure the selected object
 	 * is the same one at this side panel and in the main panel.
 	 * @override 
 	 */
@@ -2020,6 +2016,49 @@ DojoExtension.SubscriptionsSidePanel.prototype = extend(SimplePanelPlusMixin,
 //************************************************************************************************
 
 /**
+ * @panel Widget Properties Side Panel.
+ * This side panel displays the dojo highlevel properties for the selected widget. 
+ */
+DojoExtension.WidgetPropertiesSidePanel = function(){};
+DojoExtension.WidgetPropertiesSidePanel.prototype = extend(SimplePanelPlusMixin,
+{
+    name: "widgetPropertiesSidePanel",
+    title: $STR('panel.widgetProperties.title', DOJO_BUNDLE),
+    parentPanel: DojoExtension.dojofirebugextensionPanel.prototype.name,
+    order: 4,
+    editable: false,
+    
+    initialize: function() {
+    	Firebug.Panel.initialize.apply(this, arguments);
+    	_addStyleSheet(this.document);
+	},
+
+    /**
+     * Returns a number indicating the view's ability to inspect the object.
+     * Zero means not supported, and higher numbers indicate specificity.
+     */
+    supportsObject: function(object, type) {
+    	var dojoAccessor = getDojoAccessor(_safeGetContext(this));
+    	return (dojoAccessor && dojoAccessor.isWidgetObject(object)) ? 2000 : 0;
+    },
+
+    updateSelection: function(widget) {
+    	if(this.supportsObject(widget)) {
+        	var context = _safeGetContext(this);
+        	var dojoAccessor = getDojoAccessor(context);
+        	var objectToDisplay = dojoAccessor.getSpecificWidgetProperties(widget, context);
+        	Firebug.DOMPanel.DirTable.tag.replace( { object: objectToDisplay }, this.panelNode);
+    	} else {
+    		DojoReps.Messages.infoTag.replace({object: $STR('warning.objectIsNotAWidget', DOJO_BUNDLE)}, this.panelNode);
+    	}
+    }
+
+});
+
+
+//************************************************************************************************
+
+/**
  * @panel DOM Side Panel.
  * This side panel shows the same info the the DOM panel shows for the selected object. 
  */
@@ -2029,12 +2068,11 @@ DojoExtension.DojoDOMSidePanel.prototype = extend(Firebug.DOMBasePanel.prototype
     name: "dojoDomSidePanel",
     title: "DOM",
     parentPanel: DojoExtension.dojofirebugextensionPanel.prototype.name,
-    order: 4,
+    order: 5,
     enableA11y: true,
     deriveA11yFrom: "console",
     
-    updateSelection: function(object)
-    {
+    updateSelection: function(object) {
 	   if (_safeGetContext(this).dojoExtensionSelection) {
     		return Firebug.DOMBasePanel.prototype.updateSelection.apply(this, arguments);
 	   }
@@ -2054,24 +2092,21 @@ DojoExtension.DojoHTMLPanel.prototype = extend(Firebug.HTMLPanel.prototype,
     name: "dojoHtmlSidePanel",
     title: "HTML",
     parentPanel: DojoExtension.dojofirebugextensionPanel.prototype.name,
-    order: 5,
+    order: 6,
     enableA11y: true,
     deriveA11yFrom: "console",
 
-    initialize: function(context, doc)
-    {
+    initialize: function(context, doc) {
 		Firebug.HTMLPanel.prototype.initialize.apply(this, arguments);
 		_addStyleSheet(this.document);
     },
 
-    show: function(state)
-    {
+    show: function(state) {
         Firebug.HTMLPanel.prototype.show.apply(this, arguments);
         this.showToolbarButtons("fbHTMLButtons", false);
     },
 
-    updateSelection: function(object)
-    {
+    updateSelection: function(object) {
     	var dojoPanelSelection = _safeGetContext(this).dojoExtensionSelection;
     	// Verify if selected object is the same one that is setted in the dojo panel.
     	if (dojoPanelSelection && 
@@ -2468,8 +2503,8 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
        testLists.push({
            extension: "dojofirebugextension",
            //testListURL: "chrome://dojofirebugextension/content/fbtest/testlists/testList.html"
-           //testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
-           testListURL: "http://fbug.googlecode.com/svn/extensions/dojofirebugextension/trunk/dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
+           testListURL: "http://dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
+           //testListURL: "http://fbug.googlecode.com/svn/extensions/dojofirebugextension/trunk/dojofirebugextension/chrome/content/fbtest/testlists/testList.html"
        });
    }
    
@@ -2484,6 +2519,7 @@ Firebug.registerPanel(DojoExtension.dojofirebugextensionPanel);
 Firebug.registerPanel(DojoExtension.DojoInfoSidePanel);
 Firebug.registerPanel(DojoExtension.ConnectionsSidePanel);
 Firebug.registerPanel(DojoExtension.SubscriptionsSidePanel);
+Firebug.registerPanel(DojoExtension.WidgetPropertiesSidePanel);
 Firebug.registerPanel(DojoExtension.DojoDOMSidePanel);
 Firebug.registerPanel(DojoExtension.DojoHTMLPanel);
 Firebug.registerStylesheet(DOJO_EXT_CSS_URL);
