@@ -320,6 +320,7 @@ DojoModel.DojoAccessor.prototype =
 		 */
 		/*Object*/getSpecificWidgetProperties: function(widget, context) {
 			var dojo = _dojo(context);			
+			var dijit = _dijit(context);
 			var tracker = context.connectionsAPI;
 			var props = {};
 			
@@ -328,6 +329,9 @@ DojoModel.DojoAccessor.prototype =
 			}
 			if(widget.label) {
 				props['label'] = widget.label;
+			}
+			if(widget.id) {
+				props['id'] = widget.id;
 			}
 			
 			if(widget.getParent) {
@@ -378,7 +382,9 @@ DojoModel.DojoAccessor.prototype =
 			}
 			
 			
-			props['attributeMap'] = widget.attributeMap;
+			if(widget.attributeMap && widget.attributeMap != dijit._Widget.prototype.attributeMap) {
+				props['attributeMap'] = widget.attributeMap;
+			}
 			
 			/* Declared Class */
 			props['declaredClass'] = widget['declaredClass'];
