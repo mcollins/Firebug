@@ -9,6 +9,7 @@
     <commandset id="mainCommandSet">
         <command id="cmd_toggleJSEditor" oncommand="Firebug.Dyne.toggleJSEditing()"/>
         <command id="cmd_saveDyneEditing" oncommand="Firebug.Dyne.saveEditing()"/>
+        <command id="cmd_reloadDyne" oncommand="Firebug.Dyne.reloadDyne(window)"/>
     </commandset>
 
     <toolbar id="fbToolbar">
@@ -25,6 +26,12 @@
                   </toolbarbutton>
             </hbox>
             <hbox id="fbOrionButtons" collapsed="true" class="noTabStop" insertbefore="fbLocationButtons">
+                <toolbarbutton id="fbDyneReloadButton"
+                    label="Reload"
+                    tooltiptext="MetaReload"
+                    command="cmd_reloadDyne"
+                    type="menu-button">
+                </toolbarbutton>
                 <toolbarbutton id="fbOrionSaveButton"
                     label="Save"
                     tooltiptext="Save Edits"

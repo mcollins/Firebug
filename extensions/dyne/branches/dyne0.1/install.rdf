@@ -13,10 +13,9 @@
       <Description>
         <em:id>toolkit@mozilla.org</em:id>
         <em:minVersion>1.9.0.*</em:minVersion>
-        <em:maxVersion>5.0.*</em:maxVersion>
+        <em:maxVersion>6.2.0.*</em:maxVersion>
       </Description>
     </em:targetApplication>
-
 
     <em:name>dyne</em:name>
     <em:description>JS Edit button for Firebug.</em:description>

@@ -227,7 +227,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         {
             this.addEditURL(editLink);
 
-            FBTrace.sysout("dyne.updateSelection editURL "+editLink.editURL, editLink);
+            FBTrace.sysout("dyne.updateSelection editURL "+editLink.editURL+((this.location === editLink.editURL)?"===":"!==")+this.location, editLink);
             if (this.location !== editLink.editURL)
                 this.navigate(editLink.editURL);
             else
@@ -340,7 +340,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
         var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
-        parentElement.innerHTML = "<iframe src='"+url+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
+        parentElement.innerHTML = "<iframe src='"+editorURL+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
 
         var iframes = parentElement.getElementsByTagName('iframe');
         if (iframes.length === 1)
@@ -373,7 +373,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         else
         {
             if (doc.documentElement)
-                doc.documentElement.appendChild(element);
+                doc.documentElement.appendChild(child);
             else
             {
                 // See issue 1079, the svg test case gives this error
@@ -398,10 +398,12 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             this.currentEclipse = win;
             if (FBTrace.DBG_DYNE)
                 FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse.location, this.currentEclipse);
-            var topContainer = win.dijit.byId('topContainer');
+            var editorContainer = win.dijit.byId('editorContainer');
             if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("dyne.integrateOrion topContainer: "+topContainer, topContainer);
-            var editor = topContainer._editorContainer._editor;
+                FBTrace.sysout("dyne.integrateOrion editorContainer: "+editorContainer, editorContainer);
+            var editorContainer = win.orion.embeddedEditor.editorContainer;
+
+            var editor = editorContainer.getEditorWidget();
             if (FBTrace.DBG_DYNE)
                 FBTrace.sysout("dyne.integrateOrion editor "+editor, editor);
             this.currentEditor = editor;
@@ -411,6 +413,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         catch(exc)
         {
             FBTrace.sysout("dyne.integrateOrion ERROR: "+exc, exc);
+            return;
             this.panelNode.removeChild(this.selectedOrionBox);
             delete this.location;
             delete this.selectedOrionBox;
@@ -422,9 +425,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var model = this.getModel();
         if (this.selection instanceof Firebug.EditLink)
         {
-            FBTrace.sysout("attachUpdater "+this.selection.fileURL);
+            
             if (this.isLocalURI(this.selection.fileURL))
             {
+            	FBTrace.sysout("attachUpdater "+this.selection.fileURL, this.selection);
                 this.editLocalFile(this.selection.fileURL);
             }
             var fromPanel = this.selection.originPanel;
@@ -958,6 +962,13 @@ Firebug.Dyne.NetRequestTableListener = {
         var url = getEditURLbyNetFile(netFile);
         window.alert("Need to create "+url);
     }
+}
+
+Firebug.Dyne.reloadDyne = function(win)
+{
+    var srcURL = "chrome://dyne/content/dyne.js";
+    var element = Firebug.Dyne.OrionPanel.prototype.insertScriptTag(win.document, "reloadDyne", srcURL);
+    FBTrace.sysout("Firebug.Dyne.reloadDyne "+element, element);
 }
 // ************************************************************************************************
 // Registration
