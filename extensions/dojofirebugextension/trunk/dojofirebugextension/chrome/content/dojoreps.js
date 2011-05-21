@@ -216,6 +216,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 		
 		//unwrapObject to avoid error "Access to property denied"  code: "1010" in chrome://firebug/content/inspector.js
 		Firebug.Inspector.highlightObject(unwrapObject(domElem), context);
+		
 	},
 	
 	_getHtmlNode: function(widget) {
