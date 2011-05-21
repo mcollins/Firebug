@@ -147,7 +147,7 @@ this.DojoObjectRep = domplate(FirebugReps.Obj,
 this.DijitRep = domplate(FirebugReps.Obj,
 {
 	tag: FirebugReps.OBJECTLINK(
-		SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName", _referencedObject: "$object"},
+		SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName $object|getCustomClassName", _referencedObject: "$object"},
 			'[',
 			SPAN({"class": "widgetId"}, "$object|getWidgetId"),
 			' ',
@@ -159,7 +159,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 	//TODO for detached css class, try using "$detached: $object|isDetached" .
 	// see: http://www.softwareishard.com/blog/domplate/domplate-examples-part-ii/
 	shortTag: FirebugReps.OBJECTLINK(
-		SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName", _referencedObject: "$object"},
+		SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName $object|getCustomClassName", _referencedObject: "$object"},
 			'[',
 			SPAN({"class": "widgetId"}, "$object|getWidgetId"),
 			' ',
@@ -191,6 +191,13 @@ this.DijitRep = domplate(FirebugReps.Obj,
 		return this.isDetached(widget) ? "detached" : "";
 	},
 	
+	/**
+	 * allows widget to display specific style
+	 */
+	/*string*/	getCustomClassName: function(/*dijit widget*/widget) {
+		return widget.getCustomStyle ? widget.getCustomStyle() : "";
+	},
+
 	supportsObject: function(object, type) {
 		// FIXME: This validation should be done using the method isWidgetObject defined in the dojoAccess.
 	    return object['declaredClass'] && object['postMixInProperties'];
@@ -206,7 +213,9 @@ this.DijitRep = domplate(FirebugReps.Obj,
 
 	highlightObject: function(widget, context) {
 		var domElem = this._getHtmlNode(widget);
-		Firebug.Inspector.highlightObject(domElem, Firebug.currentContext);
+		
+		//unwrapObject to avoid error "Access to property denied"  code: "1010" in chrome://firebug/content/inspector.js
+		Firebug.Inspector.highlightObject(unwrapObject(domElem), context);
 	},
 	
 	_getHtmlNode: function(widget) {
@@ -717,7 +726,10 @@ this.WidgetsTreeRep = domplate({
             		),
 
     createFakeTreeNode: function(children) { 
-		return { 'isFakeRoot': true, 'id': 'Detached Widgets', 'declaredClass': '', 'children': children };
+		return { 'isFakeRoot': true, 'id': 'Detached Widgets', 'declaredClass': '', 'children': children,
+			getCustomStyle: function() {
+				return "fakeWidgetNode";
+			}};
 	},    		
 	collapsedChildrenNode: 	DIV({"class": "children not-loaded"}),
 	
