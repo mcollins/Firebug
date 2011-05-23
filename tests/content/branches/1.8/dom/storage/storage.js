@@ -122,7 +122,7 @@ function testLocalStorageData(callback, win)
     {
         FBTest.compare(
             new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [10]) +
-                "\\s*item6=\\\"6\\\",\\s*item3=\\\"3\\\",\\s*more...\\s*"),
+                "\\s*item6=\\\"6\\\",\\s*item3=\\\"3\\\",\\s*" + FW.FBL.$STR("firebug.reps.more") + "...\\s*"),
             row.textContent, "The local storage must have proper data");
         callback();
     });
