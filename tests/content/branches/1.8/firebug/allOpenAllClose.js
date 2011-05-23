@@ -30,7 +30,7 @@ function allOpenAllClose()
 
 function allOpened()
 {
-    var placement = FW.Firebug.getPlacement();
+    var placement = FBTest.getFirebugPlacement();
     FBTest.compare("inBrowser", placement, "Firebug now open in browser");
 
     if (FBTest.FirebugWindow.Firebug.currentContext)
@@ -49,12 +49,12 @@ function alsoOpened(win)
 {
     FBTest.progress("Opened "+win.location);
 
-    var placement = FW.Firebug.getPlacement();
+    var placement = FBTest.getFirebugPlacement();
     FBTest.compare("inBrowser", placement, "Firebug opened because of all open");
 
     FBTest.Firebug.pressToggleFirebug();  // toggle to minimize
 
-    var placement = FW.Firebug.getPlacement();
+    var placement = FBTest.getFirebugPlacement();
     FBTest.compare("minimized", placement, "Firebug minimized");
 
     var statusbarIcon = FW.top.document.getElementById('fbStatusIcon');

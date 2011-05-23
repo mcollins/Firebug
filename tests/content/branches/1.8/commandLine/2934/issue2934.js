@@ -16,11 +16,11 @@ function runTest()
 
             // Set command line expression and press Tab key.
             FBTest.typeCommand("doc");
-            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.synthesizeKey("VK_TAB", null, win);
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after tab key completion.");
 
             FBTest.typeCommand(".");
-            FBTest.synthesizeKey("VK_BACK_SPACE", win);
+            FBTest.synthesizeKey("VK_BACK_SPACE", null, win);
             FBTest.compare("document", cmdLine.value,"The command line must display 'document' after backspace on 'document.'.");
 
             FBTest.pressKey(13, "fbCommandLine");  // execute 'document' command
@@ -39,7 +39,7 @@ function runTest()
             FBTest.compare("", cmdLine.value, "The command line must display nothing after escape key");
 
             FBTest.typeCommand("document.id.");
-            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.synthesizeKey("VK_TAB", null, win);
             FBTest.compare("document.id.", cmdLine.value,"The command line must display 'document.id.' after tab key completion.");
 
             FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
@@ -60,7 +60,7 @@ function runTest()
             FBTest.executeCommand("aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB = 1; aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK = 2; aaaaaaaaaaaaaaaaZZTop = 3;");
             FBTest.typeCommand('a');
             FBTest.typeCommand('a');
-            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.synthesizeKey("VK_TAB", null, win);
             FBTest.compare("aaaaaaaaaaaaaaaaZZTop", cmdLine.value,"The command line must display 'aaaaaaaaaaaaaaaaZZTop' after tab key completion.");
 
             FBTest.pressKey(27, "fbCommandLine");  // escape
@@ -70,14 +70,14 @@ function runTest()
             FBTest.typeCommand('a');
             FBTest.typeCommand('a');
             FBTest.pressKey(38, "fbCommandLine");  // up arrow
-            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.synthesizeKey("VK_TAB", null, win);
             FBTest.compare("aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaKKKKKKKKKKKKKKKKKKKKKK' after up arrow key");
             FBTest.pressKey(27, "fbCommandLine");  //  clear by escape
 
             FBTest.typeCommand('a');
             FBTest.typeCommand('a');
             FBTest.pressKey(40, "fbCommandLine");  // down arrow
-            FBTest.synthesizeKey("VK_TAB", win);
+            FBTest.synthesizeKey("VK_TAB", null, win);
             FBTest.compare("aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB", cmdLine.value, "The command line must display 'aaaaaaaaaaaaaaaaBBBBBBBBBBBBBBBBB' after up arrow key");
             FBTest.pressKey(27, "fbCommandLine");  //  clear by escape
 
@@ -94,7 +94,7 @@ function runTest()
 function checkUncompleted(uncompleted, win, cmdLine)
 {
     FBTest.typeCommand(uncompleted);
-    FBTest.synthesizeKey("VK_TAB", win);
+    FBTest.synthesizeKey("VK_TAB", null, win);
     FBTest.compare(uncompleted, cmdLine.value,"The command line must display "+uncompleted+" after tab key completion.");
     FBTest.pressKey(13, "fbCommandLine"); // clear by executing the junk
 }

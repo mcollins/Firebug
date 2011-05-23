@@ -28,7 +28,7 @@ function runTest()
 
 function waitForDetachedFirebug(callback)
 {
-    detachedWindow = detachFirebug();
+    detachedWindow = FBTest.detachFirebug();
     if (!FBTest.ok(detachedWindow, "Firebug is detaching..."))
     {
         FBTest.testDone("openInNewWindow.FAILED");
@@ -75,36 +75,7 @@ function reloadAgainAndWaitForBreak(callback)
     FBTest.reload(function()
     {
         FBTest.ok(hit, "The second break happened");
-        closeDetachedFirebug();
+        FBTest.closeDetachedFirebug();
         callback();
     });
-}
-
-// ********************************************************************************************* //
-// xxxHonza: Remove as soon as this API is ported into FBTest 1.6
-
-function closeDetachedFirebug()
-{
-    if (!FW.Firebug.isDetached())
-        return false;
-
-    // Better would be to look according to the window type, but it's not set in firebug.xul
-    var result = FW.FBL.iterateBrowserWindows("", function(win)
-    {
-        if (win.location.href == "chrome://firebug/content/firebug.xul")
-        {
-            win.close();
-            return true;
-        }
-    });
-
-    return result;
-}
-
-function detachFirebug()
-{
-    if (FW.Firebug.isDetached())
-        return null;
-
-    return FW.Firebug.detachBar(FW.Firebug.currentContext);
 }

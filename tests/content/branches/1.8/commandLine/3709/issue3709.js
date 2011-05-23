@@ -12,7 +12,7 @@ function runTest()
 
             // Test Command Line
             FBTest.clearAndTypeCommand("document.getElementById()");
-            FBTest.synthesizeKey("VK_LEFT", win);
+            FBTest.synthesizeKey("VK_LEFT", null, win);
             FBTest.typeCommand("ab");
 
             FBTest.compare("document.getElementById(ab)", cmdLine.value,

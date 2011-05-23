@@ -47,7 +47,7 @@ function sameTabOpen(win, path)
 
             var doc = browser.contentWindow.document;
             FBTest.compare(path+url, doc.location.toString(), "The url of the link and the document that opened should match");
-            var placement = FW.Firebug.getPlacement();
+            var placement = FBTest.getFirebugPlacement();
             FBTest.compare("inBrowser", placement, "Firebug is placed in browser");
             var suspension = FW.Firebug.getSuspended();
             FBTest.compare(null, suspension, "Firebug is not suspended on "+browser.currentURI.spec);

@@ -15,7 +15,7 @@ function openOpenCloseClose()
         FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
 
-        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        var placement = FBTest.getFirebugPlacement();
         FBTest.compare("inBrowser", placement, "Firebug now open inBrowser");
 
         if (FBTest.FirebugWindow.Firebug.currentContext)
@@ -30,13 +30,13 @@ function openOpenCloseClose()
         FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
 
-        var placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        var placement = FBTest.getFirebugPlacement();
         FBTest.compare("minimized", placement, "Firebug minimizes");
 
         FBTest.progress("Press the toggle Firebug");
         FBTest.Firebug.pressToggleFirebug();
 
-        placement = FBTest.FirebugWindow.Firebug.getPlacement();
+        placement = FBTest.getFirebugPlacement();
         FBTest.compare("inBrowser", placement, "Firebug reopens inBrowser");
 
         FBTest.progress("Close Firebug");
