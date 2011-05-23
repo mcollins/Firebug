@@ -365,7 +365,6 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 	    	var theProxy = function() {
 	    		
 	    		if(FBTrace.DBG_DOJO_DBG) {	    			
-	    			Firebug.Console.log("inner proxy invoked", context);	    			
         			var a = arguments;    				
         			FBTrace.sysout("DOJO DEBUG: executing proxy for fn:" + method + ", args: ", a);
     			}
@@ -423,8 +422,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     		var protectedFunction = function() {
 
 
-    			if(FBTrace.DBG_DOJO_DBG) {    			
-    				Firebug.Console.log("protection proxy invoked", context);    				
+    			if(FBTrace.DBG_DOJO_DBG) {    				
         			var a = arguments;    				
         			FBTrace.sysout("DOJO DEBUG: executing _protectProxyFromExceptions proxy. Args: ", a);
     			}
@@ -436,12 +434,8 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     				return res;
 
     			} catch (e) {
-
-    				var msj = "An error at Dojo Firebug extension have occurred.";
-    				Firebug.Console.log(msj, context, "error", FirebugReps.Text);
-
     				if(FBTrace.DBG_DOJO) {
-            			FBTrace.sysout("DOJO ERROR: while executing _protectProxyFromExceptions. Exc: ", e);
+            			FBTrace.sysout("DOJO ERROR: An error at Dojo Firebug extension have occurred while executing _protectProxyFromExceptions. Exc: ", e);
         			}
 
     			}
@@ -470,7 +464,6 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 				
 				var msg = "Dojo Firebug Extension: A proxied function is attempted to be reproxied: " + functionToProxy +
 						  ". Please report the bug.";
-				Firebug.Console.log(msg, context, "error", FirebugReps.Text);
 				if(FBTrace.DBG_DOJO) {
         			FBTrace.sysout("DOJO ERROR: " + msg + ". Arguments: ", arguments);
     			}
@@ -1155,6 +1148,20 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     	}
     },
     
+    _showEnableRequiredPanels: function(context) { 
+	    if (context.dojoPanelReqsNotMet) {
+	    	var console = Firebug.getPanelTitle(Firebug.getPanelType("console"));
+	    	var script = Firebug.getPanelTitle(Firebug.getPanelType("script"));
+	        var enablePanelsMsgBox = new ActionMessageBox("EnablePanelsMsgBox", this.panelNode, 
+	        												$STRF('warning.panelsNeedToBeEnabled', [console, script], DOJO_BUNDLE),
+	        												$STR('warning.panelsNeedToBeEnabled.button', DOJO_BUNDLE),
+	        												function(actionMessageBox){
+	        													//nothing to do
+	        												});
+	        enablePanelsMsgBox.loadMessageBox(true);
+    	}
+    },
+    
     /**
      * Update panel view. Main "render" panel method
      * @param panelConfig the configuration
@@ -1171,6 +1178,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     		 
     		// Verify if the context is consistent.
     		this._showReloadBoxIfNeeded(context);
+    		this._showEnableRequiredPanels(context);
     		
     		// Select the most suitable main panel to show the info about the selection
     		
@@ -2230,6 +2238,9 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         // FIXME: HACK to find out if the page need to be reloaded due to data inconsistencies issues.
         var dojo = DojoAccess._dojo(context);
         _setNeedsReload(context, (dojo && dojo["subscribe"]));
+        
+        //TODO this invocation could be in a better place. Here it will be only evaluated when reloading a page. 
+        this._checkPanelActivationPrerequisites(context);
     },
 
     /**
@@ -2248,6 +2259,14 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
 	    	panel.showInitialView(context);
     	}
     	
+    },
+    
+    _checkPanelActivationPrerequisites: function(context) {
+    	var console = Firebug.PanelActivation.isPanelEnabled(Firebug.getPanelType("console"));
+    	var script = Firebug.PanelActivation.isPanelEnabled(Firebug.getPanelType("script"));
+    	if(!console || !script) {
+    		context.dojoPanelReqsNotMet = true;
+    	}
     },
     
     destroyContext: function(context, persistedState) {
