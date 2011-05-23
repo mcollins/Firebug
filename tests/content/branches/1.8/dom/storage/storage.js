@@ -15,35 +15,35 @@ function runTest()
             var tasks = new FBTest.TaskList();
             tasks.push(testEmptySessionStorage, win);
             tasks.push(executeAndVerify, "sessionStorage",
-                new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\s*"),
+                new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\\s*"),
                 "a", "objectLink-Storage");
 
             tasks.push(testEmptyLocalStorage, win);
             tasks.push(executeAndVerify, "localStorage",
-                new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\s*"),
+                new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\\s*"),
                 "a", "objectLink-Storage");
 
             tasks.push(testEmptyGlobalStorage, win);
             tasks.push(executeAndVerify, "globalStorage",
-                new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\s*"),
+                new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\\s*"),
                 "a", "objectLink-StorageList");
 
             tasks.push(testSessionStorageData, win);
             tasks.push(executeAndVerify, "sessionStorage",
-                new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [2]) +
-                    "\s*issue=\"value1\",\s*name=\"item1\"\s*"),
+                new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [2]) +
+                    "\\s*issue=\\\"value1\\\",\\s*name=\\\"item1\\\"\\s*"),
                 "a", "objectLink-Storage");
 
             tasks.push(testLocalStorageData, win);
             tasks.push(executeAndVerify, "localStorage",
-                new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [10]) +
-                    "\s*item6=\"6\", item3=\"3\", item8=\"8\", item0=\"0\", item5=\"5\", item2=\"2\", item7=\"7\", item4=\"4\", item9=\"9\", item1=\"1\""),
+                new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [10]) +
+                    "\\s*item6=\\\"6\\\", item3=\\\"3\\\", item8=\\\"8\\\", item0=\\\"0\\\", item5=\\\"5\\\", item2=\\\"2\\\", item7=\\\"7\\\", item4=\\\"4\\\", item9=\\\"9\\\", item1=\\\"1\\\""),
                 "a", "objectLink-Storage");
 
             tasks.push(testGlobalStorageData, win);
             tasks.push(executeAndVerify, "globalStorage",
-                new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [1]) +
-                    "\s*test1=\"Hello1\"\s*"),
+                new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [1]) +
+                    "\\s*test1=\\\"Hello1\\\"\\s*"),
                 "a", "objectLink-StorageList");
 
             tasks.run(function()
