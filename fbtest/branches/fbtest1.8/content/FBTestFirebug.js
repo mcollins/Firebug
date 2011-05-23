@@ -2197,4 +2197,12 @@ this.sendShortcut = function(aKey, aEvent, aWindow)
 } 
 
 // ********************************************************************************************* //
+// Inspector
+
+this.isInspectorActive = function()
+{
+    return FW.Firebug.Inspector.inspecting;
+}
+
+// ********************************************************************************************* //
 }).apply(FBTest);
