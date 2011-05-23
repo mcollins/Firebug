@@ -58,7 +58,7 @@ function testEmptySessionStorage(callback, win)
 {
     FBTest.waitForDOMProperty("sessionStorage", function(row)
     {
-        FBTest.compare(new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\s*"),
+        FBTest.compare(new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\\s*"),
             row.textContent, "The session storage must be empty now");
         callback();
     });
@@ -73,7 +73,7 @@ function testEmptyLocalStorage(callback, win)
 {
     FBTest.waitForDOMProperty("localStorage", function(row)
     {
-        FBTest.compare(new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\s*"),
+        FBTest.compare(new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\\s*"),
             row.textContent, "The local storage must be empty now");
         callback();
     });
@@ -88,7 +88,7 @@ function testEmptyGlobalStorage(callback, win)
 {
     FBTest.waitForDOMProperty("localStorage", function(row)
     {
-        FBTest.compare(new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\s*"),
+        FBTest.compare(new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [0]) + "\\s*"),
             row.textContent, "The global storage must be empty now");
         callback();
     });
@@ -104,8 +104,8 @@ function testSessionStorageData(callback, win)
     FBTest.waitForDOMProperty("sessionStorage", function(row)
     {
         FBTest.compare(
-            new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [2]) + 
-                "\s*issue=\"value1\",\s*name=\"item1\"\s*"),
+            new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [2]) + 
+                "\\s*issue=\\\"value1\\\",\\s*name=\\\"item1\\\"\\s*"),
             row.textContent, "The session storage must have proper data");
         callback();
     });
@@ -121,8 +121,8 @@ function testLocalStorageData(callback, win)
     FBTest.waitForDOMProperty("localStorage", function(row)
     {
         FBTest.compare(
-            new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [10]) +
-                "\s*item6=\"6\",\s*item3=\"3\",\s*more...\s*"),
+            new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [10]) +
+                "\\s*item6=\\\"6\\\",\\s*item3=\\\"3\\\",\\s*more...\\s*"),
             row.textContent, "The local storage must have proper data");
         callback();
     });
@@ -138,8 +138,8 @@ function testGlobalStorageData(callback, win)
     FBTest.waitForDOMProperty("globalStorage", function(row)
     {
         FBTest.compare(
-            new RegExp("\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [1]) +
-            "\s*test1=\"Hello1\"\s*"),
+            new RegExp("\\s*" + FW.FBL.$STRP("firebug.storage.totalItems", [1]) +
+            "\\s*test1=\\\"Hello1\\\"\\s*"),
             row.textContent, "The local storage must have proper data");
         callback();
     });
