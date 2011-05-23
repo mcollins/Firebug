@@ -400,25 +400,71 @@ function __doEventDispatch(aTarget, aCharCode, aKeyCode, aHasShift)
  *
  * aWindow is optional, and defaults to the current window object.
  */
-this.synthesizeKey = function(aKey, aWindow)
+this.synthesizeKey = function(aKey, aEvent, aWindow)
 {
-    if (!aWindow)
-        aWindow = window;
+  aEvent = aEvent || {};
 
-    var utils = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
-        getInterface(Components.interfaces.nsIDOMWindowUtils);
-    if (!utils)
-        return;
+  if (!aWindow)
+    aWindow = window;
 
+  var utils = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).
+                      getInterface(Components.interfaces.nsIDOMWindowUtils);
+  if (utils) {
     var keyCode = 0, charCode = 0;
     if (aKey.indexOf("VK_") == 0)
-        keyCode = KeyEvent["DOM_" + aKey];
+      keyCode = getKeyEvent(aWindow)["DOM_" + aKey];
     else
-        charCode = aKey.charCodeAt(0);
+      charCode = aKey.charCodeAt(0);
 
-    var keyDownDefaultHappened = utils.sendKeyEvent("keydown", keyCode, charCode, 0);
-    utils.sendKeyEvent("keypress", keyCode, charCode, 0, !keyDownDefaultHappened);
-    utils.sendKeyEvent("keyup", keyCode, charCode, 0);
+    var modifiers = _parseModifiers(aEvent);
+
+    if (aEvent.type) {
+      utils.sendKeyEvent(aEvent.type, keyCode, charCode, modifiers);
+    }
+    else {
+      var keyDownDefaultHappened =
+          utils.sendKeyEvent("keydown", keyCode, charCode, modifiers);
+      utils.sendKeyEvent("keypress", keyCode, charCode, modifiers,
+                         !keyDownDefaultHappened);
+      utils.sendKeyEvent("keyup", keyCode, charCode, modifiers);
+    }
+  }
+}
+
+/**
+ * Parse the key modifier flags from aEvent. Used to share code between
+ * synthesizeMouse and synthesizeKey.
+ */
+function _parseModifiers(aEvent)
+{
+  var hwindow = Components.classes["@mozilla.org/appshell/appShellService;1"]
+                          .getService(Components.interfaces.nsIAppShellService)
+                          .hiddenDOMWindow;
+
+  const masks = Components.interfaces.nsIDOMNSEvent;
+  var mval = 0;
+  if (aEvent.shiftKey)
+    mval |= masks.SHIFT_MASK;
+  if (aEvent.ctrlKey)
+    mval |= masks.CONTROL_MASK;
+  if (aEvent.altKey)
+    mval |= masks.ALT_MASK;
+  if (aEvent.metaKey)
+    mval |= masks.META_MASK;
+  if (aEvent.accelKey)
+    mval |= (hwindow.navigator.platform.indexOf("Mac") >= 0) ? masks.META_MASK :
+                                                               masks.CONTROL_MASK;
+
+  return mval;
+}
+
+/**
+  * Get the array with available key events
+  */
+function getKeyEvent(aWindow)
+{
+    var win = aWindow.wrappedJSObject ? aWindow.wrappedJSObject : aWindow;
+    return win.KeyEvent;
 }
 
 this.focus = function(node)
@@ -467,6 +513,11 @@ this.closeFirebug = function()
         this.pressToggleFirebug();
 }
 
+this.shutdownFirebug = function()
+{
+    // TODO: deactivate Firebug
+}
+
 /**
  * Returns true if Firebug is currently opened; false otherwise.
  */
@@ -478,21 +529,15 @@ this.isFirebugOpen = function()
     return (collapsedFirebug == "true") ? false : true;
 };
 
-/**
- * Clears Firefox cache.
- */
-this.clearCache = function()
+this.getFirebugPlacement = function()
 {
-    try
-    {
-        var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
-        cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
-        cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
-    }
-    catch(exc)
-    {
-        FBTest.sysout("clearCache FAILS "+exc, exc);
-    }
+    return FW.Firebug.getPlacement();
+};
+
+this.isFirebugActive = function()
+{
+    var suspension = FW.Firebug.getSuspended();
+    return (suspension == "suspended") ? false : true;
 };
 
 // ************************************************************************************************
@@ -662,7 +707,8 @@ function waitForWindowLoad(browser, callback)
             FBTest.sysout("runTest FAILS " + exc, exc);
         }
     }
-FBTest.sysout("addinge event listeenr<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+    FBTest.sysout("addinge event listeenr<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     browser.addEventListener("load", waitForEvents, true);
     browser.addEventListener("MozAfterPaint", waitForEvents, true);
 }
@@ -714,6 +760,23 @@ this.closeFirebugOnAllTabs = function()
         this.closeFirebug();
     }
 }
+
+/**
+ * Clears Firefox cache.
+ */
+this.clearCache = function()
+{
+    try
+    {
+        var cache = Cc["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
+        cache.evictEntries(Ci.nsICache.STORE_ON_DISK);
+        cache.evictEntries(Ci.nsICache.STORE_IN_MEMORY);
+    }
+    catch(exc)
+    {
+        FBTest.sysout("clearCache FAILS "+exc, exc);
+    }
+};
 
 // ************************************************************************************************
 // Firebug Panel Enablement.
@@ -1019,7 +1082,7 @@ this.typeCommand = function(string, useCommandEditor)
         " win "+panelBar1.browser.contentWindow);
 
     for (var i=0; i<string.length; ++i)
-        FBTest.synthesizeKey(string.charAt(i), win);
+        FBTest.synthesizeKey(string.charAt(i), null, win);
 }
 
 /**
@@ -2112,7 +2175,7 @@ this.getDOMPropertyRow = function(chrome, propName)
     return getDOMMemberRow(domPanel, propName);
 }
 
-// ************************************************************************************************
+// ********************************************************************************************* //
 // Module Loader
 
 this.getRequire = function()
@@ -2124,5 +2187,14 @@ this.getRequire = function()
     return fbMainFrame.contentWindow.require;
 }
 
-// ************************************************************************************************
+// ********************************************************************************************* //
+// Shortcuts
+
+this.sendShortcut = function(aKey, aEvent, aWindow)
+{
+    aWindow = aWindow || FW;
+    return FBTest.synthesizeKey(aKey, aEvent, aWindow);
+} 
+
+// ********************************************************************************************* //
 }).apply(FBTest);
