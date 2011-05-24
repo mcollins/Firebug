@@ -1,0 +1,17 @@
+/* See license.txt for terms of usage */
+
+/*************************************************************************************************/
+
+/* Style applied on the panel node. */
+.panelNode-helloworld {
+    overflow: hidden;
+    background-color: yellow;
+}
+
+/*************************************************************************************************/
+
+/* Firebug Tracing Console customization. All messages from this example use this color.
+   This helps to distinguish logs from those coming from Firebug */
+.DBG_helloworld {
+    color: rgb(101, 0, 114);
+}

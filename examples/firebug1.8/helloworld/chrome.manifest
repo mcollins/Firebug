@@ -1,0 +1,5 @@
+content helloworld chrome/content/
+skin    helloworld classic/1.0   chrome/skin/classic/
+overlay chrome://firebug/content/firebugOverlay.xul         chrome://helloworld/content/helloworld.xul
+resource helloworld_rjs chrome/content/
+
