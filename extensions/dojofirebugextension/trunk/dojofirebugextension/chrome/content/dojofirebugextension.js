@@ -16,7 +16,7 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
 // ****************************************************************
 // GLOBAL FUNCTIONS IN THIS NAMESPACE
 // ****************************************************************
-	var VERSION = "1.0a8";
+	var VERSION = "1.0a9";
 
 	//constants for dojo extension Preferences
 	var DOJO_PREF_MAP_IMPL = "dojofirebugextension.useHashCodes";
