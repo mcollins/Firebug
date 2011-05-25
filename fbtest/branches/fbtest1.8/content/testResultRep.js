@@ -649,8 +649,8 @@ FBTestApp.TestResult = function(win, pass, msg, expected, result)
     this.msg = clean(msg);
 
     // Make sure the following values are strings.
-    this.expected = expected + "";
-    this.result = result + "";
+    this.expected = expected ? expected + "" : null;
+    this.result = result ? result + "" : null;
 
     // xxxHonza: there should be perhaps simple API in lib.js to get the stack trace.
     this.stack = [];
