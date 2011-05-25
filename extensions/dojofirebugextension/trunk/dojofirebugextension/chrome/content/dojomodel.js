@@ -906,10 +906,11 @@ var DojoModel = FBL.ns(function() { with (FBL) {
 				 }
 				 
 				 //slice the resulting array if needed
-				 var from = (f.from && f.from > 0) ? f.from : 0;
-				 var count = (f.count && f.count > 0 && f.count != theArray.length) ? f.count : theArray.length;  
-				 if(from != 0 || count != theArray.length) {					 
-					 var end = (count + from <= theArray.length) ? count + from : theArray.length;
+				 var from = f.from ? f.from : 0;
+				 var count = (f.count && f.count <= theArray.length) ? f.count : theArray.length;  
+				 if(from != 0 || count != theArray.length) {
+					 var end = count;
+					 //var end = (count + from <= theArray.length) ? count + from : theArray.length;
 					 theArray = theArray.slice(from, end); 
 				 }
 			 }

@@ -48,20 +48,20 @@
                     tooltiptext="&dojo.subscriptions.tooltip;" command="cmd_dojofirebugextensionViewSubscriptions"/>
 
 				<span id="dojoFilter-boxes">
-	                <!-- count Box -->                
-					[Count:
-	                <vbox flex="40">
-	                    <spacer flex="1"/>
-	                    <textbox id="dojoConnCountBox" type="dojoConnCountBox" value="50"/>
-	                    <spacer flex="1"/>
-	                </vbox>                
 	                <!-- from box -->
-	                Start:
+	                [Begin:
 	                <vbox flex="40">
 	                    <spacer flex="1"/>
 	                    <textbox id="dojoConnFromIndexBox" type="dojoConnFromIndexBox" value="0"/>
 	                    <spacer flex="1"/>
-	                </vbox>	
+	                </vbox>
+	                End:
+	                <!-- count Box -->                					
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnCountBox" type="dojoConnCountBox" value="50"/>
+	                    <spacer flex="1"/>
+	                </vbox>           	                	
 	                <!-- query Box -->
 	                Filter:
 	                <vbox flex="40">
