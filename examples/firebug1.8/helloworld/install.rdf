@@ -5,7 +5,10 @@
 
 <Description about="urn:mozilla:install-manifest">
     <em:id>helloworld@getfirebug.com</em:id>
-    <em:version>0.5</em:version>
+    <em:version>@VERSION@@RELEASE@</em:version>
+
+    <!-- You can simply make this extension bootstrapable --> 
+    <!-- <em:bootstrap>true</em:bootstrap> -->
 
     <!-- Any suitably modern toolkit application -->
     <em:targetApplication>

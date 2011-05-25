@@ -2,8 +2,9 @@
 
 define([
     "firebug/lib/extend",
+    "firebug/lib/trace",
 ],
-function(Extend) {
+function(Extend, FBTrace) {
 
 // ********************************************************************************************* //
 // Panel
@@ -28,13 +29,21 @@ MyPanel.prototype = Extend.extend(Firebug.Panel,
     {
         Firebug.Panel.destroy.apply(this, arguments);
     },
+
+    show: function(state)
+    {
+        Firebug.Panel.show.apply(this, arguments);
+
+        if (FBTrace.DBG_HELLOWORLD)
+            FBTrace.sysout("helloWorld; MyPanel.show");
+    }
 });
 
 // ********************************************************************************************* //
 // Registration
 
 Firebug.registerPanel(MyPanel);
-Firebug.registerStylesheet("chrome://helloworld/skin/helloworld.css");
+Firebug.registerStylesheet("resource://helloworld/skin/classic/helloworld.css");
 
 return MyPanel;
 

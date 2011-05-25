@@ -1,24 +1,26 @@
 /* See license.txt for terms of usage */
 
-define([
-    "firebug/lib/trace",
-    "helloworld/myPanel"
-],
-function(FBTrace) {
+(function() {
 
 // ********************************************************************************************* //
 // Application
 
-var theApp =
-{
-    initialize: function()
-    {
-        if (FBTrace.DBG_HELLOWORLD)
-            FBTrace.sysout("helloWorld; my extension initialized!");
+var config = {
+    baseUrl: "resource://",
+    paths: {
+        "firebug": "firebug_rjs",
+        "helloworld": "helloworld/content",
     }
-}
+};
 
-return theApp;
+require(config, [
+    "helloworld/main"
+],
+function()
+{
+});
+
+return {};
 
 // ********************************************************************************************* //
-});
+})();
