@@ -1,10 +1,10 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/extend",
+    "firebug/lib/object",
     "firebug/lib/trace",
 ],
-function(Extend, FBTrace) {
+function(Obj, FBTrace) {
 
 // ********************************************************************************************* //
 // Panel
@@ -12,7 +12,7 @@ function(Extend, FBTrace) {
 var panelName = "helloworld";
 
 function MyPanel() {}
-MyPanel.prototype = Extend.extend(Firebug.Panel,
+MyPanel.prototype = Obj.extend(Firebug.Panel,
 {
     name: panelName,
     title: "Hello World!",
