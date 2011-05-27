@@ -9,6 +9,7 @@
 
     <!--script type="application/javascript" src="chrome://crossfire/content/crossfire-server-loader.js"/-->
 
+    <script type="application/javascript" src="chrome://crossfire/content/main.js"/>
 
     <!-- Firefox 3.6 Status Bar Icon -->
     <statusbar id="status-bar">

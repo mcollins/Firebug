@@ -1,11 +1,11 @@
 /* See license.txt for terms of usage */
 
-define(["firebug/ToolsInterface",
+define([//"arch/tools",
         "firebug/lib",
         "firebug/firebug",
         "crossfireModules/crossfire",
         "crossfireModules/crossfire-status"],
-        function (ToolsInterface, FBL, Firebug, CrossfireModule, CrossfireStatus) {
+        function ( FBL, Firebug, CrossfireModule, CrossfireStatus) {
 
     function CrossfireClient() {
         this.contexts = {};
@@ -426,6 +426,6 @@ define(["firebug/ToolsInterface",
 
     // register module
     Firebug.registerModule(CrossfireClient);
-    
+
     return CrossfireClient;
 });

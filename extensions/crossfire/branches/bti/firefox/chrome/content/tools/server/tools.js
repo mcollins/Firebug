@@ -1,14 +1,23 @@
 /* see license.txt for terms of use. */
 
 define(
-        [ "firebug/ToolsInterface",
+        [ "firebug/lib/trace",
           "firebug/firebug",
+          "firebug/lib/options",
           "crossfireModules/crossfire-server",
           "arch/browser",
           "arch/compilationunit"],
           //"crossfireModules/bti/CrossfireCompilationUnit"],
-          function(ToolsInterface, Firebug, CrossfireServer, Browser, CompilationUnit) {
+          function( FBTrace,
+                    Firebug,
+                    Options,
+                    CrossfireServer,
+                    Browser,
+                    CompilationUnit) {
 
+    FBTrace.sysout("Loading Crossfire Server tools.js");
+
+    var ToolsInterface = {};
     Browser.onDebug = function()
     {
         FBTrace.sysout.apply(FBTrace, arguments);
@@ -29,7 +38,7 @@ define(
 
     // Listen for preference changes. This way options module is not dependent on tools
     // xxxHonza: can this be in Browser interface?
-    Firebug.Options.addListener(
+    Options.addListener(
     {
         updateOption: function(name, value)
         {
@@ -37,8 +46,7 @@ define(
         }
     });
 
-    // FIXME eventually we want the dependency system to pass around the ToolsInterface
-    Firebug.ToolsInterface = ToolsInterface;
+    Firebug.Options = Options;
 
     return ToolsInterface;
 

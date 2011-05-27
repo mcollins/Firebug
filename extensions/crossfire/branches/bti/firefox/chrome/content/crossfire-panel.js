@@ -1,5 +1,5 @@
 /* See license.txt for terms of usage */
-define([ "firebug/lib/object",
+define([ "firebug/lib",
          "firebug/firebug",
          "firebug/domplate",
          "crossfireModules/crossfire",

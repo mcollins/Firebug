@@ -1,11 +1,11 @@
 /* See license.txt for terms of usage */
 
 define(
-        [ "firebug/lib",
-          "firebug/ToolsInterface",
+        [ "arch/tools",
+          "firebug/lib",
           "crossfireModules/crossfire",
           "crossfireModules/crossfire-status" ],
-          function(FBL, ToolsInterface, CrossfireModule, CrossfireStatus) {
+          function( ToolsInterface, FBL, CrossfireModule, CrossfireStatus) {
 
             // -----Crossfire UI functions -----
         var CrossfireUI = {

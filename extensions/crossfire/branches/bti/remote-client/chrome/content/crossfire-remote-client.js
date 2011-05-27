@@ -1,4 +1,11 @@
 /* See license.txt for terms of usage */
+
+define(["firebug/lib",
+        "crossfireModules/crossfire-remote-tool",
+        "crossfireModules/crossfire-ui"],
+        function (FBL, RemoteTool, CrossfireUI) {
+
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
@@ -12,25 +19,12 @@ try {
 
 FBTrace.sysout("*.*.*.*.* LOADING crossfire-remote-client");
 
-//wait for onload so that modules are loaded into window
-addEventListener("load", function() {
+var crossfireRemoteTool = new RemoteTool();
 
-var RemoteTool;
-var crossfireRemoteTool;
-var CrossfireUI;
-
-
-window.CrossfireRemote = {
+var CrossfireRemote = {
 
     doConnect: function() {
-        if (!CrossfireUI) {
-            try {
-                CrossfireUI =  require("crossfireModules/crossfire-ui");
-                CrossfireUI.connect();
-            } catch (e) {
-                FBTrace.sysout("Can't connect because of: " +e, e);
-            }
-        }
+        CrossfireUI.connect();
     },
 
     doRestart: function doRestart() {
@@ -58,15 +52,7 @@ CrossfireRemote.toolList = {
     },
 
     getLocationList: function() {
-        if (!crossfireRemoteTool) {
-            try {
-                RemoteTool = require("crossfireModules/crossfire-remote-tool");
-                crossfireRemoteTool = new RemoteTool();
-            } catch (e) {
-                FBTrace.sysout("Can't get Location List because of: " +e, e);
-            }
-        }
-        else return crossfireRemoteTool.tools;
+        return crossfireRemoteTool.tools;
     },
 
     getDefaultLocation: function() {
@@ -109,15 +95,7 @@ CrossfireRemote.contextsList = {
     },
 
     getLocationList: function() {
-        if (!crossfireRemoteTool) {
-            try {
-                RemoteTool = require("crossfireModules/crossfire-remote-tool");
-                crossfireRemoteTool = new RemoteTool();
-            } catch (e) {
-                FBTrace.sysout("Can't get Location List because of: " +e, e);
-            }
-        }
-        else return crossfireRemoteTool.contexts;
+        return crossfireRemoteTool.contexts;
     },
 
     getDefaultLocation: function() {
@@ -178,6 +156,7 @@ CrossfireRemote.contextsListLocator = function(xul_element) {
     return list;
 };
 
+return CrossfireRemote;
 
-// end onload
-}, false);
+//enifed
+});

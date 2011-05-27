@@ -1,14 +1,12 @@
 /* See license.txt for terms of usage */
 
 define(
-        ["firebug/ToolsInterface",
-         "firebug/firebug",
+        ["firebug/firebug",
          "firebug/lib/options",
          "crossfireModules/crossfire-client",
          "arch/browser",
          "arch/compilationunit"
         ], function(
-                ToolsInterface,
                 Firebug,
                 Options,
                 CrossfireClient,
@@ -17,7 +15,8 @@ define(
                 ) {
 
     // add crossfire client to our tools interface
-    //var ToolsInterface = {};
+    var ToolsInterface = {};
+
     ToolsInterface.crossfireClient = new CrossfireClient();
 
 // Classes

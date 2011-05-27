@@ -1,6 +1,10 @@
 /* See license.txt for terms of usage */
 
-define(["crossfireModules/crossfire", "crossfireModules/crossfire-status"], function (CrossfireModule, CrossfireStatus) {
+define([
+        "firebug/firebug",
+        "crossfireModules/crossfire",
+        "crossfireModules/crossfire-status"],
+        function (Firebug, CrossfireModule, CrossfireStatus) {
 
 /**
  * @name CONTEXT_ID_SEED
@@ -1709,5 +1713,6 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
 
     });
 
+    Firebug.registerModule(CrossfireServer);
     return CrossfireServer;
 });
