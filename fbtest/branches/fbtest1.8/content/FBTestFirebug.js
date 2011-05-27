@@ -127,6 +127,10 @@ this.getHTTPURLBase = function()
 this.getLocalURLBase = function()
 {
     // xxxHonza: should be set as a global in this scope.
+    if (/file:/.test(FBTestApp.TestRunner.currentTest.driverBaseURI))
+    {
+        return FBTestApp.TestRunner.currentTest.driverBaseURI;
+    }
     return FBTestApp.TestConsole.chromeToUrl(FBTestApp.TestRunner.currentTest.driverBaseURI, true);
 };
 
@@ -1184,11 +1188,11 @@ this.clickToolbarButton = function(chrome, buttonID)
     button.doCommand();
 }
 
-this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
+this.synthesizeMouse = function(node, offsetX, offsetY, event, win)
 {
-    window = window || node.ownerDocument.defaultView;
+    win = win || node.ownerDocument.defaultView;
 
-    var utils = window.QueryInterface(Ci.nsIInterfaceRequestor).
+    var utils = win.QueryInterface(Ci.nsIInterfaceRequestor).
         getInterface(Ci.nsIDOMWindowUtils);
 
     if (!utils)
@@ -1203,6 +1207,7 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
 
     var rects = node.getClientRects();
 
+    /*
     // Return true if at least a portion of the passed rectangle is visible.
     function isVisible(rect)
     {
@@ -1223,14 +1228,22 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
 
     if (!rect)
     {
-        FBTest.ok(false, "Can't click on an invisible element");
+        FBTest.sysout("No visible rectangles for "+node+" in "+node.ownerDocument.location, {node: node, rects: rects});
+        FBTest.ok(false, "Can't click on an invisible element "+node+" in "+win.location);
         return;
     }
 
-    // Make sure that coordinates are always greater than 0. Hit the middle of the button
+    // Make sure that coordinates are always greater than 0.
+    */
+    var rect = rects[0];
+
+    var frameOffset = this.getFrameOffset(node);
+    FBTest.sysout("frameOffset "+frameOffset);
+
+    // Hit the middle of the button
     // (Clicks to hidden parts of the element doesn't open the context menu).
-    var left = Math.max(0, rect.left) + offsetX + 0.5*Math.max(1,rect.width);
-    var top = Math.max(0, rect.top) + offsetY + 0.5*Math.max(1,rect.height);
+    var left = frameOffset.left + rect.left + offsetX + 0.5*Math.max(1,rect.width);
+    var top = frameOffset.top + rect.top + offsetY + 0.5*Math.max(1,rect.height);
 
     if (event.type)
     {
@@ -1241,6 +1254,17 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, window)
         utils.sendMouseEvent("mousedown", left, top, button, clickCount, 0);
         utils.sendMouseEvent("mouseup", left, top, button, clickCount, 0);
     }
+}
+
+this.getFrameOffset = function(win) {
+    var top = 0;
+    var left = 0;
+    var frameElement;
+    while(frameElement = win.frameElement) {
+        top += win.frameElement.top;
+        left += win.frameElement.left;
+    }
+    return {left: left, top: top};
 }
 
 // ************************************************************************************************
@@ -1841,7 +1865,7 @@ this.executeContextMenuCommand = function(target, menuId, callback)
                 contextMenu.hidePopup();
                 return;
             }
-
+FBTest.sysout("menuItem", menuItem);
             // Click on specified menu item.
             self.synthesizeMouse(menuItem);
 
@@ -2206,7 +2230,7 @@ this.sendShortcut = function(aKey, aEvent, aWindow)
 {
     aWindow = aWindow || FW;
     return FBTest.synthesizeKey(aKey, aEvent, aWindow);
-} 
+}
 
 // ********************************************************************************************* //
 // Inspector
