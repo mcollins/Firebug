@@ -183,24 +183,25 @@ require(config,
      "crossfireModules/crossfire",
      "crossfireModules/crossfire-ui",
      "crossfireModules/crossfire-panel",
+     "crossfireModules/crossfire-remote-tool",
      "firebug/chrome",
      "firebug/lib",
      "firebug/firebug",
     "arch/firebugadapter",
     "arch/javascripttool",
-    "firebug/debugger",
+    //"firebug/debugger",
     "firebug/traceModule",
     "firebug/dragdrop",
     "firebug/tabWatcher",
     "firebug/scriptPanel",
     //"firebug/memoryProfiler",
-    "firebug/commandLine",
+    //"firebug/commandLine",
     "firebug/navigationHistory",
-    //"firebug/htmlPanel",
-    //"firebug/cssPanel",
+    "firebug/htmlPanel",
+    "firebug/cssPanel",
     //"firebug/consoleInjector",
-    //"firebug/inspector",
-    //"firebug/layout",
+    "firebug/inspector",
+    "firebug/layout",
     //"firebug/netPanel",
     //"firebug/knownIssues",
     "firebug/tabCache",
@@ -208,18 +209,18 @@ require(config,
     "firebug/panelActivation",
     "firebug/sourceFile",
     "firebug/navigationHistory",
-    "firebug/a11y",
+    //"firebug/a11y",
     "firebug/shortcuts",
-    "firebug/start-button/startButtonOverlay",
+    //"firebug/start-button/startButtonOverlay",
     //"firebug/external/externalEditors",
-    "firebug/callstack",
+    //"firebug/callstack",
     //"firebug/spy",
     "firebug/tableRep",
-    "firebug/commandLinePopup",
-    "firebug/commandLineExposed",
-    "firebug/consoleExposed"
+    //"firebug/commandLinePopup",
+    //"firebug/commandLineExposed",
+    //"firebug/consoleExposed"
 ],
-function(CrossfireModule, CrossfireUI, ChromeFactory, FBL, Firebug)
+function(CrossfireModule, CrossfireUI, CrossfirePanel, CrossfireRemote, ChromeFactory, FBL, Firebug)
 {
     try
     {
@@ -237,6 +238,7 @@ function(CrossfireModule, CrossfireUI, ChromeFactory, FBL, Firebug)
         */
 
         Firebug.Options.initialize("extensions.firebug");
+        Firebug.currentVersion = Firebug.getVersion(); // avoid first-run page
         window.panelBarWaiter.waitForPanelBar(ChromeFactory);
 
         if (window.legacyPatch)

@@ -1,12 +1,50 @@
 /* See license.txt for terms of usage */
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+const Cu = Components.utils;
+
 try {
-    Components.utils.import("resource://firebug/firebug-trace-service.js");
+    Cu.import("resource://firebug/firebug-trace-service.js");
     FBTrace = traceConsoleService.getTracer("extensions.firebug");
 } catch(ex) {
-    FBTrace = {};
+    FBTrace = { sysout: function() { window.dump(arguments);}};
 }
 
-var CrossfireRemote = {};
+FBTrace.sysout("*.*.*.*.* LOADING crossfire-remote-client");
+
+//wait for onload so that modules are loaded into window
+addEventListener("load", function() {
+
+var RemoteTool;
+var crossfireRemoteTool;
+var CrossfireUI;
+
+
+window.CrossfireRemote = {
+
+    doConnect: function() {
+        if (!CrossfireUI) {
+            try {
+                CrossfireUI =  require("crossfireModules/crossfire-ui");
+                CrossfireUI.connect();
+            } catch (e) {
+                FBTrace.sysout("Can't connect because of: " +e, e);
+            }
+        }
+    },
+
+    doRestart: function doRestart() {
+        Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup).
+        quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
+    },
+
+    doQuit: function doQuit() {
+        Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup).
+        quit(Ci.nsIAppStartup.eForceQuit);
+    }
+};
+
+//--------------------------------------
 
 var crossfireToolList = document.getElementById("crossfireToolList");
 CrossfireRemote.toolList = {
@@ -20,7 +58,15 @@ CrossfireRemote.toolList = {
     },
 
     getLocationList: function() {
-        return CrossfireRemote.Tool.tools;
+        if (!crossfireRemoteTool) {
+            try {
+                RemoteTool = require("crossfireModules/crossfire-remote-tool");
+                crossfireRemoteTool = new RemoteTool();
+            } catch (e) {
+                FBTrace.sysout("Can't get Location List because of: " +e, e);
+            }
+        }
+        else return crossfireRemoteTool.tools;
     },
 
     getDefaultLocation: function() {
@@ -63,7 +109,15 @@ CrossfireRemote.contextsList = {
     },
 
     getLocationList: function() {
-        return CrossfireRemote.Tool.contexts;
+        if (!crossfireRemoteTool) {
+            try {
+                RemoteTool = require("crossfireModules/crossfire-remote-tool");
+                crossfireRemoteTool = new RemoteTool();
+            } catch (e) {
+                FBTrace.sysout("Can't get Location List because of: " +e, e);
+            }
+        }
+        else return crossfireRemoteTool.contexts;
     },
 
     getDefaultLocation: function() {
@@ -90,7 +144,7 @@ CrossfireRemote.contextsList = {
         FBTrace.sysout("**** onSelectLocation", evt);
         // need to get context here
 
-        FBL.dispatch(this.fbListeners, "showContext", [browser, context]); // context is null if we don't want to debug this browser
+        //FBL.dispatch(this.fbListeners, "showContext", [browser, context]); // context is null if we don't want to debug this browser
 
 
     },
@@ -100,16 +154,14 @@ CrossfireRemote.contextsList = {
     }
 };
 
-
-
 CrossfireRemote.toolListLocator = function(xul_element) {
     var list = CrossfireRemote.toolList;
     if (!list.elementBoundTo)
     {
         list.elementBoundTo = xul_element;
-        xul_element.addEventListener("selectObject", FBL.bind(list.onSelectLocation, list), false);
+        xul_element.addEventListener("selectObject", function() { list.onSelectLocation() }, false);
         if (list.onPopUpShown)
-            xul_element.addEventListener("popupshown", FBL.bind(list.onPopUpShown, list), false);
+            xul_element.addEventListener("popupshown", function() { list.onPopUpShown() }, false);
     }
     return list;
 };
@@ -119,22 +171,13 @@ CrossfireRemote.contextsListLocator = function(xul_element) {
     if (!list.elementBoundTo)
     {
         list.elementBoundTo = xul_element;
-        xul_element.addEventListener("selectObject", FBL.bind(list.onSelectLocation, list), false);
+        xul_element.addEventListener("selectObject", function() { list.onSelectLocation() }, false);
         if (list.onPopUpShown)
-            xul_element.addEventListener("popupshown", FBL.bind(list.onPopUpShown, list), false);
+            xul_element.addEventListener("popupshown", function() { list.onPopUpShown() }, false);
     }
     return list;
 };
 
-// override default Firebug architecture for module loader
-//FirebugLoadManager.arch = "remoteClient";
 
-// wait for onload so that FBL and modules are loaded into window
-addEventListener("load", function() {
-
-
+// end onload
 }, false);
-
-
-
-

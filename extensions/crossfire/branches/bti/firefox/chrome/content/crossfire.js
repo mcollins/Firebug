@@ -42,8 +42,8 @@ define(["firebug/lib",
          * @extends Firebug.Module
          */
         initialize: function() {
-        if (FBTrace.DBG_CROSSFIRE)
-            FBTrace.sysout("CROSSFIRE initialize");
+            if (FBTrace.DBG_CROSSFIRE)
+                FBTrace.sysout("CROSSFIRE initialize");
             // -- add tools --
             //TODO: load tools conditionally upon enablement
             /*

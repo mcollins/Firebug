@@ -199,7 +199,12 @@ Browser.prototype.getBrowserContexts = function()
 
 Browser.prototype.eachContext = function(fnOfContext)
 {
-    return Firebug.TabWatcher.iterateContexts(fnOfContext);
+    for (var i = 0; i < this.contexts.length; ++i)
+    {
+        var rc = fnOfContext(this.contexts[i]);
+        if (rc)
+            return rc;
+    }
 };
 
 /**

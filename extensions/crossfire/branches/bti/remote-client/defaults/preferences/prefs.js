@@ -22,6 +22,10 @@ pref("javascript.options.showInConsole", true);
 pref("nglayout.debug.disable_xul_cache", true);
 pref("nglayout.debug.disable_xul_fastload", true);
 
+/* firebug prefs */
+pref("extensions.firebug.allPagesActivation", "on");
+pref("extensions.firebug.toolbarCustomizationDone", true);
+
 /* crossfire prefs */
 pref("extensions.firebug.DBG_CROSSFIRE_REMOTE", true);
 pref("extensions.firebug.DBG_CROSSFIRE", true);

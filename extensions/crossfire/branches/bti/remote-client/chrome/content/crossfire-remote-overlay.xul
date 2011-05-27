@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://remote-client/skin/crossfire-remote-client.css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+
+    <script type="application/x-javascript" src="chrome://remote-client/content/crossfire-remote-client.js"/>
+
+    <vbox id="fbContentBox" flex="1">
+        <box id="crossfireToolbar" insertbefore="fbPanelBox">
+            <toolbox>
+                <toolbar>
+                    <toolbarbutton class="button-control"
+                        tooltiptext="Connect..."
+                        label="Connect"
+                        onclick="CrossfireRemote.doConnect()">
+                        <image id="crossfireButton"/>
+                        <label>Connect</label>
+                    </toolbarbutton>
+
+                    <toolbarseparator flex="1"/>
+
+                    <toolbarbutton id="crossfireToolList"
+                        locationProvider="CrossfireRemote.toolListLocator;" title="Tools:"
+                        tooltiptext="available tools"
+                     />
+                    <toolbarbutton id="crossfireContextsList"
+                        locationProvider="CrossfireRemote.contextsListLocator;" title="Contexts:"
+                        labeltooltip="fbTooltip" labelcontextmenu="fbContextMenu"
+                        tooltiptext="currently selected context"
+                     />
+
+                     <toolbarseparator flex="1"/>
+
+                     <toolbarbutton label="Open FBTrace" command="cmd_openTraceConsole"/>
+                     <toolbarbutton label="Open FBTest" command="cmd_openTestConsole"/>
+                     <toolbarseparator flex="1"/>
+                     <toolbarbutton id="crossfireRestart"
+                        label="Restart"
+                        tooltiptext="Restart"
+                        onclick="CrossfireRemote.doRestart()"/>
+                      <toolbarbutton id="crossfireQuit"
+                        label="Quit"
+                        tooltiptext="Quit"
+                        onclick="CrossfireRemote.doQuit()"/>
+                </toolbar>
+            </toolbox>
+        </box>
+    </vbox>
+</overlay>

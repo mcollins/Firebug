@@ -3,14 +3,19 @@ define([ "firebug/lib/object",
          "firebug/firebug",
          "firebug/domplate",
          "crossfireModules/crossfire",
-         "crossfireModules/crossfire-status"], function(FBL, Firebug, Domplate, CrossfireModule, CrossfireStatus) {
+         "crossfireModules/crossfire-remote-tool",
+         "crossfireModules/crossfire-status"], function(FBL, Firebug, Domplate, CrossfireModule, CrossfireRemoteTool, CrossfireStatus) {
+
+    var remoteTool = new CrossfireRemoteTool();
 
     function CrossfirePanel() {
         CrossfireModule.panel = this;
+        this.remoteTool = remoteTool;
     }
 
-    var remotePanelTemplate;
-    var sidePanelTemplate;
+    var remotePanelTemplate,
+        sidePanelTemplate,
+        contextsPanelTemplate;
     with(Domplate) {
         remotePanelTemplate = domplate(Firebug.Rep, {
                 tag: DIV({"class": "crossfire-panel"},
@@ -38,10 +43,29 @@ define([ "firebug/lib/object",
         });
 
         sidePanelTemplate = domplate(Firebug.Rep, {
-            tag: DIV({ "class": "crossfire-packet" }, "$object.packet")
+            tag: DIV({ "class": "crossfire-packet" },
+                    FOR("item", "$array",
+                            DIV("$item")
+                        )
+                    )
+        });
+
+        contextsPanelTemplate = domplate(Firebug.Rep, {
+            tag: DIV({"class":"crossfire-contexts"},
+                    FOR("item", "$array",
+                        A({"class": "context-item", onclick: "$onSelectContext"}, "$item.href")
+                        )
+                    ),
+            onSelectContext: function( evt) {
+
+            }
         });
     }
 
+    /**
+     *
+     * @returns {CommandsPanel}
+     */
     function CommandsPanel() {}
     CommandsPanel.prototype = FBL.extend(Firebug.Panel, {
         name: "CrossfireCommandsPanel",
@@ -60,7 +84,7 @@ define([ "firebug/lib/object",
         },
 
         show: function() {
-            sidePanelTemplate.tag.replace({object: {"packet": "commands go here."}}, this.panelNode, remotePanelTemplate);
+            sidePanelTemplate.tag.replace({array: ["commands go here."]}, this.panelNode, remotePanelTemplate);
         },
 
         refresh: function() {
@@ -69,6 +93,10 @@ define([ "firebug/lib/object",
 
     });
 
+    /**
+     *
+     * @returns {EventsPanel}
+     */
     function EventsPanel() {}
     EventsPanel.prototype = FBL.extend(Firebug.Panel, {
         name: "CrossfireEventsPanel",
@@ -87,7 +115,7 @@ define([ "firebug/lib/object",
         },
 
         show: function() {
-            sidePanelTemplate.tag.replace({object: {"packet": "events go here."}}, this.panelNode, sidePanelTemplate);
+            sidePanelTemplate.tag.replace({array: ["events go here."]}, this.panelNode, sidePanelTemplate);
         },
 
         refresh: function() {
@@ -96,6 +124,71 @@ define([ "firebug/lib/object",
 
     });
 
+    /**
+     *
+     * @returns {ContextsPanel}
+     */
+    function ContextsPanel() {}
+    ContextsPanel.prototype = FBL.extend(Firebug.Panel, {
+        name: "CrossfireContextsPanel",
+        title: "Contexts",
+        parentPanel: "CrossfirePanel",
+
+        initialize: function() {
+            if (FBTrace.DBG_CROSSFIRE_PANEL)
+                FBTrace.sysout("crossfire contexts panel initialize");
+
+            Firebug.Panel.initialize.apply(this, arguments);
+        },
+
+        destroy: function() {
+            Firebug.Panel.destroy.apply(this, arguments);
+        },
+
+        show: function() {
+            contextsPanelTemplate.tag.replace({array: remoteTool.contexts}, this.panelNode, contextsPanelTemplate);
+        },
+
+        refresh: function() {
+
+        }
+
+    });
+
+    /**
+     *
+     * @returns {ToolsPanel}
+     */
+    function ToolsPanel() {}
+    ToolsPanel.prototype = FBL.extend(Firebug.Panel, {
+        name: "CrossfireToolsPanel",
+        title: "Tools",
+        parentPanel: "CrossfirePanel",
+
+        initialize: function() {
+            if (FBTrace.DBG_CROSSFIRE_PANEL)
+                FBTrace.sysout("crossfire events panel initialize");
+
+            Firebug.Panel.initialize.apply(this, arguments);
+        },
+
+        destroy: function() {
+            Firebug.Panel.destroy.apply(this, arguments);
+        },
+
+        show: function() {
+            sidePanelTemplate.tag.replace({array: remoteTool.tools}, this.panelNode, sidePanelTemplate);
+        },
+
+        refresh: function() {
+
+        }
+
+    });
+
+    /**
+     *
+     */
     CrossfirePanel.prototype = FBL.extend(Firebug.Panel, {
         name: "CrossfirePanel",
         title: "Remote",
@@ -138,11 +231,15 @@ define([ "firebug/lib/object",
 
         hide: function() {
 
-        },
+        }
     });
+
+    //**************************************************************************
 
     Firebug.registerStylesheet("chrome://crossfire/skin/crossfire.css");
     Firebug.registerPanel(CrossfirePanel);
+    Firebug.registerPanel(ContextsPanel);
+    Firebug.registerPanel(ToolsPanel);
     Firebug.registerPanel(CommandsPanel);
     Firebug.registerPanel(EventsPanel);
 

@@ -1,2 +1,4 @@
 content    remote-client    content/
 skin       remote-client modern/1.0   content/skin/
+
+overlay     chrome://firebug/content/firebugOverlay.xul     chrome://remote-client/content/crossfire-remote-overlay.xul
