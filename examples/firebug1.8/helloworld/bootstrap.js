@@ -66,29 +66,19 @@ var FirebugManager =
         if (!this.isFirebugWindow(win))
             return;
 
-        // Config file for RequireJS loader.
-        // xxxHonza: we need to get the one from Firebug.
-        var config = {
-            baseUrl: "resource://",
-            paths: {
-                "firebug": "firebug_rjs",
-            }
-        };
-
+        var config = win.Firebug.getModuleLoaderConfig();
         config.paths[extensionName] = extensionName + "/content";
 
-        // Intial dependencies.
-        var deps = [
-            "firebug/lib/trace",
-            extensionName + "/main" // extension's main.js
-        ];
-
         // Load main.js module (the entry point of the extension).
-        win.require.apply(win, [config, deps, function(FBTrace, App)
+        win.require(config, [
+            "firebug/lib/trace",
+            extensionName + "/main"
+        ],
+        function(FBTrace, Extension)
         {
             try
             {
-                App.initialize();
+                Extension.initialize();
 
                 if (FBTrace.DBG_INITIALIZE)
                     FBTrace.sysout("Firebug Bootstrap; Extension '" + extensionName + "' loaded!");
@@ -102,7 +92,7 @@ var FirebugManager =
             // Make sure any new panels immediately appears.
             if (win.Firebug.currentContext)
                 win.Firebug.chrome.syncMainPanels();
-        }]);
+        });
     },
 
     onUntrack: function onUntrack(win)
