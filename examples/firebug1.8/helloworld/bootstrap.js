@@ -66,11 +66,14 @@ var FirebugManager =
         if (!this.isFirebugWindow(win))
             return;
 
-        var config = win.Firebug.getModuleLoaderConfig();
+        // Get Firebug instance in the browser window.
+        var Firebug = win.Firebug;
+
+        var config = Firebug.getModuleLoaderConfig();
         config.paths[extensionName] = extensionName + "/content";
 
         // Load main.js module (the entry point of the extension).
-        win.require(config, [
+        Firebug.require(config, [
             "firebug/lib/trace",
             extensionName + "/main"
         ],
@@ -90,8 +93,8 @@ var FirebugManager =
             }
 
             // Make sure any new panels immediately appears.
-            if (win.Firebug.currentContext)
-                win.Firebug.chrome.syncMainPanels();
+            if (Firebug.currentContext)
+                Firebug.chrome.syncMainPanels();
         });
     },
 

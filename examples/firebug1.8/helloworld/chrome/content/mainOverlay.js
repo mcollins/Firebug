@@ -18,7 +18,7 @@ var config = Firebug.getModuleLoaderConfig();
 config.paths[extensionName] = "helloworld/content";
 
 // Load main.js module (the entry point of the extension).
-require(config, [
+Firebug.require(config, [
     "firebug/lib/trace",
     extensionName + "/main"
 ],
