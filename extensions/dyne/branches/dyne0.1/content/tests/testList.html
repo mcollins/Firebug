@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>Firebug Dyne Test File</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+
+    function removeFile(location) {
+        var segs = location.split('/');
+        segs.splice(segs.length - 1, 1);
+        return segs.join('/') +'/';
+    }
+    var baseURI = removeFile(document.location.toString());
+
+      alert(baseURI);
+      var serverURI =  baseURI;
+      var testList = [
+          {
+              group: "Dyne tests",
+              uri: "postObject/postObject.js",
+              desc: "postObject",
+              testPage: "postObject/postObject.html"
+          }
+      ];
+    </script>
+  </body>
+</html>

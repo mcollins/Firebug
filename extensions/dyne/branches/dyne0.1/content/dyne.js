@@ -108,7 +108,15 @@ Firebug.Dyne = extend(Firebug.Module,
     stopEditing: function()
     {
         FBTrace.sysout("dyne.stopEditing");
-    }
+    },
+
+    onGetTestList: function(testLists)
+    {
+        testLists.push({
+            extension: "Dyne",
+            testListURL: "chrome://dyne/content/tests/testList.html"
+        });
+    },
 
 });
 
@@ -425,10 +433,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var model = this.getModel();
         if (this.selection instanceof Firebug.EditLink)
         {
-            
+
             if (this.isLocalURI(this.selection.fileURL))
             {
-            	FBTrace.sysout("attachUpdater "+this.selection.fileURL, this.selection);
+                FBTrace.sysout("attachUpdater "+this.selection.fileURL, this.selection);
                 this.editLocalFile(this.selection.fileURL);
             }
             var fromPanel = this.selection.originPanel;

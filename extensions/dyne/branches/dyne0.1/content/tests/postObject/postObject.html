@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="../../postObject.js"></script>
+
+</head>
+<body>
+<h1>Test postObject</h1>
+
+<iframe id="testFrame" src="testIframe.html"></iframe>
+<script>
+function objectReceiver(obj) {
+    console.log("postObject received ", obj);
+}
+
+var testFrame = document.getElementById('testFrame');
+testFrame.addEventListener('load', function()
+{
+    window.connection = addObjectConnection(window, testFrame.contentWindow, objectReceiver);
+    console.log("postObject ready");
+}, false);
+
+window.addEventListener('load', function(){
+    console.log("postObject load");
+
+    var foo = {name:"postObject"};
+    connection.postObject(foo);
+    console.log("postObject sent");
+}, false);
+</script>
+</body>
+</html>
