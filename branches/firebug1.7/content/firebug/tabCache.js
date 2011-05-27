@@ -58,7 +58,11 @@ var contentTypes =
     "application/x-js": 1,
     "multipart/mixed" : 1,
     "multipart/x-mixed-replace" : 1,
-    "image/svg+xml" : 1
+    "image/svg+xml" : 1,
+    "text/x-javascript": 1,
+    "text/json": 1,
+    "application/x-json": 1,
+    "application/json-rpc": 1
 };
 
 // ************************************************************************************************

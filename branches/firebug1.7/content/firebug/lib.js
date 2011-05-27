@@ -1069,7 +1069,7 @@ this.getAncestorByTagName = function(node, tagName)
 {
     for (var parent = node; parent; parent = parent.parentNode)
     {
-        if (parent.localName && parent.tagName.toLowerCase() == "input")
+        if (parent.localName && parent.tagName.toLowerCase() == tagName)
             return parent;
     }
 
@@ -8100,6 +8100,7 @@ this.unwrapIValue = function(object)
     {
         if (FBTrace.DBG_ERRORS)
             FBTrace.sysout("unwrapIValue FAILS for "+object+" cause: "+exc,{exc: exc, object: object, unwrapped: unwrapped});
+        return unwrapped;
     }
 }
 
