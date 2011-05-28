@@ -11,7 +11,7 @@
         return segs.join('/') +'/';
     }
     var baseURI = removeFile(document.location.toString());
-
+    var driverBaseURI = baseURI;
       alert(baseURI);
       var serverURI =  baseURI;
       var testList = [
@@ -20,7 +20,13 @@
               uri: "postObject/postObject.js",
               desc: "postObject",
               testPage: "postObject/postObject.html"
-          }
+          },
+          {
+              group: "Dyne tests",
+              uri: "jsedit/jsedit.js",
+              desc: "jsedit",
+              testPage: "jsedit/jsedit.html"
+          },
       ];
     </script>
   </body>
