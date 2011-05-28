@@ -37,11 +37,11 @@ function editLine() {
     });
 }
 
-function applyEdit(element, index, length, toText) {
-    var text = element.innerHTML;
+function applyEdit(target, index, length, toText) {
+    var text = target.innerHTML;
     FBTest.progress("innerHTML" +text);
     var result = text.substring(0, index) + toText + text.substring(index+length);
-    element.innerHTML = result;
+    target.innerHTML = result;
     FBTest.progress("result" +result);
 }
 
