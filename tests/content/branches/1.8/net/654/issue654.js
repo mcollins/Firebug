@@ -2,6 +2,13 @@ function runTest()
 {
     FBTest.sysout("issue654.START");
 
+    // This test is only for FF5+
+    if (FBTest.compareFirefoxVersion("5") < 0)
+    {
+        FBTest.testDone("issue654.DONE");
+        return;
+    }
+
     // Make sure all net panel columns are displayed.
     FBTest.setPref("net.hiddenColumns", "");
 
