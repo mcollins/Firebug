@@ -4,17 +4,20 @@
  * This file allows the requirejs tests from Firebug's FBTest to run in a web page.
  */
 
-
 var FBTest =
 {
+    DBG_FBTEST: true,
+
     progress: function(msg) {
-        console.log("progress: "+msg);
+        if(FBTest.DBG_FBTEST)
+            console.log("progress: "+msg);
     },
     getRequire: function() {
         return require;
     },
     sysout: function(msg) {
-        console.log(msg);
+        if(FBTest.DBG_FBTEST)
+            console.log(msg);
     },
     compare: function(expected, actual, what) {
         var ok = (expected === actual) ? "PASS" : "FAIL";
