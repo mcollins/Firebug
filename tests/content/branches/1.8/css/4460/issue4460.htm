@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Issue 4460: Add CSS3 box-sizing property to Layout side panel</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      @font-face {
+        font-family: 'TitilliumMaps';
+        src: url('http://getfirebug.com/fonts/Website/TitilliumMaps26L001.eot');
+        src: local('☺'), url('http://getfirebug.com/fonts/Website/TitilliumMaps26L001.woff') format('woff'), url('http://getfirebug.com/fonts/Website/TitilliumMaps26L001.ttf') format('truetype');
+        font-weight: bold;
+      }
+
+      * {
+        position: relative;
+      }
+
+      html, body {
+        width: 100%;
+        min-height: -moz-calc(100% - 30px);
+        margin: 0;
+        padding-bottom: 30px;
+      }
+
+      body {
+        background: #FFFFFF -moz-linear-gradient(center top , #EAF1FB, #FFFFFF 450px) no-repeat;
+        font-family: "Trebuchet MS", Helvetica, sans-serif;
+        font-size: 0.9em;
+      }
+
+      body > div, h1 {
+        margin: auto;
+        width: 800px;
+      }
+
+      body > div {
+        top: 40px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        background-color: rgba(255, 255, 255, 0.6);
+        padding: 15px;
+      }
+
+      section#content {
+        background-image: -moz-linear-gradient(bottom, #E6E6E6, #F0F0F0);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        padding: 10px;
+        min-height: 112px;
+      }
+
+      section#output {
+        background-image: -moz-linear-gradient(bottom, #F5F5F5, #FFFFFF);
+        height: 50px;
+        margin: 10px 0;
+        padding: 10px;
+      }
+
+      footer {
+        margin-top: 10px;
+        text-align: right;
+        font-size: 75%;
+        font-style: italic;
+      }
+
+      h1, h2 {
+        font-family: TitilliumMaps, "Trebuchet MS", Helvetica, sans-serif;
+        font-size: 130%;
+        font-weight: bold;
+      }
+
+      h1 {
+        top: 20px;
+      }
+
+      h2 {
+        margin: 0.5em 0;
+        border-bottom: 2px solid #9ACBE4;
+      }
+
+      h3 {
+        margin: 0.3em 0 0.2em 0;
+        font-size: 105%;
+      }
+
+      p, ol, ul {
+        margin: 0.2em 0;
+      }
+
+      p {
+        padding-left: 20px;
+      }
+
+      ul {
+        list-style-type: square;
+        list-style-image: url(data:image/gif;base64,R0lGODlhBQAIAPcAAGOMnGOMnP///2OMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////yH5BAEAAAIALAAAAAAFAAgABwgSAAEIHEiwoEGC/xImFMCwocOAADs=);
+      }
+
+      code {
+        color: #008C00;
+      }
+
+      code.key {
+        color: #0000FF;
+      }
+
+      input {
+        border: 1px solid #AAAAAA;
+        border-radius: 5px;
+        padding: 3px 5px;
+      }
+
+      #element1, #element2, #element3 {
+        width: 7em;
+        height: 7em;
+        float: left;
+        margin-right: 10px;
+        border: 3px solid;
+        padding: 3px;
+      }
+
+      #element1 {
+        border-color: #3264FF;
+        background-image: -moz-linear-gradient(135deg, #788CFF, #B4C8FF);
+        -moz-box-sizing: content-box;
+      }
+
+      #element2 {
+        border-color: #32FF64;
+        background-image: -moz-linear-gradient(135deg, #78FF8C, #B4FFC8);
+        -moz-box-sizing: padding-box;
+      }
+
+      #element3 {
+        border-color: #FFFF32;
+        background-image: -moz-linear-gradient(135deg, #FFFF78, #FFFFB4);
+        -moz-box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><a href="http://code.google.com/p/fbug/issues/detail?id=4460">Issue 4460</a>: Add CSS3 box-sizing property to Layout side panel</h1>
+    <div>
+      <section id="content">
+        <div id="element1"></div>
+        <div id="element2"></div>
+        <div id="element3"></div>
+      </section>
+      <section id="description">
+        <h3>Steps to reproduce</h3>
+        <ol>
+          <li>Inspect the blue <code>&lt;div&gt;</code> above</li>
+          <li>Switch to the <em>Layout</em> side panel</li>
+          <li>Have a look at the <code>box-sizing</code> value inside the <em>Layout</em> side panel</li>
+          <li>Inspect the green <code>&lt;div&gt;</code> above</li>
+          <li>Have a look at the <code>box-sizing</code> value inside the <em>Layout</em> side panel</li>
+          <li>Inspect the yellow <code>&lt;div&gt;</code> above</li>
+          <li>Have a look at the <code>box-sizing</code> value inside the <em>Layout</em> side panel</li>
+        </ol>
+        <h3>Expected Results</h3>
+        <ul>
+          <li>After step 2: <code>content-box</code></li>
+          <li>After step 4: <code>padding-box</code></li>
+          <li>After step 6: <code>border-box</code></li>
+        </ul>
+      </section>
+      <footer>Sebastian Zartner, sebastianzartner@gmx.de</footer>
+    </div>
+  </body>
+</html>
