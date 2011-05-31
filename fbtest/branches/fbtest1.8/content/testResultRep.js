@@ -588,7 +588,8 @@ FBTestApp.TestResultTabView = domplate(
 
     insertText: function(data, parentNode)
     {
-        insertWrappedText(data, parentNode);
+        if (data)
+            insertWrappedText(data, parentNode);
     },
 
     insertImage: function(data, parentNode)
