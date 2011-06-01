@@ -51,7 +51,7 @@ function getCurrentLocation()
 //xxxHonza: this should be generic and part of FBTest
 function stepInto(callback)
 {
-    var lineNo = 3;
+    var lineNo = (FBTest.compareFirefoxVersion("4") >= 0) ? 3 : 1;
     var fileUrl = basePath + "script/4213/issue4213-1.js";
     FBTest.waitForBreakInDebugger(null, lineNo, false, function hitBreak(row)
     {
