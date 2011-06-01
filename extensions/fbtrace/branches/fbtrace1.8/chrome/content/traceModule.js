@@ -1,10 +1,10 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib",
+    "firebug/lib/lib",
     "firebug/firebug",
     "firebug/lib/xpcom",
-    "firebug/reps",
+    "firebug/chrome/reps",
 ],
 function(FBL, Firebug, XPCOM, FirebugReps) { with (FBL) {
 

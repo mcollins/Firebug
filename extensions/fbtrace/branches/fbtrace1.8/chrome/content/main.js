@@ -132,7 +132,7 @@ var FBTraceConfig =
     baseLoaderUrl: "resource://fbtrace-firebug/",
     baseUrl: "resource://fbtrace_rjs/",
     paths: {
-        "arch": "firebug/content/inProcess",
+        "arch": "firebug/content/bti/inProcess",
         "firebug": "firebug/content",
         "fbtrace": "content"
     },
@@ -145,10 +145,10 @@ var config = getModuleLoaderConfig(FBTraceConfig);
 
 require(config,
 [
-    "firebug/chrome",
-    "firebug/lib",
-    "firebug/reps",
-    "firebug/domplate",
+    "firebug/chrome/chrome",
+    "firebug/lib/lib",
+    "firebug/chrome/reps",
+    "firebug/lib/domplate",
     "firebug/firebug",
     "fbtrace/serializer", // save to file, load from file
     "fbtrace/firebugExplorer",
