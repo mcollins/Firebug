@@ -205,9 +205,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     {
         this.resizeEventTarget.removeEventListener("resize", this.onResizer, true);
 
-        if (Firebug.Dyne.orionInPanel)
-            Firebug.Dyne.orionInPanel.removeEventListener("orionError", this.onOrionError, true);
-
         Firebug.Panel.destroyNode.apply(this, arguments);
     },
 
@@ -357,6 +354,15 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         FBTrace.sysout("dyne insertOrionScripts ERROR "+iframes.length+" frames!");
     },
 
+    addScriptFromFile: function(win, id, fileURL) {
+        var req = new XMLHTTPRequest();
+        req.open('GET', fileURL, false);
+        if (req.status === 0)
+            var element = Dom.addScript(win.document, id, req.responseText);
+        else
+            FBTrace.sysout("ERROR failed to read "+fileURL );
+    },
+
     insertScriptTag: function(doc, id, url)
     {
         var element = doc.createElementNS("http://www.w3.org/1999/xhtml", "html:script");
@@ -404,6 +410,10 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         try
         {
             this.currentEclipse = win;
+
+            var baseURL = "chrome://dyne/content/";
+            Firebug.Dyne.addScriptFromFile(win, "_firebugPostObject", baseURL+"postObject.js");
+            Firebug.Dyne.addScriptFromFile(win, "_firebugPostObject", baseURL+"orionInPanel.js");
             if (FBTrace.DBG_DYNE)
                 FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse.location, this.currentEclipse);
             var editorContainer = win.dijit.byId('editorContainer');
