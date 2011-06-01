@@ -10,6 +10,7 @@ function runTest()
             var doc = FW.Firebug.chrome.window.document;
             var cmdLine = doc.getElementById("fbCommandLine");
 
+            FBTest.clearCommand();
             FBTest.typeCommand("text");
 
             FW.Firebug.chrome.selectPanel("html");
