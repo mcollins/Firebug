@@ -284,6 +284,15 @@ DojoModel.DojoAccessor.prototype =
         },
         
         /**
+         * returns true if the given object is a dojo Animation.
+         * @param object
+         * @return boolean
+         */
+        isDojoAnimation: function(object) {
+            return object["gotoPercent"] && object["pause"] && object["play"] && object["status"] && object["stop"];
+        },
+        
+        /**
          * returns the widget that contains the node, null if the node is no contained by any widget.
          * @return Widget|null
          */

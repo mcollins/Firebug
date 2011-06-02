@@ -24,7 +24,8 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
     var DOJO_PREF_EVENT_BASED_PROXY_ENABLED = "dojofirebugextension.useHTMLEventBasedProxy";
     var DOJO_PREF_MAX_SUGGESTED_CONNECTIONS = "dojofirebugextension.maxAllowedNumberOfConnectionsInTable";
     var DOJO_PREF_MAX_SUGGESTED_SUBSCRIPTIONS = "dojofirebugextension.maxAllowedNumberOfSubscriptionsInTable";
-    var DOJO_PREF_WIDGETS_TREE = "dojofirebugextension.displayWidgetsAsTree";        
+    var DOJO_PREF_WIDGETS_TREE = "dojofirebugextension.displayWidgetsAsTree";
+    var DOJO_ANIMATIONS_FILTER = "dojofirebugextension.dojoAnimationsFilter";
     
     //the name of our strings bundle
     var DOJO_BUNDLE = "dojostrings";
@@ -155,7 +156,13 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
         return value;
     };
     
-    
+    /**
+     * verify if the dojo animations filter is enabled.
+     */
+    var _isDojoAnimationsFilterEnabled = this._isDojoAnimationsFilterEnabled = function(){
+        var value = Firebug.getPref(Firebug.prefDomain, DOJO_ANIMATIONS_FILTER);
+        return value;
+    };
 
     var _setNeedsReload = function(context, flag) {
         context.needReload = flag;
@@ -173,6 +180,14 @@ var DojoExtension = FBL.ns(function() { with (FBL) {
         return VERSION;
     };
     
+    /**
+     * returns a boolean to define if the connection should or should not be registered
+     *             considering the objects in it.
+     */
+    var filterConnection = function(obj, event, context, method){
+        var dojoAccessor = getDojoAccessor(_safeGetContext(this));
+        return dojoAccessor.isDojoAnimation(obj) && dojoAccessor.isDojoAnimation(context);
+    }
     
 // ****************************************************************
 // HELPER OBJECTS IN THIS NAMESPACE
@@ -2411,6 +2426,7 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
         var dojo = DojoAccess._dojo(context);  
 
         var dojoDebugger = getDojoDebugger(context);
+        
         return (function(ret, args){
                    
                    // FIXME[BugTicket#91]: Defensive code to avoid registering a connection made as part of a hack solution.  
@@ -2419,28 +2435,32 @@ DojoExtension.dojofirebugextensionModel = extend(Firebug.ActivableModule,
                    }
             
                    var obj =  unwrapObject(args[0] || dojo.global);            
-                      var event = unwrapObject(args[1]);                   
+                   var event = unwrapObject(args[1]);                   
 
-                       /* The context parameter could be null, in that case it will be determined according to the dojo.hitch implementation.
-                        * See the dojo.hitch comment at [dojo directory]/dojo/_base/lang.js and 
-                        * dojo.connect comment at [dojo directory]/dojo/_base/connect.js
-                        */
-                      var handlerContext = args[2];
-                      if (!handlerContext) {
-                          if (typeof(args[3]) == 'function') {
-                               handlerContext = obj;
-                          } else {
-                               handlerContext = dojo.global;
-                          }                   
-                      }
-                      handlerContext = unwrapObject(handlerContext);
-                      
-                      var method = unwrapObject(args[3]);                      
-                      var dontFix = unwrapObject((args.length >= 5 && args[4]) ? args[4] : null);
+                   /* The context parameter could be null, in that case it will be determined according to the dojo.hitch implementation.
+                    * See the dojo.hitch comment at [dojo directory]/dojo/_base/lang.js and 
+                    * dojo.connect comment at [dojo directory]/dojo/_base/connect.js
+                    */
+                   var handlerContext = args[2];
+                   if (!handlerContext) {
+                      if (typeof(args[3]) == 'function') {
+                           handlerContext = obj;
+                      } else {
+                           handlerContext = dojo.global;
+                      }                   
+                   }
+                   handlerContext = unwrapObject(handlerContext);
+                  
+                   var method = unwrapObject(args[3]);
+                   var dontFix = unwrapObject((args.length >= 5 && args[4]) ? args[4] : null);
 
-                      var callerInfo = (context.initialConfig.breakPointPlaceSupportEnabled) ? dojoDebugger.getDebugInfoAboutConnectCaller(context) : null;
-                                         
-                      context.connectionsAPI.addConnection(obj, event, handlerContext, method, dontFix, ret, callerInfo);
+                   var callerInfo = (context.initialConfig.breakPointPlaceSupportEnabled) ? dojoDebugger.getDebugInfoAboutConnectCaller(context) : null;
+                           
+                   // Verify if the connection should be filtered.
+                   if (_isDojoAnimationsFilterEnabled() && 
+                        filterConnection(obj, event, handlerContext, method)) return ret;
+                   
+                   context.connectionsAPI.addConnection(obj, event, handlerContext, method, dontFix, ret, callerInfo);
                    return ret;
                 });
    },
