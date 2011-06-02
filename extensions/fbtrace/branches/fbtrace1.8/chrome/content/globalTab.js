@@ -2,9 +2,10 @@
 
 define([
     "firebug/lib/lib",
-    "firebug/lib/xpcom"
+    "firebug/lib/xpcom",
+    "firebug/lib/domplate"
 ],
-function(FBL, XPCOM) { with (FBL) {
+function(FBL, XPCOM, Domplate) { with (FBL) { with (Domplate) {
 
 // ********************************************************************************************* //
 // Shorcuts and Services
@@ -308,4 +309,4 @@ TraceConsole.GlobalTab = GlobalTab;
 return GlobalTab;
 
 //********************************************************************************************** //
-}});
+}}});
