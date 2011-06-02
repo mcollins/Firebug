@@ -3,7 +3,7 @@
 define([
     "firebug/lib/lib",
     "firebug/firebug",
-    "firebug/lib/xpcom",
+    "firebug/firefox/xpcom",
     "firebug/chrome/reps",
 ],
 function(FBL, Firebug, XPCOM, FirebugReps) { with (FBL) {
