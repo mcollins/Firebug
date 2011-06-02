@@ -142,13 +142,13 @@ var config = getModuleLoaderConfig(FBTestConfig);
 
 require(config,
 [
-    "firebug/chrome",
-    "firebug/lib",
-    "firebug/domplate",
+    "firebug/chrome/chrome",
+    "firebug/lib/lib",
+    "firebug/lib/domplate",
     "firebug/lib/options",
     "firebug/lib/xpcom",
     "firebug/firebug",
-    "firebug/traceModule",
+    "firebug/trace/traceModule",
 ],
 function (ChromeFactory, FBL, Domplate, Options, XPCOM, Firebug)
 {
