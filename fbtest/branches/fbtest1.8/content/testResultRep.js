@@ -494,7 +494,7 @@ FBTestApp.TestResultTabView = domplate(
         if (tabName == "Exception" && !tabExceptionBody.updated)
         {
             tabExceptionBody.updated = true;
-            var propTree = Firebug.TraceModule.PropertyTree;
+            var propTree = FBTestApp.PropertyTree;
             propTree.tag.replace({object: result.err}, tabExceptionBody, propTree);
         }
     },
