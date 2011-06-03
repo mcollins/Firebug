@@ -14,27 +14,35 @@ var extensionName = "helloworld";
 
 // ********************************************************************************************* //
 
+if (!Firebug || !Firebug.getModuleLoaderConfig)
+{
+    FBTrace.sysout("Firebug Overlay; 'chrome://firebug/content/moduleConfig.js' must be included!");
+    return;
+}
+
 var config = Firebug.getModuleLoaderConfig();
 config.paths[extensionName] = "helloworld/content";
 
-// Load main.js module (the entry point of the extension).
+// Load main.js module (the entry point of the extension) + a support for tracing.
 Firebug.require(config, [
-    "firebug/lib/trace",
-    extensionName + "/main"
+    extensionName + "/main",
+    "firebug/lib/trace"
 ],
-function(FBTrace, Extension)
+function(Extension, FBTrace)
 {
     try
     {
+        // Initialize the extension object. Extension intialization procedure
+        // should be within this method (in main.js).
         Extension.initialize();
 
         if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("Firebug Bootstrap; Extension '" + extensionName + "' loaded!");
+            FBTrace.sysout("Firebug Overlay; Extension '" + extensionName + "' loaded!");
     }
     catch (err)
     {
         if (FBTrace.DBG_ERRORS)
-            FBTrace.sysout("Firebug Bootstrap; ERROR " + err);
+            FBTrace.sysout("Firebug Overlay; ERROR " + err);
     }
 });
 

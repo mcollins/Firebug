@@ -74,13 +74,15 @@ var FirebugManager =
 
         // Load main.js module (the entry point of the extension).
         Firebug.require(config, [
-            "firebug/lib/trace",
-            extensionName + "/main"
+            extensionName + "/main",
+            "firebug/lib/trace"
         ],
-        function(FBTrace, Extension)
+        function(Extension, FBTrace)
         {
             try
             {
+                // Initialize the extension object. Extension intialization procedure
+                // should be within this method (in main.js).
                 Extension.initialize();
 
                 if (FBTrace.DBG_INITIALIZE)

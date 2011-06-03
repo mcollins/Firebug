@@ -7,7 +7,7 @@ define([
 function(FBTrace) {
 
 // ********************************************************************************************* //
-// Application
+// The application/extension object
 
 var theApp =
 {
