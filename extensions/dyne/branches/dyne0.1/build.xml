@@ -10,10 +10,24 @@
 
     <!-- Properties -->
     <property file="ant.properties"/>
+    <!-- Temp values shoudl be in orion.properties -->
+    <property name="orionSourceCore" value="C:/Users/johnjbarton/firebug/orion/eclipse-orion-I20110526-1702-win32.win32.x86/eclipse/plugins/org.eclipse.orion.client.core_0.2.0.v20110526-1443/"/>
+    <property name="orionSourceEditor" value="C:/Users/johnjbarton/firebug/orion/eclipse-orion-I20110526-1702-win32.win32.x86/eclipse/plugins/org.eclipse.orion.client.editor_0.2.0.v20110526-1443/"/>
 
     <!-- Clean -->
     <target name="clean">
         <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- Copy Orion -->
+    <target name="copyOrion">
+        <mkdir dir="${build.dir}/content/orion"/>
+        <copy todir="${build.dir}/content/orion">
+            <fileset dir="${orionSource}">
+                <include name="**/embeddededitor*"/>
+                <include name="org.dojotoolkit/dojo/dojo.js.uncompressed.js"/>
+            </fileset>
+        </copy>
     </target>
 
     <!-- Build -->

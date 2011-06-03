@@ -6,7 +6,7 @@ var lineNo = 2;
 function runTest()
 {
     FBTest.sysout("orionEdit runTest starts basePath: "+basePath);
-
+    FBTest.enableAllPanels();
     // Open the file we plan to edit
     FBTestFirebug.openNewTab(fileName, function()
     {
@@ -22,7 +22,7 @@ function editLine() {
     FBTest.progress("editLine");
     var chrome = FW.Firebug.chrome;
     FW.Firebug.CSSModule.setCurrentEditorName("Orion"); // TODO push buttons
-    FBTest.progress("set current editor name to "+FB.Firebug.CSSModule.getCurrentEditorName());
+    FBTest.progress("set current editor name to "+FW.Firebug.CSSModule.getCurrentEditorName());
     FW.Firebug.currentContext.getPanel('stylesheet').toggleEditing();
 }
 

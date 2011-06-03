@@ -21,6 +21,51 @@ define([], function()
             var element = sourceFrame.document.documentElement;
 
         var Connection = {
+            numberOfRequests: 0,
+            callService: function(interfaceId, method, params) {
+                if (typeof(interfaceId) !== 'string')
+                    throw new Error("postObject.callService interfaceId must be a string not "+typeof(interfaceId));
+                if (typeof(method) !== 'string')
+                    throw new Error("postObject.callService method must be a string not "+typeof(method));
+                if (!params instanceof Array)
+                    throw new Error("postObject.callService params must be array not "+params);
+
+                var message = {
+                        orionish: true,
+                        id: ++Connection.numberOfRequests,
+                        serviceId: interfaceId+"",
+                        method: method+"",
+                        params: params
+                    };
+                Connection.postObject(message);
+            },
+
+            registry: {},
+            registerService: function(interfaceId, ignored, implementation)
+            {
+                Connection.registry[interfaceId] = implementation;
+            },
+            receiveServiceCall: function(interfaceId, method, params)
+            {
+                var implementation = Connection.registry[interfaceId];
+                if (!implementation)
+                    throw new Error("receiveServiceCall at "+interfaceId+" failed, no implemenation");
+                if (!implementation[method])
+                    throw new Error("receiveServiceCall at "+interfaceId+" failed, no method \'"+method+"\'");
+                if (typeof(implementation[method]) !== 'function')
+                    throw new Error("receiveServiceCall at "+interfaceId+" failed, method \'"+method+"\' not a function");
+                try
+                {
+                    implementation[method].apply(implementation, params);
+                }
+                catch(exc)
+                {
+                    var args = "(";
+                    var keys = Object.keys(params);
+                    var args = keys.map(function chop(param) { return param.substr(0,20); });
+                    throw new Error("receiveServiceCall at "+interfaceId+"["+method+"]("+args.join(',')+") failed with params");
+                }
+            },
 
             postObject: function(object) {
                 var data = JSON.stringify(object);
@@ -32,7 +77,12 @@ define([], function()
                 if (data)
                     var obj = JSON.parse(data);
                 if (obj)
-                    fnOfObject(obj);
+                {
+                    if (obj.orionish && obj.serviceId && obj.method && obj.params)
+                        Connection.receiveServiceCall(obj.serviceId, obj.method, obj.params);
+                    else
+                        fnOfObject(obj);
+                }
             },
 
             postMessage: function(data) {
@@ -57,6 +107,6 @@ define([], function()
 
         return Connection;
     }
-
+    window.addObjectConnection = addObjectConnection;
     return addObjectConnection;
 });

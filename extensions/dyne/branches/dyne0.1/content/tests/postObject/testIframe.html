@@ -15,7 +15,8 @@ window.addEventListener('load', function()
     {
         var bar = {name: "fromTestIFrame"};
         connection.postObject(bar);
-        console.log("testIFrame sent");
+        connection.callService("IFoo", "fooMethod", [{bar: bar}]);
+        console.log("testIFrame sent, called service");
     });
 }, false);
 </script>

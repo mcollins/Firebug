@@ -355,10 +355,17 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
     },
 
     addScriptFromFile: function(win, id, fileURL) {
-        var req = new XMLHTTPRequest();
+        if (Components)
+            var req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
+                 .createInstance(Components.interfaces.nsIXMLHttpRequest);
+        else
+            var req = new XMLHTTPRequest();
+
         req.open('GET', fileURL, false);
+        req.send(null);
+        FBTrace.sysout("addScriptFromFile "+fileURL+" to "+id+" in "+win.document.location, req);
         if (req.status === 0)
-            var element = Dom.addScript(win.document, id, req.responseText);
+            var element = FBL.addScript(win.document, id, req.responseText);
         else
             FBTrace.sysout("ERROR failed to read "+fileURL );
     },
@@ -412,8 +419,19 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
             this.currentEclipse = win;
 
             var baseURL = "chrome://dyne/content/";
-            Firebug.Dyne.addScriptFromFile(win, "_firebugPostObject", baseURL+"postObject.js");
-            Firebug.Dyne.addScriptFromFile(win, "_firebugPostObject", baseURL+"orionInPanel.js");
+            this.addScriptFromFile(win, "_firebugPostObject", baseURL+"postObject.js");
+
+            this.addScriptFromFile(win.parent, "_firebugPostObject", baseURL+"postObject.js");
+
+            this.orionConnection = win.parent.addObjectConnection(win, win.parent, function fnOfObject(obj)
+            {
+                FBTrace.sysout(" We be cooking with gas!", obj);
+            });
+
+            this.orionConnection.registerService("IEditor", null, null);  // TODO
+
+            this.addScriptFromFile(win, "_firebugOrionEditorAdapater", baseURL+"orionEditorAdapter.js");
+
             if (FBTrace.DBG_DYNE)
                 FBTrace.sysout("dyne.integrateOrion "+this.currentEclipse.location, this.currentEclipse);
             var editorContainer = win.dijit.byId('editorContainer');
@@ -443,7 +461,6 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         var model = this.getModel();
         if (this.selection instanceof Firebug.EditLink)
         {
-
             if (this.isLocalURI(this.selection.fileURL))
             {
                 FBTrace.sysout("attachUpdater "+this.selection.fileURL, this.selection);

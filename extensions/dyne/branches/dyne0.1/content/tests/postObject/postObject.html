@@ -16,7 +16,13 @@ var testFrame = document.getElementById('testFrame');
 testFrame.addEventListener('load', function()
 {
     window.connection = addObjectConnection(window, testFrame.contentWindow, objectReceiver);
-    console.log("postObject ready");
+    var myFoo = {
+        fooMethod: function(aParam) {
+            console.log("myFoo.fooMethod got ",aParam);
+        }
+    };
+    window.connection.registerService("IFoo", null, myFoo);
+    console.log("postObject ready, registsered ", myFoo);
 }, false);
 
 window.addEventListener('load', function(){
