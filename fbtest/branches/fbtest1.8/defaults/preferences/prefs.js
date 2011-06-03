@@ -13,6 +13,7 @@ pref("extensions.fbtest.history", "");
 pref("extensions.fbtest.testCaseHistory", "https://getfirebug.com/tests/content/");
 pref("extensions.fbtest.testDriverHistory", "");
 pref("extensions.fbtest.enableTestLogger", false);
+pref("extensions.fbtest.runMoreTimes", 10);     // Specifies number of times a test shoul run (used for 'Run %S Times' context menu item)
 
 // Default browser window (with Firebug) size & position
 pref("extensions.fbtest.defaultOuterWidth", 1024);

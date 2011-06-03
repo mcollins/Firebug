@@ -423,6 +423,14 @@ FBTestApp.TestList = domplate(
           command: bindFixed(this.onRunFromHere, this, test)
         });
 
+        var counter = Firebug.getPref(FBTestApp.prefDomain, "runMoreTimes");
+        items.push({
+          //xxxHonza: doesn't work? label: $STRF("fbtest.cmd.Run More Times", [counter]),
+          label: "Run " + counter + " Times",
+          nol10n: true,
+          command: bindFixed(this.onRunMoreTimes, this, test)
+        });
+
         items.push({
           label: $STR("fbtest.contextmenu.label.Hide Passing Tests"),
           nol10n: true,
@@ -495,6 +503,19 @@ FBTestApp.TestList = domplate(
 
         if (FBTrace.DBG_FBTEST)
             FBTrace.sysout("fbtest.onRunFromHere; Number of tests: " + tests.length, tests);
+
+        FBTestApp.TestRunner.runTests(tests);
+    },
+
+    onRunMoreTimes: function(test)
+    {
+        var counter = Firebug.getPref(FBTestApp.prefDomain, "runMoreTimes");
+
+        var tests = [];
+
+        // Join all tests from all the following groups.
+        for (var i=0; i<counter; i++)
+            tests.push(test);
 
         FBTestApp.TestRunner.runTests(tests);
     },
