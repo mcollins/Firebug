@@ -122,7 +122,7 @@ var TraceConsole =
             // has been registered and now.
             this.flushCachedMessages();
 
-            FBTrace.sysout("FBTrace; initialization process done: " + this.prefDomain + "\n");
+            FBTrace.sysout("Tracing console initialized for: " + this.prefDomain + "\n");
 
             if (this.releaser) {
                 dump("TraceConsole releasing application thread.\n");

@@ -1,8 +1,7 @@
 content fbtrace  chrome/content/
 content fbtrace-firebug  chrome/firebug/content/
 
-#overlay chrome://firebug/content/firebugOverlay.xul         chrome://fbtrace/content/traceFirebugOverlay.xul
-overlay chrome://firebug/content/firefox/firebugMenuOverlay.xul         chrome://fbtrace/content/traceFirebugOverlay.xul
+overlay chrome://firebug/content/firebugOverlay.xul         chrome://fbtrace/content/traceFirebugOverlay.xul
 
 resource fbtrace modules/
 resource fbtrace-firebug chrome/firebug/modules/
