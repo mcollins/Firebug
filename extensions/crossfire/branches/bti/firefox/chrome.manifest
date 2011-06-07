@@ -1,7 +1,8 @@
 #chrome registration
 content     crossfire   chrome/content/
 skin        crossfire modern/1.0   chrome/content/skin/
-overlay     chrome://firebug/content/firebugOverlay.xul     chrome://crossfire/content/crossfireOverlay.xul
+#overlay     chrome://firebug/content/firebugOverlay.xul     chrome://crossfire/content/crossfireOverlay.xul
+overlay     chrome://firebug/content/firefox/browserOverlayWithFrame.xul    chrome://crossfire/content/crossfireOverlay.xul
 
 
 # firefox modules

@@ -1,14 +1,16 @@
 /* See license.txt for terms of usage */
 
 define(
-        ["firebug/firebug",
-         "firebug/lib/options",
+        [
+         "firebug/lib/trace",
+         "firebug/firebug",
          "crossfireModules/crossfire-client",
          "arch/browser",
+         //"firebug_rjs/bti/inProcess/browser",
          "arch/compilationunit"
         ], function(
+                FBTrace,
                 Firebug,
-                Options,
                 CrossfireClient,
                 Browser,
                 CompilationUnit
@@ -24,41 +26,14 @@ define(
 
     ToolsInterface.Browser = Browser;
 
-// Create a connection object
-    Object.defineProperty(ToolsInterface, 'browser', {value: new Browser(), writable: false, enumerable: true});
-    //ToolsInterface.browser = new Browser();
+    //Create a connection object
+    Firebug.connection = ToolsInterface.browser = new Browser();
+
+    Firebug.connection.connect();
 
    // ToolsInterface.BrowserContext = CrossfireBrowserContext;
-    FBTrace.sysout("Crossfire client tools has Options: " + Options, Options);
+    FBTrace.sysout("Crossfire client tools: " + ToolsInterface.crossfireClient, ToolsInterface.crossfireClient);
 
-    ToolsInterface.browser.addListener(Firebug);
-
- // Listen for preference changes. This way options module is not dependent on tools
- // xxxHonza: can this be in Browser interface?
- Options.addListener(
- {
-     updateOption: function(name, value)
-     {
-         ToolsInterface.browser.dispatch("updateOption", [name, value]);
-     }
- });
-
-Firebug.Options = Options;
-// Object.defineProperty(Firebug, "Options", {value: Options, writable:false, enumerable: true});
-
-/*
-//FIXME: copied from javascripttool.js
-    ToolsInterface.JavaScript.onCompilationUnit = function(context, url, kind)
-    {
-         var compilationUnit = new ToolsInterface.CompilationUnit(url, context);
-
-         compilationUnit.kind = kind;
-
-         context.compilationUnits[url] = compilationUnit;
-         FBTrace.sysout("ToolsInterface.JavaScript.onCompilationUnit "+url+" added to "+context.getName(), compilationUnit);
-    };
-*/
-
-return ToolsInterface;
+    return ToolsInterface;
 
 });

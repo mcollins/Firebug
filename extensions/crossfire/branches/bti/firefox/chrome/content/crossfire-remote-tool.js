@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define(["firebug/lib",
+define(["firebug/lib/lib",
         "crossfireModules/crossfire"],
         function factoryRemoteTool(FBL, CrossfireModule) {
 

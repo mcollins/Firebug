@@ -1,9 +1,13 @@
 <?xml version="1.0"?>
+<!-- See license.txt for terms of usage -->
 
 <!DOCTYPE window [
 <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
 %browserDTD;
 ]>
+
+<!-- CSS for fbContentSplitter -->
+<?xml-stylesheet href="chrome://firebug/content/firebug.css"?>
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         id="crossfire-remote-client"
@@ -11,8 +15,15 @@
         width="800" height="600"
         persist="screenX,screenY,width,height,sizemode">
 
-        <!-- FB 1.8 IFrame -->
-        <vbox persist="height" flex="2" id="fbMainFrame" collapsed="false">
-            <iframe id="firebugFrame" flex="1" src="chrome://firebug/content/firebugFrame.xul"/>
-        </vbox>
+    <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/legacy.js"/>
+    <script type="application/x-javascript" src="chrome://firebug/content/moduleConfig.js"/>
+
+    <script type="application/x-javascript" src="chrome://remote-client/content/main.js"/>
+
+    <!-- Firebug panel -->
+    <vbox persist="height" flex="2" id="fbMainFrame" collapsed="false">
+        <iframe  flex="2" src="chrome://firebug/content/firefox/firebugFrame.xul"/>
+    </vbox>
+
 </window>

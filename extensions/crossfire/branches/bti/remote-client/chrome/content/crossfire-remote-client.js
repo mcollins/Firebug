@@ -1,27 +1,27 @@
 /* See license.txt for terms of usage */
 
-define(["firebug/lib",
+define([
+        "firebug/lib/trace",
+        "firebug/lib/lib",
+        "firebug/firebug",
         "crossfireModules/crossfire-remote-tool",
         "crossfireModules/crossfire-ui"],
-        function (FBL, RemoteTool, CrossfireUI) {
+        function (FBTrace, FBL, Firebug, RemoteTool, CrossfireUI) {
 
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
-const Cu = Components.utils;
-
-try {
-    Cu.import("resource://firebug/firebug-trace-service.js");
-    FBTrace = traceConsoleService.getTracer("extensions.firebug");
-} catch(ex) {
-    FBTrace = { sysout: function() { window.dump(arguments);}};
-}
 
 FBTrace.sysout("*.*.*.*.* LOADING crossfire-remote-client");
 
 var crossfireRemoteTool = new RemoteTool();
 
 var CrossfireRemote = {
+
+    initialize: function() {
+        FBTrace.sysout("CrossfireRemote initialize");
+        window.CrossfireRemote = this;
+    },
 
     doConnect: function() {
         CrossfireUI.connect();
@@ -37,6 +37,8 @@ var CrossfireRemote = {
         quit(Ci.nsIAppStartup.eForceQuit);
     }
 };
+
+Firebug.registerModule(CrossfireRemote);
 
 //--------------------------------------
 

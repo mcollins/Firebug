@@ -2,7 +2,7 @@
 
 define(
         [ "arch/tools",
-          "firebug/lib",
+          "firebug/lib/lib",
           "crossfireModules/crossfire",
           "crossfireModules/crossfire-status" ],
           function( ToolsInterface, FBL, CrossfireModule, CrossfireStatus) {

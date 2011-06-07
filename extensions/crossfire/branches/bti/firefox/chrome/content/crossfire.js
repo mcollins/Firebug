@@ -6,7 +6,7 @@
  * @description Firebug extension to add support for remote debug protocol.
  * @public
  */
-define(["firebug/lib",
+define(["firebug/lib/lib",
         "firebug/firebug",
         "crossfireModules/crossfire-status"], function(FBL, Firebug, CrossfireStatus) {
 

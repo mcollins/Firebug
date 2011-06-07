@@ -1,7 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([//"arch/tools",
-        "firebug/lib",
+        "firebug/lib/lib",
         "firebug/firebug",
         "crossfireModules/crossfire",
         "crossfireModules/crossfire-status"],

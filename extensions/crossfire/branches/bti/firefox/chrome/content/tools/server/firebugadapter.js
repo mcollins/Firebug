@@ -1,4 +1,4 @@
-/* See license.txt for terms of usage */
+/* See license.txt for terms of usage
 
 // ************************************************************************************************
 // Module
@@ -20,3 +20,4 @@ ToolsInterface.browser.addListener(Firebug.ToolsAdapter);
 return exports = {};
 
 });
+*/

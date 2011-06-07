@@ -1220,18 +1220,20 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @memberOf CrossfireServer
          * @type Array
          * @param context the current Firebug context
-         * @param soureFile the Firebug sourceFile from the source map or from the <code>onSourceFileCreated</code> callback
+         * @param sourceFile the Firebug sourceFile from the source map or from the <code>onSourceFileCreated</code> callback
          * @param includeSrc a Boolean to determine if the source for the script should be included in the returned object
          * @returns a new script object for the given source file
          * @since 0.3a5
          */
         _newScript: function(context, sourceFile, includeSrc) {
+            if (FBTrace.DBG_CROSSFIRE)
+                FBTrace.sysout("CROSSFIRE: _newScript for: " +sourceFile, sourceFile);
             var lines = [];
             try {
                 lines = sourceFile.loadScriptLines(context);
             } catch (ex) {
                 if (FBTrace.DBG_CROSSFIRE) {
-                    FBTrace.sysout("CROSSFIRE: failed to get source lines for script: "+url+" - exception: " +ex);
+                    FBTrace.sysout("CROSSFIRE: failed to get source lines for script: "+sourceFile+" - exception: " +ex);
                 }
             }
             var srcLen;

@@ -4,7 +4,6 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
 
-    <script type="application/x-javascript" src="chrome://remote-client/content/main.js"/>
 
     <vbox id="fbContentBox" flex="1">
         <box id="crossfireToolbar" insertbefore="fbPanelBox">

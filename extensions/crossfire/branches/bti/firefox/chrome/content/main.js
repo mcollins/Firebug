@@ -1,27 +1,25 @@
 /* See license.txt for terms of usage */
 
 (function() {
-// ********************************************************************************************* //
+// ************************************************************************** //
+
+var Firebug = window.parent.Firebug;
 
 // don't load server modules if we are remote client
-if ( !window.CrossfireRemote) {
+if ( Firebug && !window.CrossfireRemote) {
 
-    var config = {
-        baseUrl: "resource://",
+    FBTrace.sysout("Crossfire main.js onModulePreload: " + Firebug.onModulePreLoad, Firebug);
 
-        paths: {"arch": "crossfireModules/tools/server", "firebug": "firebug_rjs", "crossfireModules":"crossfireModules"}
-    };
+    Firebug.onModulePreLoad(function crossfirePreLoad( config) {
+        FBTrace.sysout("Crossfire onModulePreload: config => " +config, config);
+        config.debug = true;
 
-    require(config, [
-        "firebug/lib/trace",
-        "arch/tools"
-    ],
-    function(FBTrace, ToolsInterface)
-    {
-        FBTrace.sysout("crossfire-server loaded");
-        FBTrace.sysout("tools interface is => " + ToolsInterface, ToolsInterface);
+        config.paths.arch = "crossfireModules/tools/server";
+        config.paths.crossfireModules = "crossfireModules";
+
+        return config;
     });
-
 }
-// ********************************************************************************************* //
+
+// ************************************************************************** //
 }());
