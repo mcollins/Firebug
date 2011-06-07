@@ -1,28 +1,43 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE html>
 <html>
-<head>
-  <title>Test Case for Issue #3652</title>
-</head>
-<body>
-
-<h1>Issue #3652</h1>
-
-<p>This test-case is intended for <a href="http://code.google.com/p/fbug/issues/detail?id=3652">Issue #3652</a>
-- <span class="h3">CSS autocomplete is broken</span>.
-<br/>
-<i>Jan Odvarko, odvarko@gmail.com</i>
-</p>
-
-<ol>
-<li>Open Firebug and select the HTML panel.</li>
-<li>Use the inspector to inspect the green element below.</code>
-<li>Select also the <i>Style</i> side panel.</li>
-<li>Click on the <i>'green'</i> value of the CSS property <i>color</i>. The inline editor should be opened.</li>
-<li>Press <i>r</i> in the editor. You should automatically be offered <i>red</i> as value.</li>
-</li>
-</ol>
-
-<code style="color:green">Inspect This Element</code>
-
-</body>
+    <head>
+      <title>Issue 3652: CSS autocomplete is broken</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
+      <style type="text/css">
+          #element1 {
+              width: 100px;
+              height: 100px;
+              background: #8C8CFF -moz-linear-gradient(135deg, #788CFF, #B4C8FF);
+              color: green;
+          }
+      </style>
+    </head>
+    <body>
+        <header>
+            <h1><a href="http://code.google.com/p/fbug/issues/detail?id=3652">Issue 3652</a>: CSS autocomplete is broken</h1>
+        </header>
+        <div>
+            <section id="content">
+                <div id="element1"></div>
+            </section>
+            <section id="description">
+                <h3>Steps to reproduce</h3>
+                <ol>
+                    <li>Open Firebug and select the <em>HTML</em> panel</li>
+                    <li>Inspect the blue <code>&lt;div&gt;</code> above</li>
+                    <li>Select the <em>Style</em> side panel</li>
+                    <li>Click on the value <code>green</code> of the CSS property <code>color</code> to open the inline editor</li>
+                    <li>Press <code class="key">r</code></li>
+                </ol>
+                <h3>Expected Result</h3>
+                <ul>
+                    <li><code>red</code> should be offered as value</li>
+                </ul>
+            </section>
+            <footer>
+                Sebastian Zartner, sebastianzartner@gmx.de
+            </footer>
+        </div>
+    </body>
 </html>

@@ -6,14 +6,14 @@ function runTest()
         FBTest.openFirebug();
         FBTest.selectPanel("html");
 
-        selectElementInHtmlPanel("Inspect This Element", function(node)
+        selectElementInHtmlPanel("element1", function(node)
         {
             var panel = FBTest.selectSidePanel("css");
             var values = panel.panelNode.querySelectorAll(".cssPropValue");
-            FBTest.compare(1, values.length, "There must be just one CSS value.");
+            FBTest.compare(0, !values.length, "There must be at least one CSS value.");
 
             // Click the CSS value to open the inline editor.
-            FBTest.synthesizeMouse(values[0]);
+            FBTest.synthesizeMouse(values[1]);
 
             // Type 'r' and verify auto completion.
             var editor = panel.panelNode.querySelector(".textEditorInner");
