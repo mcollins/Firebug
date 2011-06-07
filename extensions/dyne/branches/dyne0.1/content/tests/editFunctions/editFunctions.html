@@ -1,0 +1,41 @@
+<html>
+<head>
+<script>
+function fncPropOfWindow()
+{
+    var msg = "original source";  // line 6
+    msg = "Property of window test: "+msg;
+    console.log(msg);
+}
+var obj =
+{
+    fncPropOfObject: function()
+    {
+        var msg = "original source";  // line 14
+        msg = "Property of object test: "+msg;
+        console.log(msg);
+    },
+    aRefToPropOfWindow: fncPropOfWindow,
+}
+var aRefToPropOfObject = obj.fncPropOfObject;
+
+function modifiedPropOfWindow()  // line 22
+{
+    var msg = "modified source";
+    msg = "Property of window test: "+msg;
+    console.log(msg);
+}                                // line 27
+
+function update()
+{
+    aRefToPropOfObject.apply(obj,[]);
+    obj.aRefToPropOfWindow.apply(null,[]);
+}
+</script>
+</head>
+<body>
+<h1>Test case for JS function edits</h1>
+<button id="tryNow" onclick="update();">Try now</button>
+<div id="result"></div>
+</body>
+</html>
