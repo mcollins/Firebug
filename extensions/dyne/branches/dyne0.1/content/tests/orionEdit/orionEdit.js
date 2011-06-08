@@ -1,4 +1,4 @@
-var orionBase = "http://localhost:8080/file/j/extensions/dyne/branches/dyne0.1/doc/";
+var orionBase = "http://localhost:8080/file/b/doc/";
 var userPartFileName = "dynedoc.css";
 var fileName = orionBase+"index.html";
 var lineNo = 2;
@@ -15,15 +15,22 @@ function runTest()
         FBTestFirebug.clearCache();
         FBTestFirebug.selectPanel("stylesheet");
         selectFile();
-        editLine();
+        beginEdit();
     });
 }
-function editLine() {
-    FBTest.progress("editLine");
+function beginEdit()
+{
+    FBTest.progress("begin edit");
     var chrome = FW.Firebug.chrome;
     FW.Firebug.CSSModule.setCurrentEditorName("Orion"); // TODO push buttons
     FBTest.progress("set current editor name to "+FW.Firebug.CSSModule.getCurrentEditorName());
+    FBTestFirebug.waitForPanel("orion", continueEdit);
     FW.Firebug.currentContext.getPanel('stylesheet').toggleEditing();
+}
+
+function continueEdit()
+{
+    FBTest.progress("continueEdit");
 }
 
 function selectFile()

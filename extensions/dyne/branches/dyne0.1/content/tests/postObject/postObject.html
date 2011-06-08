@@ -15,7 +15,7 @@ function objectReceiver(obj) {
 var testFrame = document.getElementById('testFrame');
 testFrame.addEventListener('load', function()
 {
-    window.connection = addObjectConnection(window, testFrame.contentWindow, objectReceiver);
+    window.connection = jsonConnection.add(testFrame.contentWindow.document.documentElement, objectReceiver);
     var myFoo = {
         fooMethod: function(aParam) {
             console.log("myFoo.fooMethod got ",aParam);

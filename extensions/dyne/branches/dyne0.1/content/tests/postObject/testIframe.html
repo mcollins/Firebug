@@ -9,7 +9,7 @@ window.addEventListener('load', function()
 {
     console.log("testIFrame load");
 
-    var connection = addObjectConnection(window, window.parent, objectReceiver);
+    var connection = jsonConnection.add(document.documentElement, objectReceiver);
     console.log("testIFrame ready");
     setTimeout(function delayTest()
     {

@@ -1,24 +1,16 @@
-if (!window.define)
-{
-    function define(deps, factory) { window.addObjectConnection = factory(); }
-}
-
-define([], function()
+(function()
 {
     /*
-     * Create a connection from sourceFrame to targetFrame
-     * var connection = addObjectConnection(window, frame, recvr);
+     * Create a connection using events on targetElement.
+     * In parent window, pass child documentElement as targetElement,
+     * In child window pass documentElement
+     * var connection = addObjectConnection(elt, recvr);
      * connection.postObject(bar);
      */
-    function addObjectConnection(sourceFrame, targetFrame, fnOfObject) {
+    var jsonConnection = {};
+    function addObjectConnection(targetElement, fnOfObject) {
 
         var messageType = "pseudoPostMessage";
-
-        // Send the event always to the child frame.
-        if (sourceFrame.parent == sourceFrame)
-            var element = targetFrame.document.documentElement;
-        else
-            var element = sourceFrame.document.documentElement;
 
         var Connection = {
             numberOfRequests: 0,
@@ -63,7 +55,8 @@ define([], function()
                     var args = "(";
                     var keys = Object.keys(params);
                     var args = keys.map(function chop(param) { return param.substr(0,20); });
-                    throw new Error("receiveServiceCall at "+interfaceId+"["+method+"]("+args.join(',')+") failed with params");
+                    var msg = exc.toString() +" "+(exc.fileName || exc.sourceName) + "@" + exc.lineNumber;
+                    throw new Error("receiveServiceCall at "+interfaceId+"["+method+"]("+args.join(',')+") failed: "+msg);
                 }
             },
 
@@ -73,40 +66,55 @@ define([], function()
             },
 
             receiveObject: function(event) {
-                var data = Connection.receiveMessage(event);
-                if (data)
-                    var obj = JSON.parse(data);
-                if (obj)
+                try
                 {
-                    if (obj.orionish && obj.serviceId && obj.method && obj.params)
-                        Connection.receiveServiceCall(obj.serviceId, obj.method, obj.params);
+                    var data = Connection.receiveMessage(event);
+                    if (data)
+                        var obj = JSON.parse(data);
+                    if (obj)
+                    {
+                        if (obj.orionish && obj.serviceId && obj.method && obj.params)
+                            Connection.receiveServiceCall(obj.serviceId, obj.method, obj.params);
+                        else
+                            fnOfObject(obj);
+                    }
+                }
+                catch(exc)
+                {
+                    var msg = exc.toString() +" "+(exc.fileName || exc.sourceName) + "@" + exc.lineNumber;
+
+                    if (window.console)
+                        console.error(window.location+" postObject ERROR "+msg, exc);
                     else
-                        fnOfObject(obj);
+                        FBTrace.sysout("postObject ERROR "+msg, exc);
                 }
             },
 
             postMessage: function(data) {
-                // store the object on the child frame element
-                element.ownerDocument.setUserData(messageType, data, null);
-                var event = element.ownerDocument.createEvent("Event");
+                // store the object on the child frame targetElement
+                targetElement.ownerDocument.setUserData(messageType, data, null);
+                var event = targetElement.ownerDocument.createEvent("Event");
                 event.initEvent(messageType, false, false);
                 Connection.ignore = true;  // both target and source are listening
-                element.dispatchEvent(event);
+                targetElement.dispatchEvent(event);
                 delete Connection.ignore;
             },
 
             receiveMessage: function(event) {
                 if (Connection.ignore)  // ignore self messages
                     return;
-                return element.ownerDocument.getUserData(messageType);
+                return targetElement.ownerDocument.getUserData(messageType);
             },
 
         };
         // The child frame is used to signal and store the data.
-        element.addEventListener(messageType, Connection.receiveObject, false);
+        targetElement.addEventListener(messageType, Connection.receiveObject, false);
 
         return Connection;
     }
-    window.addObjectConnection = addObjectConnection;
-    return addObjectConnection;
-});
+    var jsonConnection = {
+        add: addObjectConnection,
+    };
+
+    return window.jsonConnection = jsonConnection;
+})();
