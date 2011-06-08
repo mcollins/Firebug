@@ -26,16 +26,51 @@ function modifiedPropOfWindow()  // line 22
     console.log(msg);
 }                                // line 27
 
+function replaceAll(original, replacement, obj, visited)
+{
+    var visitedObjects = visited || [];
+    var keys = Object.keys(obj);
+    if (obj.prototype)
+        keys.push('prototype');
+    keys.forEach(function(key)
+    {
+        var candidate = obj[key];
+        if (typeof(candidate) === 'object' || typeof(candidate) === 'function')
+        {
+            if (typeof(candidate) === 'function')
+                FBTest.sysout("checking function key "+key+": "+(candidate === original), {candidate: candidate, original: original});
+
+            if (candidate === original)
+            {
+                obj[key] = replacement;
+                FBTest.sysout("replaced object key "+key+" in ", obj);
+            }
+
+            if (visitedObjects.indexOf(candidate) == -1)
+            {
+                visitedObjects.push(candidate);
+                replaceAll(original, replacement, candidate, visitedObjects);
+            }
+        }
+    });
+}
+
+
 function update()
 {
     aRefToPropOfObject.apply(obj,[]);
     obj.aRefToPropOfWindow.apply(null,[]);
 }
+function doReplace()
+{
+    replaceAll(obj.aRefToPropOfWindow, modifiedPropOfWindow, window);
+
+}
 </script>
 </head>
 <body>
 <h1>Test case for JS function edits</h1>
-<button id="tryNow" onclick="update();">Try now</button>
+<button id="tryNow" onclick="update();">Try now</button><button id="replace" onclick="doReplace();">Replace Functions</button>
 <div id="result"></div>
 </body>
 </html>

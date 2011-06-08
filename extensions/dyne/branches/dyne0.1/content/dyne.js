@@ -337,7 +337,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
     insertOrionScripts: function(parentElement, url)
     {
-        var ourEditor = "examples/embeddededitor.html";
+        var ourEditor = "examples/editor/embeddededitor.html";
 
         var editorURL = this.getOrionEditorURL(url, ourEditor);
 
