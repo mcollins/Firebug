@@ -2,7 +2,7 @@
 
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
-<?xml-stylesheet href="chrome://fbtrace-firebug/skin/traceConsole.css"?>
+<?xml-stylesheet href="chrome://fbtrace/content/traceConsole.css"?>
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
