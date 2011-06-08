@@ -29,7 +29,11 @@ FBTestApp.TestListLoader =
     {
         var testLists = this.getRegisteredTestLists();
         if (!testLists.length)
+        {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.loadAllRegisteredTests; NO registered tests lists");
             return;
+        }
 
         this.loadNextTest(testLists, [], function(groups)
         {
@@ -51,6 +55,8 @@ FBTestApp.TestListLoader =
     {
         if (!testLists.length)
         {
+            if (FBTrace.DBG_FBTEST)
+                FBTrace.sysout("fbtest.loadNextTest; Last test list loaded.", groups);
             callback(groups);
             return;
         }
@@ -94,6 +100,10 @@ FBTestApp.TestListLoader =
 
     getRegisteredTestLists: function()
     {
+        // Dispatch event to the right instance Firebug (within the tested browser
+        // window) to get all registered test lists.
+        var Firebug = FBTestApp.FBTest.FirebugWindow.Firebug;
+
         var testLists = [];
         dispatch([Firebug], "onGetTestList", [testLists]);
         dispatch(Firebug.modules, "onGetTestList", [testLists]);
