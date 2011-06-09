@@ -429,8 +429,18 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
         this.panelNode.appendChild(this.selectedOrionBox);
 
-        var iframe = this.insertOrionScripts(this.selectedOrionBox, editLink);
+        var ourEditor = "examples/editor/embeddededitor.html";
 
+        var editorURL = editLink.getOrionEditorURL(ourEditor);
+
+        FBTrace.sysout("insertOrionScripts remap "+editLink.getEditURL()+" to "+editorURL);
+
+        var win = Firebug.Dyne.Util.openOrReuseByAttribute("firebug-orion", editorURL);
+
+        connectionContainer.integrateOrion(win);
+        connectionContainer.attachOrion(win);
+        return this.selectedOrionBox;
+alert("iframe "+iframe)
         // the element is available synchronously, but orion still needs to load
         var panel = this;
 
@@ -457,7 +467,9 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
         FBTrace.sysout("insertOrionScripts remap "+editLink.getEditURL()+" to "+editorURL);
 
-        var width = parentElement.clientWidth + 1;
+        return Firebug.Dyne.Util.openOrReuseByAttribute("firebug-orion", editorURL);
+
+        /*var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
         var iframe = parentElement.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
         iframe.setAttribute("style", 'border:none;');
@@ -468,6 +480,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
         iframe.setAttribute("src", editorURL);
         parentElement.appendChild(iframe);
         return iframe;
+        */
     },
 
 
@@ -647,10 +660,14 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         try
         {
             this.orionWindow = win;
+FBTrace.sysout("attachOrion win.document ", win.document);
+            win.addEventListener('load', function connectOnLoad()
+            {
+                this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
+                FBTrace.sysout("attachOrion connection to "+win.document.location);
+                this.orionConnection.postObject({connection: "dyne is ready"});
+            }, false);
 
-            this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
-            FBTrace.sysout("attachOrion connection to "+win.document.location);
-            this.orionConnection.postObject({connection: "dyne is ready"});
         }
         catch(exc)
         {
@@ -691,7 +708,7 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         if (fromPanel === "stylesheet")
         {
             var updater = new Firebug.Dyne.CSSStylesheetUpdater(this.location);
-            this.orionConnection.registerService("IEditor", null, updater);
+            this.orionConnection.registerService("IStylesheet", null, updater);
             return;
         }
         else if (fromPanel === "script")
@@ -750,16 +767,11 @@ var rePriority = /(.*?)\s*(!important)?$/;
 Firebug.Dyne.CSSStylesheetUpdater.prototype =
 {
     reNameValue: /\s*([^:]*)\s*:\s*(.*?)\s*(!important)?\s*;/,
-    // eclipse.TextModel listener
-    onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
+
+    onRuleLineChanged: function(changedLineIndex, lineText)
     {
-        var changedLineIndex = this.model.getLineAtOffset(start);
-        var lineText = this.model.getLine(changedLineIndex);
-        if (FBTrace.DBG_DYNE)
-        {
-            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged "+changedLineIndex+" "+lineText);
-            FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
-        }
+         if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onRuleLineChanged "+changedLineIndex+" "+lineText);
 
         var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
 
@@ -1017,6 +1029,7 @@ Firebug.Dyne.reloadDyne = function(win)
     FBTrace.sysout("Firebug.Dyne.reloadDyne "+element, element);
 }
 
+Components.utils.import("resource://gre/modules/Services.jsm");
 
 Firebug.Dyne.Util =
 {
@@ -1024,7 +1037,79 @@ Firebug.Dyne.Util =
             return FBL.addScript(win.document, id, xhrIO.readSynchronously(fileURL));
         },
 
+        findAndFocusByAttribute: function(wm, attrName)
+        {
+            var tabbrowser = wm.getEnumerator('navigator:browser').getNext().gBrowser;
+            for (var index = 0;
+                 index < tabbrowser.tabContainer.childNodes.length;
+                 index++)
+            {
+                // Get the next tab
+                var currentTab = tabbrowser.tabContainer.childNodes[index];
 
+                // Does this tab contain our custom attribute?
+                if (currentTab.hasAttribute(attrName))
+                {
+                    // Yes--select and focus it.
+                    tabbrowser.selectedTab = currentTab;
+
+                    // Focus *this* browser window in case another one is currently focused
+                    tabbrowser.ownerDocument.defaultView.focus();
+                    return tabbrowser.ownerDocument.defaultView;
+                }
+            }
+            return false;
+        },
+
+        openAndMarkTab: function(wm, attrName, url)
+        {
+
+            // Our tab isn't open. Open it now.
+            var win = Services.ww.openWindow(window, url,null, null, null);
+            FBTrace.sysout("openAndMarkTab "+url+" window ", win);
+            return win;
+
+            win.addEventListener('load', function markOnLoad(event)
+            {
+                FBTrace.sysout("openAndMarkTab load event "+win.location, win);
+                win.removeEventListener('load', markOnLoad, false);
+
+                var tabbrowser = win.getBrowser();
+
+                // Create tab
+                var newTab = tabbrowser.addTab(url);
+                newTab.setAttribute(attrName, attrName+"_attribute");
+
+                // Focus tab
+                tabbrowser.selectedTab = newTab;
+
+                // Focus *this* browser window in case another one is currently focused
+                tabbrowser.ownerDocument.defaultView.focus();
+                then(tabbrowser.ownerDocument.defaultView);
+
+            }, false);
+        },
+
+        //https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs
+        openOrReuseByAttribute: function(attrName, url)
+        {
+            var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                                 .getService(Components.interfaces.nsIWindowMediator);
+
+            var win = this.findAndFocusByAttribute(wm, attrName);
+            FBTrace.sysout("openOrReuse("+attrName+", "+url+") found "+win, win);
+            if (!win)
+            {
+                win = this.openAndMarkTab(wm, attrName, url);
+                var mainWindow = wm.getMostRecentWindow("navigator:browser");
+                FBTrace.sysout("openOrReuse("+attrName+", "+url+") mainWindow "+mainWindow.location, mainWindow);
+
+                var tabbrowser = mainWindow.getBrowser();
+                var tab = tabbrowser.selectedTab;
+                tab.setAttribute(attrName, attrName+"_attribute");
+            }
+            return win;
+        },
 }
 // ************************************************************************************************
 // Registration

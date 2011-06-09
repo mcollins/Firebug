@@ -48,7 +48,7 @@
                     throw new Error("receiveServiceCall at "+interfaceId+" failed, method \'"+method+"\' not a function");
                 try
                 {
-                    FBTrace.sysout(window.location+" receiveServiceCall "+method, params);
+                    //FBTrace.sysout(" receiveServiceCall "+method+" -> "+window.location, params);
                     implementation[method].apply(implementation, params);
                 }
                 catch(exc)

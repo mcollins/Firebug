@@ -126,56 +126,83 @@ dojo.addOnLoad(function(){
     editorContainer.installEditor();
 
 
-    function objectReceiver(props) {
-
-           if (window.FBTrace)
-               FBTrace.sysout("orionEditorAdapter received object ", props);
-           else
-               console.log("orionEditorAdapter received object ", props);
-           connection.postObject({connection: "orion is ready"});
-           FBTrace.sysout("orion posted ready");
-    }
-    var connection = jsonConnection.add(document.documentElement, objectReceiver);
-
-    var editorProxy = {
-        onChanged: function(){
-            try {
-                connection.callService("IEditor", "onChanged", arguments);
-            }
-            catch (exc)
-            {
-                FBTrace.sysout("editorProxy "+exc);
-            }
-
-        },
-        onChanging: function() {
-            try
-            {
-                connection.callService("IEditor", "onChanging", arguments);
-            }
-            catch (exc)
-            {
-                FBTrace.sysout("editorProxy "+exc);
-            }
-
-        }
-    };
-
-
-    var model = editorContainer.getEditorWidget().getModel();
-    model.addListener(editorProxy);
-
-    // For events from dyne to orion
-    connection.registerService("IEditor", null, editorContainer);
-
-    /*
     // if there is a mechanism to change which file is being viewed, this code would be run each time it changed.
     var contentName = "sample.js";  // for example, a file name, something the user recognizes as the content.
     var initialContent = "window.alert('this is some javascript code');  // try pasting in some real code";
     editorContainer.onInputChange(contentName, null, initialContent);
     syntaxHighlighter.highlight(contentName, editorContainer.getEditorWidget());
     // end of code to run when content changes.
-    */
+
+    var editorProxy = {
+        connect: function()
+        {
+            this.model = editorContainer.getEditorWidget().getModel();
+            this.model.addListener(this);
+            this.empty = true;
+        },
+        disconnect: function()
+        {
+            this.model.removeListener(this);
+        }
+    };
+
+
+    var editorProxyForCSS = {
+        connect: editorProxy.connect,
+        disconnect: editorProxy.disconnect,
+
+        // eclipse.TextModel listener
+        onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
+        {
+            console.log("editorProxyForCSS onChanged ", arguments);
+            syntaxHighlighter.highlight(contentName, editorContainer.getEditorWidget());
+            if (this.empty) // then this is the first event
+            {
+                editorContainerDomNode.addEventListener("DOMNodeRemoved", function onNodeRemoved(event)
+                {
+                    console.log("DOMNodeRemoved ", event);
+                }, true);
+                delete this.empty;  // mark seen first event
+                return;             // drop first event, its just the initial buffer load
+            }
+
+            var changedLineIndex = this.model.getLineAtOffset(start);
+            var lineText = this.model.getLine(changedLineIndex);
+            connection.callService("IStylesheet", "onRuleLineChanged", [changedLineIndex, lineText]);
+        },
+    };
+
+    function objectReceiver(props) {
+
+        if (window.FBTrace)
+            console.log("orionEditorAdapter received object ", props);
+        else
+            console.log("orionEditorAdapter received object ", props);
+
+        editorProxyForCSS.connect();  // start event flow into proxy
+console.log('orionEditorAdapter before orion ready message')
+        connection.postObject({connection: "orion is ready"});
+        console.log("orion posted ready");
+    }
+
+    var connection = jsonConnection.add(document.documentElement, objectReceiver);
+
+    // For events from dyne to orion
+    connection.registerService("IEditor", null, editorContainer);
+    document.documentElement.addEventListener("DOMNodeRemoved", function onNodeRemoved(event)
+    {
+        console.log("global DOMNodeRemoved ", event);
+    }, true);
+    document.documentElement.addEventListener("DOMNodeInserted", function onNodeRemoved(event)
+    {
+        console.log("global DOMNodeInserted ", event);
+    }, true);
+    document.documentElement.addEventListener("DOMAttrModified", function onNodeRemoved(event)
+    {
+        console.log("global DOMAttrModified ", event);
+    }, true);
+
+    alert("before leaving page");
     window.onbeforeunload = function() {
         if (editorContainer.isDirty()) {
              return "There are unsaved changes.";
