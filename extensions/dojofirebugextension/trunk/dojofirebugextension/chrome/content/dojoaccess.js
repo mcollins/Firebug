@@ -236,6 +236,18 @@ DojoModel.DojoAccessor.prototype =
             return ar;
         },
         
+        /*boolean*/ hasWidgets: function(context) {
+            var dijit = _dijit(context);
+            if(!dijit) {
+                return false;
+            }
+            var registry = dijit.registry; //UNSECURE
+            if(!registry) {
+                return false;
+            }
+            return registry.length ? registry.length > 0 : registry._hash.length > 0;
+        },
+        
         _toArray: function(/*WidgetSet*/ registry, /*function?*/filter) {
             var ar = [];
 

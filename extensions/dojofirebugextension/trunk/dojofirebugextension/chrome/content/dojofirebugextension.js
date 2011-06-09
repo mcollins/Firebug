@@ -993,13 +993,10 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
      * This method shows the first view for a loaded page.
      */
     showInitialView: function(context) {
-        var widgets = this.getWidgets(context);
+        var hasWidgets = this.hasWidgets(context);
         var connsAPI = context.connectionsAPI;
         
-        //enable inspector based on widget existence
-        this._configureInspectorSupport(widgets.length > 0);
-        
-        if (widgets.length > 0) {
+        if (hasWidgets) {
             this.showWidgets(context);            
         } else if (connsAPI && connsAPI.getConnections().length > 0) {
             this.showConnectionsInTable(context);
@@ -1016,7 +1013,7 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
      */
      refresh: function() {
          var context = _safeGetContext(this);
-         
+                  
          // Select the current main view.
          if(this._isOptionSelected(SHOW_WIDGETS, context)) {
              this.showWidgets(context);
@@ -1186,6 +1183,10 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
     updatePanelView: function(/*PanelRenderConfig*/panelConfig, context){
         var selection = context.dojoExtensionSelection;
         var dojoAccessor = getDojoAccessor(context);
+        
+        //enable inspector based on widget existence
+        this._configureInspectorSupport(this.hasWidgets(context));        
+
         
         //1st step: draw Main panel view.
         if (panelConfig.refreshMainPanel){
@@ -1415,6 +1416,14 @@ DojoExtension.dojofirebugextensionPanel.prototype = extend(ActivablePanelPlusMix
         return accessor.getWidgets(context);
     },
 
+    /*boolean*/hasWidgets: function(context) {
+        var accessor = getDojoAccessor(context);
+        if(!accessor) {
+            return false;
+        }
+        return accessor.hasWidgets(context);        
+    }, 
+    
     /**
      * returns current page's widgets
      */
