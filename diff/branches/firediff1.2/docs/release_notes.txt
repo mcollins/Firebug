@@ -1,0 +1,69 @@
+03/30/2011 - 1.1.2
+
+Changes:
+- CSS Formatter Property Sorting
+- Compatibility updates for Firefox 4.0 and Firediff 1.7
+
+----
+
+12/22/2010 - 1.1.1
+
+Changes:
+- Fix issue that prevented save dialog for Save Snapshot and Save Diff features.
+
+----
+
+12/01/2010 - 1.1.0
+
+Changes:
+- Update for Firebug 1.6 support
+- Copy content support
+- Resolve issues in detached mode
+- Fix no change-case for context menu
+- Adjust diff colors
+
+----
+
+3/21/2010 - 1.0.0
+
+Changes:
+- Revert Changes
+- Save Snapshot
+- Save Diff
+- Document Formatters
+- Search
+- Activation Fixes
+- Fix inline style handling
+
+----
+
+7/19/2009 - 0.2.1
+
+Changes:
+- Rewrite text diff engine
+- Fix extension compatibility issue due to namespace conflicts
+- Snapshot bug fixes
+
+----
+
+6/29/2009 - 0.2
+
+Changes:
+- CSS Snapshot implementation
+- HTML Snapshot implementation
+
+----
+
+4/23/2009 - 0.1a2
+Bug fix release
+
+Changes:
+- Display an error message when Firediff is installed on top of Firebug 1.3
+- Modified Firebug HTML editor handling to improve Firebug source tracking
+- Fixed CSS editor merge logic
+- Provide failover case for XPath generation on "unknown" node types
+
+----
+
+4/14/2009 - 0.1a1
+Initial implementation of the change monitor feature.
