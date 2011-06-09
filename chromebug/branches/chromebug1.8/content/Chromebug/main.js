@@ -2,7 +2,7 @@
 var config = Firebug.getModuleLoaderConfig();
 
 config.prefDomain = "extensions.chromebug";
-config.paths = {"arch": "fb4cb/inProcess", "firebug": "fb4cb", "chromebug": "chromebug_rjs"};
+config.paths = {"arch": "fb4cb/bti/inProcess", "firebug": "fb4cb", "chromebug": "chromebug_rjs"};
 config.context = "Chromebug ";
 
 if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)

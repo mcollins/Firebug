@@ -5,6 +5,7 @@ define([
     "firebug/lib/lib",
     "firebug/firebug",
     "firebug/firefox/firefox",
+    "firebug/firefox/xpcom",
     "chromebug/chromebug",
     "chromebug/domWindowContext",
     "firebug/firefox/xpcom",
@@ -13,9 +14,8 @@ define([
     "firebug/js/sourceFile",
     "firebug/js/debugger",
        ],
-function overrideFactory(FBL, Firebug, Firefox, Chromebug,DomWindowContext, XPCOM, WIN, HTMLLib)
+function overrideFactory(FBL, Firebug, Firefox, Chromebug, DomWindowContext, XPCOM, WIN, HTMLLib)
 {
-
 
 const Ci = Components.interfaces;
 const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
