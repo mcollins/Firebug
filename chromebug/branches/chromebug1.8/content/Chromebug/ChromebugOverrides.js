@@ -2,16 +2,16 @@
 
 
 define([
-    "firebug/lib",
+    "firebug/lib/lib",
     "firebug/firebug",
     "firebug/firefox/firefox",
     "chromebug/chromebug",
     "chromebug/domWindowContext",
-    "firebug/lib/xpcom",
+    "firebug/firefox/xpcom",
     "firebug/firefox/window",
     "firebug/lib/htmlLib",
-    "firebug/sourceFile",
-    "firebug/debugger",
+    "firebug/js/sourceFile",
+    "firebug/js/debugger",
        ],
 function overrideFactory(FBL, Firebug, Firefox, Chromebug,DomWindowContext, XPCOM, WIN, HTMLLib)
 {

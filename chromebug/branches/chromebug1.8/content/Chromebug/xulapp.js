@@ -1,10 +1,10 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib",
-    "firebug/reps",
-    "firebug/domplate",
-    "firebug/domPanel"
+    "firebug/lib/lib",
+    "firebug/chrome/reps",
+    "firebug/lib/domplate",
+    "firebug/dom/domPanel"
 ],
 function(FBL, FirebugReps, Domplate)
 {

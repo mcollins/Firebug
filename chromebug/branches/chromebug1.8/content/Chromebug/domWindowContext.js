@@ -4,7 +4,7 @@ define([
         "chromebug/chromebug",
         "firebug/firebug",
         "firebug/firefox/window",
-        "firebug/tabContext",
+        "firebug/chrome/tabContext",
         ],
 function domWindowContextFactory(Chromebug, Firebug, WIN)
 {

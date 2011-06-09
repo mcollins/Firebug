@@ -19,7 +19,7 @@
  */
 
 define([
-        "firebug/lib",
+        "firebug/lib/lib",
         "firebug/firebug",
         "firebug/lib/string",
         "chromebug/domWindowContext",

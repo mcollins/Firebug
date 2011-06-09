@@ -2,7 +2,7 @@
 
 
 define([
-        "firebug/lib",
+        "firebug/lib/lib",
         "firebug/firebug"
         ],
 function parseURIFactory(FBL, Firebug)

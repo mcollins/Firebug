@@ -1,7 +1,7 @@
 define([
-    "firebug/lib",
-    "firebug/reps",
-    "firebug/domplate",
+    "firebug/lib/lib",
+    "firebug/chrome/reps",
+    "firebug/lib/domplate",
     "firebug/lib/string",
 ],
 function(FBL, FirebugReps, Domplate, STR)
