@@ -10,7 +10,7 @@ define([
     "chromebug/domWindowContext",
     "firebug/firefox/xpcom",
     "firebug/firefox/window",
-    "firebug/lib/htmlLib",
+    "firebug/html/htmlLib",
     "firebug/js/sourceFile",
     "firebug/js/debugger",
        ],
