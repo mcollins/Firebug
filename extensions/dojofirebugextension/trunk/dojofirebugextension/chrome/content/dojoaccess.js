@@ -274,6 +274,10 @@ DojoModel.DojoAccessor.prototype =
             return ar;
         },
         
+        isArray: function(it){
+            return Object.prototype.toString.call(it) == "[object Array]";
+        },
+        
         /**
          * returns true if the given object extends from any dojo declared class.
          * @param object
@@ -344,6 +348,7 @@ DojoModel.DojoAccessor.prototype =
             var dijit = _dijit(context);
             var tracker = context.connectionsAPI;
             var props = {};
+            var self = this;
             
             if(widget.title) {
                 props['title'] = widget.title;
@@ -377,17 +382,24 @@ DojoModel.DojoAccessor.prototype =
             if(tracker) {
                 if(widget._connects) {
                     var connects = [];
-                    widget._connects.forEach(function(array) {
-                        //FIXME it seems this array.forEach fails with dojo 1.7 (error: array.forEach is not a function)
-                        array.forEach(function(handle) {
-                            connects.push(tracker.getConnectionByHandle(handle));
+                    
+                    widget._connects.forEach(function(handleOrArray) {
+                        if(self.isArray(handleOrArray)) {
+                            handleOrArray.forEach(function(handle) {
+                                connects.push(tracker.getConnectionByHandle(handle));
+                            })
+                        } else {
+                            connects.push(tracker.getConnectionByHandle(handleOrArray));
                         }
-                    )}, this);
+                    }, this);                        
+
                     if(connects.length > 0) {
                         props['connects'] = connects;
                     }
                 }
                 
+                /* FIXME dojo 1.7 widgets don't have _subscribe field anymore (widget's subscriptions are handled 
+                 * with _connects field as well on that dojo version). */
                 if(widget._subscribes) {
                     var subs = widget._subscribes.map(function(handle) {
                         return tracker.getSubscriptionByHandle(handle);
