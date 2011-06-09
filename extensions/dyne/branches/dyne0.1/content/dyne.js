@@ -459,13 +459,15 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
         var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
-        parentElement.innerHTML = "<iframe src='"+editorURL+"' style='border:none;' width='"+width+"' height='"+height+"' scrolling='no' seamless></iframe>";
-
-        var iframes = parentElement.getElementsByTagName('iframe');
-        if (iframes.length === 1)
-            return iframes[0];
-
-        FBTrace.sysout("dyne insertOrionScripts ERROR "+iframes.length+" frames!");
+        var iframe = parentElement.ownerDocument.createElementNS("http://www.w3.org/1999/xhtml", "iframe");
+        iframe.setAttribute("style", 'border:none;');
+        iframe.setAttribute("width", width+"");
+        iframe.setAttribute("height", height+"");
+        iframe.setAttribute("scrolling", "no");
+        iframe.setAttribute("seamless", "");
+        iframe.setAttribute("src", editorURL);
+        parentElement.appendChild(iframe);
+        return iframe;
     },
 
 
@@ -647,6 +649,8 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
             this.orionWindow = win;
 
             this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
+            FBTrace.sysout("attachOrion connection to "+win.document.location);
+            this.orionConnection.postObject({connection: "dyne is ready"});
         }
         catch(exc)
         {
@@ -668,7 +672,11 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
     loadFile: function(text)
     {
         FBTrace.sysout("loadFile "+this.location.getEditURL()+" -> "+text.length);
-        this.orionConnection.callService("IEditor", "onInputChange", [this.location.getEditURL(),null, text]);
+        var contentName = this.location.getEditURL();
+        var contentName = "sample.js";  // for example, a file name, something the user recognizes as the content.
+        var initialContent = "window.alert('this is some javascript code');  // try pasting in some real code";
+        var text = initialContent;
+        this.orionConnection.callService("IEditor", "onInputChange", [contentName, null, text]);
       //  this.orionConnection.callService("ISyntaxHighlighter", "onInputChange", [this.location.getEditURL(),null, text]);
     },
 
@@ -754,6 +762,7 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
         }
 
         var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
+
         var rule = this.cssPanel.getRuleByLine(this.stylesheet, changedLineNumber);
 
         if (FBTrace.DBG_DYNE)

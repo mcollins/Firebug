@@ -124,12 +124,50 @@ dojo.addOnLoad(function(){
     });
 
     editorContainer.installEditor();
+
+
     function objectReceiver(props) {
-        console.log("orionEditorAdapter received object ", props);
+
+           if (window.FBTrace)
+               FBTrace.sysout("orionEditorAdapter received object ", props);
+           else
+               console.log("orionEditorAdapter received object ", props);
+           connection.postObject({connection: "orion is ready"});
+           FBTrace.sysout("orion posted ready");
     }
-    window.alert("define "+define)
     var connection = jsonConnection.add(document.documentElement, objectReceiver);
-    connection.postObject({connection:"ready"});
+
+    var editorProxy = {
+        onChanged: function(){
+            try {
+                connection.callService("IEditor", "onChanged", arguments);
+            }
+            catch (exc)
+            {
+                FBTrace.sysout("editorProxy "+exc);
+            }
+
+        },
+        onChanging: function() {
+            try
+            {
+                connection.callService("IEditor", "onChanging", arguments);
+            }
+            catch (exc)
+            {
+                FBTrace.sysout("editorProxy "+exc);
+            }
+
+        }
+    };
+
+
+    var model = editorContainer.getEditorWidget().getModel();
+    model.addListener(editorProxy);
+
+    // For events from dyne to orion
+    connection.registerService("IEditor", null, editorContainer);
+
     /*
     // if there is a mechanism to change which file is being viewed, this code would be run each time it changed.
     var contentName = "sample.js";  // for example, a file name, something the user recognizes as the content.

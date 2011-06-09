@@ -48,6 +48,7 @@
                     throw new Error("receiveServiceCall at "+interfaceId+" failed, method \'"+method+"\' not a function");
                 try
                 {
+                    FBTrace.sysout(window.location+" receiveServiceCall "+method, params);
                     implementation[method].apply(implementation, params);
                 }
                 catch(exc)
@@ -68,6 +69,7 @@
             receiveObject: function(event) {
                 try
                 {
+                    //FBTrace.sysout("receiveobject "+window.location, event)
                     var data = Connection.receiveMessage(event);
                     if (data)
                         var obj = JSON.parse(data);
@@ -89,27 +91,32 @@
                         FBTrace.sysout("postObject ERROR "+msg, exc);
                 }
             },
-
             postMessage: function(data) {
                 // store the object on the child frame targetElement
                 targetElement.ownerDocument.setUserData(messageType, data, null);
                 var event = targetElement.ownerDocument.createEvent("Event");
-                event.initEvent(messageType, false, false);
-                Connection.ignore = true;  // both target and source are listening
+                event.initEvent(messageType, false, true);
+                Connection.currentEvent = event.timeStamp;  // to ignore self messages
+                //FBTrace.sysout("postMessage "+event.timeStamp+" from "+window.location+" "+data);
                 targetElement.dispatchEvent(event);
-                delete Connection.ignore;
+                delete Connection.currentEvent;
             },
 
             receiveMessage: function(event) {
-                if (Connection.ignore)  // ignore self messages
-                    return;
-                return targetElement.ownerDocument.getUserData(messageType);
+                var data = targetElement.ownerDocument.getUserData(messageType);
+                if (event.timeStamp !== Connection.currentEvent) {
+                    //FBTrace.sysout("receiveMessage "+event.timeStamp+" to "+window.location+" CONTINUE "+data, event);
+                    event.stopPropagation();
+                    event.preventDefault();
+                    return data;
+                } // else ignore self data
+
+                 //FBTrace.sysout("receiveMessage "+event.timeStamp+" to "+window.location+" DISCARD "+data, event)
             },
 
         };
         // The child frame is used to signal and store the data.
         targetElement.addEventListener(messageType, Connection.receiveObject, false);
-
         return Connection;
     }
     var jsonConnection = {
