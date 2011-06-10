@@ -406,7 +406,16 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
 
       context.diffContext = context.diffContext || { changes: [] };
       return context.diffContext;
-    }
+    },
+    // FBTest support
+    onGetTestList: function(testLists)
+    {
+        testLists.push({
+            extension: "FireDiff",
+            testListURL: "chrome://firediff-test/content/testList.html"
+        });
+    },
+
 });
 
 Firebug.registerActivableModule(Firebug.DiffModule);

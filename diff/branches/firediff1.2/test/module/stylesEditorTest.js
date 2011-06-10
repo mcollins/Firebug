@@ -15,12 +15,12 @@ function runTest() {
       name: "newProperty",
       execute: function(win) {
         cssPanel.editElementStyle();
-        
+
         var editor = cssPanel.editor;
         setEditorValue(editor, "whitespace");
         setEditorValue(editor, "background-color");
         Firebug.Editor.tabNextEditor();
-        
+
         setEditorValue(editor, "orange");
         setEditorValue(editor, "red");
         Firebug.Editor.stopEditing();
@@ -42,9 +42,9 @@ function runTest() {
       execute: function(win) {
         var panelNode = cssPanel.panelNode;
         var rule = panelNode.getElementsByClassName("cssPropValue")[0];
-        
+
         Firebug.Editor.startEditing(rule, rule.textContent);
-        
+
         var editor = cssPanel.editor;
         setEditorValue(editor, "yellow");
         setEditorValue(editor, "green !important");
@@ -69,9 +69,9 @@ function runTest() {
         var panelNode = cssPanel.panelNode;
         var rule = panelNode.getElementsByClassName("cssPropName")[0];
         FBTrace.sysout("renameProperty: " + rule, rule.cloneNode(true));
-        
+
         Firebug.Editor.startEditing(rule, rule.textContent);
-        
+
         var editor = cssPanel.editor;
         setEditorValue(editor, "border-color");
         setEditorValue(editor, "color");
@@ -96,7 +96,7 @@ function runTest() {
         var panelNode = cssPanel.panelNode;
         var rule = panelNode.getElementsByClassName("cssProp")[0];
         FBTrace.sysout("disableProperty: " + rule, rule.cloneNode(true));
-        
+
         cssPanel.disablePropertyRow(rule);
         cssPanel.disablePropertyRow(rule);
       },
@@ -117,9 +117,9 @@ function runTest() {
       execute: function(win) {
         var panelNode = cssPanel.panelNode;
         var rule = panelNode.getElementsByClassName("cssPropName")[0];
-        
+
         Firebug.Editor.startEditing(rule, rule.textContent);
-        
+
         var editor = cssPanel.editor;
         setEditorValue(editor, "border-color");
         setEditorValue(editor, "");
@@ -138,7 +138,7 @@ function runTest() {
       eventCount: 1
     },
   ];
-  
+
   var urlBase = FBTest.getHTTPURLBase();
   FBTestFirebug.openNewTab(urlBase + "module/index.htm", function(win) {
     FBTestFirebug.openFirebug();
@@ -146,12 +146,12 @@ function runTest() {
     FBTestFireDiff.enableDiffPanel(
         function() {
           FBTestFirebug.selectPanel("html");
-          cssPanel = FW.FirebugChrome.selectSidePanel("css");
+          cssPanel = FW.Firebug.currentChrome.selectSidePanel("css");
           //FBTestFirebug.selectPanel("css");
           //cssPanel = FBTestFirebug.getSelectedPanel();
           FW.FBTrace.sysout("cssPanel", cssPanel);
           cssPanel.select(win.document.getElementById("attrModified"));
-          
+
           FBTestFireDiff.executeModuleTests(tests, win);
         });
   });
