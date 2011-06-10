@@ -661,18 +661,19 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         {
             this.orionWindow = win;
 FBTrace.sysout("attachOrion win.document ", win.document);
-            win.addEventListener('load', function connectOnLoad()
-            {
-                this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
-                FBTrace.sysout("attachOrion connection to "+win.document.location);
-                this.orionConnection.postObject({connection: "dyne is ready"});
-            }, false);
-
+            win.addEventListener('load', this.connectOnLoad.bind(this, win), false);
         }
         catch(exc)
         {
             FBTrace.sysout("dyne.attachOrion ERROR: "+exc, exc);
         }
+    },
+
+    connectOnLoad: function(win, event)
+    {
+        this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
+        FBTrace.sysout("attachOrion connection to "+win.document.location);
+        this.orionConnection.postObject({connection: "dyne is ready"});
     },
 
     orionEventHandler: function(obj)
@@ -690,9 +691,6 @@ FBTrace.sysout("attachOrion win.document ", win.document);
     {
         FBTrace.sysout("loadFile "+this.location.getEditURL()+" -> "+text.length);
         var contentName = this.location.getEditURL();
-        var contentName = "sample.js";  // for example, a file name, something the user recognizes as the content.
-        var initialContent = "window.alert('this is some javascript code');  // try pasting in some real code";
-        var text = initialContent;
         this.orionConnection.callService("IEditor", "onInputChange", [contentName, null, text]);
       //  this.orionConnection.callService("ISyntaxHighlighter", "onInputChange", [this.location.getEditURL(),null, text]);
     },
