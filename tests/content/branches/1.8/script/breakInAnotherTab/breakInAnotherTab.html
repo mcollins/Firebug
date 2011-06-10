@@ -1,0 +1,25 @@
+<html>
+
+<head>
+
+<script>
+
+function doTest() {
+   window.alert("Click ok, then switch to another tab with Firebug active");
+   setTimeout(function delayError()
+   {
+      debugger;
+   }, 3000);
+}
+
+</script>
+<body>
+<h1>Test case for break in another window</h1>
+<ol>
+<li>Open Firebug, enable Script panel</li>
+<li>Open Firebug on another Firefox tab, switch back to this one</li>
+<li>Click the <button onclick="doTest();">Button</button></li>
+<li>Switch to the other tab again</li>
+</ol>
+<p>Nothing should happen. In the buggy case the breakpoint appears partly on each tab</p>
+</body>
