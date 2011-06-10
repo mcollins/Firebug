@@ -72,10 +72,10 @@
         tooltiptext="tracing.cmd.tip.Bookmark"
         command="cmd_separateConsole"/>
       <toolbarbutton id="traceToolsMenu"
-        class="toolbar-text-button fbmenubutton fbInternational"
+        class="toolbar-image-button fbmenubutton fbInternational"
         label="tracing.cmd.Tools"
         tooltiptext="tracing.cmd.tip.Tools"
-        type="menu">
+        type="menu-button">
             <menupopup onpopupshowing="TraceConsole.onOptionsShowing(this)">
                 <menuitem id="saveToFile"
                     label="tracing.cmd.Save" class="toolbar-image-button fbInternational"

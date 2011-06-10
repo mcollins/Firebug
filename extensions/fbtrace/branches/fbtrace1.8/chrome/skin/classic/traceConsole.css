@@ -358,11 +358,11 @@
 }
 
 #separateConsole {
-    list-style-image:url("chrome://mozapps/skin/places/tagContainerIcon.png");
+    list-style-image:url("chrome://fbtrace/skin/tag.png");
 }
 
 #saveToFile {
-    list-style-image: url("chrome://browser/skin/Toolbar-small.png");
+    list-style-image: url("chrome://fbtrace/skin/Toolbar-small.png");
     -moz-image-region: rect(0px 96px 16px 80px);
 }
 
@@ -370,13 +370,17 @@
     list-style-image: url("chrome://fbtrace/skin/up.png");
 }
 
+#traceToolsMenu {
+    list-style-image: url("chrome://fbtrace/skin/tools.png");
+}
+
 #closeFirefox {
-    list-style-image: url("chrome://browser/skin/Toolbar-small.png");
+    list-style-image: url("chrome://fbtrace/skin/Toolbar-small.png");
     -moz-image-region: rect(0px 48px 16px 32px);
 }
 
 #restartFirefox {
-    list-style-image: url("chrome://browser/skin/Toolbar-small.png");
+    list-style-image: url("chrome://fbtrace/skin/Toolbar-small.png");
     -moz-image-region: rect(0px 64px 16px 48px);
 }
 
