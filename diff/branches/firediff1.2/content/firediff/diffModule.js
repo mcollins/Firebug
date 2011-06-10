@@ -21,12 +21,12 @@ function revertChange(curChange, context) {
 
 Firebug.DiffModule = extend(Firebug.ActivableModule, {
     panelName: "firediff",
-    
+
     supportsFirebugEdits: Firebug.Editor.supportsStopEvent,
-    
+
     initialize: function() {
         Firebug.ActivableModule.initialize.apply(this, arguments);
-        
+
         if (Firebug.CSSModule) {
             // Maintain support for older versions of firebug that do not
             // have the CSS change event implementation
@@ -100,24 +100,24 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
     revertChange: function(change, context, force) {
       var diffContext = this.getDiffContext(context);
       var changes = diffContext.changes;
-      
+
       var tempChanges = changes.slice();
       var revert = Events.mergeRevert(change, tempChanges);
       if ((revert.length > 1 || changes.length - tempChanges.length > 1) && !force) {
-        return false; 
+        return false;
       }
-      
+
       // Perform the revert
       for (var i = revert.length; i > 0; i--) {
         var curChange = revert[i-1];
 
         revertChange(curChange, context);
       }
-      
+
       diffContext.changes = tempChanges;
       return revert;
     },
-    
+
     //////////////////////////////////////////////
     // Editor Listener
     onBeginEditing: function(panel, editor, target, value) {
@@ -132,7 +132,7 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
     onStopEdit: function(panel, editor, target) {
       this.onEndFirebugChange(target);
     },
-    
+
     //////////////////////////////////////////////
     // CSSModule Listener
     onCSSInsertRule: function(styleSheet, cssText, ruleIndex) {
@@ -155,7 +155,7 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
         // just drop the change completely
         if (!parent)
           return;
-        
+
         // This is a change to the inline style of a particular element, handle this.
         // See: https://bugzilla.mozilla.org/show_bug.cgi?id=338679
         this.recordChange(
@@ -168,14 +168,14 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
                 style.parentRule, propName, propValue, propPriority, prevValue, prevPriority, Events.ChangeSource.FIREBUG_CHANGE));
       }
     },
-    
+
     onCSSRemoveProperty: function(style, propName, prevValue, prevPriority, parent, baseText) {
       if (!style.parentRule) {
         // If we are dealing with an older version of firebug, protect ourselves from this failure and
         // just drop the change completely
         if (!parent)
           return;
-        
+
         // This is a change to the inline style of a particular element, handle this.
         // See: https://bugzilla.mozilla.org/show_bug.cgi?id=338679
         this.recordChange(
@@ -188,14 +188,14 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
                 style.parentRule, propName, prevValue, prevPriority, Events.ChangeSource.FIREBUG_CHANGE));
       }
     },
-    
+
     //////////////////////////////////////////////
     // HTMLModule Listener
     onBeginFirebugChange: function(node, context) {
       var diffContext = this.getDiffContext(context);
-      
+
       diffContext.editTarget = node;
-      
+
       var rep = Firebug.getRepObject(node) || node;
       if (rep instanceof Node) {
         diffContext.editTargetXpath = Path.getElementPath(rep);
@@ -206,18 +206,18 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
       }
 
       if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule.onBeginFirebugChange", diffContext.editTarget);
-      
+
       diffContext.editEvents = [];
     },
-    
+
     onEndFirebugChange: function(node, context) {
       var diffContext = this.getDiffContext(context);
       if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModile.onEndFirebugChange: " + node, diffContext.editEvents);
-      
+
       var editEvents = diffContext.editEvents;
       if (editEvents.length) {
         editEvents = Events.merge(editEvents, true);
-        
+
         for (var i = 0; i < editEvents.length; i++) {
           var change = editEvents[i];
           // Special case for HTML free edit. It's not pretty but it gets the
@@ -239,13 +239,13 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
           this.dispatchChange(change);
         }
       }
-      
+
       delete diffContext.editTarget;
       delete diffContext.editTargetXpath;
       delete diffContext.editEvents;
       delete diffContext.htmlEditPath;
     },
-    
+
     //////////////////////////////////////////////
     // Self
     domEventLogger: function(ev, context) {
@@ -270,7 +270,7 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
             this.domEventLogger(ev, context);
         }
     },
-    
+
     monitorContext: function(context) {
       if (FBTrace.DBG_ACTIVATION || FBTrace.DBG_FIREDIFF) { FBTrace.sysout("DiffModule.monitorContext", context); }
       var diffContext = this.getDiffContext(context);
@@ -279,7 +279,7 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
       diffContext.eventLogger = bind(this.domEventLogger, this, context);
       diffContext.attrEventLogger = bind(this.attributeChangedEventLogger, this, context);
       diffContext.charDataEventLogger = bind(this.charDataChangedEventLogger, this, context);
-      
+
       context.window.addEventListener("DOMNodeInserted", diffContext.eventLogger, true);
       context.window.addEventListener("DOMNodeRemoved", diffContext.eventLogger, true);
       context.window.addEventListener("DOMAttrModified", diffContext.attrEventLogger, true);
@@ -289,17 +289,17 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
         if (FBTrace.DBG_ACTIVATION || FBTrace.DBG_FIREDIFF) { FBTrace.sysout("DiffModule.unmonitorContext", context); }
         var diffContext = this.getDiffContext(context);
         if (!diffContext.eventLogger)    return;
-        
+
         context.window.removeEventListener("DOMNodeInserted", diffContext.eventLogger, true);
         context.window.removeEventListener("DOMNodeRemoved", diffContext.eventLogger, true);
         context.window.removeEventListener("DOMAttrModified", diffContext.attrEventLogger, true);
         context.window.removeEventListener("DOMCharacterDataModified", diffContext.charDataEventLogger, true);
-        
+
         delete diffContext.eventLogger;
         delete diffContext.attrEventLogger;
         delete diffContext.charDataEventLogger;
     },
-    
+
     ignoreNode: function(node) {
       // Ignore firebug elements and any top level elements that are not the doc element
       return node.firebugIgnore
@@ -308,7 +308,7 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
           ||        (node.id || "").indexOf("firebug") > -1
           || (node.hasAttribute && node.hasAttribute("firebugIgnore"));
     },
-    
+
     getHtmlEditorPaths: function(editor) {
       // Select the xpath update range. This is from the first to after the
       // last element in the range (or '}' if there is no sibling after that
@@ -327,30 +327,30 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
             ];
       }
     },
-    
+
     clearChanges: function(context) {
       if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule.clearChanges", context);
-      
+
       var diffContext = this.getDiffContext(context);
       diffContext.changes = [];
-      
-      dispatch(this.fbListeners, "onClearChanges", [context || FirebugContext]);
+
+      dispatch(this.fbListeners, "onClearChanges", [context || Firebug.currentContext]);
     },
-    
+
     navNextChange: function(context) {
-      dispatch(this.fbListeners, "onNavNextChange", [context || FirebugContext]);
+      dispatch(this.fbListeners, "onNavNextChange", [context || Firebug.currentContext]);
     },
     navPrevChange: function(context) {
-      dispatch(this.fbListeners, "onNavPrevChange", [context || FirebugContext]);
+      dispatch(this.fbListeners, "onNavPrevChange", [context || Firebug.currentContext]);
     },
-    
+
     ignoreChanges: function(worker, context) {
       // If no context is available failover. This failover is mostly for testing merges.
       var diffContext = this.getDiffContext(context) || {};
       try {
         if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule: Set ignore changes", context);
         diffContext.ignore = true;
-        
+
         worker();
       } finally {
         if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule: Reset ignore changes", context);
@@ -363,21 +363,21 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
       try {
         if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule: Set firebug changes", context);
         diffContext.changeSource = Events.ChangeSource.FIREBUG_CHANGE;
-        
+
         worker();
       } finally {
         if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule: Reset firebug changes", context);
         delete diffContext.changeSource;
       }
     },
-    
+
     recordChange: function(change, context) {
         if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule.recordChange", change);
         var diffContext = this.getDiffContext(context);
-        
+
         // Ignore if a context does not exist, we are in ignore mode, or the context is not attached
         if (!diffContext || diffContext.ignore || !diffContext.eventLogger)   return;
-        
+
         if (!diffContext.editTarget) {
           this.dispatchChange(change, context);
         } else {
@@ -386,24 +386,24 @@ Firebug.DiffModule = extend(Firebug.ActivableModule, {
     },
     dispatchChange: function(change, context) {
       if (FBTrace.DBG_FIREDIFF)   FBTrace.sysout("DiffModule.dispatchChange", change);
-      
+
       var diffContext = this.getDiffContext(context);
       diffContext.changes.push(change);
-      
-      dispatch(this.fbListeners, "onDiffChange", [change, context || FirebugContext]);
+
+      dispatch(this.fbListeners, "onDiffChange", [change, context || Firebug.currentContext]);
     },
-    
+
     getChanges: function(context) {
       var diffContext = this.getDiffContext(context);
       return (diffContext && diffContext.changes) || [];
     },
-    
+
     getDiffContext: function(context) {
-      context = context || FirebugContext;
+      context = context || Firebug.currentContext;
       if (!context) {
         return null;
       }
-      
+
       context.diffContext = context.diffContext || { changes: [] };
       return context.diffContext;
     }
