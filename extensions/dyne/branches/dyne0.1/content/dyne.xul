@@ -5,7 +5,7 @@
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
     <script src="chrome://dyne/content/xhrIO.js" type="application/x-javascript"/>
-    <script src="chrome://dyne/content/postObject.js" type="application/x-javascript"/>
+    <script src="chrome://dyne/content/orionPlugin/postObject.js" type="application/x-javascript"/>
     <script>
         //require({baseUrl:"chrome://dyne/content/"},["postObject"], function(jsonConnection){
         //    window.jsonConnection = jsonConnection;

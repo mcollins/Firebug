@@ -1,12 +1,15 @@
 <html>
 <head>
    <!-- plugin boiler plate -->
-   <script type="text/javascript" src="/openajax/release/all/OpenAjaxManagedHub-all.js"></script>
-   <script type="text/javascript" src="js/plugin.js"></script>
+   <script type="text/javascript" src="../../../../orion/plugin.js"></script>
 
+<script>
+// I guess we will eventually be loaded at ../orion/
+alert("orionPLugin "+window.location);
+</script>
 
 <!-- Support for json message from content (web page) to chrome (Firefox extn) -->
-<script src="../content/postObject.js"></script>
+<script src="postObject.js"></script>
 <!-- Integration of Firebug and Orion -->
 <script src="firebugPlugin.js"></script>
 </head>

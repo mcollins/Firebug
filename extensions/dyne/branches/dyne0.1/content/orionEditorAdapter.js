@@ -136,8 +136,9 @@ dojo.addOnLoad(function(){
     var editorProxy = {
         connect: function()
         {
-            this.model = editorContainer.getEditorWidget().getModel();
+        	this.model = editorContainer.getEditorWidget().getModel();
             this.model.addListener(this);
+            
             this.empty = true;
         },
         disconnect: function()
@@ -180,7 +181,7 @@ dojo.addOnLoad(function(){
             console.log("orionEditorAdapter received object ", props);
 
         editorProxyForCSS.connect();  // start event flow into proxy
-console.log('orionEditorAdapter before orion ready message')
+        console.log('orionEditorAdapter before orion ready message')
         connection.postObject({connection: "orion is ready"});
         console.log("orion posted ready");
     }
@@ -189,20 +190,7 @@ console.log('orionEditorAdapter before orion ready message')
 
     // For events from dyne to orion
     connection.registerService("IEditor", null, editorContainer);
-    document.documentElement.addEventListener("DOMNodeRemoved", function onNodeRemoved(event)
-    {
-        console.log("global DOMNodeRemoved ", event);
-    }, true);
-    document.documentElement.addEventListener("DOMNodeInserted", function onNodeRemoved(event)
-    {
-        console.log("global DOMNodeInserted ", event);
-    }, true);
-    document.documentElement.addEventListener("DOMAttrModified", function onNodeRemoved(event)
-    {
-        console.log("global DOMAttrModified ", event);
-    }, true);
 
-    alert("before leaving page");
     window.onbeforeunload = function() {
         if (editorContainer.isDirty()) {
              return "There are unsaved changes.";
