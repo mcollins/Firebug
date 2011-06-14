@@ -9,6 +9,7 @@ var globalWindowExchange =
     addListener: function(obj)
     {
         this.listeners.push(obj);
+        return this.listeners.length;
     },
 
     removeListener: function(obj)
@@ -16,6 +17,7 @@ var globalWindowExchange =
         var index = this.listeners.indexOf(obj);
         if (index !== -1)
             this.listeners.splice(index,1);
+        return this.listeners.length;
     },
 
     onWindowAdded: function(win)

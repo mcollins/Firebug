@@ -38,7 +38,8 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.ScriptPanel.registerEditor("Source", Firebug.Dyne.JSTextAreaEditor);
         Firebug.ScriptPanel.registerEditor("Orion", this);
         Firebug.NetMonitor.NetRequestTable.addListener(Firebug.Dyne.NetRequestTableListener);
-        globalWindowExchange.addListener(this);
+        var left = globalWindowExchange.addListener(this);
+        FBTrace.sysout("dyne initialize listeners "+left);
     },
 
     destroy: function()
@@ -145,9 +146,9 @@ Firebug.Dyne = extend(Firebug.Module,
 
         if ( loc.indexOf("firebugConnection.html") !== -1)
         {
-            globalWindowExchange.removeListener(this);  // don't listen to the global events in this XUL window
+            var left = globalWindowExchange.removeListener(this);  // don't listen to the global events in this XUL window
+            FBTrace.sysout('dyne found firebugConnection in '+win.location+" removed listener, left "+left, win);
             globalWindowExchange.onWindowAdded(win);
-            FBTrace.sysout('dyne found firebugConnection in '+win.location, win);
         }
     },
 
@@ -155,7 +156,8 @@ Firebug.Dyne = extend(Firebug.Module,
     {
         var connectionContainer = Firebug.Dyne.orions[win.top.location.toString()];
         FBTrace.sysout("dyne onWindowAdded "+win.location+" win.top "+win.top.location+" finds "+connectionContainer, Firebug.Dyne.orions);
-        connectionContainer.attachOrion(win);
+        if (connectionContainer)
+            connectionContainer.attachOrion(win);
     },
 
     unwatchWindow: function(context, win)

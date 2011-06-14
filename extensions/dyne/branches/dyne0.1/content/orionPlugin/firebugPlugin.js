@@ -19,7 +19,7 @@ var firebugPlugin =
         var provider = new eclipse.PluginProvider();
         provider.registerServiceProvider("orion.edit.listener", eventAdapterForCSS, {});
         provider.connect();
-        console.log("connected firebugPlugin to orion.edit.listener");
+        console.log("registered at orion.edit.listener ", eventAdapterForCSS);
     },
 
     // -------------------------------------
