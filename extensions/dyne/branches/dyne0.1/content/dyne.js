@@ -201,6 +201,30 @@ Firebug.Dyne = extend(Firebug.Module,
             throw new Error("dyne.getTabAttribute no connection for editorURL "+editorURL);
     },
 
+    getScreenDescription: function(win)
+    {
+        var screen =
+        {
+            screenX: win.screenX,
+            screenY: win.screenY,
+            outerWidth: win.outerWidth,
+            outerHeight: win.outerheight,
+        };
+        return JSON.stringify(screen);
+    },
+
+    storeScreenInfo: function(outerXULWindow)
+    {
+        Firebug.Options.set("orion.editWindowPosition", this.getScreenDescription(outerXULWindow));
+        FBTrace.sysout("dyne set screen info from "+outerXULWindow.location+" "+this.getScreenDescription(outerXULWindow));
+    },
+
+    getScreenInfo: function()
+    {
+        var str = Firebug.Options.get("orion.editWindowPosition");
+        return JSON.parse(str);
+    },
+
 });
 
 
@@ -698,7 +722,9 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
 
     openOrion: function(editorURL)
     {
-        var win = Firebug.Dyne.Util.openOrReuseByAttribute(Firebug.Dyne.getTabAttribute(editorURL), editorURL);
+        var attr = Firebug.Dyne.getTabAttribute(editorURL);
+        var screen = Firebug.Dyne.getScreenInfo();
+        var win = Firebug.Dyne.Util.openOrReuseByAttribute(attr, editorURL, screen);
         return win;
     },
 
@@ -733,28 +759,10 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         FBTrace.sysout("connectOnLoad connection posted ready");
     },
 
-    getScreenDescription: function(win)
-    {
-        var screen =
-        {
-            left: win.screen.left,
-            top: win.screen.top,
-            width: win.screen.width,
-            height: win.screen.height,
-        };
-        return JSON.stringify(screen);
-    },
-
-    storeScreenInfo: function(outerXULWindow)
-    {
-        Firebug.Options.set("orion.editWindowPosition", this.getScreenDescription(outerXULWindow));
-        FBTrace.sysout("dyne set screen info from "+outerXULWindow.location+" "+this.getScreenDescription(outerXULWindow));
-    },
-
     disconnectOnUnload: function(win, event)
     {
         FBTrace.sysout("disconnectOnUnload  "+win.document.location);
-        this.storeScreenInfo(win);
+        Firebug.Dyne.storeScreenInfo(win);
         this.orionConnection.disconnect();
         FBTrace.sysout("disconnectOnUnload done");
     },
@@ -1100,10 +1108,18 @@ Firebug.Dyne.Util =
             return false;
         },
 
-        openAndMarkTab: function(attrName, url)
+        openAndMarkTab: function(attrName, url, screen)
         {
             // Our tab isn't open. Open it now.
-            var win = Services.ww.openWindow(window, url,null, null, null);
+            if (screen)
+            {
+                var features = "";
+                if (screen.screenX)
+                    features += "left="+screen.screenX+",";
+                if (screen.screenY)
+                    features += "top="+screen.screenY+",";
+            }
+            var win = Services.ww.openWindow(window, url,null, (features || null), null);
             FBTrace.sysout("openAndMarkTab "+url+" window ", win);
             var outerXULWindow = this.getWindowManager().getMostRecentWindow("navigator:browser");
 
@@ -1117,12 +1133,12 @@ Firebug.Dyne.Util =
         },
 
         //https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs
-        openOrReuseByAttribute: function(attrName, url)
+        openOrReuseByAttribute: function(attrName, url, screen)
         {
             var win = this.findAndFocusByAttribute(attrName);
             FBTrace.sysout("openOrReuse("+attrName+", "+url+") found "+win, win);
             if (!win)
-                win = this.openAndMarkTab(attrName, url);
+                win = this.openAndMarkTab(attrName, url, screen);
 
             return win;
         },
