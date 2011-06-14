@@ -48,7 +48,7 @@
                     throw new Error("receiveServiceCall at "+interfaceId+" failed, method \'"+method+"\' not a function");
                 try
                 {
-                    //FBTrace.sysout(" receiveServiceCall "+method+" -> "+window.location, params);
+                    //log(" receiveServiceCall "+method+" -> "+window.location, params);
                     implementation[method].apply(implementation, params);
                 }
                 catch(exc)
@@ -63,13 +63,14 @@
 
             postObject: function(object) {
                 var data = JSON.stringify(object);
+                log("postObject "+data);
                 Connection.postMessage(data);
             },
 
             receiveObject: function(event) {
                 try
                 {
-                    //FBTrace.sysout("receiveobject "+window.location, event)
+                    console.log("receiveobject "+window.location, event)
                     var data = Connection.receiveMessage(event);
                     if (data)
                         var obj = JSON.parse(data);
@@ -88,16 +89,19 @@
                     if (window.console)
                         console.error(window.location+" postObject ERROR "+msg, exc);
                     else
-                        FBTrace.sysout("postObject ERROR "+msg, exc);
+                        log("postObject ERROR "+msg, exc);
                 }
             },
+
             postMessage: function(data) {
                 // store the object on the child frame targetElement
                 targetElement.ownerDocument.setUserData(messageType, data, null);
                 var event = targetElement.ownerDocument.createEvent("Event");
                 event.initEvent(messageType, false, true);
                 Connection.currentEvent = event.timeStamp;  // to ignore self messages
-                //FBTrace.sysout("postMessage "+event.timeStamp+" from "+window.location+" "+data);
+                var body = targetElement.ownerDocument.getElementsByTagName('body')[0];
+                log("postMessage "+event.timeStamp+" from "+window.location+" "+data+" to "+body.innerHTML, targetElement);
+                log("postMessage "+targetElement.ownerDocument.location+" "+targetElement.ownerDocument.defaultView.parent.location);
                 targetElement.dispatchEvent(event);
                 delete Connection.currentEvent;
             },
@@ -105,13 +109,13 @@
             receiveMessage: function(event) {
                 var data = targetElement.ownerDocument.getUserData(messageType);
                 if (event.timeStamp !== Connection.currentEvent) {
-                    //FBTrace.sysout("receiveMessage "+event.timeStamp+" to "+window.location+" CONTINUE "+data, event);
+                    log("receiveMessage "+event.timeStamp+" to "+window.location+" CONTINUE "+data, event);
                     event.stopPropagation();
                     event.preventDefault();
                     return data;
                 } // else ignore self data
 
-                 //FBTrace.sysout("receiveMessage "+event.timeStamp+" to "+window.location+" DISCARD "+data, event)
+                 log("receiveMessage "+event.timeStamp+" to "+window.location+" DISCARD "+data, event);
             },
 
         };
@@ -122,6 +126,16 @@
     var jsonConnection = {
         add: addObjectConnection,
     };
+
+    function log()
+    {
+       if (window.FBTrace)
+            FBTrace.sysout.apply(FBTrace, arguments);
+       else if (window.console)
+           console.log.apply(console, arguments);
+       else
+            dump("postObject log "+arguments[0]);
+    }
 
     return window.jsonConnection = jsonConnection;
 })();

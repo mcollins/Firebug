@@ -136,9 +136,9 @@ dojo.addOnLoad(function(){
     var editorProxy = {
         connect: function()
         {
-        	this.model = editorContainer.getEditorWidget().getModel();
+            this.model = editorContainer.getEditorWidget().getModel();
             this.model.addListener(this);
-            
+
             this.empty = true;
         },
         disconnect: function()
@@ -156,13 +156,8 @@ dojo.addOnLoad(function(){
         onChanged: function(start, removedCharCount, addedCharCount, removedLineCount, addedLineCount)
         {
             console.log("editorProxyForCSS onChanged ", arguments);
-            syntaxHighlighter.highlight(contentName, editorContainer.getEditorWidget());
             if (this.empty) // then this is the first event
             {
-                editorContainerDomNode.addEventListener("DOMNodeRemoved", function onNodeRemoved(event)
-                {
-                    console.log("DOMNodeRemoved ", event);
-                }, true);
                 delete this.empty;  // mark seen first event
                 return;             // drop first event, its just the initial buffer load
             }

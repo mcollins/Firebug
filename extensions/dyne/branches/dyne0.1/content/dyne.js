@@ -655,7 +655,7 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         {
             this.orionWindow = win;
             FBTrace.sysout("attachOrion win.document ", win.document);
-            this.connectOnLoad(win);
+            win.addEventListener('load', this.connectOnLoad.bind(this, win), false);
         }
         catch(exc)
         {
@@ -668,12 +668,17 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         FBTrace.sysout("connectOnLoad connection to "+win.document.location);
         this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
         this.orionConnection.postObject({connection: "dyne is ready"});
+        FBTrace.sysout("connectOnLoad connection posted ready");
     },
 
     orionEventHandler: function(obj)
     {
         FBTrace.sysout(" We be cooking with gas!", obj);
         this.attachUpdater();
+    },
+
+    orionEdit: function()
+    {
         var bufferURL = this.location.getBufferURL();
         this.location.requestEditBuffer(FBL.bind(this.loadFile, this), function errorMessage()
         {
