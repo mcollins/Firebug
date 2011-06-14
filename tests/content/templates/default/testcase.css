@@ -44,7 +44,6 @@ section#content {
 
 section#output {
     background-image: -moz-linear-gradient(bottom, #F5F5F5, #FFFFFF);
-    height: 50px;
     margin: 10px 0;
     padding: 10px;
 }
