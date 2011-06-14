@@ -118,11 +118,15 @@
                  log("receiveMessage "+event.timeStamp+" to "+window.location+" DISCARD "+data, event);
             },
 
+            disconnect: function() {
+                targetElement.removeEventListener(messageType, Connection.receiveObject, false);
+            }
         };
         // The child frame is used to signal and store the data.
         targetElement.addEventListener(messageType, Connection.receiveObject, false);
         return Connection;
     }
+
     var jsonConnection = {
         add: addObjectConnection,
     };

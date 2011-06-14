@@ -24,5 +24,11 @@ var globalWindowExchange =
     {
         for (var i = 0; i < this.listeners.length; i++)
             this.listeners[i].onWindowAdded(win);
-    }
+    },
+
+    onWindowRemoved: function(win, outerXULWindow)
+    {
+        for (var i = 0; i < this.listeners.length; i++)
+            this.listeners[i].onWindowRemoved(win, outerXULWindow);
+    },
 };

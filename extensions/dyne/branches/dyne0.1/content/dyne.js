@@ -29,8 +29,7 @@ Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 Firebug.Dyne = extend(Firebug.Module,
 {
     dispatchName: "dyne",
-    tabAttribute: "firebug-orion-tab",
-    orions: {},
+    orions: [],
 
     initialize: function()
     {
@@ -48,6 +47,7 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.ScriptPanel.unregisterEditor("Source", Firebug.Dyne.JSTextAreaEditor);
         Firebug.ScriptPanel.unregisterEditor("Orion", this);
         Firebug.NetMonitor.NetRequestTable.removeListener(Firebug.Dyne.NetRequestTableListener);
+        globalWindowExchange.removeListener(this);
     },
 
     showPanel: function(browser, panel)
@@ -117,9 +117,18 @@ Firebug.Dyne = extend(Firebug.Module,
         var editLink = new Firebug.EditLink(panel.context, url, panel);
         // for embedded
         // Firebug.chrome.select(link);
-        var connectionContainer = new Firebug.Dyne.OrionConnectionContainer(editLink);
-        var orionURL = connectionContainer.openOrion();
-        this.orions[orionURL] = connectionContainer;
+        var editorURL = editLink.getEditURL();
+        var connectionContainer = this.orions[editorURL];
+        if (connectionContainer)
+        {
+            connectionContainer.focusOrion();
+        }
+        else
+        {
+            connectionContainer = new Firebug.Dyne.OrionConnectionContainer(editLink);
+            this.orions[editorURL] = connectionContainer;
+            connectionContainer.openOrion(editorURL);
+        }
 
         FBTrace.sysout("Edit requested "+url);
         return true;
@@ -162,10 +171,38 @@ Firebug.Dyne = extend(Firebug.Module,
 
     unwatchWindow: function(context, win)
     {
-        FBTrace.sysout("dyne unwatchWindow "+win.location);
+        var loc = win.location.toString();
+        FBTrace.sysout("dyne unwatchWindow "+loc+" in "+window.top.location);
+
+        if ( loc.indexOf("firebugConnection.html") !== -1)
+        {
+            FBTrace.sysout('dyne.unwatchWindow found firebugConnection in '+win.location, win);
+            globalWindowExchange.onWindowRemoved(win, window.top);
+        }
+    },
+
+    onWindowRemoved: function(win, outerXULWindow)
+    {
+        var connection = this.orions[win.top.location];
+        FBTrace.sysout("onWindowRemoved "+win.location+" outerXULWindow "+outerXULWindow.location+ " has "+connection);
+        if (connection)
+        {
+            connection.disconnectOnUnload(outerXULWindow);
+            delete this.orions[win.top.location];
+        }
+    },
+
+    getTabAttribute: function(editorURL)
+    {
+        var connection = this.orions[editorURL];
+        if (connection)
+            return "firebug-orion-tab_"+connection.getUID();
+        else
+            throw new Error("dyne.getTabAttribute no connection for editorURL "+editorURL);
     },
 
 });
+
 
 Firebug.EditLink = function EditLink(context, location, panel)
 {
@@ -174,8 +211,19 @@ Firebug.EditLink = function EditLink(context, location, panel)
     this.originPanel = panel; // may be null
 }
 
+Firebug.EditLink.uid = 0;
+Firebug.EditLink.linkByURL = {};
+
 Firebug.EditLink.prototype =
 {
+    getUID: function()
+    {
+        if (this.uid)
+            return this.uid;
+
+        return this.uid = ++Firebug.EditLink.uid;
+    },
+
     getOriginPanel: function()
     {
         return this.originPanel;
@@ -469,7 +517,7 @@ Firebug.Dyne.OrionPanel.prototype = extend(Firebug.Panel,
 
         FBTrace.sysout("insertOrionScripts remap "+editLink.getEditURL()+" to "+editorURL);
 
-        return Firebug.Dyne.Util.openOrReuseByAttribute(Firebug.Dyne.tabAttribute, editorURL);
+        return Firebug.Dyne.Util.openOrReuseByAttribute(Firebug.Dyne.getTabAttribute(editLink), editorURL);
 
         /*var width = parentElement.clientWidth + 1;
         var height = parentElement.clientHeight + 1;
@@ -635,20 +683,28 @@ Firebug.Dyne.OrionConnectionContainer = function(location)
 {
     // this object is created before orion is loaded and attached to the orionbox
     this.location = location; // the orionbox location
+    this.uid = ++Firebug.Dyne.orionConnections;
 };
 
-
+Firebug.Dyne.orionConnections = 0;
 
 
 Firebug.Dyne.OrionConnectionContainer.prototype =
 {
-    openOrion: function()
+    getUID: function()
     {
-        var editLink = this.location;
-        var editorURL = editLink.getEditURL();
-        FBTrace.sysout("insertOrionScripts remap "+editLink.getEditURL()+" to "+editorURL);
-        var win = Firebug.Dyne.Util.openOrReuseByAttribute(Firebug.Dyne.tabAttribute, editorURL);
-        return editorURL;
+        return this.uid;
+    },
+
+    openOrion: function(editorURL)
+    {
+        var win = Firebug.Dyne.Util.openOrReuseByAttribute(Firebug.Dyne.getTabAttribute(editorURL), editorURL);
+        return win;
+    },
+
+    focusOrion: function()
+    {
+        var win = Firebug.Dyne.Util.findAndFocusByAttribute(Firebug.Dyne.getTabAttribute(this.location.getEditURL()));
     },
 
     attachOrion: function(win)
@@ -657,7 +713,8 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         {
             this.orionWindow = win;
             FBTrace.sysout("attachOrion win.document ", win.document);
-            win.addEventListener('load', this.connectOnLoad.bind(this, win), false);
+            this.connectionFunction = this.connectOnLoad.bind(this, win);
+            win.addEventListener('load', this.connectionFunction, false);
         }
         catch(exc)
         {
@@ -668,9 +725,38 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
     connectOnLoad: function(win, event)
     {
         FBTrace.sysout("connectOnLoad connection to "+win.document.location);
-        this.orionConnection = jsonConnection.add(win.document.documentElement, FBL.bind(this.orionEventHandler, this));
+        this.eventHandler = FBL.bind(this.orionEventHandler, this);
+        this.orionConnection = jsonConnection.add(win.document.documentElement, this.eventHandler);
         this.orionConnection.postObject({connection: "dyne is ready"});
+        win.removeEventListener('load', this.connectionFunction, false);
+        delete this.connectionFunction;
         FBTrace.sysout("connectOnLoad connection posted ready");
+    },
+
+    getScreenDescription: function(win)
+    {
+        var screen =
+        {
+            left: win.screen.left,
+            top: win.screen.top,
+            width: win.screen.width,
+            height: win.screen.height,
+        };
+        return JSON.stringify(screen);
+    },
+
+    storeScreenInfo: function(outerXULWindow)
+    {
+        Firebug.Options.set("orion.editWindowPosition", this.getScreenDescription(outerXULWindow));
+        FBTrace.sysout("dyne set screen info from "+outerXULWindow.location+" "+this.getScreenDescription(outerXULWindow));
+    },
+
+    disconnectOnUnload: function(win, event)
+    {
+        FBTrace.sysout("disconnectOnUnload  "+win.document.location);
+        this.storeScreenInfo(win);
+        this.orionConnection.disconnect();
+        FBTrace.sysout("disconnectOnUnload done");
     },
 
     orionEventHandler: function(obj)
@@ -971,13 +1057,34 @@ Firebug.Dyne.Util =
             return FBL.addScript(win.document, id, xhrIO.readSynchronously(fileURL));
         },
 
-        findAndFocusByAttribute: function(wm, attrName)
+        getWindowManager: function()
         {
-            var navigators = wm.getEnumerator('navigator:browser');
+            return this.wm || (this.wm = Cc["@mozilla.org/appshell/window-mediator;1"]
+                .getService(Ci.nsIWindowMediator));
+        },
+
+        findAndFocusByAttribute: function(attrName)
+        {
+            return this.findByAttribute(attrName, function selectTab(navigator, currentTab)
+            {
+                var tabbrowser = navigator.gBrowser;
+                // Yes--select and focus it.
+                tabbrowser.selectedTab = currentTab;
+
+                // Focus *this* browser window in case another one is currently focused
+                tabbrowser.ownerDocument.defaultView.focus();
+                return navigator;
+            });
+        },
+
+        findByAttribute: function(attrName, fnOfWindowAndTab)
+        {
+            var navigators = this.getWindowManager().getEnumerator('navigator:browser');
 
             while(navigators.hasMoreElements())
             {
-                var tabbrowser = navigators.getNext().gBrowser;
+                var navigator = navigators.getNext();
+                var tabbrowser = navigator.gBrowser;
                 var nBrowsers = tabbrowser.tabContainer.childNodes.length;
                 for (var index = 0; index < nBrowsers; index++)
                 {
@@ -986,48 +1093,37 @@ Firebug.Dyne.Util =
 
                     // Does this tab contain our custom attribute?
                     if (currentTab.hasAttribute(attrName))
-                    {
-                        // Yes--select and focus it.
-                        tabbrowser.selectedTab = currentTab;
-
-                        // Focus *this* browser window in case another one is currently focused
-                        tabbrowser.ownerDocument.defaultView.focus();
-                        return currentTab.contentWindow;
-                    }
+                        return fnOfWindowAndTab(navigator, currentTab);
                 }
             }
+            FBTrace.sysout("dyne no findByAttribute "+attrName);
             return false;
         },
 
-        openAndMarkTab: function(wm, attrName, url)
+        openAndMarkTab: function(attrName, url)
         {
             // Our tab isn't open. Open it now.
             var win = Services.ww.openWindow(window, url,null, null, null);
             FBTrace.sysout("openAndMarkTab "+url+" window ", win);
-            return win;
+            var outerXULWindow = this.getWindowManager().getMostRecentWindow("navigator:browser");
+
+            var tabbrowser = outerXULWindow.getBrowser();
+            var tab = tabbrowser.selectedTab;
+            tab.setAttribute(attrName, attrName);
+
+            FBTrace.sysout("openOrReuse("+attrName+", "+url+") outerXULWindow "+outerXULWindow.location, outerXULWindow);
+
+            return tab.contentWindow;
         },
 
         //https://developer.mozilla.org/en/Code_snippets/Tabbed_browser#Reusing_tabs
         openOrReuseByAttribute: function(attrName, url)
         {
-            var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                                 .getService(Components.interfaces.nsIWindowMediator);
-
-            var win = this.findAndFocusByAttribute(wm, attrName);
+            var win = this.findAndFocusByAttribute(attrName);
             FBTrace.sysout("openOrReuse("+attrName+", "+url+") found "+win, win);
             if (!win)
-            {
-                win = this.openAndMarkTab(wm, attrName, url);
-                var mainWindow = wm.getMostRecentWindow("navigator:browser");
+                win = this.openAndMarkTab(attrName, url);
 
-                var tabbrowser = mainWindow.getBrowser();
-                var tab = tabbrowser.selectedTab;
-                tab.setAttribute(attrName, attrName);
-
-                FBTrace.sysout("openOrReuse("+attrName+", "+url+") mainWindow "+mainWindow.location, mainWindow);
-
-                return tab.contentWindow;
-            }
             return win;
         },
 }
