@@ -153,8 +153,10 @@ Firebug.Dyne = extend(Firebug.Module,
         var loc = win.location.toString();
         FBTrace.sysout("dyne watchWindow "+loc+" in "+window.top.location);
 
-        if ( loc.indexOf("firebugConnection.html") !== -1)
+        if ( loc.indexOf("firebugConnection.html") !== -1) // then we are in the orion window
         {
+            if (Firebug.isInBrowser()) // don't show Firebug in the Orion editor window
+                Firebug.minimizeBar();
             var left = globalWindowExchange.removeListener(this);  // don't listen to the global events in this XUL window
             FBTrace.sysout('dyne found firebugConnection in '+win.location+" removed listener, left "+left, win);
             globalWindowExchange.onWindowAdded(win);
@@ -207,8 +209,8 @@ Firebug.Dyne = extend(Firebug.Module,
         {
             screenX: win.screenX,
             screenY: win.screenY,
-            outerWidth: win.outerWidth,
-            outerHeight: win.outerheight,
+            innerWidth: win.innerWidth,
+            innerHeight: win.innerHeight,
         };
         return JSON.stringify(screen);
     },
@@ -1118,6 +1120,12 @@ Firebug.Dyne.Util =
                     features += "left="+screen.screenX+",";
                 if (screen.screenY)
                     features += "top="+screen.screenY+",";
+                if (screen.innerWidth)
+                    features += "width="+screen.innerWidth+",";
+                if (screen.innerHeight)
+                    features += "width="+screen.innerHeight+",";
+                if (features)
+                    features += "resizable=yes,scrollbars=yes,location=yes,toolbar=yes,menubar=yes";
             }
             var win = Services.ww.openWindow(window, url,null, (features || null), null);
             FBTrace.sysout("openAndMarkTab "+url+" window ", win);
