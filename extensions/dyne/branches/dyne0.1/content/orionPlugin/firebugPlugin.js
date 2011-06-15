@@ -39,9 +39,9 @@ var firebugPlugin =
      */
     firebugObjectReceiver: function(props) {
 
-        console.log("orionEditorAdapter received object ", props);
+        console.log("firebugPlugin received object ", props);
         // diagnostic to report we are ready for events
-        console.log('orionEditorAdapter before orion ready message')
+        console.log('firebugPlugin before orion ready message')
         this.firebugConnection.postObject({connection: "orion is ready"});
         console.log("orion posted ready");
     },
