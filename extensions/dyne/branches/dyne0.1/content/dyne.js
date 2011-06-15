@@ -231,7 +231,17 @@ Firebug.Dyne = extend(Firebug.Module,
     getScreenInfo: function()
     {
         var str = Firebug.Options.get("orion.editWindowPosition");
-        return JSON.parse(str);
+        try
+        {
+            if (str)
+                return JSON.parse(str);
+        }
+        catch(exc)
+        {
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.getScreenInfo ERROR "+esc, exc);
+        }
+
     },
 
 });
