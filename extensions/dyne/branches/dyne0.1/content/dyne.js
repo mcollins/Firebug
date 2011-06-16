@@ -527,6 +527,9 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
       //  this.orionConnection.callService("ISyntaxHighlighter", "onInputChange", [this.location.getEditURL(),null, text]);
     },
 
+    /*
+     * Connect to handle events from Orion to Firebug
+     */
     attachUpdater: function()
     {
         if (this.isLocalURI(this.location))
@@ -760,7 +763,8 @@ Firebug.Dyne.WarningRep = domplate(Firebug.Rep,
 
 });
 
-Firebug.Dyne.NetRequestTableListener = {
+Firebug.Dyne.NetRequestTableListener = 
+{
     onCreateRequestEntry: function(netRequestTable, row){
         if (row.repObject.responseStatus === 404) // then the file was not found
         {
@@ -862,7 +866,7 @@ Firebug.Dyne.Util =
                 if (features)
                     features += "resizable=yes,scrollbars=yes,location=yes,toolbar=yes,menubar=yes";
             }
-            var win = Services.ww.openWindow(window, url,null, (features || null), null);
+            var win = Services.ww.openWindow(window, url, null, (features || null), null);
             FBTrace.sysout("openAndMarkTab "+url+" window ", win);
             var outerXULWindow = this.getWindowManager().getMostRecentWindow("navigator:browser");
 
