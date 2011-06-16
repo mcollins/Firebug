@@ -38,7 +38,7 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.ScriptPanel.registerEditor("Orion", this);
         Firebug.NetMonitor.NetRequestTable.addListener(Firebug.Dyne.NetRequestTableListener);
         var left = globalWindowExchange.addListener(this);
-        FBTrace.sysout("dyne initialize listeners "+left);
+        FBTrace.sysout("dyne initialize globalWindowExchange listeners "+left);
     },
 
     destroy: function()
@@ -818,7 +818,7 @@ Firebug.Dyne.Util =
 
                 // Focus *this* browser window in case another one is currently focused
                 tabbrowser.ownerDocument.defaultView.focus();
-                return tabbrowse.currentBrowser.contentWindow;
+                return tabbrowser.currentBrowser.contentWindow;
             });
         },
 

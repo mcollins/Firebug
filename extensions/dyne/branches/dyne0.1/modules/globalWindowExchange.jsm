@@ -8,7 +8,9 @@ var globalWindowExchange =
 
     addListener: function(obj)
     {
-        this.listeners.push(obj);
+        var index = this.listeners.indexOf(obj);
+        if (index === -1)
+            this.listeners.push(obj);
         return this.listeners.length;
     },
 
