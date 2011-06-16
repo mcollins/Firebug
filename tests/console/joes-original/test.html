@@ -96,7 +96,7 @@ function loadXMLSync()
 function postXML()
 {
     var req1 = new XMLHttpRequest();
-    req1.open("GET", "test.html");
+    req1.open("GET", "test.html?1");
     req1.send(null);
 
     var req = new XMLHttpRequest();
@@ -106,7 +106,7 @@ function postXML()
             //alert(req.responseText);
     }
 
-    req.open("POST", "test.html", true);
+    req.open("POST", "test.html?2", true);
     req.setRequestHeader("Content-Type", "text/xml");
     req.send("foo=1&bar=2");
 }
