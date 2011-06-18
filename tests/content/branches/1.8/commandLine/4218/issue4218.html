@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Issue 4218: Command line history doesn't reset when entering duplicate command</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
+    </head>
+    <body>
+        <h1><a href="http://code.google.com/p/fbug/issues/detail?id=4218">Issue 4218</a>: Command line history doesn't reset when entering duplicate command</h1>
+        <div>
+            <section id="description">
+                <h3>Steps to reproduce</h3>
+                <ol>
+                    <li>Open Firebug</li>
+                    <li>Enable and switch to the <em>Console</em> side panel</li>
+                    <li>Focus the Command Line</li>
+                    <li>Type <code>1</code> and press <code class="key">Enter</code></li>
+                    <li>Type <code>2</code> and press <code class="key">Enter</code></li>
+                    <li>Press <code class="key">Up</code></li>
+                    <li>Press <code class="key">Enter</code></li>
+                    <li>Press <code class="key">Up</code></li>
+                </ol>
+                <h3>Expected Results</h3>
+                <ul>
+                    <li>After step 6: <code>2</code></li>
+                    <li>After step 8: <code>2</code></li>
+                </ul>
+            </section>
+            <footer>Sebastian Zartner, sebastianzartner@gmx.de</footer>
+        </div>
+    </body>
+</html>
