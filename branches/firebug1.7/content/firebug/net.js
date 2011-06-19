@@ -1626,10 +1626,12 @@ NetPanel.prototype = extend(Firebug.ActivablePanel,
         }
 
         var maxWidth = netHrefCol.clientWidth;
-
+FBTrace.sysout("net "+this.context.getName());
         // This call must precede all getCSSStyleRules calls  FIXME not needed after 3.6
         Firebug.CSSModule.cleanupSheets(hrefLabel.ownerDocument, this.context);
         var rules = domUtils.getCSSStyleRules(hrefLabel);
+        if (!rules)
+            return;
         for (var i = 0; i < rules.Count(); ++i)
         {
             var rule = QI(rules.GetElementAt(i), Ci.nsIDOMCSSStyleRule);
@@ -2321,7 +2323,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
                 )
             ),
             DIV({"class": "netInfoHtmlText netInfoText", "role": "tabpanel"},
-                IFRAME({"class": "netInfoHtmlPreview", "role": "document"})
+                IFRAME({"class": "netInfoHtmlPreview", "role": "document", "type": "content-primary"})
             )
         ),
 
@@ -2558,6 +2560,9 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 
             var text = Utils.getResponseText(file, context);
             var iframe = netInfoBox.getElementsByClassName("netInfoHtmlPreview").item(0);
+            iframe.setAttribute('type', 'content-primary');
+            if (FBTrace.DBG_NET)
+                FBTrace.sysout("iframe is type "+iframe.getAttribute('type'));
             iframe.contentWindow.document.body.innerHTML = text;
         }
 
