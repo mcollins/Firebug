@@ -1785,15 +1785,11 @@ this.searchInHtmlPanel = function(searchText, callback)
 
     // Setting the 'value' property doesn't fire an 'input' event so,
     // press enter instead (asynchronously).
-    setTimeout(function() {
-        FBTest.pressKey(13, "fbSearchBox");
-    }, 0);
-
     // FIX ME: characters should be sent into the search box individualy
     // (using key events) to simulate incremental search.
     setTimeout(function() {
         FBTest.pressKey(13, "fbSearchBox");
-    }, 100);
+    }, 0);
 }
 
 // ********************************************************************************************* //
