@@ -2051,20 +2051,37 @@ this.TaskList.prototype =
 // ************************************************************************************************
 // Screen copy
 
-this.getImageDataFromWindow = function(win, width, height)
+this.getImageDataFromNode = function(node)
 {
-    var canvas = this.getCanvasFromWindow(win, width, height);
+    var top = 0;
+    var left = 0;
+    var currentNode = node;
+    do
+    {
+        top += currentNode.offsetTop;
+        left += currentNode.offsetLeft;
+        currentNode = currentNode.parentNode;
+    } while (currentNode.nodeName !== "HTML");
+
+    var canvas = this.getCanvasFromWindow(node.ownerDocument.defaultView, left, top, 
+        node.clientWidth, node.clientHeight);
     return canvas.toDataURL("image/png", "");
 }
 
-this.getCanvasFromWindow = function(win, width, height)
+this.getImageDataFromWindow = function(win, width, height)
+{
+    var canvas = this.getCanvasFromWindow(win, 0, 0, width, height);
+    return canvas.toDataURL("image/png", "");
+}
+
+this.getCanvasFromWindow = function(win, top, left, width, height)
 {
     var canvas = createCanvas(width, height);
     var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, width, height);
     ctx.save();
     ctx.scale(1, 1);
-    ctx.drawWindow(win, 0, 0, width, height, "rgb(255,255,255)");
+    ctx.drawWindow(win, top, left, width, height, "rgb(255,255,255)");
     ctx.restore();
     return canvas;
 }
