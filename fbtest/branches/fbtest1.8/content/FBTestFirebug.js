@@ -1198,8 +1198,6 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, win)
     if (!utils)
         return;
 
-    offsetX = offsetX || 0;
-    offsetY = offsetY || 0;
     event = event || {};
 
     var button = event.button || 0;
@@ -1242,8 +1240,10 @@ this.synthesizeMouse = function(node, offsetX, offsetY, event, win)
 
     // Hit the middle of the button
     // (Clicks to hidden parts of the element doesn't open the context menu).
-    var left = frameOffset.left + rect.left + offsetX + 0.5*Math.max(1,rect.width);
-    var top = frameOffset.top + rect.top + offsetY + 0.5*Math.max(1,rect.height);
+    offsetX = offsetX || 0.5 * Math.max(1, rect.width);
+    offsetY = offsetY || 0.5 * Math.max(1, rect.height);
+    var left = frameOffset.left + rect.left + offsetX;
+    var top = frameOffset.top + rect.top + offsetY;
 
     if (event.type)
     {
