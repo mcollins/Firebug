@@ -2323,7 +2323,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
                 )
             ),
             DIV({"class": "netInfoHtmlText netInfoText", "role": "tabpanel"},
-                IFRAME({"class": "netInfoHtmlPreview", "role": "document", "type": "content-primary"})
+                IFRAME({"class": "netInfoHtmlPreview", "role": "document"})
             )
         ),
 
@@ -2560,9 +2560,8 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 
             var text = Utils.getResponseText(file, context);
             var iframe = netInfoBox.getElementsByClassName("netInfoHtmlPreview").item(0);
-            if (FBTrace.DBG_NET)
-                FBTrace.sysout("iframe is type "+iframe.getAttribute('type'));
-            iframe.contentWindow.document.body.innerHTML = text;
+            iframe.contentWindow.document.body.innerHTML =
+                "<h2>HTML preview feature available again in Firebug 1.8</h2>";
         }
 
         // Notify listeners about update so, content of custom tabs can be updated.

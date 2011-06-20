@@ -408,7 +408,6 @@
                                      tooltip="fbTooltip" contextmenu="fbContextMenu"
                                      disablehistory="true"
                                      src="chrome://firebug/content/panel.html"
-                                     type="content-primary"
                                      role="tabpanel" />
                         </deck>
                     </vbox>
@@ -432,7 +431,6 @@
                                          tooltip="fbTooltip" contextmenu="fbContextMenu"
                                          disablehistory="true"
                                          src="chrome://firebug/content/panel.html"
-                                         type="content-primary"
                                          role="tabpanel" />
                             </deck>
                         </panelBar>
