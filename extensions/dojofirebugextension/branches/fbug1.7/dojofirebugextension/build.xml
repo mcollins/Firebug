@@ -47,18 +47,6 @@
 				</replacetokens>
 			</filterchain>
 		</copy>
-<!--
-		<copy file="update.rdf" tofile="${dist.dir}/update.rdf" overwrite="true">
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION" value="${VERSION}" />
-					<token key="RELEASE" value="${RELEASE}" />
-					<token key="FBUG_VERSION" value="${FBUG_VERSION}" />
-					<token key="UPDATEHASH" value="${updateHash}"/>
-				</replacetokens>
-			</filterchain>
-		</copy>
--->
 		
 		<copy file="chrome.manifest" tofile="${build.dir}/chrome.manifest" overwrite="true">
 		</copy>
