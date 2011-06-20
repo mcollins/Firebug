@@ -2560,7 +2560,6 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 
             var text = Utils.getResponseText(file, context);
             var iframe = netInfoBox.getElementsByClassName("netInfoHtmlPreview").item(0);
-            iframe.setAttribute('type', 'content-primary');
             if (FBTrace.DBG_NET)
                 FBTrace.sysout("iframe is type "+iframe.getAttribute('type'));
             iframe.contentWindow.document.body.innerHTML = text;
