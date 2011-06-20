@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Dojo Extension Test List</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<script type="text/javascript">
+/**
+ * Root directory of the test tree (with at least test drivers). If it's empty, the parent
+ * directory of this file is used as the test root directory.
+ */
+//var driverBaseURI = "http://dojofirebugextension/chrome/content/fbtest/tests/";
+var driverBaseURI = "chrome://dojofirebugextension/content/fbtest/tests/";
+//var driverBaseURI = "http://fbug.googlecode.com/svn/extensions/dojofirebugextension/trunk/dojofirebugextension/chrome/content/fbtest/tests/";
+ 
+var baseURI = driverBaseURI;
+
+
+/**
+ * Root directory of test case if they are somewhere online.
+ */
+var serverURI = 'http://dojofirebugextension/chrome/content/fbtest/tests/';
+//var serverURI = 'chrome://dojofirebugextension/content/fbtest/tests/';
+//var serverURI = 'http://fbug.googlecode.com/svn/extensions/dojofirebugextension/trunk/dojofirebugextension/chrome/content/fbtest/tests/';
+
+/**
+ * List of additional script files for tests
+ * (relative path to driverBaseURI).
+ */
+var testIncludes = ["testUtils.js"];
+
+/**
+ * List of registered tests.
+ * @param: {String} group       Name of the group where the test belongs to.
+ * @param: {String} uri         Relative location of the test file.
+ * @param: {String} desc        Test description.
+ * @param: {String} category    Test category, this can be set to:
+ *                              "passes": (default) - a test must pass, otherwise it's a blocking bug.
+ *                              "fails": - it's not blocking bug if the test fails.
+ * @param: {String} testPage    Relative location of the test page [optional]. This is useful for manual
+ *                              opening of the test page from FBTest console (context menu "Open Test Page").
+ * @param: {String} os          Target OS [optional]. Used to specify target OS where the test
+ *                              should be applied. Can be combination of following: win|mac|linux
+ *                              (separated by '|'). If not specified, the test is intended for all.
+ *                              Test, which is not targeted for the current OS is marked as "fails".
+ */
+var testList = [
+	{ group: "Dojo", uri: "widget-destroy-test-withoutdojoextension.js", desc: "verifies that creation/destruction of widgets don't leave references", testPage: "widget-destroy-test.html" },
+    { group: "Dojo", uri: "widget-destroy-test.js", desc: "verifies that creation/destruction of widgets don't leave references", testPage: "widget-destroy-test.html" },
+    { group: "Dojo", uri: "someWidgets.js", desc: "Check number of widgets for a page", testPage: "someWidgets.html" },    
+    { group: "Dojo", uri: "basic_connections.js", desc: "Connections related tests", testPage: "basic_connections.html" },
+    { group: "Dojo", uri: "basic_subscriptions.js", desc: "Subscriptions related tests", testPage: "basic_subscriptions.html" },
+    { group: "Dojo", uri: "widget_connections.js", desc: "Widget connections test", testPage: "widget_connections_Dojo1.5.html" },
+    { group: "Dojo", uri: "objects_panel_support.js", desc: "Objects panel support test", testPage: "objects_panel_support.html" },
+    { group: "Dojo", uri: "options_menu.js", desc: "Options menu test", testPage: "objects_panel_support.html" },
+    { group: "Dojo", uri: "documentation_support.js", desc: "Documentation menuitems support", testPage: "documentation_support.html" },
+    { group: "Dojo", uri: "menu_item.js", desc: "Check bug accessing __parent__ property", testPage: "menu_item.html" },
+    { group: "Dojo", uri: "connect_parameters.js", desc: "Verify the correct track of connections for each posible combination of parameters", testPage: "connect_parameters.html" },
+    { group: "Dojo", uri: "subscribe_parameters.js", desc: "Verify the correct track of subscriptions for each posible combination of parameters", testPage: "subscribe_parameters.html" }
+];
+</script>
+
+</body>
+</html>
