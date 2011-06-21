@@ -1051,7 +1051,7 @@ this.executeCommand = function(expr, chrome, useCommandEditor)
     if (useCommandEditor)
         FBTest.clickToolbarButton(chrome, "fbCmdLineRunButton");
     else
-        FBTest.pressKey(13, "fbCommandLine");
+        FBTest.sendKey("RETURN", "fbCommandLine");
 }
 
 this.clearCommand = function(useCommandEditor)
@@ -1503,7 +1503,7 @@ this.addWatchExpression = function(chrome, expression, callback)
 
     // Set expression and press enter.
     FBTest.sendString(expression, editor);
-    FBTest.pressKey(13, editor);
+    FBTest.sendKey("RETURN", editor);
 }
 
 /**
@@ -1750,9 +1750,7 @@ this.searchInScriptPanel = function(searchText, callback)
     // Setting the 'value' property doesn't fire an 'input' event so,
     // press enter instead (asynchronously).
     FBTest.focus(searchBox);
-    setTimeout(function() {
-        FBTest.pressKey(13, "fbSearchBox");
-    }, 0);
+    FBTest.sendKey("RETURN", "fbSearchBox");
 }
 
 /**
@@ -1785,11 +1783,7 @@ this.searchInHtmlPanel = function(searchText, callback)
 
     // Setting the 'value' property doesn't fire an 'input' event so,
     // press enter instead (asynchronously).
-    // FIX ME: characters should be sent into the search box individualy
-    // (using key events) to simulate incremental search.
-    setTimeout(function() {
-        FBTest.pressKey(13, "fbSearchBox");
-    }, 0);
+    FBTest.sendKey("RETURN", "fbSearchBox");
 }
 
 // ********************************************************************************************* //
