@@ -12,7 +12,7 @@ function runTest()
             var value = panel.panelNode.querySelector(".cssPropValue");
             var getElement = function() { return win.document.getElementById("element1"); };
             // Click the CSS value to open the inline editor
-            FBTest.synthesizeMouse(value, 100, 0);
+            FBTest.synthesizeMouse(value, 10, 30);
   
             var editor = panel.panelNode.querySelector(".textEditorInner");
 
