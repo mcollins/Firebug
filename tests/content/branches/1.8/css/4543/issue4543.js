@@ -15,15 +15,17 @@ function runTest()
             FBTest.synthesizeMouse(value, 10, 30);
   
             var editor = panel.panelNode.querySelector(".textEditorInner");
-
-            // Move text cursor between 'g' and 'b' of 'pngbase64'
-            FBTest.sendKey("HOME", editor);
-            for (var i=0; i<19; i++)
-                FBTest.sendKey("RIGHT", editor);
+            if (FBTest.ok(editor, "editor must be available now"))
+            {
+                // Move text cursor between 'g' and 'b' of 'pngbase64'
+                FBTest.sendKey("HOME", editor);
+                for (var i=0; i<19; i++)
+                    FBTest.sendKey("RIGHT", editor);
   
-            // Enter a semicolon
-            FBTest.sendChar(";", editor);
-            FBTest.compare(/png;base64/, editor.value, "Semicolon must be entered");
+                // Enter a semicolon
+                FBTest.sendChar(";", editor);
+                FBTest.compare(/png;base64/, editor.value, "Semicolon must be entered");
+            }
 
             FBTest.testDone("issue4543.DONE");
         });
