@@ -1745,6 +1745,9 @@ this.searchInScriptPanel = function(searchText, callback)
 
     // Set search string into the search box.
     var searchBox = FW.Firebug.chrome.$("fbSearchBox");
+
+    // FIX ME: characters should be sent into the search box individualy
+    // (using key events) to simulate incremental search.
     searchBox.value = searchText;
 
     // Setting the 'value' property doesn't fire an 'input' event so,
@@ -1764,6 +1767,9 @@ this.searchInHtmlPanel = function(searchText, callback)
 
     // Set search string into the search box.
     var searchBox = FW.Firebug.chrome.$("fbSearchBox");
+
+    // FIX ME: characters should be sent into the search box individualy
+    // (using key events) to simulate incremental search.
     searchBox.value = searchText;
 
     // The listener is automatically removed when the test window
@@ -1779,10 +1785,9 @@ this.searchInHtmlPanel = function(searchText, callback)
         }
     });
 
-    FBTest.focus(searchBox);
-
     // Setting the 'value' property doesn't fire an 'input' event so,
     // press enter instead (asynchronously).
+    FBTest.focus(searchBox);
     FBTest.sendKey("RETURN", "fbSearchBox");
 }
 
