@@ -7,7 +7,8 @@ define(
          "crossfireModules/crossfire-client",
          "arch/browser",
          //"firebug_rjs/bti/inProcess/browser",
-         "arch/compilationunit"
+         "arch/compilationunit",
+         //"firebug_rjs/bti/inProcess/compilationunit"
         ], function(
                 FBTrace,
                 Firebug,
@@ -19,15 +20,15 @@ define(
     // add crossfire client to our tools interface
     var ToolsInterface = {};
 
-    ToolsInterface.crossfireClient = new CrossfireClient();
+    ToolsInterface.crossfireClient = new CrossfireClient( ToolsInterface);
 
-// Classes
     ToolsInterface.CompilationUnit = CompilationUnit;
+    FBTrace.sysout("ToolsInterface.CompilationUnit => " + ToolsInterface.CompilationUnit, ToolsInterface.CompilationUnit);
 
     ToolsInterface.Browser = Browser;
 
     //Create a connection object
-    Firebug.connection = ToolsInterface.browser = new Browser();
+    Firebug.connection = ToolsInterface.browser = new Browser( ToolsInterface.crossfireClient);
 
     Firebug.connection.connect();
 

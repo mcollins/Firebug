@@ -27,6 +27,7 @@ define(["firebug/lib/lib",
      * opening a connection to the remote debug host.
      */
     var CrossfireModule = FBL.extend(Firebug.Module,  {
+
         contexts: [],
         refs: [],
         dispatchName: "Crossfire",
@@ -109,6 +110,7 @@ define(["firebug/lib/lib",
                     FBTrace.sysout("exception loading transport module: " + e);
                 }
             }
+
             if (! this.serverTransport) {
                 this.serverTransport = getCrossfireServer();
                 this.serverTransport.addListener(this);
@@ -167,6 +169,8 @@ define(["firebug/lib/lib",
                 }
             }
 
+            this._updatePanel();
+
             // xxxMcollins: standalone client hack
             if (this.status == CrossfireStatus.STATUS_CONNECTED_CLIENT
                     && this.registeredTools["RemoteClient"]) {
@@ -176,6 +180,20 @@ define(["firebug/lib/lib",
                 this.serverTransport = null;
             }
 
+        },
+
+        /**
+         *
+         */
+        _updatePanel: function() {
+            if (this.panel) {
+                try {
+                    this.panel.refresh(status);
+                } catch (ex) {
+                    if (FBTrace.DBG_CROSSFIRE)
+                        FBTrace.sysout("Crossfire failed to update panel status.");
+                }
+            }
         },
 
         handleRequest: function(request) {
@@ -338,35 +356,18 @@ define(["firebug/lib/lib",
          *
          */
         getTools: function() {
-            var tools = [];
+            var tool, tools = [];
             for (var name in this.registeredTools) {
-                tools.push({"toolName": name, "enabled": this.registeredTools[name].activated });
+                tool = this.registeredTools[name];
+                tools.push({ "name": name,
+                             "enabled": tool.activated,
+                             "commands": tool.commands,
+                             "events": tool.events,
+                             "desc": tool.getDescription()
+
+                    });
             }
             return { "tools": tools };
-        },
-
-        /**
-         *
-         */
-        getToolDescription: function(moduleName /* , moduleName, moduleName */) {
-            var desc, tool, toolInfo = [];
-            for (var arg in arguments) {
-                tool = this.registeredTools[arg];
-                if (tool) {
-                    if (typeof(tool.getDescription) == "function") {
-                        desc = tool.getDescription();
-                    } else {
-                        desc = "";
-                    }
-                    toolInfo[arg] = {
-                        "name": tool.toolName,
-                        "desc": desc,
-                        "commands": tool.commands,
-                        "events": tool.events
-                    };
-                }
-            }
-            return toolInfo;
         },
 
         // ----- helpers
@@ -379,34 +380,42 @@ define(["firebug/lib/lib",
          * @memberOf CrossfireModule
          * @type Array
          * @returns the Array object describing the object handle, contains <code>ref.handle</code>,
-         * <code>ref.type</code> and optionally <code>ref.context_id</code>
+         * <code>ref.type</code> and optionally <code>ref.contextId</code>
          * @since 0.3a1
          */
-        _getRef: function(obj, context_id) {
-            if (obj && obj.type && obj.handle) {
-                FBTrace.sysout("CROSSFIRE _getRef tried to get ref for serialized obj");
+        _getRef: function(obj, contextId) {
+            try {
+                if (obj && obj.type && obj.handle) {
+                    FBTrace.sysout("CROSSFIRE _getRef tried to get ref for serialized obj");
+                    return null;
+                }
+                var ref = { "type":typeof(obj), "handle": -1 };
+                if (contextId) {
+                    ref["contextId"] = contextId;
+                }
+                for (var i = 0; i < this.refs.length; i++) {
+                    if (this.refs[i] === obj) {
+                        if (FBTrace.DBG_CROSSFIRE) {
+                            FBTrace.sysout("CROSSFIRE _getRef ref exists with handle: " + i + " type = "+typeof(obj), obj);
+                        }
+                        ref["handle"] = i;
+                        return ref;
+                    }
+                }
+                var handle = ++this.refCount;
+                this.refs[handle] = obj;
+                if (FBTrace.DBG_CROSSFIRE) {
+                    FBTrace.sysout("CROSSFIRE _getRef new ref created with handle: " + handle, obj);
+                }
+                ref["handle"] = handle;
+                return ref;
+            }
+            catch(ex) {
+                if(FBTrace.DBG_CROSSFIRE) {
+                    FBTrace.sysout("CROSSFIRE _getRef failed: "+ex+" [object: "+obj+"]");
+                }
                 return null;
             }
-            var ref = { "type":typeof(obj), "handle": -1 };
-            if (context_id) {
-                ref["context_id"] = context_id;
-            }
-            for (var i = 0; i < this.refs.length; i++) {
-                if (this.refs[i] === obj) {
-                    if (FBTrace.DBG_CROSSFIRE) {
-                        FBTrace.sysout("CROSSFIRE _getRef ref exists with handle: " + i + " type = "+typeof(obj), obj);
-                    }
-                    ref["handle"] = i;
-                    return ref;
-                }
-            }
-            var handle = ++this.refCount;
-            this.refs[handle] = obj;
-            if (FBTrace.DBG_CROSSFIRE) {
-                FBTrace.sysout("CROSSFIRE _getRef new ref created with handle: " + handle, obj);
-            }
-            ref["handle"] = handle;
-            return ref;
         },
 
         /**
@@ -431,12 +440,15 @@ define(["firebug/lib/lib",
          * @param obj the JavaScript {@link Object} to serialize
          */
         serialize: function(obj) {
+            if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                FBTrace.sysout("CROSSFIRE serialize => " + obj, obj);
+            }
             try {
                 var type = typeof(obj);
                 var serialized = {
                         "type": type,
                         "value": ""
-                }
+                };
                 if (type == "object" || type == "function") {
                     if (obj == null) {
                          serialized["value"] = "null";
@@ -453,13 +465,20 @@ define(["firebug/lib/lib",
                         var ref = this._getRef(obj);
                         serialized["value"] = this._serializeProperties(obj, ref);
                     }
+                } else if (type == "number" && (
+                    isNaN(obj)
+                    || obj == Infinity
+                    || obj == -Infinity)) {
+                        serialized["value"] = obj.toString();
                 } else {
                     serialized["value"] = obj;
                 }
+                if (FBTrace.DBG_CROSSFIRE_SERIALIZE)
+                    FBTrace.sysout("CROSSFIRE serialize returning: " + serialized, serialized);
                 return serialized;
             } catch (e) {
-                if(FBTrace.DBG_CROSSFIRE) {
-                    FBTrace.sysout("CROSSFIRE serialize failed: "+e);
+                if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                    FBTrace.sysout("CROSSFIRE serialize failed for: " + obj + ", "+e, obj);
                 }
                 return null;
             }
@@ -478,31 +497,83 @@ define(["firebug/lib/lib",
          * @since 0.3a2
          */
         _serializeProperties: function(obj, ref) {
-            var o = {};
-            for (var p in obj) {
+            var p, pName, prop, properties,
+                o = {};
+
+            if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                FBTrace.sysout("CROSSFIRE _serializeProperties: obj " + obj
+                        + ", typeof(obj) " + typeof(obj), obj);
+            }
+
+            if ((typeof(obj)).indexOf("XrayWrapper" != -1)) {
+                if (FBTrace.DBG_CROSSFIRE_SERIALIZE)
+                    FBTrace.sysout("CROSSFIRE _serializeProperties unwrapping " + obj, obj);
                 try {
-                    if (obj.hasOwnProperty(p) /*&& !(p in ignoreVars)*/) {
-                        var prop = obj[p];
-                        if (typeof(prop) == "object" || typeof(prop) == "function") {
-                            if (prop == null) {
-                                o[p] = "null";
-                            } else if (prop && prop.type && prop.handle) {
-                                o[p] = prop;
-                            } else  {
-                                o[p] = this._getRef(prop);
-                            }
-                        } else if (p === obj) {
-                            o[p] = ref;
-                        } else {
-                            o[p] = this.serialize(prop);
+                    //obj = FBL.unwrapIValue(obj);
+                     obj = XPCNativeWrapper.unwrap(obj);
+                     properties = [];
+                     for (p in obj) properties.push(p);
+                } catch (ex) {
+                    if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                      FBTrace.sysout("_serializeProperties can't unwrap: " + ex,ex);
+                    }
+                }
+            }
+            else if (obj instanceof Object && Object.keys)
+            {
+                if (FBTrace.DBG_CROSSFIRE_SERIALIZE)
+                    FBTrace.sysout("_serializeProperties getting Object.keys()");
+                properties = Object.keys(obj);
+            }
+            else {
+                properties = [];
+                for (p in obj) {
+                    try {
+                        if (Object.prototype.hasOwnProperty.call(obj,p)) {
+                            if (FBTrace.DBG_CROSSFIRE_SERIALIZE)
+                                FBTrace.sysout("_serializeProperties adding property " + p, p);
+                            properties.push(p);
+                        }
+                    } catch (exc) {
+                        if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                            FBTrace.sysout("_serializeProperties exception: " + exc, exc);
                         }
                     }
-                    else if(FBTrace.DBG_CROSSFIRE){
-                        FBTrace.sysout("ignoring property -> "+p+" from -> "+obj.toString()+" during serialization");
+                }
+            }
+
+            if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                FBTrace.sysout("_serializeProperties iterating " + properties.length + " properties", properties);
+            }
+            for (var i = 0; i < properties.length; i++) {
+                pName = properties[i];
+                prop = obj[pName];
+                if (FBTrace.DBG_CROSSFIRE_SERIALIZE)
+                    FBTrace.sysout("_serializeProperties property #" + i + " : " +pName, {"name": pName, "object": prop });
+                try {
+                    if (typeof(prop) == "object" || typeof(prop) == "function")
+                    {
+                        if (prop == null) {
+                            o[pName] = "null";
+                        } else if (prop && prop.type && prop.handle) {
+                            o[pName] = prop;
+                        } else  {
+                            o[pName] = this._getRef(prop);
+                        }
+                    }
+                    else if (prop === obj) {
+                        o[pName] = ref;
+                    }
+                    else
+                    {
+                        o[pName] = this.serialize(prop);
                     }
                 } catch (x) {
-                    o[p] =  null;
+                    o[pName] = null;
                 }
+            }
+            if (FBTrace.DBG_CROSSFIRE_SERIALIZE) {
+                FBTrace.sysout("_serializeProperties finished iterating properties");
             }
             if(obj.constructor && obj.constructor != obj) {
                 o["constructor"] = this._getRef(obj.constructor);
@@ -527,8 +598,89 @@ define(["firebug/lib/lib",
 
     });
 
-    // register module
-    Firebug.registerModule(CrossfireModule);
+    // ----- Crossfire XUL Event Listeners -----
 
+    top.Crossfire = top.Crossfire || {}
+    /**
+     * @name Crossfire.onStatusClick
+     * @description Call-back for menu pop-up
+     * @function
+     * @public
+     * @memberOf Crossfire
+     * @param el
+     */
+    top.Crossfire.onStatusClick = function( el) {
+        FBL.$("crossfireStatusMenu").openPopup(el, "before_end", 0,0,false,false);
+    };
+
+    /**
+     * @name Crossfire.onStatusMenuShowing
+     * @description Call-back for the menu showing
+     * @function
+     * @public
+     * @memberOf Crossfire
+     * @param menu the menu showing
+     */
+    top.Crossfire.onStatusMenuShowing = function( menu) {
+        //CrossfireModule.onStatusMenuShowing(menu);
+    };
+
+
+    /**
+     * @name Crossfire.startServer
+     * @description Delegate to {@link CrossfireModule#startServer(host, port)}
+     * @function
+     * @public
+     * @memberOf Crossfire
+     */
+    top.Crossfire.startServer = function() {
+        var params = top.Crossfire._getDialogParams(true);
+        window.openDialog("chrome://crossfire/content/connect-dialog.xul", "crossfire-connect","chrome,modal,dialog", params);
+        if (params.host && params.port) {
+            Crossfire.CrossfireServer.startServer(params.host, parseInt(params.port));
+        }
+    };
+
+    /**
+     * @name Crossfire.connect
+     * @description Delegate to {@link CrossfireClient#connectClient(host, port)}
+     * @function
+     * @public
+     * @memberOf Crossfire
+     */
+    top.Crossfire.connect = function() {
+        var params = Crossfire._getDialogParams(false);
+        window.openDialog("chrome://crossfire/content/connect-dialog.xul", "crossfire-connect","chrome,modal,dialog", params);
+        if (params.host && params.port) {
+            Crossfire.CrossfireClient.connectClient(params.host, parseInt(params.port));
+        }
+    };
+
+    /**
+     * @name _getDialogParams
+     * @description Fetches the entered parameters from the server-start dialog
+     * @function
+     * @private
+     * @memberOf Crossfire
+     * @param isServer if the dialog should ask for server start-up parameters or client connect parameters
+     * @type Array
+     * @returns an Array of dialog parameters
+     */
+    function _getDialogParams( isServer) {
+        var commandLine = Components.classes["@almaden.ibm.com/crossfire/command-line-handler;1"].getService().wrappedJSObject;
+        var host = commandLine.getHost();
+        var port = commandLine.getPort();
+        var title;
+        if (isServer) {
+            title = "Crossfire - Start Server";
+        } else {
+            title = "Crossfire - Connect to Server";
+        }
+        return { "host": null, "port": null, "title": title, "cli_host": host, "cli_port": port };
+    };
+
+
+    Firebug.registerModule(CrossfireModule);
     return CrossfireModule;
+
 });

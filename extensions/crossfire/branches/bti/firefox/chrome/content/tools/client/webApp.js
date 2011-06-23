@@ -8,9 +8,15 @@ function webAppFactory() {
 
 // WebApp: unit of related browsing contexts.
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/browsers.html#groupings-of-browsing-contexts
-var WebApp = function(win)
+
+//xxxMcollins: on the remote client, this is completely superfluous,
+// and we don't know anything about windows, so why not just have one.
+
+var singleton = {};
+
+var WebApp = function(/*win*/)
 {
-    this.topMostWindow = win;
+    return singleton;
 }
 
 /**
@@ -21,7 +27,7 @@ WebApp.prototype =
 {
     getTopMostWindow: function()
     {
-        return this.topMostWindow;
+        throw "I'm a Remote Client! I don't know anything about windows!!!";
     }
 }
 

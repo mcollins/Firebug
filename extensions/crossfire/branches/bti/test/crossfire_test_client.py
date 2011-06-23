@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
-# crossfire_server.py
-# Crossfire protocol server test implementation in python.
+# crossfire_test_client.py
+# Crossfire protocol test client implementation in python.
 #
 # M. G. Collins
 #
@@ -10,18 +10,55 @@
 # See license.txt for terms of usage.
 #
 # Usage:
-# $> python crossfire_test_client.py [<host>] <port>
+# $> python crossfire_test_client.py [<host>] <port> [--command=<command>[--args=<args>]]
 #
 # On Windows platforms, try installing the pyreadline package.
 #
 
 import json, readline, socket, sys, threading, time
 
-current_seq = 0
+from optparse import OptionParser
+
+parser = OptionParser()
+
+ # server host, defaults to localhost
+parser.add_option("-s", "--host",
+                    action="store", type="string", dest="serverHost", default="localhost",
+                    help="host name for the crossfire server, defaults to localhost")
+
+# server port, required
+parser.add_option("-p", "--port" ,
+                    action="store", type="int", dest="serverPort",
+                    help="port number the crossfire server is running on")
+
+# interactive command-line
+parser.add_option("-i", "--interactive",
+                    action="store_true", dest="interactive",
+                    help="starts the interactive command-line after connecting")
+
+# remote command to execute after handshake
+parser.add_option("-c", "--command",
+                    action="store", type="string", dest="execCommand",
+                    help="sends a command to the crossfire server after connecting")
+
+# optional arguments to command specified by -c
+parser.add_option("-a", "--args",
+                    action="store", type="string", dest="execArgs",
+                    help="optional arguments for the command specified by -c")
+
+# optional tool header to command specified by -c
+parser.add_option("-t", "--tool",
+                    action="store", type="string", dest="execTool", default="debugger",
+                    help="optional tool header for the command specified by -c")
+
 
 HANDSHAKE_STRING = "CrossfireHandshake"
 TOOL_STRING = "console,net,inspector,dom"
 #TOOL_STRING = "net,debugger"
+
+###############################################################################
+
+current_seq = 0
 
 class CrossfireClient:
 
@@ -228,14 +265,14 @@ class Command:
     self.seq = current_seq
     self.command = command_name
     self.tool = tool_name
-    self.packet = { "type": "request", "seq": self.seq, "context_id" : context_id, "command": command_name }
+    self.packet = { "type": "request", "seq": self.seq, "contextId" : context_id, "command": command_name }
     if arguments:
       self.packet.update(arguments)
 
 
 Commands = [
     "entercontext",
-    "updatecontext",
+    "createcontext",
     "listcontexts",
     "version",
     "continue",
@@ -268,6 +305,9 @@ class CommandLine(threading.Thread):
     self.daemon = True
     self.commands = []
     self.current_context = ""
+
+  def setContext(self, ctx):
+    self.current_context = ctx
 
   def getCommand(self):
     if len(self.commands) > 0:
@@ -317,37 +357,93 @@ class CommandLine(threading.Thread):
 if __name__ == "__main__":
   client = None
   commandLine = None
+  currentContext = None
 
   def main():
     global client
     global commandLine
+    global currentContext
 
     host = None
     port = None
+    execCommand = None
+    execArgs = None
+    execTool = None
+    interactive = False
 
-    if len(sys.argv[1:]) == 1:
-      host = socket.gethostname()
-      port = sys.argv[1]
-    if len(sys.argv[1:]) == 2:
-      host = sys.argv[1]
-      port = sys.argv[2]
+    (options, args) = parser.parse_args()
+
+    if options.serverPort:
+      port = options.serverPort
+
+    if options.serverHost:
+      host = options.serverHost
+
+    if options.execCommand:
+      execCommand = options.execCommand
+      execArgs = options.execArgs
+      execTool = options.execTool
+
+    arglen = len(args)
+
+    if arglen == 1:
+      #host = socket.gethostname()
+      if port == None:
+        port = args[0]
+      elif execCommand == None:
+        execCommand = args[0]
+      elif execArgs == None:
+        execArgs = args[0]
+    elif arglen > 1:
+      host = args[0]
+      if port == None:
+        port = args[1]
+      elif execCommand == None:
+        execCommand = args[1]
+      elif execArgs == None:
+        execArgs = args[1]
+
+    if arglen > 2:
+      if host == None:
+        host = args[0]
+      if port == None:
+        port = args[1]
+      if execCommand == None:
+        execCommand = args[2]
+      if arglen > 3 and execArgs == None:
+        execArgs = args[3]
+
+    # if we have no command to execute default to interactive mode
+    if options.interactive or (execCommand == None):
+      interactive = True
+
+    if execArgs != None:
+      try:
+        execArgs = json.loads(execArgs)
+      except ValueError:
+        print "Failed to parse arguments."
+        quit()
 
     if host and port:
-      print 'Starting Crossfire client on ' + host + ':' + port
+      print 'Starting Crossfire client on ' + host + ':' + str(port)
       client = CrossfireClient(host, int(port))
-      commandLine = CommandLine()
+      if interactive:
+        commandLine = CommandLine()
 
       try:
         client.start()
-        commandLine.start()
+        if interactive:
+          commandLine.start()
 
-        print "Sending version command...\n"
-        command = Command("", "version")
-        client.sendPacket(command)
+        #print "Sending version command...\n"
+        #command = Command("", "version")
+        #client.sendPacket(command)
 
         print "Listing contexts...\n"
         command = Command("", "listcontexts")
         client.sendPacket(command)
+
+        sendExecCommand = True
 
         while True:
             packet = client.getPacket()
@@ -356,15 +452,41 @@ if __name__ == "__main__":
               json.dump(packet, sys.stdout, sort_keys=True, indent=2)
               print "\n" + COMMAND_PROMPT,
 
+              #XXXmcollins: this makes the interactive mode work better on linux
+              # but it fails on Windows with pyreadline.
               #readline.redisplay()
 
-              if 'event' in packet and packet['event'] == "closed":
+              ### try to set current context and/or look for 'closed' event
+              if 'event' in packet:
+                if packet['event'] == "closed":
+                  quit()
+                elif (packet['event'] == "onContextCreated") or (packet['event'] == "onContextLoaded"):
+                  update_current_context(packet['data']['contextId'])
+                elif packet['event'] == "onContextSelected":
+                  update_current_context(packet['data']['contextId'])
+              elif 'command' in packet:
+                if packet['command'] == "listcontexts":
+                  for ctx in packet['body']['contexts']:
+                    if ctx['current'] == True:
+                      update_current_context(ctx['contextId'])
+                      break
+
+                ### if we got a response to the command, quit here
+                if execCommand != None and packet['command'] == execCommand and not interactive:
                   quit()
 
-            command = commandLine.getCommand()
-            if command:
-                print "\nSending command => " + command.command
-                client.sendPacket(command)
+            ### if we have a context and we had a commmand to execute and send it here
+            if execCommand != None and sendExecCommand == True and currentContext != None:
+              command = Command(currentContext, execCommand, execTool, arguments=execArgs)
+              client.sendPacket(command)
+              sendExecCommand = False # only send command once
+
+            ### read in next command
+            if interactive:
+              command = commandLine.getCommand()
+              if command:
+                  print "\nSending command => " + command.command
+                  client.sendPacket(command)
 
       except (KeyboardInterrupt):
         pass
@@ -373,6 +495,16 @@ if __name__ == "__main__":
       print 'Usage: $> python crossfire_test_client.py [<host>] <port>'
 
     quit()
+
+  def update_current_context(ctx):
+    global currentContext
+    global commandLine
+
+    currentContext = ctx
+    print "\nSet current context to: " + currentContext
+    if commandLine != None:
+      commandLine.setContext(ctx)
+    return ctx
 
   def quit():
     global client
@@ -391,7 +523,8 @@ if __name__ == "__main__":
       sys.stdin.flush()
       sys.stdin.close()
       sys.stdout.close()
-      commandLine.join(1)
+      if commandLine:
+        commandLine.join(1)
 
     except Exception:
       sys.exit(1)

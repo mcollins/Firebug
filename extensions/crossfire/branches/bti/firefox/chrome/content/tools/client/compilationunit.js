@@ -206,7 +206,6 @@ CompilationUnit.prototype._removeBreakpoint = function(breakpoint)
     }
 };
 
-exports = CompilationUnit;
 return CompilationUnit;
 
 });

@@ -133,8 +133,21 @@ function RequestPacket( packetString) {
         packet = {
             "seq": Packet.seq++,
             "type": "command",
-            "command": command,
+            "command": command
         };
+
+        if (args) {
+            if (args["contextId"]) {
+                packet["contextId"] = args["contextId"];
+                delete args["contextId"];
+            }
+
+            for (var arg in args) {
+                if (!packet["arguments"]) packet["arguments"] = {};
+                packet["arguments"][arg] = args[arg];
+            }
+        }
+
         json = this.toJSON(packet);
         this.data = this.toPacketString(json, headers);
         this.length = this.data.length;
@@ -169,7 +182,7 @@ function ResponsePacket( command, requestSeq, contextid, body, running, success,
             "success": success
     };
     if(contextid) {
-    	packet["context_id"] = contextid;
+        packet["contextId"] = contextid;
     }
     var json = this.toJSON(packet);
     this.data = this.toPacketString(json, headers);

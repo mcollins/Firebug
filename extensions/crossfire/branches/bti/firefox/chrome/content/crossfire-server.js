@@ -2,9 +2,10 @@
 
 define([
         "firebug/firebug",
+        "firebug/lib/object",
         "crossfireModules/crossfire",
         "crossfireModules/crossfire-status"],
-        function (Firebug, CrossfireModule, CrossfireStatus) {
+        function (Firebug, Obj, CrossfireModule, CrossfireStatus) {
 
 /**
  * @name CONTEXT_ID_SEED
@@ -29,7 +30,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
         Firebug.registerModule(this);
     }
 
-    CrossfireServer.prototype = FBL.extend(Firebug.Module,  {
+    CrossfireServer.prototype = Obj.extend(Firebug.Module,  {
 
         contexts: [],
         breakpoints: [], //mapping of breakpoint id (Integer) to breakpoint object
@@ -146,7 +147,6 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             }
         },
 
-
         /**
          * @name _generateId
          * @description Generates a unique id to map to a Firebug context
@@ -160,7 +160,6 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
         _generateId: function() {
             return "xf"+CrossfireModule.version + "::" + (++CONTEXT_ID_SEED);
         },
-
 
         /**
          * @name findContext
@@ -191,8 +190,8 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
-         * <li><code>data</code> - the event payload with the <code>href</code> value set</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
+         * <li><code>data</code> - the event payload with the <code>url</code> value set</li>
          * </ul>
          * @function
          * @public
@@ -205,13 +204,14 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             }
             context.Crossfire = { "crossfire_id" : this._generateId() };
             this.contexts.push(context);
-            var href = "";
+            var url = "";
             try {
-                href = context.window.location.href;
+                url = context.window.location.href;
             } catch(e) {
                 //do nothing
             }
-            this._sendEvent("onContextCreated", { "context_id": context.Crossfire.crossfire_id, "data": {"href": href}});
+            this._sendEvent("onContextCreated", {"data": {"url": url, "contextId": context.Crossfire.crossfire_id}});
+
         },
 
         /**
@@ -222,8 +222,8 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
-         * <li><code>data</code> - the event payload with the <code>href</code> value set</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
+         * <li><code>data</code> - the event payload with the <code>url</code> value set</li>
          * </ul>
          * @function
          * @public
@@ -234,30 +234,28 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             if (FBTrace.DBG_CROSSFIRE) {
                 FBTrace.sysout("CROSSFIRE:  loadedContext");
             }
-            var href = "";
+            var url = "";
             try {
-                href = context.window.location.href;
+                url = context.window.location.href;
             } catch(e) {
                 //do nothing
             }
 
             // load/sync breakpoints
-            this.getBreakpoints(context);
+            this.getAllBreakpoints(context);
 
-            this._sendEvent("onContextLoaded", {"context_id": context.Crossfire.crossfire_id, "data": {"href": href}});
+            this._sendEvent("onContextLoaded", {"data": {"url": url, "contextId": context.Crossfire.crossfire_id}});
         },
 
         /**
          * @name showContext
          * @description Handles a context being shown - i.e. a tab has been switched to.
          * <br><br>
-         * Fires an <code>onContextChanged</code> event
+         * Fires an <code>onContextSelected</code> event
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
-         * <li><code>new_context_id</code> - the id of the Crossfire context switched to</li>
-         * <li><code>data</code> - the event payload with the <code>href</code> and <code>new_href</code> values set</li>
+         * <li><code>data</code> - the event payload with the <code>url</code>, <code>oldUrl</code>, <code>contextId</code> and <code>oldContextId</code> values set</li>
          * </ul>
          * @function
          * @public
@@ -267,13 +265,14 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          */
         showContext: function(browser, context) {
             if (FBTrace.DBG_CROSSFIRE) {
-                FBTrace.sysout("CROSSFIRE:  showContext");
+                FBTrace.sysout("CROSSFIRE: showContext");
             }
             if(context && this.currentContext && this.currentContext.Crossfire) {
-                var href =  this.currentContext.window.location.href;
-                var newHref =  context.window.location.href;
-                if(href != newHref) {
-                    this._sendEvent("onContextChanged", {"context_id": this.currentContext.Crossfire.crossfire_id, "new_context_id": context.Crossfire.crossfire_id, "data": {"href": href, "new_href": newHref}});
+                var url =  this.currentContext.window.location.href;
+                var newUrl =  context.window.location.href;
+                if(url != newUrl) {
+                    this._sendEvent("onContextSelected", {"data": {"oldContextId": this.currentContext.Crossfire.crossfire_id, "oldUrl": url,
+                        "contextId": context.Crossfire.crossfire_id, "url": newUrl}});
                 }
             }
             this.currentContext = context;
@@ -287,7 +286,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the Crossfire context that was destroyed</li>
          * </ul>
          * @function
          * @public
@@ -305,7 +304,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 for (var i = 0; i < this.contexts.length; i++) {
                     if (this.contexts[i].Crossfire.crossfire_id == contextId) {
                         delete this.contexts[i].Crossfire.currentFrame;
-                        this._sendEvent("onContextDestroyed", {"context_id": this.contexts[i].Crossfire.crossfire_id});
+                        this._sendEvent("onContextDestroyed", {"data":{"contextId": this.contexts[i].Crossfire.crossfire_id}});
                         this.contexts.splice(i, 1);
                         break;
                     }
@@ -317,7 +316,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
 
         /**
          * @name handleRequest
-         * @description Looks up the context by the request object's <code>context_id</code>
+         * @description Looks up the context by the request object's <code>contextId</code>
          * property and calls the requested command on that context's command adaptor.
          * @function
          * @public
@@ -345,16 +344,20 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             } else if(command == "getbreakpoint") {
                 response = this.getBreakpoint(args);
             }
-            else if (command == "updatecontext") {
-                context = this.findContext(request.context_id);
+            else if (command == "createcontext") {
+                context = this.findContext(args.contextId);
                 if(context) {
-                    context.window.location = args.href;
+                    context.window.location = args.url;
+                    response = true;
                 } else {
                     try {
                         if (FBTrace.DBG_CROSSFIRE) {
-                            FBTrace.sysout("calling FBL.openNewTab with: " + args.href);
+                            FBTrace.sysout("calling FBL.openNewTab with: " + args.url);
                         }
-                        FBL.openNewTab(args.href);
+                        FBL.openNewTab(args.url);
+                        //set response to true here, technically we are successful since none of the previous calls caused exceptions
+                        //or otherwise failed
+                        response = true;
                     } catch ( exc) {
                         if (FBTrace.DBG_CROSSFIRE)
                             FBTrace.sysout("updateContext fails: " + exc);
@@ -363,18 +366,18 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             }
             else {
                 // else we require a context for the commands
-                context = this.findContext(request.context_id);
+                context = this.findContext(request.contextId);
                 if(command == "setbreakpoint") {
                     response = this.setBreakpoint(context, args);
                 }
                 else if(command == "getbreakpoints") {
-                    response = this.getBreakpoints(context, args);
+                    response = this.getAllBreakpoints(context);
                 }
                 else if(command == "changebreakpoint") {
                     response = this.changeBreakpoint(context, args);
                 }
-                else if(command == "clearbreakpoint") {
-                    response = this.clearBreakpoint(context, args);
+                else if(command == "deletebreakpoint") {
+                    response = this.deleteBreakpoint(context, args);
                 }
                 else if(context) {
                     contextid = context.Crossfire.crossfire_id;
@@ -400,13 +403,10 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                         response = this.getScope(context, args);
                     }
                     else if(command == "script") {
-                        response = this.getScript(context, args);
+                        response = {"script":this.getScript(context, args)};
                     }
                     else if(command == "scripts") {
                         response = this.getScripts(context, args);
-                    }
-                    else if(command == "source") {
-                        response = this.getSource(context, args);
                     }
                     else if(command == "suspend") {
                         response = this.doSuspend(context);
@@ -440,18 +440,18 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             if (FBTrace.DBG_CROSSFIRE)
                 FBTrace.sysout("CROSSFIRE listing " + this.contexts.length + " contexts...");
             var contexts = [];
-            var context, href;
+            var context, url;
             for (var i = 0; i < this.contexts.length; i++) {
                 context = this.contexts[i];
-                href = "";
+                url = "";
                 if (context.window && !context.window.closed) {
-                    href = context.window.location.href;
+                    url = context.window.location.href;
                 }
-                contexts.push( { "context_id" : context.Crossfire.crossfire_id,
-                                 "href"         : href ,
+                contexts.push( { "contextId" : context.Crossfire.crossfire_id,
+                                 "url"         : url ,
                                  "current"      : this.currentContext == context });
             }
-            return { "contexts": contexts };
+            return {"contexts":contexts};
         },
 
 
@@ -487,20 +487,26 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 var stack = context.Crossfire.currentFrame.stack;
                 var scopes = args["includeScopes"] || true;
                 if (stack) {
+                    if (FBTrace.DBG_CROSSFIRE)
+                        FBTrace.sysout("CROSSFIRE backtrace stack length => " + stack.length, stack);
                     // to set to stack.length if not set, or if set to a number higher than the stack sizes
-                    to = (to && to <= stack.length) ? to : stack.length;
+                    to = (to && to <= stack.length) ? to : stack.length-1;
                 } else {
+                    if (FBTrace.DBG_CROSSFIRE)
+                        FBTrace.sysout("CROSSFIRE backtrace had no stack");
                     // issue 2559: if there is only one frame, stack is undefined,
                     // but we still want to return that frame.
                     from = 0;
-                    to = 1;
+                    to = 0;
                 }
-                var frame;
                 var frames = [];
+                if (FBTrace.DBG_CROSSFIRE) {
+                    FBTrace.sysout("backtrace => from: " + from + " to: " + to);
+                }
                 for (var i = from; i <= to; i++) {
-                    frame = this.getFrame(context, {"number": i, "includeScopes": scopes});
+                    var frame = this.getFrame(context, {"index": i, "includeScopes": scopes});
                     if (frame) {
-                        delete frame.context_id;
+                        delete frame.contextId;
                         frames.push(frame);
                     }
                 }
@@ -526,9 +532,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param args the array of arguments which contains:
          * <ul>
          * <li>an {@link Integer} <code>handle</code>, which is the id of the breakpoint to change</li>
-         * <li>an optional {@link Boolean} <code>enabled</code>, if the changed breakpoint should be enabled or not</li>
-         * <li>an optional {@link String} <code>condition</code>, the new condition for the breakpoint. Passing in <code>null</code> will remove
-         * a currently set condition</li>
+         * <li>an {@link Object} <code>attributes</code>, which is the new collection of breakpoint attributes to set</li>
          * </ul>
          * @since 0.3a1
          */
@@ -536,62 +540,73 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             var bp,
                 loc,
                 handle = args["handle"],
-                condition = args["condition"],
-                enabled = !!args["enabled"];
+                attributes = args["attributes"];
 
-            if (FBTrace.DBG_CROSSFIRE) {
-                FBTrace.sysout("CROSSFIRE changeBreakpoint: args => " + args.toSource());
+            if (FBTrace.DBG_CROSSFIRE_BPS) {
+                FBTrace.sysout("CROSSFIRE: changeBreakpoint handle => " + handle +" attributes => "+attributes.toSource());
             }
             try {
                 if(handle) {
                     bp = this._findBreakpoint(handle);
                 }
                 if (bp) {
-                    loc = bp.location;
-                    if (condition) {
-                        if (FBTrace.DBG_CROSSFIRE_BPS) {
-                            FBTrace.sysout("CROSSFIRE changeBreakpoint set condition => " + condition);
-                        }
-                        FBL.fbs.setBreakpointCondition({"href":loc.url}, loc.line, condition, Firebug.Debugger);
+                    var conditionChanged = false;
+                    if(attributes.condition) {
+                        conditionChanged = bp.attributes.condition != attributes.condition;
                     }
                     if (FBTrace.DBG_CROSSFIRE_BPS) {
-                        FBTrace.sysout("CROSSFIRE changeBreakpoint set enabled => " + enabled);
+                        FBTrace.sysout("CROSSFIRE: changeBreakpoint condition changed => " + conditionChanged);
                     }
-                    if (enabled) {
-                        FBL.fbs.enableBreakpoint(loc.url, loc.line);
-                    } else {
-                        FBL.fbs.disableBreakpoint(loc.url, loc.line);
+                    var enabledChanged = false;
+                    if(typeof(attributes.enabled) == "boolean") {
+                        bp.attributes.enabled != attributes.enabled
                     }
-                    bp.enabled = enabled;
-                    return {"breakpoint": bp };
+                    if (FBTrace.DBG_CROSSFIRE_BPS) {
+                        FBTrace.sysout("CROSSFIRE: changeBreakpoint enabled changed => " + enabledChanged);
+                    }
+                    for(var p in attributes) {
+                        bp.attributes[p] = attributes[p];
+                    }
+                    loc = bp.location;
+                    if (conditionChanged) {
+                        FBL.fbs.setBreakpointCondition({"href":loc.url}, loc.line, attributes.condition, Firebug.Debugger);
+                    }
+                    if (enabledChanged) {
+                        if(attributes.enabled == true) {
+                            FBL.fbs.enableBreakpoint(loc.url, loc.line);
+                        } else {
+                            FBL.fbs.disableBreakpoint(loc.url, loc.line);
+                        }
+                    }
+                    if (FBTrace.DBG_CROSSFIRE_BPS) {
+                        FBTrace.sysout("CROSSFIRE: changeBreakpoint completed => " + bp.toSource());
+                    }
+                    return bp;
                 }
             } catch (e) {
-                if (FBTrace.DBG_CROSSFIRE) {
-                    FBTrace.sysout("CROSSFIRE changeBreakpoint exception: " + e);
+                if (FBTrace.DBG_CROSSFIRE_BPS) {
+                    FBTrace.sysout("CROSSFIRE: changeBreakpoint exception => " + e);
                 }
             }
             return null;
         },
 
         /**
-         * @name clearBreakpoint
+         * @name deleteBreakpoint
          * @description Remove the breakpoint object with the specified id.
          * @function
          * @public
          * @memberOf CrossfireServer
-         * @type Array
-         * @returns an empty {@link Array} if the breakpoint was removed, <code>null</code> otherwise
+         * @type Object
+         * @returns the breakpoint object that was deleted or <code>null</code>
          * @param context the optional associated context {@link Object}
          * @param args the array of arguments which contains:
          * <ul>
          * <li>an {@link Integer} <code>handle</code>, which is the id of the breakpoint to clear</li>
          * </ul>
-         * <br><br>
-         * Either the breakpoint handle or the URL / line number can be given to clear a breakpoint - if both are given the breakpoint
-         * handle is consulted first.
          * @since 0.3a1
          */
-        clearBreakpoint: function(context, args) {
+        deleteBreakpoint: function(context, args) {
             var handle = args["handle"];
             if(handle) {
                 var bp = this._findBreakpoint(handle);
@@ -600,7 +615,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     if(loc && loc.url && loc.line) {
                         Firebug.Debugger.clearBreakpoint({"href": loc.url}, loc.line);
                         this.breakpoints.splice(this.breakpoints.indexOf(bp), 1);
-                        return {"breakpoint": bp};
+                        return bp;
                     }
                 }
             }
@@ -618,15 +633,14 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param context the associated context {@link Object}
          * @param args the array of arguments which contains:
          * <ul>
-         * <li>optionally a {@link String} <code>stepaction</code>, which can be one of 'in', 'next', or 'out' </li>
-         * <li>optionally an {@link Integer} <code>stepcount</code>, which denotes how many steps to take - NO IMPLEMENTED YET</li>
+         * <li>optionally a {@link String} <code>stepAction</code>, which can be one of 'in', 'next', or 'out' </li>
          * </ul>
          * @since 0.3a1
          */
         doContinue: function(context, args) {
             var stepAction = null;
             if(args) {
-                stepAction = args["stepaction"];
+                stepAction = args["stepAction"];
             }
             if (stepAction == "in") {
                 Firebug.Debugger.stepInto(context);
@@ -653,13 +667,16 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param context the associated context {@link Object}
          * @param args the array of arguments which contains:
          * <ul>
-         * <li>optionally an {@link Integer} <code>frame</code>, which is the index of the stackframe in the current stack to evaluate in</li>
+         * <li>optionally an {@link Integer} <code>frameIndex</code>, which is the index of the stackframe in the current stack to evaluate in</li>
          * <li>a {@link String} <code>expression</code>, which is what will be evaluated</li>
          * </ul>
          * @since 0.3a1
          */
         doEvaluate: function(context, args) {
-            var frameNo = args["frame"];
+            var frameNo = args["frameIndex"];
+            if(!frameNo) {
+                frameNo = 0;
+            }
             var expression = args["expression"];
             var frame;
 
@@ -673,7 +690,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     frame = context.Crossfire.currentFrame.stack[frameNo];
                 }
             }
-            var result;
+            var result = {};
             var contextId = context.Crossfire.crossfire_id;
             try {
                 if (frame) {
@@ -682,7 +699,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     }
                 } else {
                     Firebug.CommandLine.evaluate(expression, context,null,null,function(r){
-                        result = CrossfireModule.serialize(r);
+                        result = r;
                     },function(){
                         throw new Error("Failure to evaluate expression: " + expression);
                     });
@@ -690,7 +707,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             } catch (e) {
                 result = e;
             }
-            return {"context_id": contextId, "result": result};
+            return {"result": CrossfireModule.serialize(result)};
         },
 
         /**
@@ -704,48 +721,51 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param context the associated context {@link Object}
          * @param args the array of arguments which contains:
          * <ul>
-         * <li>an {@link Integer} <code>number</code>, which is the index of the frame in the current stack</li>
+         * <li>an {@link Integer} <code>index</code>, which is the index of the frame in the current stack</li>
          * <li>a {@link Boolean} <code>includeScopes</code>, which denotes if the associated scopes should be returned as well</li>
          * </ul>
          * @since 0.3a1
          */
         getFrame: function(context, args) {
-            var number = args["number"];
+            var index = args["index"];
+            if(!index || index < 0) {
+                index = 0;
+            }
             var includeScopes = args["includeScopes"];
             if(!includeScopes) {
                 includeScopes = true;
             }
             var frame = context.Crossfire.currentFrame;
-            if (frame) {
-                if (!number) {
-                    number = 0;
-                } else if (frame.stack) {
-                    frame = frame.stack[number-1];
+            if(!frame) {
+                return null;
+            }
+            if (frame.stack) {
+                frame = frame.stack[index];
+            }
+            try {
+                var locals = {};
+                for (var l in frame.scope) {
+                    if (l != "parent") { // ignore parent
+                        locals[l] = frame.scope[l];
+                    }
                 }
-                try {
-                    var locals = {};
-                    for (var l in frame.scope) {
-                        if (l != "parent") { // ignore parent
-                            locals[l] = frame.scope[l];
-                        }
-                    }
-                    if (frame.thisValue) {
-                        locals["this"] = frame.thisValue;
-                    }
-                    if (includeScopes) {
-                        var scopes = (this.getScopes(context, {"frameNumber": number })).scopes;
-                    }
-                    return { "context_id": context.Crossfire.crossfire_id,
-                        "index": frame.frameIndex,
-                        "func": frame.functionName,
-                        "script": frame.script,
-                        "locals": locals,
-                        "line": frame.line,
-                        "scopes": scopes };
-                } catch (exc) {
-                    if (FBTrace.DBG_CROSSFIRE) {
-                        FBTrace.sysout("CROSSFIRE exception returning frame ", exc);
-                    }
+                if (frame.thisValue) {
+                    locals["this"] = frame.thisValue;
+                }
+                if (includeScopes) {
+                    var scopes = (this.getScopes(context, {"frameIndex": index })).scopes;
+                }
+                return {
+                    "index": frame.frameIndex,
+                    "functionName": frame.functionName,
+                    "url": frame.script,
+                    "locals": locals,
+                    "line": frame.line,
+                    "scopes": scopes
+                };
+            } catch (exc) {
+                if (FBTrace.DBG_CROSSFIRE) {
+                    FBTrace.sysout("CROSSFIRE exception returning frame ", exc);
                 }
             }
             return null;
@@ -776,7 +796,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
         },
 
         /**
-         * @name getBreakpoints
+         * @name getAllBreakpoints
          * @description Returns all the breakpoints. This method requests all breakpoints from Firebug directly
          * for all known source files.
          * @function
@@ -785,13 +805,9 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @type Array
          * @returns an {@link Array} of all breakpoints information or <code>null</code> if there are no breakpoints set.
          * @param context the optional associated context {@link Object}
-         * @param args the array of arguments which contains:
-         * <ul>
-         * <li>an optional {@link String} <code>context_id</code>, which is the id of the Crossfire context to get all of the breakpoints for</li>
-         * </ul>
          * @since 0.3a1
          */
-        getBreakpoints: function(context, args) {
+        getAllBreakpoints: function(context) {
             var bp;
             if(context) {
                 this._enumBreakpoints(context, this);
@@ -826,7 +842,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     var loc = {"line":l, "url":u};
                     bp = self._findBreakpoint(loc);
                     if(!bp) {
-                        bp = self._newBreakpoint("line",{"line":l,"url":u},!props.disabled,null);
+                        bp = self._newBreakpoint("line",{"line":l,"url":u},{"enabled":!props.disabled,"condition":null});
                     } else if (bp.enabled == props.disabled){
                         bp.enabled = !props.disabled;
                         self.breakpoints[self.breakpoints.indexOf(bp)] = bp;
@@ -860,7 +876,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 var obj;
                 for (var i in CrossfireModule.refs) {
                     if (i == handle) {
-                        obj = CrossfireModule.refs[i];
+                        obj = top.Crossfire.refs[i];
                         var arr = CrossfireModule.serialize(obj);
                         if(source) {
                             try {
@@ -869,9 +885,11 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                                     arr["source"] = src;
                                 }
                             }
-                            catch(e) {}
-                            var cid = context.Crossfire.crossfire_id;
-                            arr["context_id"] = cid;
+                            catch(e) {
+                                 if (FBTrace.DBG_CROSSFIRE) {
+                                     FBTrace.sysout("CROSSFIRE doLookup: exception => " + e);
+                                 }
+                            }
                             return arr;
                         }
                         return arr;
@@ -892,8 +910,8 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param context the associated context {@link Object}
          * @param args the request arguments that contains:
          * <ul>
-         * <li>an {@link Integer} <code>number</code>, which is the number of scopes to return</li>
-         * <li>an {@link Integer} <code>frameNumber</code>, which is the number of the stack frame to collect scopes from</li>
+         * <li>an {@link Integer} <code>index</code>, which is the number of scopes to return</li>
+         * <li>an {@link Integer} <code>frameIndex</code>, which is the number of the stack frame to collect scopes from</li>
          * </ul>
          * @since 0.3a1
          */
@@ -901,15 +919,14 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             var scopes = [];
             var scope;
             do {
-                scope = this.getScope(context, {"number": scopes.length, "frameNumber":  args["frameNumber"]});
+                scope = this.getScope(context, {"index": scopes.length, "frameIndex":  args["frameIndex"]});
                 if (scope) {
-                    delete scope.context_id;
+                    delete scope.contextId;
                     scopes.push(scope);
                 }
             } while(scope);
             if (scopes.length > 0) {
               return {
-                  "context_id": context.Crossfire.crossfire_id,
                   "fromScope": 0,
                   "toScope": scopes.length-1,
                   "totalScopes": scopes.length,
@@ -930,42 +947,41 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param context the associated context {@link Object}
          * @param args the arguments array that contains:
          * <ul>
-         * <li>an {@link Integer} <code>number</code>, which is the number of enclosing scopes to include</li>
-         * <li>an {@link Integer} <code>frameNumber</code>, which is the index of the frame to collect the scopes from</li>
+         * <li>an {@link Integer} <code>index</code>, which is the index of enclosing scopes to include</li>
+         * <li>an {@link Integer} <code>frameIndex</code>, which is the index of the frame to collect the scopes from</li>
          * </ul>
          * @since 0.3a1
          */
         getScope: function(context, args) {
             var scope;
-            var scopeNo = args["number"];
-            var frameNo = args["frameNumber"];
-            if (context.Crossfire.currentFrame) {
-                if (scopeNo == 0) {
-                    // only return a reference to the global scope
-                    scope = CrossfireModule._getRef(context.window.wrappedJSObject);
-                } else {
-                    var frame = context.Crossfire.currentFrame;
-                    if (!frameNo) {
+            var scopeNo = args["index"];
+            var frameNo = args["frameIndex"];
+            var frame = context.Crossfire.currentFrame;
+            if (scopeNo == 0) {
+                // only return a reference to the global scope
+                scope = Crossfire._getRef(context.window.wrappedJSObject);
+            }
+            else if (frame) {
+                if(frame.stack) {
+                    if (!frameNo || frameNo < 0) {
                         frameNo = 0;
-                    } else {
-                        frame = frame.stack[frameNo-1];
                     }
-                    scope = frame.scope;
-                    for (var i = 0; i < scopeNo; i++) {
-                        scope = scope.parent;
-                        if (!scope) break;
+                    else if(frameNo > frame.stack.length) {
+                        frameNo = frame.stack.length-1;
                     }
+                    frame = frame.stack[frameNo];
                 }
-            } else if (scopeNo == 0) {
-              scope = context.window.wrappedJSObject;
-              frameNo = -1;
+                scope = frame.scope;
+                for (var i = 0; i < scopeNo; i++) {
+                    scope = scope.parent;
+                    if (!scope) break;
+                }
             }
             if (scope) {
                 return {
-                    "context_id": context.Crossfire.crossfire_id,
                     "index": scopeNo,
                     "frameIndex": frameNo,
-                    "object": scope
+                    "scope": scope
                 };
             }
             return null;
@@ -995,12 +1011,12 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 if(url) {
                     script = this.getScript(context, { "url": url, "includeSource": incSrc });
                     if (script) {
-                        delete script.context_id;
+                        delete script.contextId;
                         scripts.push( script );
                     }
                 }
             }
-            return {"context_id": context.Crossfire.crossfire_id, "scripts": scripts};
+            return {"scripts": scripts};
         },
 
         /**
@@ -1024,8 +1040,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             var url = args["url"];
             var sourceFile = context.sourceFileMap[url];
             if(sourceFile) {
-                var script = this._newScript(context, sourceFile, incSrc);
-                return { "context_id": context.Crossfire.crossfire_id, "script": script };
+                return this._newScript(context, sourceFile, incSrc);
             }
             return null;
         },
@@ -1043,52 +1058,48 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @since 0.3a5
          */
         _findBreakpoint: function(locationOrHandle) {
-            var bp, bpobj, l, handle, location, val;
-
-            // we want to lookup breakpoints only by handle from a 'clearbreakpoint' request
+            var handle, location;
             try {
                 handle = parseInt(locationOrHandle);
             } catch (parseExc) {
-
+                //do nothing, try to find the breakpoint by location
             }
-
             if (!handle && typeof(locationOrHandle) == "object") {
                 location = locationOrHandle;
             }
-
-            if (FBTrace.DBG_CROSSFIRE_BP)
-                FBTrace.sysout("_findBreakpoint for location => " +location.toSource());
-
             list: for(var bp = 0; bp < this.breakpoints.length; bp++) {
-                if (FBTrace.DBG_CROSSFIRE_BP)
-                    FBTrace.sysout("trying bp => " + bp.handle);
-
-                bpobj = this.breakpoints[bp];
-
+                var bpobj = this.breakpoints[bp];
                 if (handle) { // look up by handle
+                    if (FBTrace.DBG_CROSSFIRE_BPS) {
+                        FBTrace.sysout("CROSSFIRE: findBreakpoint with handle => " + handle);
+                    }
                     if (bpobj.handle == handle)
                         return bpobj;
                 }
                 else if (location) { // then we want to look up by location
+                    if (FBTrace.DBG_CROSSFIRE_BPS) {
+                        FBTrace.sysout("CROSSFIRE: findBreakpoint with location => " + location.toSource());
+                    }
                     loc = bpobj.location;
                     if(loc) {
                         //breakpoints are equal if their locations are equal
-                        for(l in loc) {
-                            val = location[l];
+                        for(var l in loc) {
+                            var val = location[l];
                             if(!val || (val && val != loc[l])) {
                                 continue list;
                             }
                         }
                     }
-
-                    if (FBTrace.DBG_CROSSFIRE_BPS)
-                        FBTrace.sysout("found breakpoint with location => " + bpobj.location.toSource());
+                    if (FBTrace.DBG_CROSSFIRE_BPS) {
+                        FBTrace.sysout("CROSSFIRE: findBreakpoint found breakpoint with location => " + bpobj.location.toSource());
+                    }
                     return bpobj;
                 }
             }
 
-            if (FBTrace.DBG_CROSSFIRE_BPS)
-                FBTrace.sysout("failed to find breakpoint");
+            if (FBTrace.DBG_CROSSFIRE_BPS) {
+                FBTrace.sysout("CROSSFIRE: findBreakpoint failed to find breakpoint");
+            }
             return null;
         },
 
@@ -1103,19 +1114,17 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @param type a required (@String} for the name of the type of the breakpoint
          * @param location a required {@link Object} containing the location information to compare to find a
          * matching breakpoint
-         * @param enabled an optional {@Boolean} for if the breakpoint is enabled or not. If not specified <code>true</code> is assumed.
-         * @param condition an optional {@String} to be evaluated to determine if the breakpoint should suspend. If not specified <code>null</code> is assumed
+         * @param attributes an optional {@link Object} of attributes to set on the breakpoint
          * @since 0.3a5
          */
-        _newBreakpoint: function(type, location, enabled, condition) {
-            if (FBTrace.DBG_CROSSFIRE)
-                FBTrace.sysout("CROSSFIRE: _newBreakpoint: type => " + type + " location => " + location + " enabled => " + enabled);
+        _newBreakpoint: function(type, location, attributes) {
+            if (FBTrace.DBG_CROSSFIRE_BPS)
+                FBTrace.sysout("CROSSFIRE: _newBreakpoint: type => " + type + " location => " + location + " attributes => " + attributes);
             var bp = {
                 "handle": this.breakpoint_ids++,
                 "type": type,
                 "location": location,
-                "enabled": enabled,
-                "condition": condition
+                "attributes": (attributes ? attributes : {"enabled":true, "condition":null})
             };
             this.breakpoints.push(bp);
             return bp;
@@ -1123,33 +1132,33 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
 
         /**
          * @name setBreakpoint
-         * @description Set a breakpoint and return its {@link Integer} id.
+         * @description Set a breakpoint and return its object
          * @function
          * @public
          * @memberOf CrossfireServer
          * @type Array
-         * @returns the {@link Array} of breakpoint information
+         * @returns the breakpoint object
          * @param context the optional associated context {@link Object}
          * @param args the arguments array that contains:
          * <ul>
          * <li>an {@link Object} <code>location</code>, the location object containing all of the information required to set the breakpoint</li>
-         * <li>an optional {@link String} <code>context_id</code>, the context_id to tie the breakpoint to</li>
-         * <li>an optional {@link Boolean} <code>enabled</code>, if the breakpoint should be enabled or not</li>
-         * <li>an optional {@link String} <code>condition</code>, the condition to be evaluated to determine if the breakpoint should suspend</li>
+         * <li>an optional {@link Object} <code>attributes</code>, the object of attributes to set in the new breakpoint</li>
          * <ul>
          * @since 0.3a1
          */
         setBreakpoint: function(context, args) {
             var location = args["location"];
-            var condition = args["condition"];
-            var enabled = !!args["enabled"];
+            var attributes = args["attributes"];
+            if (FBTrace.DBG_CROSSFIRE_BPS) {
+                FBTrace.sysout("CROSSFIRE: setBreakpoint location => "+location.toSource()+" attributes => "+attributes.toSource());
+            }
             var bp = this._findBreakpoint(location);
             if (!bp) {
                 if (!location) {
                     // can't create a new bp without a location
                     return;
                 }
-                bp = this._newBreakpoint("line", location, enabled, condition);
+                bp = this._newBreakpoint("line", location, attributes);
                 var url = bp.location.url;
                 var line = bp.location.line;
                 if(url && line) {
@@ -1167,34 +1176,19 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                             }
                         });
                     }
-                    if (condition) {
-                        FBL.fbs.setBreakpointCondition({"href": url}, line, condition, Firebug.Debugger);
+                    if (attributes.condition) {
+                        FBL.fbs.setBreakpointCondition({"href": url}, line, attributes.condition, Firebug.Debugger);
                     }
                     // by default, setting a new breakpoint is enabled, so only check if we want to disable it.
-                    if (!enabled) {
+                    if (!attributes.enabled) {
                         FBL.fbs.disableBreakpoint(url, line);
                     }
                 }
             }
+            if (FBTrace.DBG_CROSSFIRE_BPS) {
+                FBTrace.sysout("CROSSFIRE: setBreakpoint complete bp => "+bp.toSource());
+            }
             return {"breakpoint": bp};
-        },
-
-        /**
-         * @name getSource
-         * @description Returns the source code for every script in the requested context
-         * @function
-         * @public
-         * @memberOf CrossfireServer
-         * @type Array
-         * @returns an {@link Array} containing the source for all of the currently known scripts from the Firebug source map
-         * @param context the associated context {@link Object}
-         * @param args the arguments array. If the {@link Boolean} <code>includeSource</code> argument is not present it is added and set to <code>true</code>
-         * @since 0.3a1
-         */
-        getSource: function(context, args) {
-            args = args || {};
-            args["includeSource"] = true;
-            return this.getScripts(context, args);
         },
 
         /**
@@ -1246,20 +1240,18 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 srcLen = 0;
             }
             script = {
-                "id": sourceFile.href,
+                "url": sourceFile.href,
                 "lineOffset": 0,
                 "columnOffset": 0,
-                "sourceStart": lines[0],
                 "sourceLength":srcLen,
                 "lineCount": lines.length,
-                "compilationType": sourceFile.compilation_unit_type,
+                "type": sourceFile.compilation_unit_type,
             };
             if (includeSrc) {
                 script["source"] = lines.join(' ');
             }
             return script;
         },
-
 
         // ----- Firebug listener -----
         /**
@@ -1270,7 +1262,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * <li><code>data</code> - the event payload from Firebug</li>
          * </ul>
          * @function
@@ -1288,6 +1280,9 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 context_href = context.window.location.href;
             } catch(e) {
             }
+            //xxxMcollins hack-tastic bti thing
+            sourceFile = context.sourceFileMap[sourceFile.href];
+
             /*
              * make sure breakpoints 'set' before the file has been loaded
              * are set when the file actually loads
@@ -1305,7 +1300,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
             }
             var script = this._newScript(context, sourceFile, false);
             var data = {"script":script};
-            this._sendEvent("onScript", {"context_id": context.Crossfire.crossfire_id, "data": data});
+            this._sendEvent("onScript", {"contextId": context.Crossfire.crossfire_id, "data": data});
         },
 
         // ----- Firebug Debugger listener -----
@@ -1318,7 +1313,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * <li><code>data</code> - the event payload from Firebug with the <code>url</code> and <code>line</code> values set</li>
          * </ul>
          * @function
@@ -1339,15 +1334,17 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     lineno = analyzer.getSourceLineFromFrame(context, frame);
                 }
             }
-            var href = sourceFile.href.toString();
+            var url = sourceFile.href.toString();
             var contextId = context.Crossfire.crossfire_id;
             if (FBTrace.DBG_CROSSFIRE) {
-                FBTrace.sysout("CROSSFIRE:  onStartDebugging href => " + href);
+                FBTrace.sysout("CROSSFIRE:  onStartDebugging href => " + url);
             }
-            context.Crossfire.frameCount = 0;
             context.Crossfire.currentFrame = this._copyFrame(frame, context, true);
-            this._sendEvent("onBreak", {"context_id": contextId, "data": {"url" : href, "line": lineno}});
-            this.running = false ;
+            var bcause = context.breakingCause;
+            var cause =  bcause ? {"title":bcause.title, "message":bcause.message} : {};
+            var location = {"url" : url, "line": lineno};
+            this._sendEvent("onBreak", {"contextId": contextId, "data": {"location":location, "cause":cause}});
+            this.running = false;
         },
 
         /**
@@ -1376,7 +1373,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * </ul>
          * @function
          * @public
@@ -1389,7 +1386,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
 
             context.Crossfire.currentFrame = null;
             //this._clearRefs();
-            this._sendEvent("onResume", {"context_id": context.Crossfire.crossfire_id});
+            this._sendEvent("onResume", {"contextId": context.Crossfire.crossfire_id});
             this.running = true;
         },
 
@@ -1401,7 +1398,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * <li><code>data</code> - the event payload from Firebug which contains
          * the <code>url</code>, <code>line</code>, <code>set</code> and <code>props</code> entries</li>
          * </ul>
@@ -1417,31 +1414,28 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @see FirebugEventAdapter.onToggleBreakpoint
          */
         onToggleBreakpoint: function(context, url, lineNo, isSet, props) {
-            var bp, data, type,
-                loc = {"url":url,"line":lineNo},
-                cid = context.Crossfire.crossfire_id,
-                enabled = true; //FIXME: MCollins we should be able to get enablement status here, but we don't.
-
             if (FBTrace.DBG_CROSSFIRE_BPS) {
                 FBTrace.sysout("CROSSFIRE: onToggleBreakpoint: url => " + url + " lineNo => " + lineNo + " isSet => " + isSet);
             }
-
-            bp = this._findBreakpoint(loc);
-
+            var loc = {"url":url,"line":lineNo};
+            var bp = this._findBreakpoint(loc);
+            var data = {};
             if(!isSet) {
                 if(bp) {
-                    data = {"location":bp.location,"set":isSet,"props":props,"handle":bp.handle};
+                    data = {"breakpoint":bp,"set":isSet};
                     this.breakpoints.splice(this.breakpoints.indexOf(bp), 1);
+                    this._mergeBreakpointProperties(bp, props); //merge after so the object compare will be ok
                 }
             }
             else {
                 if(!bp) {
-                    type = "line";
+                    var type = "line";
                     if(props && props.bp_type) {
                         type = bp_type;
+                        delete props.bp_type; //we don't want this info apearing in the attributes body when we merge properties
                     }
-                    bp = this._newBreakpoint(type,{"line":lineNo,"url":url},enabled,null);
-
+                    var attributes = {"enabled":isSet, "condition":(props ? props.condition : null)};
+                    bp = this._newBreakpoint(type, loc, attributes);
                 } else { // we already existed but something was toggled, e.g. props changed
                     /* TODO: enabled/disabled
                     if (bp.enabled != enabled) {
@@ -1454,12 +1448,30 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     this.breakpoints[this.breakpoints.indexOf(bp)] = bp;
                     */
                 }
-                data = {"location":bp.location,"set":isSet,"props":props,"handle":bp.handle, "enabled": bp.enabled};
+                this._mergeBreakpointProperties(bp, props);
+                data = {"breakpoint":bp,"set":isSet};
             }
-            if(!data) {
-                data = {"location":loc,"set":isSet,"props":props};
+            this._sendEvent("onToggleBreakpoint", {"contextId":context.Crossfire.crossfire_id,"data": data});
+        },
+
+        /**
+         * @name _mergeBreakpointProperties
+         * @description merges the set of breakpoint properties from <code>props</code> into <code>breakpoint.attributes</code>
+         * @function
+         * @private
+         * @memberOf CrossfireServer
+         * @param breakpoint the breakpoint to have properties merged into
+         * @param props the object to merge properties from
+         * @since 0.3a7
+         */
+        _mergeBreakpointProperties: function(breakpoint, props) {
+            if(breakpoint && props) {
+                for(var prop in props) {
+                    if(props.hasOwnProperty(prop)) {
+                        breakpoint.attributes[prop] = props[prop];
+                    }
+                }
             }
-            this._sendEvent("onToggleBreakpoint", {"context_id":cid, "data": data});
         },
 
         /**
@@ -1470,7 +1482,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * <li><code>data</code> - the event payload from Firebug which contains
          * the <code>url</code>, <code>line</code>, <code>set</code> and <code>props</code> entries</li>
          * </ul>
@@ -1503,7 +1515,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * <li><code>data</code> - the event payload from Firebug which contains
          * the <code>xpath</code> and <code>type</code> entries</li>
          * </ul>
@@ -1523,12 +1535,41 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                  bp = this._findBreakpoint(loc);
 
              if(!bp) {
-                 bp = this._newBreakpoint(type,loc,true,null);
+                 bp = this._newBreakpoint(newtype,loc,{"enabled":true,"condition":null});
              }
 
-             data = {"location":loc, "handle":bp.handle, "type":bp.type};
+             data = {"breakpoint":bp,"set":bp.attributes.enabled};
+             //the breakpoint is considered set if it is enabled
+             this._sendEvent("onToggleBreakpoint", {"contextId": cid, "data": data});
+        },
 
-             this._sendEvent("onToggleDOMBreakpoint", {"context_id": cid, "data": data});
+        /**
+         * @name _getHTMLBreakpointType
+         * @description translates the integer type of an HTML breakpoint to a human readable type
+         * @function
+         * @private
+         * @memberOf CrossfireServer
+         * @param type the integer type of the HTML breakpoint
+         * @since 0.3a7
+         */
+        _getHTMLBreakpointType: function(type) {
+            if(typeof(type) == "number") {
+                switch(type) {
+                    case 1: {
+                        return "html_attribute_change";
+                    }
+                    case 2: {
+                        return "html_child_change";
+                    }
+                    case 3: {
+                        return "html_remove";
+                    }
+                    case 4: {
+                        return "html_text";
+                    }
+                }
+            }
+            return "html_unknown_type";
         },
 
         // ----- Firebug Console listener -----
@@ -1546,7 +1587,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * <br><br>
          * The event body contains the following:
          * <ul>
-         * <li><code>context_id</code> - the id of the current Crossfire context</li>
+         * <li><code>contextId</code> - the id of the current Crossfire context</li>
          * <li><code>data</code> - the event payload from Firebug</li>
          * </ul>
          * @function
@@ -1570,12 +1611,11 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     FBTrace.sysout("CROSSFIRE sending onError ");
                 }
 
-                this._sendEvent("onError", {"context_id": cid, "data": CrossfireModule.serialize(object)});
+                this._sendEvent("onError", {"contextId": cid, "data": CrossfireModule.serialize(object)});
             }
         },
 
         // ----- helpers -----
-
 
         /**
          * @name _copyFrame
@@ -1592,17 +1632,26 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @returns a copy of the given stackframe
          */
         _copyFrame: function(frame, ctx, shouldCopyStack) {
-            var frameCopy = {};
+            var frameScript,
+                sourceFile,
+                analyzer,
+                stack,
+                thisVal,
+                frameCopy = {};
+
+            if (FBTrace.DBG_CROSSFIRE_FRAMES)
+                FBTrace.sysout("_copyFrame frame is: " + frame, frame);
+
             // recursively copy scope chain
             if (frame && frame.isValid) {
                 try {
-                    var sourceFile = Firebug.SourceFile.getSourceFileByScript(ctx, frame.script)
+                    sourceFile = Firebug.SourceFile.getSourceFileByScript(ctx, frame.script)
                     if (sourceFile) {
-                        var analyzer = sourceFile.getScriptAnalyzer(frame.script);
+                        analyzer = sourceFile.getScriptAnalyzer(frame.script);
                         if (analyzer) {
                             lineno = analyzer.getSourceLineFromFrame(ctx, frame);
                             frameCopy["line"] = lineno;
-                            var frameScript = sourceFile.href.toString();
+                            frameScript = sourceFile.href.toString();
                             if (FBTrace.DBG_CROSSFIRE_FRAMES)
                                 FBTrace.sysout("frame.script is " + frameScript);
 
@@ -1610,7 +1659,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                         }
                     }
                 } catch (x) {
-                    if (FBTrace.DBG_CROSSFIRE) FBTrace.sysout("Exception getting script name");
+                    if (FBTrace.DBG_CROSSFIRE_FRAMES) FBTrace.sysout("Exception getting script name");
                     frameCopy["line"] = frame.line;
                 }
                 frameCopy["scope"] = this._copyScope(frame.scope);
@@ -1618,10 +1667,10 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                     if (FBTrace.DBG_CROSSFIRE_FRAMES)
                         FBTrace.sysout("copying thisValue from frame...");
                     try {
-                       var thisVal = frame.thisValue.getWrappedValue();
+                       thisVal = frame.thisValue.getWrappedValue();
                        frameCopy["thisValue"] = CrossfireModule.serialize(thisVal);
                     } catch( e) {
-                        if (FBTrace.DBG_CROSSFIRE) FBTrace.sysout("Exception copying thisValue => " + e);
+                        if (FBTrace.DBG_CROSSFIRE_FRAMES) FBTrace.sysout("Exception copying thisValue => " + e);
                     }
                 } else if (FBTrace.DBG_CROSSFIRE_FRAMES) {
                     FBTrace.sysout("no thisValue in frame");
@@ -1631,7 +1680,8 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 frameCopy["eval"] = function() { return frame.eval.apply(frame, arguments); };
                 if (shouldCopyStack) {
                     if (frame.callingFrame) {
-                        var stack = this._copyStack(frame.callingFrame, ctx);
+                        stack = this._copyStack(frame.callingFrame, ctx);
+                        stack.push(frameCopy);
                         frameCopy["stack"] = stack;
                         frameCopy["frameIndex"] = stack.length -1;
                     } else {
@@ -1654,10 +1704,13 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          * @since 0.3a1
          */
         _copyStack: function(aFrame, aCtx) {
-            if (FBTrace.DBG_CROSSFIRE_FRAMES) {}
-                FBTrace.sysout("CROSSFIRE copyStack: calling frame is => ", aFrame.callingFrame);
-            if (aFrame.callingFrame && aFrame.callingFrame.isValid) {
+            if (FBTrace.DBG_CROSSFIRE_FRAMES) {
+                FBTrace.sysout("CROSSFIRE copyStack: calling frame is => " +  aFrame.callingFrame, aFrame.callingFrame);
+            }
+            if (aFrame.callingFrame && aFrame.callingFrame) {
+                // recursively copy stack
                 var stack = this._copyStack(aFrame.callingFrame);
+                //splice last frame onto stack
                 stack.splice(0,0,this._copyFrame(aFrame, aCtx, false));
                 return stack;
             } else {
@@ -1678,7 +1731,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
          */
         _copyScope: function(aScope) {
             if (FBTrace.DBG_CROSSFIRE_FRAMES) {
-                FBTrace.sysout("Copying scope => ", aScope);
+                FBTrace.sysout("Copying scope => " + aScope, aScope);
             }
             var copiedScope = {};
             try {
@@ -1687,10 +1740,15 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 for (var i = 0; i < lengthValue.value; ++i) {
                     var prop = listValue.value[i];
                     var name = prop.name.getWrappedValue();
-                       copiedScope[name.toString()] = prop.value.getWrappedValue();
+                    if (name) {
+                        copiedScope[name.toString()] = prop.value.getWrappedValue();
+                    } else if (FBTrace.DBG_CROSSFIRE_FRAMES) {
+                        FBTrace.sysout("Failed to get value for property with no name at index " + i + ": " + prop.value, prop);
+                    }
                 }
             } catch (ex) {
-                if (FBTrace.DBG_CROSSFIRE_FRAMES) FBTrace.sysout("Exception copying scope => " + e);
+                if (FBTrace.DBG_CROSSFIRE_FRAMES)
+                    FBTrace.sysout("Exception copying scope => " + ex, ex);
             }
             return CrossfireModule.serialize(copiedScope);
         },

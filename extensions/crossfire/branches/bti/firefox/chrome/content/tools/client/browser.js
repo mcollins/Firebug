@@ -4,14 +4,10 @@
 // Module
 
 define([
-    "firebug/lib/lib",
-    "firebug/lib/events",
-    "firebug/firefox/firefox",
-    "firebug/firefox/window",
     "arch/webApp",
-    "firebug/lib/options",
-],
-function factoryBrowser(FBL, Events, Firefox, Win, WebApp, Options) {
+    "firebug/lib/events",
+    ],
+function factoryBrowser(WebApp, Events) {
 
 // ********************************************************************************************* //
 // Browser
@@ -27,13 +23,15 @@ function factoryBrowser(FBL, Events, Firefox, Win, WebApp, Options) {
  * @return a new Browser
  * @version 1.0
  */
-function Browser()
+function Browser(crossfireClient)
 {
+    this.contextsForWebApps = {}; // WebApp => Context map
     this.contexts = []; // metadata instances
     this.activeContext = null;
     this.listeners = [];  // array of Browser.listener objects
     this.tools = {};  // registry of known tools
     this.connected = false;
+    this.crossfireClient = crossfireClient;
 }
 
 // ********************************************************************************************* //
@@ -126,41 +124,28 @@ Browser.prototype.clearAnnotations = function()
 
 Browser.prototype.getWebAppByWindow = function(win)
 {
-    if (win && win.top)
-        return new WebApp(win.top);
+     throw "I'm a Remote Client! I don't know anything about windows!!!";
 }
 
-Browser.prototype.getContextByWebApp = function(webApp)
+Browser.prototype.getContextByWebApp = function(webApp, callback)
 {
-    var topMost = webApp.getTopMostWindow();
-    var context = TabWatcher.getContextByWindow(topMost);
-    return context;
-
-    for (var i = 0; i < this.contexts.length; i++)
-    {
-        var context = this.contexts[i];
-        if (context.window === topMost)
-            return context
-    }
+    var context = this.contextsForWebApp[webApp];
+    callback.apply(webApp, [context]);
 }
 
 Browser.prototype.getContextByWindow = function(win)
 {
-    var webApp = this.getWebAppByWindow(win);
-    if (webApp)
-        return this.getContextByWebApp(webApp);
+    throw "I'm a Remote Client! I don't know anything about windows!!!";
 }
 /**
  * get local metadata for the remote WebApp if it exists
  * @return ToolInterface.WebAppContext or null if the webApp is not being debugged
  */
-Browser.prototype.setContextByWebApp = function(webApp, context)
+Browser.prototype.setContextByWebApp = function(webApp, context, callback)
 {
-    var topMost = webApp.getTopMostWindow();
-    if (context.window !== topMost)
-        Debug.ERROR("Browser setContextByWebApp mismatched context ", {context: context, win: topMost});
-
+    this.contextsForWebApp[webApp] = context;
     this.contexts.push( context );
+    callback.apply(webApp, [context]);
 }
 
 /**
@@ -168,8 +153,10 @@ Browser.prototype.setContextByWebApp = function(webApp, context)
  * @param webAppContext metadata for the page that we are not going to debug any more
  * @param userCommands true if the user of this UI said to close (vs algorithm)
  */
-Browser.prototype.closeContext = function(context, userCommands)
+Browser.prototype.closeContext = function(context, userCommands, callback)
 {
+    //TODO:
+    /*
     if (context)
     {
         var topWindow = context.window;
@@ -206,6 +193,7 @@ Browser.prototype.closeContext = function(context, userCommands)
         }
         return false;
     }
+    */
 }
 
 /**
@@ -213,41 +201,46 @@ Browser.prototype.closeContext = function(context, userCommands)
  * @param webApp, ToolsInterface.WebApp representing top level window
  * @return ToolInterface.WebAppContext
  */
-Browser.prototype.getOrCreateContextByWebApp = function(webApp)
+Browser.prototype.getOrCreateContextByWebApp = function(webApp, id, callback)
 {
     var context = this.getContextByWebApp(webApp);
     if (!context)
     {
-        var topWindow = webApp.getTopMostWindow();
-        var browser = Win.getBrowserByWindow(topWindow);
-        if (FBTrace.DBG_WINDOWS)
-        {
-            FBTrace.sysout("-> tabWatcher.watchBrowser for: " + (topWindow.location));
-        }
+        //xxxMcollins: create an empty context, maybe we should put more stuff on it?
+        //var context = TabWatcher.watchTopWindow(topWindow, browser.currentURI, true);
+        context = { "contextId": id };
+        this.setContextByWebApp(webApp, context, callback);
 
-        // TEMP
-        var context = TabWatcher.watchTopWindow(topWindow, browser.currentURI, true);
-        this.setContextByWebApp(webApp, context);
-
-        browser.showFirebug = true;
-
-        Events.dispatch(TabWatcher.fbListeners, "watchBrowser", [browser]);  // TODO remove
+        //xxxMcollins: what do I dispatch here, then?
+        //Events.dispatch(TabWatcher.fbListeners, "watchBrowser", [browser]);  // TODO remove
+    } else {
+        callback(context);
     }
-    return context;
 }
 
 /**
  * The WebApp on the selected tab of the selected window of this Browser
  * @return WebApp ( never null )
  */
-Browser.prototype.getCurrentSelectedWebApp = function()
+Browser.prototype.getCurrentSelectedWebApp = function( callback)
 {
-    // Remote version must seek selected XUL window first.
-    var browser = Firefox.getCurrentBrowser();
-    var webApp = new WebApp(browser.contentWindow);
-    if (FBTrace.DBG_ACTIVATION)
-        FBTrace.sysout("WebApp ", {browser: browser, webApp: webApp});
-    return webApp;
+    FBTrace.sysout("Crossfire Browser getCurrentSelectedWebApp");
+    var self = this;
+    this.crossfireClient.sendRequest("listcontexts", null, function( response) {
+        var webApp, context, contexts;
+        if (response.success && response.body) {
+            contexts = response.body.contexts;
+            for (context in contexts) {
+                webApp = new WebApp();
+                self.getOrCreateContextByWebApp(webApp, context.contextId);
+                if (context.current) {
+                    callback.apply({}, [webApp]);
+                    return;
+                }
+            }
+        }
+    });
+    callback();
 }
 
 Browser.Tool = function(name)
@@ -325,7 +318,9 @@ Browser.prototype.eachContext = function(fnOfContext)
 {
     try
     {
-        return Firebug.TabWatcher.iterateContexts(fnOfContext);
+        for (var i = 0; i < this.contexts.length; ++i) {
+            fnOfContext(this.contexts[i]);
+        }
     }
     catch (e)
     {
@@ -434,12 +429,12 @@ Browser.prototype.dispatch = function(eventName, args)
 Browser.prototype.disconnect = function()
 {
     this.removeListener(Firebug);
-    TabWatcher.destroy();
+    //TabWatcher.destroy();
 
     // Remove the listener after the Firebug.TabWatcher.destroy() method is called so,
     // destroyContext event is properly dispatched to the Firebug object and
     // consequently to all registered modules.
-    TabWatcher.removeListener(this);
+    //TabWatcher.removeListener(this);
 }
 
 // ********************************************************************************************* //
@@ -655,109 +650,12 @@ Browser.EventListener = {
 
 // ********************************************************************************************* //
 
-var clearContextTimeout = 0;
-
-var TabWatchListener =
-{
-    initContext: function(context, persistedState)  // called after a context is created.
-    {
-        context.panelName = context.browser.panelName;
-        if (context.browser.sidePanelNames)
-            context.sidePanelNames = context.browser.sidePanelNames;
-
-        if (FBTrace.DBG_ERRORS && !context.sidePanelNames)
-            FBTrace.sysout("firebug.initContext sidePanelNames:",context.sidePanelNames);
-
-        Events.dispatch(Firebug.modules, "initContext", [context, persistedState]);
-
-        Firebug.chrome.setFirebugContext(context); // a newly created context becomes the default for the view
-
-        Firebug.connection.toggleResume(context); // a newly created context is active
-    },
-
-
-
-    /*
-     * To be called from Firebug.TabWatcher only, see selectContext
-     */
-    showContext: function(browser, context)  // Firebug.TabWatcher showContext. null context means we don't debug that browser
-    {
-        Firebug.chrome.setFirebugContext(context); // the context becomes the default for its view
-        Firebug.connection.toggleResume(context);  // resume, after setting Firebug.currentContext
-
-        Events.dispatch(Firebug.modules, "showContext", [browser, context]);  // tell modules we may show UI
-
-        Firebug.showContext(browser, context);
-    },
-
-    unwatchBrowser: function(browser)  // the context for this browser has been destroyed and removed
-    {
-        Firebug.connection.toggleResume(false);
-    },
-
-    // Either a top level or a frame, (interior window) for an exist context is seen by the tabWatcher.
-    watchWindow: function(context, win)
-    {
-        for (var panelName in context.panelMap)
-        {
-            var panel = context.panelMap[panelName];
-            panel.watchWindow(win);
-        }
-
-        Events.dispatch(Firebug.modules, "watchWindow", [context, win]);
-    },
-
-    unwatchWindow: function(context, win)
-    {
-        for (var panelName in context.panelMap)
-        {
-            var panel = context.panelMap[panelName];
-            panel.unwatchWindow(win);
-        }
-        Events.dispatch(Firebug.modules, "unwatchWindow", [context, win]);
-    },
-
-    loadedContext: function(context)
-    {
-        if (!context.browser.currentURI)
-            FBTrace.sysout("firebug.loadedContext problem browser ", context.browser);
-
-        Events.dispatch(Firebug.modules, "loadedContext", [context]);
-    },
-
-    destroyContext: function(context, persistedState, browser)
-    {
-        if (!context)  // then we are called just to clean up
-            return;
-
-        Events.dispatch(Firebug.modules, "destroyContext", [context, persistedState]);
-
-        if (Firebug.currentContext == context)
-        {
-            Firebug.chrome.clearPanels(); // disconnect the to-be-destroyed panels from the panelBar
-            Firebug.chrome.setFirebugContext(null);  // Firebug.currentContext is about to be destroyed
-        }
-
-        var browser = context.browser;
-        // Persist remnants of the context for restoration if the user reloads
-        browser.panelName = context.panelName;
-        browser.sidePanelNames = context.sidePanelNames;
-
-        // next the context is deleted and removed from the Firebug.TabWatcher, we clean up in unWatchBrowser
-    },
-
-    onSourceFileCreated: function(context, sourceFile)
-    {
-        Events.dispatch(Firebug.modules, "onSourceFileCreated", [context, sourceFile]);
-    },
-
-};
-
 Browser.prototype.connect = function ()
 {
     // Events fired on browser are re-broadcast to Firebug.modules
     Firebug.connection.addListener(Firebug);
 
+    /*
     //Listen for preference changes. This way options module is not dependent on tools
     //xxxHonza: can this be in Browser interface?
     Options.addListener(
@@ -767,6 +665,8 @@ Browser.prototype.connect = function ()
             Firebug.connection.dispatch("updateOption", [name, value]);
         }
     });
+    */
+
     //xxxMcollins: do something else here...
     //TabWatcher.initialize();
     //TabWatcher.addListener(TabWatchListener);
@@ -774,7 +674,7 @@ Browser.prototype.connect = function ()
 
 // ********************************************************************************************* //
 
-return exports = Browser;
+return Browser;
 
 // ********************************************************************************************* //
 });

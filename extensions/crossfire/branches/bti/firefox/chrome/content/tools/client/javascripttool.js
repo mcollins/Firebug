@@ -1,157 +1,201 @@
 /* See license.txt for terms of usage */
 
-// ************************************************************************************************
+// ********************************************************************************************* //
 // Module
 
-define(["arch/tools"], function initializeJavaScriptTool(ToolsInterface)
+define([
+    "firebug/lib/object",
+    "firebug/firebug",
+    //"firebug/js/debugger",  // TODO firefox/jsdebugger
+    "arch/compilationunit",
+],
+function initializeJavaScriptTool(Obj, Firebug, CompilationUnit) {
+
+// ********************************************************************************************* //
+// Implement JavaScript tool for Firefox inProcess
+
+var JavaScriptTool = Obj.extend(Firebug.Module,
 {
+    dispatchName: "JavaScriptTool",
+});
 
-// ************************************************************************************************
-// Attach our JavaScript Tool to the BrowserToolsInterface
-
-ToolsInterface.JavaScript = {};
-
-/*
+/**
  * A Turn is an callstack for an active being-handled event, similar to a Thread.
  * Currently it only makes sense when we have stopped the server.
  * Currently only one or zero Turn objects can exist ("single-threaded").
  */
-ToolsInterface.JavaScript.Turn =
+JavaScriptTool.Turn =
 {
 }
 
-ToolsInterface.JavaScript.breakOnNext = function(context, enable)
+JavaScriptTool.breakOnNext = function(context, enable)
 {
     if (enable)
-        Firebug.Debugger.suspend(context);
+        JSDebugger.suspend(context);
     else
-        Firebug.Debugger.unSuspend(context);
+        JSDebugger.unSuspend(context);
 }
 
-ToolsInterface.JavaScript.setBreakpoint = function(context, url, lineNumber)
+JavaScriptTool.setBreakpoint = function(context, url, lineNumber)
 {
     // TODO we should be sending urls over not compilation units
     var compilationUnit = context.getCompilationUnit(url);
-    Firebug.Debugger.setBreakpoint(compilationUnit, lineNumber);
+    JSDebugger.setBreakpoint(compilationUnit, lineNumber);
 };
 
-ToolsInterface.JavaScript.clearBreakpoint = function(context, url, lineNumber)
+JavaScriptTool.clearBreakpoint = function(context, url, lineNumber)
 {
     // This is more correct, but bypasses Debugger
-    Firebug.Debugger.fbs.clearBreakpoint(url, lineNumber);
+    JSDebugger.fbs.clearBreakpoint(url, lineNumber);
 };
 
-ToolsInterface.JavaScript.enableBreakpoint = function(context, url, lineNumber)
+JavaScriptTool.enableBreakpoint = function(context, url, lineNumber)
 {
-    Firebug.Debugger.fbs.enableBreakpoint(url, lineNumber);
+    JSDebugger.fbs.enableBreakpoint(url, lineNumber);
 };
 
-ToolsInterface.JavaScript.disableBreakpoint = function(context, url, lineNumber)
+JavaScriptTool.disableBreakpoint = function(context, url, lineNumber)
 {
-    Firebug.Debugger.fbs.disableBreakpoint(url, lineNumber);
+    JSDebugger.fbs.disableBreakpoint(url, lineNumber);
 };
 
-ToolsInterface.JavaScript.isBreakpointDisabled = function(context, url, lineNumber)
+JavaScriptTool.isBreakpointDisabled = function(context, url, lineNumber)
 {
-    return Firebug.Debugger.fbs.isBreakpointDisabled(url, lineNumber);
+    return JSDebugger.fbs.isBreakpointDisabled(url, lineNumber);
 };
 
-ToolsInterface.JavaScript.getBreakpointCondition = function(context, url, lineNumber)
+JavaScriptTool.getBreakpointCondition = function(context, url, lineNumber)
 {
-    return Firebug.Debugger.fbs.getBreakpointCondition(url, lineNumber);
-};
-
-// These functions should be on stack instead
-
-ToolsInterface.JavaScript.resumeJavaScript = function(context)
-{
-    Firebug.Debugger.resume(context);
-};
-
-ToolsInterface.JavaScript.stepOver = function(context)
-{
-    Firebug.Debugger.stepOver(context);
-};
-
-ToolsInterface.JavaScript.stepInto = function(context)
-{
-    Firebug.Debugger.stepInto(context);
-};
-
-ToolsInterface.JavaScript.stepOut = function(context)
-{
-    Firebug.Debugger.stepOut(context);
-};
-
-ToolsInterface.JavaScript.runUntil = function(compilationUnit, lineNumber)
-{
-    Firebug.Debugger.runUntil(compilationUnit.getBrowserContext(), compilationUnit, lineNumber, Firebug.Debugger);
+    return JSDebugger.fbs.getBreakpointCondition(url, lineNumber);
 };
 
 // ********************************************************************************************* //
-// Events
+// These functions should be on stack instead
 
-ToolsInterface.browser.addListener(ToolsInterface.JavaScript);  // This is how we get events
+JavaScriptTool.resumeJavaScript = function(context)
+{
+    JSDebugger.resume(context);
+};
+
+JavaScriptTool.stepOver = function(context)
+{
+    JSDebugger.stepOver(context);
+};
+
+JavaScriptTool.stepInto = function(context)
+{
+    JSDebugger.stepInto(context);
+};
+
+JavaScriptTool.stepOut = function(context)
+{
+    JSDebugger.stepOut(context);
+};
+
+JavaScriptTool.runUntil = function(compilationUnit, lineNumber)
+{
+    JSDebugger.runUntil(compilationUnit.getBrowserContext(), compilationUnit,
+        lineNumber, JSDebugger);
+};
 
 /*
+ * Command the backend to enable JS
+ */
+JavaScriptTool.setActivation = function(enable)
+{
+
+        //FIXME
+        FBTrace.sysout("CrossfireClient JavaScriptTool .onActivationChanged; " + enable);
+
+}
+
+/**
  * A previously enabled tool becomes active and sends us an event.
  */
-ToolsInterface.JavaScript.onActivateTool = function(toolname, active)
+JavaScriptTool.onActivateTool = function(toolname, active)
 {
     if (FBTrace.DBG_ACTIVATION)
-        FBTrace.sysout(" CROSSFIRE!!! ToolsInterface.JavaScript.onActivateTool "+toolname+" = "+active);
+        FBTrace.sysout("JavaScriptTool.onActivateTool "+toolname+" = "+active);
 
     if (toolname === 'script')
     {
         Firebug.ScriptPanel.prototype.onJavaScriptDebugging(active);
-        ToolsInterface.browser.eachContext(function refresh(context)
+        Firebug.connection.eachContext(function refresh(context)
         {
             context.invalidatePanels('script');
         });
     }
-    // This work should be done somewhere more generic that .JavaScript, maybe ToolManager listening to browser.
-    var tool = ToolsInterface.browser.getTool(toolname);
+
+    // This work should be done somewhere more generic that .JavaScript, maybe ToolManager
+    // listening to browser.
+    var tool = Firebug.connection.getTool(toolname);
     if (tool)
         tool.setActive(active);
 },
-/*
+
+/**
  * @param context context of the newest frame, where the breakpoint hit
  * @param frame newest StackFrame (crossbrowser) eg where the break point hit
  */
-ToolsInterface.JavaScript.onStartDebugging = function(context, frame)
+JavaScriptTool.onStartDebugging = function(context, frame)
 {
     Firebug.selectContext(context);
-    FBTrace.sysout("onStartDebugging DOH!");
     var panel = Firebug.chrome.selectPanel("script");
     if (!panel)
     {
         // Bail out if there is no UI
-        ToolsInterface.JavaScript.resumeJavaScript(context);
+        JavaScriptTool.resumeJavaScript(context);
         return;
     }
 
-    ToolsInterface.JavaScript.Turn.currentFrame = frame;
+    if (FBTrace.DBG_STACK)
+        FBTrace.sysout("javascripttool currentFrame ", frame);
+
+    JavaScriptTool.Turn.currentFrame = frame;
     panel.onStartDebugging(frame);
 }
 
-ToolsInterface.JavaScript.onStopDebugging = function(context)
+JavaScriptTool.onStopDebugging = function(context)
 {
     var panel = context.getPanel("script", true);
     if (panel && panel === Firebug.chrome.getSelectedPanel())  // then we are looking at the script panel
         panel.showNoStackFrame(); // unhighlight and remove toolbar-status line
 
     if (panel)
-    {
         panel.onStopDebugging();
-    }
-    delete ToolsInterface.JavaScript.Turn.currentFrame;
+
+    delete JavaScriptTool.Turn.currentFrame;
 }
 
-ToolsInterface.JavaScript.onCompilationUnit = function(context, url, kind)
+JavaScriptTool.onCompilationUnit = function(context, url, kind)
 {
-    FBTrace.sysout("client got onCompilationUnit");
+     var compilationUnit = new CompilationUnit(url, context);
+
+     compilationUnit.kind = kind;
+
+     context.compilationUnits[url] = compilationUnit;
+
+     if (FBTrace.DBG_COMPILATION_UNITS)
+         FBTrace.sysout("JavaScriptTool.onCompilationUnit "+url+" added to "+context.getName(),
+            compilationUnit);
 }
 
-return exports = {};
+JavaScriptTool.initialize = function()
+{
+    Firebug.connection.addListener(JavaScriptTool);  // This is how we get events
+}
 
+JavaScriptTool.shutdown = function()
+{
+    Firebug.connection.removeListener(JavaScriptTool);  // This is how we get events
+}
+
+// ********************************************************************************************* //
+// Registration
+
+Firebug.registerModule(JavaScriptTool);
+
+return JavaScriptTool;
+
+// ********************************************************************************************* //
 });
