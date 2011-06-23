@@ -93,12 +93,16 @@ ul {
     list-style-image: url(data:image/gif;base64,R0lGODlhBQAIAPcAAGOMnGOMnP///2OMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnGOMnP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////yH5BAEAAAIALAAAAAAFAAgABwgSAAEIHEiwoEGC/xImFMCwocOAADs=);
 }
 
+li.error {
+    color: #DC0000;
+}
+
 code {
     color: #008C00;
 }
 
 code.key {
-    color: #0000FF;
+    color: #0000DC;
 }
 
 input, button {
