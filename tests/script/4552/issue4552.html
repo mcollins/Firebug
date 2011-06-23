@@ -1,38 +1,48 @@
 <!DOCTYPE html>
 <html>
     <head>
-      <title>Issue 4552: Error breakpoints should not hit unless there is an error</title>
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-      <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
+        <title>Issue 4552: Error breakpoints should not hit unless there is an error</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
+        <script type="application/javascript">
+             function executeTest(element)
+             {
+                 element.setAttribute("test", "test");
+             }
+        </script>
     </head>
     <body>
-
-<script type="application/javascript">
-function executeTest(element)
-{
-    element.setAttribute("test", "test");
-}
-</script>
-
         <header>
-            <h1><a href="http://code.google.com/p/fbug/issues/detail?id=4552">Issue 4552</a>: Issue summary</h1>
+            <h1><a href="http://code.google.com/p/fbug/issues/detail?id=4552">Issue 4552</a>: Error breakpoints should not hit unless there is an error</h1>
         </header>
         <div>
+            <section id="content">
+                <button onclick="executeTest(null);">Error</button>
+                <button onclick="executeTest(document.body);">No error</button>
+            </section>
             <section id="description">
                 <h3>Steps to reproduce:</h3>
                 <ol>
-                    <li>Step 1: click this button to rise an error
-                        <button onclick="executeTest(null);">Error</button></li>
-                    <li>Step 2: switch to the Console panel an create a breakpoint for the error.</li>
-                    <li>Step 3: click the button from step #1 again, debugger breaks on the error,
-                        good. Resume debugger.</li>
-                    <li>Step 4: click this button to properly call the same code/function
-                        <button onclick="executeTest(document.body);">No Error</button></li>
-                    <li>Step 5: error doesn't happen, but debugger still breaks -> BUG</li>
+                    <li>Open Firebug</li>
+                    <li>Enable and switch to the Console panel</li>
+                    <li>Click the <em>Error</em> button above to rise an error</li>
+                    <li>Inside the <em>Console</em> panel click on the dot besides the error to create an error breakpoint</li>
+                    <li>Click the <em>Error</em> button again</li>
+                    <li>Click the <em>Continue</em> button inside the <em>Script</em> panel</li>
+                    <li>Click the <em>No error</em> button above to properly call the same code/function</li>
                 </ol>
+                <h3>Observed results</h3>
+                <ul>
+                    <li class="error">Error doesn't happen, but debugger still breaks</li>
+                </ul>
+                <h3>Expected results</h3>
+                <ul>
+                    <li>After step 5: Script execution halts on the error breakpoint and Firebug switches to the <em>Script</em> panel</li>
+                    <li>After step 7: Debugger shouldn't break</li>
+                </ul>
             </section>
             <footer>
-                Jan Odvarko, odvarko@gmail.com;
+                Jan Odvarko, odvarko@gmail.com
             </footer>
         </div>
     </body>
