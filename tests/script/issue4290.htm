@@ -43,6 +43,7 @@
                 <section id="output"></section>
             </section>
             <section id="description">
+                <h2>DOM panel breakpoint</h2>
                 <h3>Steps to reproduce</h3>
                 <ol>
                     <li>Disable the <em>Script</em> panel</li>
@@ -54,11 +55,30 @@
                 <h3>Observed Result</h3>
                 <ul>
                     <li class="error">Script execution is halted</li>
-                    <li class="error">Firebug switches automatically to the deactivated <em>Script</em> panel</li>
+                    <li class="error">Firebug automatically switches to the deactivated <em>Script</em> panel</li>
                 </ul>
                 <h3>Expected Result</h3>
                 <ul>
                     <li>Breakpoints should not trigger as long as the <em>Script</em> panel is deactivated</li>
+                    <li>Firebug should not switch to the <em>Script</em> panel</li>
+                </ul>
+
+                <h2>Break On Mutate</h2>
+                <h3>Steps to reproduce</h3>
+                <ol>
+                    <li>Disable the <em>Script</em> panel</li>
+                    <li>Switch to the <em>HTML</em> panel</li>
+                    <li>Click the <em>Break On Mutate</em> button</li>
+                    <li>Click the <em>Show current time</em> button</li>
+                </ol>
+                <h3>Observed Result</h3>
+                <ul>
+                    <li class="error">Script execution is halted</li>
+                    <li class="error">Firebug automatically switches to the deactivated <em>Script</em> panel</li>
+                </ul>
+                <h3>Expected Result</h3>
+                <ul>
+                    <li>Break On ... should not trigger as long as the <em>Script</em> panel is deactivated</li>
                     <li>Firebug should not switch to the <em>Script</em> panel</li>
                 </ul>
             </section>
