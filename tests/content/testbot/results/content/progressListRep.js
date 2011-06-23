@@ -14,7 +14,7 @@ CDB.Reps.ProgressList = domplate(Reps.Rep,
         DIV({"class": "progressList", onclick: "$onClick",
             $hasProgress: "$object|hasProgress",
             _repObject: "$object"},
-            TAG("$CDB.Reps.Link.tag", {object: "$object.file"})
+            TAG("$CDB.Reps.Link.tag", {object: "$object"})
         ),
 
     bodyTag:

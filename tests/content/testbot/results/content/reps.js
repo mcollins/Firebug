@@ -107,8 +107,15 @@ this.Link = domplate(this.Rep,
 
     getTargetUrl: function(object)
     {
-        //xxxHonza: the test list info should be pulled out from the database.
-        return "https://getfirebug.com/tests/content/branches/1.7/" + this.getTitle(object);
+        //xxxHonza: the test list base path should be pulled out from the database.
+        var version = object.Firebug.substr(0, 3);
+        return "https://getfirebug.com/tests/content/branches/" + version +
+            "/" + this.getTitle(object);
+    },
+
+    getTitle: function(object)
+    {
+        return object.file + "";
     }
 });
 
