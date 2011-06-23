@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>Issue 4552: Error breakpoints should not hit unless there is an error</title>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
+    </head>
+    <body>
+
+<script type="application/javascript">
+function executeTest(element)
+{
+    element.setAttribute("test", "test");
+}
+</script>
+
+        <header>
+            <h1><a href="http://code.google.com/p/fbug/issues/detail?id=4552">Issue 4552</a>: Issue summary</h1>
+        </header>
+        <div>
+            <section id="description">
+                <h3>Steps to reproduce:</h3>
+                <ol>
+                    <li>Step 1: click this button to rise an error
+                        <button onclick="executeTest(null);">Error</button></li>
+                    <li>Step 2: switch to the Console panel an create a breakpoint for the error.</li>
+                    <li>Step 3: click the button from step #1 again, debugger breaks on the error,
+                        good. Resume debugger.</li>
+                    <li>Step 4: click this button to properly call the same code/function
+                        <button onclick="executeTest(document.body);">No Error</button></li>
+                    <li>Step 5: error doesn't happen, but debugger still breaks -> BUG</li>
+                </ol>
+            </section>
+            <footer>
+                Jan Odvarko, odvarko@gmail.com;
+            </footer>
+        </div>
+    </body>
+</html>
