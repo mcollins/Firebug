@@ -1,4 +1,4 @@
-<?php 
-header("Content-Type: text/plain");
-echo "Response for test XXXX";
+<?php
+    header("Content-Type: text/plain");
+    echo "Response for test XXXX";
 ?>
