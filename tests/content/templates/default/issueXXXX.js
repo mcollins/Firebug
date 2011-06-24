@@ -16,7 +16,7 @@ function runTest()
 
         FBTest.doSomething(function(win)
         {
-            // Tests must be placed here
+            // Test functionality must be placed here
 
             FBTest.testDone("issueXXXX.DONE");
         });
