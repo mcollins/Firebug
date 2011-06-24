@@ -56,9 +56,7 @@
     </script>
 
     <script type="application/x-javascript" src="chrome://fb4cb/content/legacy.js"/>
-    <script type="application/x-javascript">
-       window.Firebug = {};
-    </script>
+
     <script type="application/x-javascript" src="chrome://fb4cb/content/firefox/panelBarWaiter.js"/>
 
     <script type="application/x-javascript" src="resource://firebug/require.js"/>

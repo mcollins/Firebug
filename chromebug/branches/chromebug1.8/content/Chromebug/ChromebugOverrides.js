@@ -5,21 +5,22 @@ define([
     "firebug/lib/lib",
     "firebug/firebug",
     "firebug/firefox/firefox",
-    "firebug/firefox/xpcom",
     "chromebug/chromebug",
     "chromebug/domWindowContext",
     "firebug/firefox/xpcom",
     "firebug/firefox/window",
     "firebug/html/htmlLib",
-    "firebug/js/sourceFile",
-    "firebug/js/debugger",
+    "arch/compilationunit",
+    "chromebug/URI",
+    "firebug/lib/url",
+    "firebug/js/debugger"
        ],
-function overrideFactory(FBL, Firebug, Firefox, Chromebug, DomWindowContext, XPCOM, WIN, HTMLLib)
+function overrideFactory(FBL, Firebug, Firefox, Chromebug, DomWindowContext, Xpcom, Win, HTMLLib, CompilationUnit, URI, Url)
 {
 
 const Ci = Components.interfaces;
 const nsIDOMDocumentXBL = Ci.nsIDOMDocumentXBL;
-const inIDOMUtils = XPCOM.CCSV("@mozilla.org/inspector/dom-utils;1", "inIDOMUtils");
+const inIDOMUtils = Xpcom.CCSV("@mozilla.org/inspector/dom-utils;1", "inIDOMUtils");
 
 var ChromebugOverrides = {
 
@@ -46,7 +47,7 @@ var ChromebugOverrides = {
         {
             // Apparently you cannot reset the currentNode on this treeWalker
             //http://mxr.mozilla.org/comm-central/source/mozilla/extensions/inspector/resources/content/viewers/dom/dom.js#819
-            this.treeWalker = CCIN("@mozilla.org/inspector/deep-tree-walker;1", "inIDeepTreeWalker");
+            this.treeWalker = Xpcom.CCIN("@mozilla.org/inspector/deep-tree-walker;1", "inIDeepTreeWalker");
             this.treeWalker.showAnonymousContent = true;
             this.treeWalker.showSubDocuments = true; // does not matter, we don't visit children, only siblings
 
@@ -135,6 +136,7 @@ var ChromebugOverrides = {
     {
         if (FBTrace.DBG_INSPECT)
            FBTrace.sysout("ChromebugOverride: onInspectingMouseOver event", event);
+        FBTrace.sysout("ChromebugOverride: onInspectingMouseOver this", this);
         this.inspectNode(event.originalTarget);
         cancelEvent(event);
     },
@@ -169,7 +171,7 @@ var ChromebugOverrides = {
         try {
             if (frame)
             {
-                var fileName = normalizeURL(frame.script.fileName);
+                var fileName = Url.normalizeURL(frame.script.fileName);
                 if (fileName && Firebug.Chromebug.isChromebugURL(fileName))
                     return false;
 
@@ -184,7 +186,7 @@ var ChromebugOverrides = {
         catch (exc)
         {
             if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("supportsGlobal FAILS for "+safeGetWindowLocation(global)+" because: "+exc, exc);
+                FBTrace.sysout("supportsGlobal FAILS for "+Win.safeGetWindowLocation(global)+" because: "+exc, exc);
         }
     },
 
@@ -210,7 +212,7 @@ var ChromebugOverrides = {
 
             if (global)
             {
-                var name = safeGetWindowLocation(global);
+                var name = Win.safeGetWindowLocation(global);
                 if (Firebug.Chromebug.isChromebugURL(name)) // if the frame was compiled in chromebug, ignore it
                     return null;
 
@@ -224,24 +226,24 @@ var ChromebugOverrides = {
         if (context)
         {
             if (FBTrace.DBG_TOPLEVEL)
-                FBTrace.sysout("getContextByFrame "+normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
+                FBTrace.sysout("getContextByFrame "+Url.normalizeURL(frame.script.fileName)+": frame.scope gave existing context "+context.getName());
         }
         else
         {
-             FBTrace.sysout("getContextByFrame "+normalizeURL(frame.script.fileName)+": no context!");
+             FBTrace.sysout("getContextByFrame "+Url.normalizeURL(frame.script.fileName)+": no context!");
         }
         return context;
     },
 
     showThisCompilationUnit: function(compilationUnit)
     {
-        if (compilationUnit.getKind() === Firebug.ToolsInterface.CompilationUnit.EVAL && !this.showEvals)
+        if (compilationUnit.getKind() === CompilationUnit.EVAL && !this.showEvals)
             return false;
 
-        if (compilationUnit.getKind() === Firebug.ToolsInterface.CompilationUnit.BROWSER_GENERATED && !this.showEvents)
+        if (compilationUnit.getKind() === CompilationUnit.BROWSER_GENERATED && !this.showEvents)
             return false;
 
-        var description = Chromebug.parseURI(compilationUnit.getURL());
+        var description = URI.parseURI(compilationUnit.getURL());
 
         if (Firebug.Chromebug.allFilesList.isWantedDescription(description))
             return true;

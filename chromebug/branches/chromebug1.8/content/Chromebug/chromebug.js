@@ -23,8 +23,11 @@ define([
         "firebug/firebug",
         "firebug/lib/string",
         "chromebug/domWindowContext",
-        "chromebug/parseURI",
-       ], function chromebugPanelFactory(FBL, Firebug, STR, DomWindowContext)
+        "chromebug/URI",
+        "firebug/lib/url",
+        "firebug/firefox/xpcom",
+        "firebug/firefox/window"
+       ], function chromebugPanelFactory(FBL, Firebug, STR, DomWindowContext, URI, Url, Xpcom, Win)
 {
 
 
@@ -36,8 +39,8 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-const windowWatcher = CCSV("@mozilla.org/embedcomp/window-watcher;1", "nsIWindowWatcher");
-const windowMediator = CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
+const windowWatcher = Xpcom.CCSV("@mozilla.org/embedcomp/window-watcher;1", "nsIWindowWatcher");
+const windowMediator = Xpcom.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 const nsIDOMWindow = Ci.nsIDOMWindow;
 const nsIDOMDocument = Ci.nsIDOMDocument;
 const nsIXULWindow = Ci.nsIXULWindow;
@@ -52,11 +55,11 @@ const jsdIExecutionHook = Components.interfaces.jsdIExecutionHook;
 
 const NOTIFY_ALL = nsIWebProgress.NOTIFY_ALL;
 const nsIObserverService = Ci.nsIObserverService
-const observerService = CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
+const observerService = Xpcom.CCSV("@mozilla.org/observer-service;1", "nsIObserverService");
 
-const iosvc = CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
-const chromeReg = CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
-const directoryService = CCSV("@mozilla.org/file/directory_service;1", "nsIProperties");
+const iosvc = Xpcom.CCSV("@mozilla.org/network/io-service;1", "nsIIOService");
+const chromeReg = Xpcom.CCSV("@mozilla.org/chrome/chrome-registry;1", "nsIToolkitChromeRegistry");
+const directoryService = Xpcom.CCSV("@mozilla.org/file/directory_service;1", "nsIProperties");
 
 const PrefService = Cc["@mozilla.org/preferences-service;1"];
 const nsIPrefBranch2 = Components.interfaces.nsIPrefBranch2;
@@ -120,7 +123,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         }
         catch(exc)
         {
-            FBTrace.sysout("onXULWindowAdded FAILS "+safeGetWindowLocation(outerDOMWindow)+' because '+exc, exc);
+            FBTrace.sysout("onXULWindowAdded FAILS "+Win.safeGetWindowLocation(outerDOMWindow)+' because '+exc, exc);
         }
     },
 
@@ -197,7 +200,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         Firebug.Chromebug.selectBrowser(context.browser);
         if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+safeGetWindowLocation(context.window) );
+            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+Win.safeGetWindowLocation(context.window) );
 
         if (Firebug.currentContext)
             context.panelName = Firebug.currentContext.panelName; // don't change the panel with the context in Chromebug
@@ -568,7 +571,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
         window.dump(window.location+ " shutdown:\n "+getStackDump());
 
-        Firebug.shutdown();
+
         if(FBTrace.DBG_INITIALIZE)
             FBTrace.sysout("ChromebugPanel.shutdown EXIT\n");
     },
@@ -603,18 +606,18 @@ Firebug.Chromebug = extend(Firebug.Module,
             {
                 if (Chromebug.XULAppModule.isChromebugDOMWindow(global))
                 {
-                    FBTrace.sysout("createContext dropping chromebug DOM window "+safeGetWindowLocation(global));
+                    FBTrace.sysout("createContext dropping chromebug DOM window "+Win.safeGetWindowLocation(global));
                     return null;
                 }
             }
             // When a XUL window is destroyed the destructor functions from XBL run after the unload event.
             // We delete the context in the unload event, then the destructor can then trigger an new context creation.
             // To avoid this we maintain a list of the windows we just destroyed then clean them up on a setTimeout
-            if (safeGetWindowLocation(global) in this.blockedWindowLocations)
+            if (Win.safeGetWindowLocation(global) in this.blockedWindowLocations)
                 return null;
 
             var browser = Firebug.Chromebug.createBrowser(global, name);  // I guess this has side effects we need
-            var context = Firebug.TabWatcher.watchTopWindow(global, safeGetWindowLocation(global), true);
+            var context = Firebug.TabWatcher.watchTopWindow(global, Win.safeGetWindowLocation(global), true);
 
             // we want to write window.console onto the actual window, not the wrapper
             if (global.wrappedJSObject && !global.wrappedJSObject.console)
@@ -780,7 +783,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     destroyContext: function(context)
     {
-        var context_window_location = safeGetWindowLocation(context.window);
+        var context_window_location = Win.safeGetWindowLocation(context.window);
         this.blockedWindowLocations[context_window_location] = 1;
         setTimeout(function cleanUpNoCreateList()
         {
@@ -893,7 +896,7 @@ Firebug.Chromebug = extend(Firebug.Module,
         var sourceFilesNeedingResets = [];
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
             {
-                var url = normalizeURL(script.fileName);
+                var url = Url.normalizeURL(script.fileName);
                 if (!url)
                 {
                     if (FBTrace.DBG_SOURCEFILES)
@@ -1124,7 +1127,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     onSourceFileCreated: function(context, sourceFile)
     {
-        var description = Chromebug.parseURI(sourceFile.href);
+        var description = URI.parseURI(sourceFile.href);
         var pkg = Firebug.Chromebug.PackageList.getOrCreatePackage(description);
         pkg.appendContext(context);
         if (FBTrace.DBG_SOURCEFILES)
@@ -1216,7 +1219,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     createSourceFile: function(sourceFileMap, script)
     {
-            var url = normalizeURL(script.fileName);
+            var url = Url.normalizeURL(script.fileName);
             if (!url)
             {
                 FBTrace.sysout("createSourceFile got bad URL from script.fileName:"+script.fileName, script);
@@ -1237,8 +1240,8 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         FBL.jsd.enumerateScripts({enumerateScript: function(script)
         {
-            var url = normalizeURL(script.fileName);
-            var c = Chromebug.parseComponentURI(url);
+            var url = Url.normalizeURL(script.fileName);
+            var c = URI.parseComponentURI(url);
             if (c)
             {
                 var sourceFile = sourceFileMap[url];
@@ -1300,7 +1303,7 @@ Firebug.Chromebug = extend(Firebug.Module,
     {
         try
         {
-            var tracing = CCSV("@mozilla.org/commandlinehandler/general-startup;1?type=FBTrace",
+            var tracing = Xpcom.CCSV("@mozilla.org/commandlinehandler/general-startup;1?type=FBTrace",
                 "nsICommandLineHandler");
 
             tracing.wrappedJSObject.openConsole(window, prefDomain);
@@ -1454,7 +1457,7 @@ Firebug.Chromebug = extend(Firebug.Module,
 
     openAboutDialog: function()
     {
-        var extensionManager = CCSV("@mozilla.org/extensions/manager;1", "nsIExtensionManager");
+        var extensionManager = Xpcom.CCSV("@mozilla.org/extensions/manager;1", "nsIExtensionManager");
         openDialog("chrome://mozapps/content/extensions/about.xul", "",
             "chrome,centerscreen,modal", "urn:mozilla:item:chromebug@johnjbarton.com", extensionManager.datasource);
     },
@@ -1658,7 +1661,7 @@ Firebug.Chromebug.PackageList = extend(new Firebug.Listener(),
     assignContextToPackage: function(context)  // a window context owned by a package
     {
         var url = context.getName();
-        var description = Chromebug.parseURI(url);
+        var description = URI.parseURI(url);
         if (description && description.path)
         {
             var pkg = this.getOrCreatePackage(description);
@@ -1807,7 +1810,7 @@ Firebug.Chromebug.contextList =
     getObjectDescription: function(context)
     {
         var title = (context.window ? context.getTitle() : null);
-        var d = Chromebug.parseURI(context.getName());
+        var d = URI.parseURI(context.getName());
 
         d = {
            path: d ? d.path : "parseURI fails",
@@ -1890,7 +1893,7 @@ Firebug.Chromebug.allFilesList = extend(new Chromebug.SourceFileListBase(), {
 
     kind: "all",
 
-    parseURI: top.Chromebug.parseURI,
+    parseURI: URI.parseURI,
 
     // **************************************************************************
     // PackageList listener

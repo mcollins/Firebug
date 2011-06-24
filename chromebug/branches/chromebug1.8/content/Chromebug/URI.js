@@ -27,7 +27,9 @@ this.namespaceName = "Chromebug";
 
 //*******************************************************************************
 
-Chromebug.parseWebURI = function(uri)
+var URI = {};
+
+URI.parseWebURI = function(uri)
 {
     var m = reWeb.exec(uri);
     if(m)
@@ -37,7 +39,7 @@ Chromebug.parseWebURI = function(uri)
     }
 }
 
-Chromebug.parseSystemURI = function(uri)
+URI.parseSystemURI = function(uri)
 {
     if (isSystemURL(uri))
     {
@@ -46,7 +48,7 @@ Chromebug.parseSystemURI = function(uri)
     }
 }
 
-Chromebug.parseNoWindowURI = function(uri)
+URI.parseNoWindowURI = function(uri)
 {
     if (uri.indexOf('noWindow')==0)
     {
@@ -58,7 +60,7 @@ Chromebug.parseNoWindowURI = function(uri)
     }
 }
 
-Chromebug.parseDataURI = function(URI)
+URI.parseDataURI = function(URI)
 {
     if (isDataURL(URI))
     {
@@ -70,7 +72,7 @@ Chromebug.parseDataURI = function(URI)
     }
 }
 
-Chromebug.parseComponentURI = function(URIString)
+URI.parseComponentURI = function(URIString)
 {
     var m = reComponents.exec(URIString);
     if (m)
@@ -81,7 +83,7 @@ Chromebug.parseComponentURI = function(URIString)
           return null;
 };
 
-Chromebug.parseModuleURI = function(URIString)
+URI.parseModuleURI = function(URIString)
 {
     if (Firebug.Chromebug.isChromebugURL(URIString))
         return null;
@@ -98,7 +100,7 @@ Chromebug.parseModuleURI = function(URIString)
 };
 
 
-Chromebug.parseExtensionURI = function(URIString)
+URI.parseExtensionURI = function(URIString)
 {
     const appURLStem = Firebug.Chromebug.getPlatformStringURL("resource:app");
 
@@ -123,31 +125,31 @@ Chromebug.parseExtensionURI = function(URIString)
 };
 
 
-Chromebug.parseURI = function(URI)
+URI.parseURI = function(aURI)
 {
-    if (!URI || Firebug.Chromebug.isChromebugURL(URI))
+    if (!aURI || Firebug.Chromebug.isChromebugURL(aURI))
         return null;
 
     var description = null;
     if (!description)
-        description = Chromebug.parseNoWindowURI(URI);
+        description = URI.parseNoWindowURI(aURI);
     if (!description)
-        description = Chromebug.parseComponentURI(URI);
+        description = URI.parseComponentURI(aURI);
     if (!description)
-        description = Chromebug.parseExtensionURI(URI);
+        description = URI.parseExtensionURI(aURI);
     if (!description)
-        description = Chromebug.parseModuleURI(URI);
+        description = URI.parseModuleURI(aURI);
     if (!description)
-        description = Chromebug.parseSystemURI(URI);
+        description = URI.parseSystemURI(aURI);
     if (!description)
-        description = Chromebug.parseWebURI(URI);
+        description = URI.parseWebURI(aURI);
     if (!description)
-        description = Chromebug.parseDataURI(URI);
+        description = URI.parseDataURI(aURI);
 
     if (!description)
     {
         if (FBTrace.SOURCEFILES)
-            FBTrace.sysout("Chromebug.parseURI: no match for "+URI);
+            FBTrace.sysout("URI.parseURI: no match for "+URI);
         description = {path:"mystery", name:URI, kind: "mystery", pkgName: "unparsable"};
     }
 
@@ -161,7 +163,7 @@ Chromebug.SourceFileListBase = function()
 
 Chromebug.SourceFileListBase.prototype = extend(new Firebug.Listener(),
 {
-    parseURI: Chromebug.parseURI,
+    parseURI: URI.parseURI,
 
     getDescription: function(sourceFile)
     {
@@ -342,5 +344,5 @@ Chromebug.connectedList = function(xul_element, list)
 
 } // with FBL
 
-return Chromebug.parseWebURI;
+return URI;
 });

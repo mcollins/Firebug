@@ -1,14 +1,15 @@
 /* See license.txt for terms of usage */
 
 define([
-        "chromebug/chromebug",
         "firebug/firebug",
         "firebug/firefox/window",
         "firebug/chrome/tabContext",
         ],
-function domWindowContextFactory(Chromebug, Firebug, WIN)
+function domWindowContextFactory(Firebug, WIN, TabContext)
 {
 
+    FBTrace.sysout("domWindowContext Firebug ", Firebug);
+    FBTrace.sysout("domWindowContext WIN ", WIN);
 
 // ************************************************************************************************
 // Constants
@@ -20,7 +21,7 @@ const Ci = Components.interfaces;
 
 var DomWindowContext = function(global, browser, chrome, persistedState)
 {
-    var tabContext = new Firebug.TabContext(global, browser, Firebug.chrome, persistedState);
+    var tabContext = new TabContext(global, browser, Firebug.chrome, persistedState);
     for (var n in tabContext)
     {
          if (typeof(this[n]) != 'function')
@@ -76,7 +77,7 @@ var DomWindowContext = function(global, browser, chrome, persistedState)
         FBTrace.sysout("DomWindowContext "+(this.window?"has window ":" no window ")+(this.global?" ":"NULL global ")+" and name "+this.getName(), {global: this.global, window: this.window});
 }
 
-DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
+DomWindowContext.prototype = FBL.extend(TabContext.prototype,
 {
     setName: function(name)
     {
@@ -109,9 +110,6 @@ DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
                 FBTrace.sysout("context.domWindowWatcher found outerDOMWindow "+outerDOMWindow.location+" tried context rename: "+oldName+" -> "+this.getName());
             return;
         }
-
-        if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("context.domWindowWatcher, new "+Chromebug.XULAppModule.getDocumentTypeByDOMWindow(domWindow)+" window "+WIN.safeGetWindowLocation(domWindow)+" in outerDOMWindow "+ outerDOMWindow.location+" event.orginalTarget: "+event.originalTarget.documentURI);
 
         var context = Firebug.Chromebug.getContextByGlobal(domWindow);
         if (context)
@@ -164,20 +162,13 @@ DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
                 if (domWindow == outerDOMWindow)
                 {
                     FBTrace.sysout("Firebug.Chromebug.unloadHandler found outerDOMWindow with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
-                    /*var xul_win = Chromebug.XULAppModule.getXULWindowByRootDOMWindow(outerDOMWindow);
 
-                    Chromebug.XULAppModule.addCloser(xul_win, function delayUntilOnCloseWindow()
-                    {
-                        Firebug.TabWatcher.unwatchTopWindow(domWindow);
-                    });
-                    */
                 }
                 else
                 {
                     FBTrace.sysout("Firebug.Chromebug.unloadHandler found context with id="+context.uid+" name " +context.getName()+" and domWindow.location.href="+domWindow.location.href+"\n");
                     Firebug.TabWatcher.unwatchTopWindow(domWindow);
                 }
-
             }
             else
             {
@@ -193,6 +184,6 @@ DomWindowContext.prototype = FBL.extend(Firebug.TabContext.prototype,
     },
 
 });
-FBTrace.sysout("domWindowContext.js DomWindowContext", DomWindowContext);
+
 return DomWindowContext;
 });

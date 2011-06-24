@@ -19,11 +19,12 @@ config.modules =[
                  "firebug/firefox/firefox",
                  "chromebug/ChromebugOverrides",
                  "chromebug/domWindowContext",
+                 "arch/browser",
                  "chromebug/platform",
                  "chromebug/xulapp",
                  ].concat(config.modules);
 
-require( config, config.modules, function(ChromeFactory, Firefox, ChromebugOverrides, DomWindowContext)
+require( config, config.modules, function(ChromeFactory, Firefox, ChromebugOverrides, DomWindowContext, Browser)
 {
     if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
     {
@@ -32,16 +33,21 @@ require( config, config.modules, function(ChromeFactory, Firefox, ChromebugOverr
     }
 
     Components.utils.reportError("Chromebug main.js callback running");
-
+    Firebug.connection = new Browser();  // prepare for addListener calls
     Firebug.Options.initialize("extensions.chromebug");
 
-    FBTrace.sysout("chromebug main calling waitForPanelBar()");
-
-    window.panelBarWaiter.waitForPanelBar(ChromeFactory, function completeInitialization(chrome)
+    function prepareForInitialization(chrome)
     {
         FBTrace.sysout("chromebug main applying overrides");
         ChromebugOverrides.override(Firefox, chrome);
-        FBTrace.sysout("main.js DomWindowContext", DomWindowContext);
-    });
+    }
+
+    function completeInitialization(chrome)
+    {
+        Firebug.connection.connect();  // start firing events
+        Components.utils.reportError("Chromebug main.js connected");
+    }
+    FBTrace.sysout("chromebug main calling waitForPanelBar()");
+    window.panelBarWaiter.waitForPanelBar(ChromeFactory, prepareForInitialization, completeInitialization);
 
 });

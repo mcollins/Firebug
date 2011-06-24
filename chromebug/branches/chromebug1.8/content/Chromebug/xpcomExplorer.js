@@ -136,7 +136,7 @@ XPCOMExplorer.overlayListLocator = function(xul_element)
 
             getObjectDescription: function(overlay)
             {
-                return Chromebug.parseURI(overlay.href);
+                return URI.parseURI(overlay.href);
             },
 
             getBrowserForOverlay: function(url)
@@ -166,7 +166,7 @@ XPCOMExplorer.overlayListLocator = function(xul_element)
 
                 if (!object.context)
                 {
-                    var description = Chromebug.parseURI(object.href);
+                    var description = URI.parseURI(object.href);
                     if (description)
                     {
                         var pkg = Firebug.Chromebug.contextList.getPackageByName(description.path);
@@ -263,7 +263,7 @@ XPCOMExplorer.jsContextList = {
         if (Firebug.Chromebug.isChromebugURL(URI))
             var d = {path:"avoided chromebug", name: URI};
         if (!d)
-            var d = Chromebug.parseURI( URI );
+            var d = URI.parseURI( URI );
         if (!d)
             d = {path:"unparsable", name: this.getObjectLocation(jscontext)};
         d.name = d.name +" ("+jscontext.tag+")";
@@ -555,7 +555,7 @@ XPCOMExplorer.OverlayPanel.prototype = extend(Firebug.HTMLPanel.prototype,
 
     getObjectDescription: function(overlay)
     {
-        return Chromebug.parseURI(overlay.href);
+        return URI.parseURI(overlay.href);
     },
 
     updateLocation: function(overlay)
@@ -580,9 +580,9 @@ XPCOMExplorer.OverlayPanel.prototype = extend(Firebug.HTMLPanel.prototype,
 
     getOverlays: function()
     {
-        var url = safeGetWindowLocation(this.context.window);
+        var url = Win.safeGetWindowLocation(this.context.window);
         if (url)
-            var uri = makeURI(normalizeURL(url));
+            var uri = makeURI(Url.normalizeURL(url));
         FBTrace.sysout("overlay.getOverlays for "+url, uri);
         return this.overlays.getList(uri);
     },
