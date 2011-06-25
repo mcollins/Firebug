@@ -20,6 +20,7 @@ config.modules =[
                  "chromebug/ChromebugOverrides",
                  "chromebug/domWindowContext",
                  "arch/browser",
+                 "chromebug/scandocuments",
                  "chromebug/platform",
                  "chromebug/xulapp",
                  ].concat(config.modules);

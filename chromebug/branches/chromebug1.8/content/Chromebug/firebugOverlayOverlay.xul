@@ -8,8 +8,6 @@
 <!-- overlays firebugOverlay.xul to change some items -->
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-    <script type="application/x-javascript" src="chrome://chromebug/content/scandocuments.js"/>
-
     <commandset id="mainCommandSet">
         <command id="cmd_toggleInspecting" oncommand="Chromebug.DocumentScanner.toggleScanningDocuments(Firebug.currentContext)" />
         <command id="cmd_refreshFirebugCache" oncommand="Firebug.Chromebug.FBCacheModule.refresh(Firebug.currentContext)"/>

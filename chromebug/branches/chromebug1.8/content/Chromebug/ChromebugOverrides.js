@@ -13,9 +13,10 @@ define([
     "arch/compilationunit",
     "chromebug/URI",
     "firebug/lib/url",
+    "firebug/lib/events",
     "firebug/js/debugger"
        ],
-function overrideFactory(FBL, Firebug, Firefox, Chromebug, DomWindowContext, Xpcom, Win, HTMLLib, CompilationUnit, URI, Url)
+function overrideFactory(FBL, Firebug, Firefox, Chromebug, DomWindowContext, Xpcom, Win, HTMLLib, CompilationUnit, URI, Url, Events)
 {
 
 const Ci = Components.interfaces;
@@ -138,7 +139,7 @@ var ChromebugOverrides = {
            FBTrace.sysout("ChromebugOverride: onInspectingMouseOver event", event);
         FBTrace.sysout("ChromebugOverride: onInspectingMouseOver this", this);
         this.inspectNode(event.originalTarget);
-        cancelEvent(event);
+        Events.cancelEvent(event);
     },
 
     // Override debugger

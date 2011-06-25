@@ -1,17 +1,25 @@
 /* See license.txt for terms of usage */
 
-FBL.ns(function() { with (FBL) {
+define([
+        "chromebug/chromebug",
+        "firebug/lib/object",
+        "firebug/lib/css",
+        "firebug/lib/events"
+        ],
 
-Chromebug.DocumentScanner = extend(Firebug.Module,
+function factoryScanDocuments(Chromebug, Obj, Css, Events)
+{
+
+Chromebug.DocumentScanner = Obj.extend(Firebug.Module,
 {
     dispatchName: "documentScanner",
     scanningDocuments: false,
 
     initialize: function()
     {
-        this.onScanningDocumentsMouseOver = bind(this.onScanningDocumentsMouseOver, this);
-        this.onScanningDocumentsMouseDown = bind(this.onScanningDocumentsMouseDown, this);
-        this.onScanningDocumentsClick = bind(this.onScanningDocumentsClick, this);
+        this.onScanningDocumentsMouseOver = this.onScanningDocumentsMouseOver.bind(this);
+        this.onScanningDocumentsMouseDown = this.onScanningDocumentsMouseDown.bind(this);
+        this.onScanningDocumentsClick = this.onScanningDocumentsClick.bind(this);
     },
 
    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -19,7 +27,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     onScanningDocumentsMouseOver: function(event)
     {
         if (FBTrace.DBG_INSPECT)
-           FBTrace.sysout("onScanningDocuments mouse over "+FBL.getElementCSSSelector(event.target)+ " original: "+FBL.getElementCSSSelector(event.originalTarget), event);
+           FBTrace.sysout("onScanningDocuments mouse over "+Css.getElementCSSSelector(event.target)+ " original: "+Css.getElementCSSSelector(event.originalTarget), event);
         if (!this.scanDocuments(event.originalTarget))
         {
             cancelEvent(event);
@@ -209,10 +217,10 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
     {
         this.keyListeners =
         [
-            Firebug.chrome.keyCodeListen("RETURN", null, bindFixed(this.stopScanningDocuments, this)),
-            Firebug.chrome.keyCodeListen("ESCAPE", null, bindFixed(this.stopScanningDocuments, this, true)),
-            Firebug.chrome.keyCodeListen("UP", isControl, bindFixed(this.inspectNodeBy, this, "up"), true),
-            Firebug.chrome.keyCodeListen("DOWN", isControl, bindFixed(this.inspectNodeBy, this, "down"), true),
+            Firebug.chrome.keyCodeListen("RETURN", null, this.stopScanningDocuments.bind(this)),
+            Firebug.chrome.keyCodeListen("ESCAPE", null, this.stopScanningDocuments.bind(this, true)),
+            Firebug.chrome.keyCodeListen("UP", isControl, this.inspectNodeBy.bind(this, "up"), true),
+            Firebug.chrome.keyCodeListen("DOWN", isControl, this.inspectNodeBy.bind(this, "down"), true),
         ];
 
         Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
@@ -238,7 +246,7 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
             delete this.keyListeners;
         }
 
-        Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
+        Chromebug.XULAppModule.iterateOuterDOMWindows( function(subWin)
         {
             try
             {
@@ -250,17 +258,17 @@ Chromebug.DocumentScanner = extend(Firebug.Module,
                 if (FBTrace.DBG_ERRORS)
                     FBTrace.sysout("scandocuments detachInspectListeners fails for subWin.document "+subWin.document.location+" because: "+exc, exc);
             }
-        }, this));
+        }.bind(this));
     },
 
     detachClickInspectListeners: function()
     {
         // We have to remove the click listener in a second phase because if we remove it
         // after the mousedown, we won't be able to cancel clicked links
-        Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
+        Chromebug.XULAppModule.iterateOuterDOMWindows( function(subWin)
         {
             subWin.document.removeEventListener("click", this.onScanningDocumentsClick, true);
-        }, this));
+        }.bind(this));
     },
 });
 
@@ -268,4 +276,6 @@ Firebug.registerModule(Chromebug.DocumentScanner);
 
 // ************************************************************************************************
 
-}});
+return Chromebug.DocumentScanner;
+
+});
