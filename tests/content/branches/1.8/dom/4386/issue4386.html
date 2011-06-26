@@ -5,7 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
         <script type="text/javascript">
-            var test = "a variable";
+            var test = {a: "Variable 1", b: "Variable 2", c: "Variable 3", d: "Variable 4"};
         </script>
     </head>
     <body>
@@ -20,26 +20,19 @@
                     <li>Enable the <em>Script</em> panel</li>
                     <li>Reload the page</li>
                     <li>Switch to the <em>DOM</em> panel</li>
-                    <li>Search for the object <code>screen</code> and expand it</li>
-                    <li>Set breakpoints at <code>availHeight</code>, <code>availWidth</code> and <code>pixelDepth</code></li>
+                    <li>Search for the object <code>test</code> and expand it</li>
+                    <li>Set breakpoints at <code>a</code>, <code>b</code>, <code>c</code> and <code>d</code></li>
                     <li>Switch to the <em>Script</em> panel and there to the <em>Breakpoints</em> side panel</li>
-                    <li>Disable the <code>availHeight</code> and <code>availWidth</code> breakpoint and remove the <code>pixelDepth</code> breakpoint</li>
+                    <li>Click the Remove button of the <code>a</code> and <code>b</code> breakpoint to remove these breakpoints</li>
+                    <li>Click the checkbox besides the <code>c</code> breakpoint to disable the breakpoint</li>
                     <li>Switch back to the <em>DOM</em> panel</li>
-                    <li>Scroll down to <code>screen</code></li>
+                    <li>Have a look at the properties of <code>test</code></li>
                 </ol>
-                <h3>Observed result</h3>
-                <ul>
-                    <li>The display of the breakpoint for <code>availHeight</code> is updated</li>
-                    <li class="error">
-                        The display of the breakpoints for <code>availWidth</code> and 
-                        <code>pixelDepth</code> is not updated
-                    </li>
-                </ul>
                 <h3>Expected result</h3>
                 <ul>
                     <li>
-                        The display of all DOM breakpoints needs to be updated when they are changed
-                        inside the <em>Script</em> panel
+                      The display of all DOM breakpoints is updated when they are changed inside the <em>Script</em> panel<br/>
+                      (breakpoint for <code>a</code> and <code>b</code> removed, breakpoint for <code>c</code> disabled, breakpoint for <code>d</code> enabled)
                     </li>
                 </ul>
             </section>
