@@ -15,17 +15,17 @@
 
 #cbContextList {
     /* This triggers initialize() calls , see bindings.xml */
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
 }
 
 #cbPackageList {
     /* This triggers initialize() calls , see bindings.xml */
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
 }
 
 #cbAllFilesList {
     /* This triggers initialize() calls , see bindings.xml */
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
 }
 
 #cbContextList > .toolbarbutton-text.label,
@@ -36,43 +36,43 @@
 
 #cbGlobalScopeList {
     /* This triggers initialize() calls , see bindings.xml */
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 #cbWindowList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 #cbInterfaceList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 #cbExtensionList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 #cbOverlayList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 #cbComponentList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 #cbJSContextList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }
 
 #cbPathList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
      font-weight: bold;
      color: blue;
 }

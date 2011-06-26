@@ -223,7 +223,7 @@ Chromebug.DocumentScanner = Obj.extend(Firebug.Module,
             Firebug.chrome.keyCodeListen("DOWN", isControl, this.inspectNodeBy.bind(this, "down"), true),
         ];
 
-        Chromebug.XULAppModule.iterateOuterDOMWindows( bind(function(subWin)
+        Chromebug.XULAppModule.iterateOuterDOMWindows( function(subWin)
         {
             var context = Firebug.Chromebug.getContextByGlobal(subWin);
             if (!context)  // don't attach to windows we are not watching
@@ -234,7 +234,7 @@ Chromebug.DocumentScanner = Obj.extend(Firebug.Module,
             subWin.document.addEventListener("click", this.onScanningDocumentsClick, true);
             if (FBTrace.DBG_INSPECT)
                 FBTrace.sysout("scanDocuments attachListeners to "+subWin.location+"\n");
-        }, this));
+        }.bind(this));
     },
 
     detachInspectListeners: function()

@@ -8,18 +8,18 @@ window[chromehidden~="toolbar"] #fbToolbar {
 }
 
 #fbContentBox {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#initializer");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#initializer");
     height: 270px;
 }
 
 
 
 #fbLargeCommandLine {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#largeCommandLine");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#largeCommandLine");
 }
 
 textbox[type="fbSearchBox"] {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#searchBox");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#searchBox");
 }
 textbox[type="fbSearchBox"] .panelFocusBound {
     -moz-user-focus: normal;
@@ -30,7 +30,7 @@ textbox[type="fbSearchBox"] .panelFocusBound {
 }
 
 panelBar {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelBar");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelBar");
     -moz-box-orient: vertical;
 }
 
@@ -38,15 +38,15 @@ panelBar {
 /* Scrollable TabBar + TabList */
 
 panelBarArrowscrollbox {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelBarArrowscrollbox");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelBarArrowscrollbox");
 }
 
 panelBarTabList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelBarTabList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelBarTabList");
 }
 
 .panelBarTabListMenuItem {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelBarTabListMenuItem");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelBarTabListMenuItem");
 }
 
 panelBarArrowscrollbox > .scrollbutton-up,
@@ -90,15 +90,15 @@ panelBarTabList > .tabs-alltabs-button {
 /************************************************************************************************/
 
 panelStatus {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelStatus");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelStatus");
 }
 
 #fbCallstack {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelStatus");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelStatus");
 }
 
 #fbLocationList {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelFileList");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelFileList");
 }
 
 #fbStatusText {
@@ -115,7 +115,7 @@ panelStatus {
 }
 
 panelTab {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelTab");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelTab");
 }
 
 /* Lightup the text, eg on the Script tab when stopped on a breakpoint */
@@ -127,7 +127,7 @@ panelTab[highlight="true"] {
 /* Mini-menu on the panel tab */
 
 panelTabMenu {
-    -moz-binding: url("chrome://fb4cb/content/bindings.xml#panelTabMenu");
+    -moz-binding: url("chrome://fb4cb/content/firefox/bindings.xml#panelTabMenu");
 }
 
 panelTab > panelTabMenu .menuTarget {
