@@ -1,10 +1,11 @@
 define([
     "firebug/lib/lib",
+    "firebug/firebug",
     "firebug/chrome/reps",
     "firebug/lib/domplate",
     "firebug/lib/string",
 ],
-function(FBL, FirebugReps, Domplate, STR)
+function(FBL, Firebug, FirebugReps, Domplate, STR)
 {
 
 const Cc = Components.classes;

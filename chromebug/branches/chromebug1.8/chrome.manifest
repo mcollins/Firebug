@@ -16,7 +16,7 @@ overlay chrome://chromebug/content/chromebug.xul        chrome://fb4cb/content/f
 overlay  chrome://chromebug/content/chromebug.xul        chrome://chromebug/content/firebugOverlayOverlay.xul
 
 # Add Chromebug menu items to Firebug Menu in FF Tools
-overlay chrome://firebug/content/browserOverlay.xul 	chrome://chromebug/content/ChromebugMenuOverlay.xul
+overlay chrome://fb4cb/content/browserOverlay.xul 	chrome://chromebug/content/ChromebugMenuOverlay.xul
 
 overlay chrome://explorer/content/tools/extension-project.xul chrome://chromebug/content/overlays/extension-project.xul
 

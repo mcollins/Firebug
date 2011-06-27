@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 
-<!-- <?xul-overlay href="chrome://fb4cb/content/firebugOverlay.xul"?> -->
 <?xul-overlay href="chrome://browser/content/baseMenuOverlay.xul"?>
-<?xul-overlay href="chrome://fb4cb/content/start-button/startButtonOverlay.xul"?>
+<!-- <?xul-overlay href="chrome://fb4cb/content/start-button/startButtonOverlay.xul"?> -->
 
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://chromebug/content/fb4cb.css"?>
@@ -63,7 +62,9 @@
     <script type="application/x-javascript" src="resource://firebug/require-debug.js"/>
     <script type="application/x-javascript" src="chrome://fb4cb/content/moduleConfig.js"/>
     <script type="application/x-javascript" src="chrome://chromebug/content/main.js"/>
-
+<script type="application/x-javascript">
+FBTrace.sysout("after panelBarWaiter");
+</script>
     <commandset id="mainCommandSet">
         <command id="cmd_toggleFirebug" oncommand="Firebug.toggleBar()"/>
         <command id="cmd_detachFirebug" oncommand="Firebug.detachBar()"/>

@@ -2,12 +2,13 @@
 
 define([
         "chromebug/chromebug",
+        "firebug/firebug",
         "firebug/lib/object",
         "firebug/lib/css",
         "firebug/lib/events"
         ],
 
-function factoryScanDocuments(Chromebug, Obj, Css, Events)
+function factoryScanDocuments(Chromebug, Firebug, Obj, Css, Events)
 {
 
 Chromebug.DocumentScanner = Obj.extend(Firebug.Module,

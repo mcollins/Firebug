@@ -11,6 +11,8 @@ if (FBTrace.DBG_INITIALIZE || FBTrace.DBG_MODULES)
         config.debug = true;
 
     FBTrace.sysout("chromebug main.js; Loading Firebug modules with config.debug: "+config.debug);
+    var pathKeys = Object.keys(config.paths);
+    pathKeys.forEach(function(key) {FBTrace.sysout("path "+ key +"="+config.paths[key]);});
     var startLoading = new Date().getTime();
 }
 
@@ -33,9 +35,11 @@ require( config, config.modules, function(ChromeFactory, Firefox, ChromebugOverr
         FBTrace.sysout("chromebug main.js require", theArgs);
     }
 
+
     Components.utils.reportError("Chromebug main.js callback running");
     Firebug.connection = new Browser();  // prepare for addListener calls
     Firebug.Options.initialize("extensions.chromebug");
+
 
     function prepareForInitialization(chrome)
     {
@@ -45,8 +49,15 @@ require( config, config.modules, function(ChromeFactory, Firefox, ChromebugOverr
 
     function completeInitialization(chrome)
     {
+        if (FBTrace.DBG_MODULES)
+        {
+            FBTrace.sysout("require config ", config)
+            require.analyzeDependencyTree();
+        }
+
+
         Firebug.connection.connect();  // start firing events
-        Components.utils.reportError("Chromebug main.js connected");
+        FBTrace.sysout("Chromebug main.js connected");
     }
     FBTrace.sysout("chromebug main calling waitForPanelBar()");
     window.panelBarWaiter.waitForPanelBar(ChromeFactory, prepareForInitialization, completeInitialization);

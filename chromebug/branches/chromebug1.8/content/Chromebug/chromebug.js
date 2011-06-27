@@ -19,7 +19,6 @@
  */
 
 define([
-        "firebug/lib/lib",
         "firebug/firebug",
         "firebug/lib/string",
         "chromebug/domWindowContext",
@@ -27,8 +26,11 @@ define([
         "firebug/lib/url",
         "firebug/firefox/xpcom",
         "firebug/firefox/window",
-        "firebug/lib/object"
-       ], function chromebugPanelFactory(FBL, Firebug, STR, DomWindowContext, URI, Url, Xpcom, Win, Obj)
+        "firebug/lib/object",
+        "firebug/lib/events",
+        "firebug/lib/json",
+        "firebug/lib/locale",
+       ], function chromebugPanelFactory(Firebug, STR, DomWindowContext, URI, Url, Xpcom, Win, Obj, Events, Json, Locale)
 {
 
 
@@ -76,6 +78,11 @@ const versionURL = "chrome://chromebug/content/branch.properties";
 const fbVersionURL = "chrome://firebug/content/branch.properties";
 
 const statusText = document.getElementById("cbStatusText");
+
+const jsd = Components.classes["@mozilla.org/js/jsd/debugger-service;1"].
+    getService(Components.interfaces.jsdIDebuggerService);
+
+Firebug.scopyBullShit = "not now!";
 
 // ************************************************************************************************
 // We register a Module so we can get initialization and shutdown signals and so we can monitor
@@ -198,8 +205,6 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
             return;
 
         Firebug.Chromebug.selectBrowser(context.browser);
-        if (FBTrace.DBG_CHROMEBUG)
-            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+Win.safeGetWindowLocation(context.window) );
 
         if (Firebug.currentContext)
             context.panelName = Firebug.currentContext.panelName; // don't change the panel with the context in Chromebug
@@ -208,10 +213,18 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
 
         Firebug.chrome.setFirebugContext(context);  // we've overridden this one to prevent Firebug code from doing...
         Firebug.currentContext = context;                   // ...this
+        Firebug.whobedobe = context.getName();
 
-        dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
+        Events.dispatch(Firebug.modules, "showContext", [context.browser, context]);  // tell modules we may show UI
 
         Firebug.chrome.syncResumeBox(context);
+
+        if (FBTrace.DBG_CHROMEBUG)
+            FBTrace.sysout("selectContext "+context.getName() + " with context.window: "+Win.safeGetWindowLocation(context.window), Firebug );
+        if (Firebug !== window.Firebug)
+        {
+            FBTrace.sysout("Firebug.scopyBullShit: "+Firebug.scopyBullShit+" window.Firebug.scopyBullShit: "+window.Firebug.scopyBullShit)
+        }
     },
 
     dispatchName: "chromebug",
@@ -232,7 +245,7 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
         try
         {
             var dir = directoryService.get(string, Ci.nsIFile);
-            var URL = FBL.getURLFromLocalFile(dir);
+            var URL = Url.getURLFromLocalFile(dir);
             return URL;
         }
         catch(exc)
@@ -261,7 +274,7 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
         if (FBTrace.DBG_CHROMEBUG)
             FBTrace.sysout("Chromebug.initialize this.fullVersion: "+this.fullVersion+" in "+document.location+" title:"+document.title);
 
-        this.uid = FBL.getUniqueId();
+        this.uid = Obj.getUniqueId();
 
         if (!this.contexts)
             this.contexts = Firebug.TabWatcher.contexts;
@@ -337,10 +350,10 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
                 continue;
 
             if (element.hasAttribute("label"))
-                FBL.internationalize(element, "label");
+                Locale.internationalize(element, "label");
 
             if (element.hasAttribute("tooltiptext"))
-                FBL.internationalize(element, "tooltiptext");
+                Locale.internationalize(element, "tooltiptext");
         }
     },
 
@@ -391,7 +404,7 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
         }
 
         // Also bail out if the parsing fails.
-        var previousState = parseJSONString(previousStateJSON, window.location.toString());
+        var previousState = Json.parseJSONString(previousStateJSON, window.location.toString());
         if (!previousState)
         {
             if (FBTrace.DBG_INITIALIZE)
@@ -525,7 +538,7 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
             prefService.savePrefFile(null);
 
             if (FBTrace.DBG_SOURCEFILES)
-                FBTrace.sysout("saveState " + previousContextJSON, parseJSONString(previousContextJSON, window.location.toString()));
+                FBTrace.sysout("saveState " + previousContextJSON, Json.parseJSONString(previousContextJSON, window.location.toString()));
 
         }, 250);
 
@@ -902,7 +915,7 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
     {
         var previousContext = {global: null};
         var sourceFilesNeedingResets = [];
-        FBL.jsd.enumerateScripts({enumerateScript: function(script)
+        jsd.enumerateScripts({enumerateScript: function(script)
             {
                 var url = Url.normalizeURL(script.fileName);
                 if (!url)
@@ -1246,7 +1259,7 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
 
     addComponentScripts: function(sourceFileMap)
     {
-        FBL.jsd.enumerateScripts({enumerateScript: function(script)
+        jsd.enumerateScripts({enumerateScript: function(script)
         {
             var url = Url.normalizeURL(script.fileName);
             var c = URI.parseComponentURI(url);
@@ -1445,22 +1458,6 @@ Firebug.Chromebug = Obj.extend(Firebug.Module,
         foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0); // write, create, truncate
         foStream.write(data, data.length);
         foStream.close();
-    },
-
-    dumpStackToConsole: function(context, title)
-    {
-        if (FBTrace.DBG_STACK) FBTrace.sysout("ChromebugPanel.dumpStackToConsole for: ", title);
-        var trace = FBL.getCurrentStackTrace(context);  // halt(), getCurrentStackTrace(), dumpStackToConsole(), =>3
-        if (trace)
-        {
-            trace.frames = trace.frames.slice(3);
-
-            Firebug.Console.openGroup(title, context)
-            Firebug.Console.log(trace, context, "stackTrace");
-            Firebug.Console.closeGroup(context, true);
-        }
-        else
-            if (FBTrace.DBG_STACK) FBTrace.sysout("ChromebugPanel.dumpStackToConsole FAILS for "+title, " context:"+context.getName());
     },
 
     openAboutDialog: function()
@@ -1677,7 +1674,7 @@ Chromebug.SourceFileListBase.prototype = Obj.extend(new Firebug.Listener(),
             FBTrace.sysout("setCurrentLocation ", description);
 
         this.elementBoundTo.location = description;
-        dispatch(this.fbListeners, "onSetLocation", [this, description]);
+        Events.dispatch(this.fbListeners, "onSetLocation", [this, description]);
     },
 
     onSelectLocation: function(event)
@@ -1885,7 +1882,7 @@ Firebug.Chromebug.PackageList = Obj.extend(new Firebug.Listener(),
           cbPackageList.location = pkg;
           if (FBTrace.DBG_LOCATIONS)
               FBTrace.sysout("PackageList.setCurrentLocation sent onSetLocation to "+this.fbListeners.length);
-          dispatch(this.fbListeners, "onSetLocation", [this, pkg]);
+          Events.dispatch(this.fbListeners, "onSetLocation", [this, pkg]);
     },
 
     getLocationList: function()  // list of packages
