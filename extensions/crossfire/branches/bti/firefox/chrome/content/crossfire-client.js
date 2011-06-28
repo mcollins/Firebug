@@ -2,10 +2,11 @@
 
 define([
         "firebug/lib/object",
+        "firebug/lib/events",
         "firebug/firebug",
         "crossfireModules/crossfire",
         "crossfireModules/crossfire-status"],
-        function ( Obj, Firebug, CrossfireModule, CrossfireStatus) {
+        function ( Obj, Events, Firebug, CrossfireModule, CrossfireStatus) {
 
     function CrossfireClient( toolsInterface) {
         this.toolsInterface = toolsInterface;
@@ -80,8 +81,8 @@ define([
          */
         onConnectionStatusChanged: function( status) {
             if (status == CrossfireStatus.STATUS_CONNECTED_CLIENT) {
-                //this.getBrowserContexts();
-                this.onActivateTool("script"); //Force script panel on
+                //FIXME: can we dispatch this?
+                this.onActivateTool("script", true); //Force script panel on
             }
         },
 
@@ -93,9 +94,12 @@ define([
          */
         fireEvent: function(event)
         {
-            var contextId = event.contextId,
-                eventName = event.event,
+            var eventName = event.event,
                 data = event.data,
+                context,
+                contextId,// = event.contextId || data.contextId,
+                selectedWebApp,
+                script,
                 toolsInterface = this.toolsInterface,
                 self = this;
 
@@ -103,20 +107,34 @@ define([
                 FBTrace.sysout("CrossfireClient fireEvent: " + eventName, event);
 
             if (eventName == "onContextCreated") {
-                var selectedWebApp = toolsInterface.browser.getCurrentSelectedWebApp(function( selectedWebApp) {
-                    //if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                contextId = data.contextId;
+                selectedWebApp = toolsInterface.browser.getCurrentSelectedWebApp(function( selectedWebApp) {
+                    if (FBTrace.DBG_CROSSFIRE_CLIENT)
                         FBTrace.sysout("CrossfireClient creating context for webApp: " + selectedWebApp, selectedWebApp);
-                    toolsInterface.browser.getOrCreateContextByWebApp(selectedWebApp, contextId, function( context) {
-                        FBTrace.sysout("CrossfireClient created context => " + context, context);
+                    //toolsInterface.browser.getOrCreateContextByWebApp(selectedWebApp, contextId, function( context) {
+                        context = selectedWebApp.context;
                         self.contexts[contextId] = context;
+
+                        //xxxMcollins: from TabwatcherListener.initContext...
+                        Events.dispatch(Firebug.modules, "initContext", [context]);
+                        Firebug.chrome.setFirebugContext(context); // a newly created context becomes the default for the view
+                        Firebug.connection.toggleResume(context); // a newly created context is active
+
+
                         //toolsInterface.browser.dispatch()
-                    });
+                   // });
                 });
+            } else if (eventName == "onContextLoaded") {
+                contextId = data.contextId;
+                context = this.contexts[contextId];
+                Events.dispatch(Firebug.modules, "loadedContext", [context]);
             } else if (eventName == "onScript") {
-                var context = this.contexts[contextId];
-                FBTrace.sysout("*.*.* CrossfireClient onScript ");
+                contextId = event.contextId;
+                context = this.contexts[contextId];
+                script = data.script;
+                FBTrace.sysout("*.*.* CrossfireClient onScript contextId is: " + contextId, {"context": context, "contexts": this.contexts});
                 //FIXME: process script kind correctly
-                toolsInterface.browser.dispatch("onCompilationUnit", [context, data.url, toolsInterface.CompilationUnit.SCRIPT_TAG]);
+                toolsInterface.browser.dispatch("onCompilationUnit", [context, script.url, toolsInterface.CompilationUnit.SCRIPT_TAG]);
             }
         },
 
@@ -124,17 +142,19 @@ define([
             if (FBTrace.DBG_CROSSFIRE_CLIENT)
                 FBTrace.sysout("CrossfireClient handleResponse => " + response, response);
 
-            var responseListener = this.responseListeners[response.request_seq];
+            var responseListener = this.responseListeners[response.seq];
             if (responseListener) {
                 if (FBTrace.DBG_CROSSFIRE_CLIENT)
                     FBTrace.sysout("CrossfireClient handleResponse found listener => " + responseListener, responseListener);
-                responseListener.apply({},response);
-                delete this.responseListeners[response.request_seq];
+                responseListener.apply({},[response]);
+                delete this.responseListeners[response.seq];
             }
         },
 
         _sendCommand: function( command, data, callback) {
             var requestSeq = this.transport.sendRequest(command, data);
+            if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                FBTrace.sysout("CrossfireClient _sendCommand: " + command + " got requestSeq: " + requestSeq, {"data":data});
             this.responseListeners[requestSeq] = callback;
         },
 

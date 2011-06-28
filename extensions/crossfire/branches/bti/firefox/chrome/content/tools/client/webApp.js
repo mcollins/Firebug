@@ -10,13 +10,11 @@ function webAppFactory() {
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/browsers.html#groupings-of-browsing-contexts
 
 //xxxMcollins: on the remote client, this is completely superfluous,
-// and we don't know anything about windows, so why not just have one.
+// and we don't know anything about windows
 
-var singleton = {};
-
-var WebApp = function(/*win*/)
+function WebApp(/*win*/)
 {
-    return singleton;
+    this.win = "doesn't exist";
 }
 
 /**

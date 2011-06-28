@@ -5,9 +5,10 @@
 
 define([
     "arch/webApp",
+    "arch/context",
     "firebug/lib/events",
     ],
-function factoryBrowser(WebApp, Events) {
+function factoryBrowser(WebApp, Context, Events) {
 
 // ********************************************************************************************* //
 // Browser
@@ -129,7 +130,7 @@ Browser.prototype.getWebAppByWindow = function(win)
 
 Browser.prototype.getContextByWebApp = function(webApp, callback)
 {
-    var context = this.contextsForWebApp[webApp];
+    var context = this.contextsForWebApps[webApp];
     callback.apply(webApp, [context]);
 }
 
@@ -143,8 +144,11 @@ Browser.prototype.getContextByWindow = function(win)
  */
 Browser.prototype.setContextByWebApp = function(webApp, context, callback)
 {
-    this.contextsForWebApp[webApp] = context;
+    if (FBTrace.DBG_CROSSFIRE_CLIENT)
+        FBTrace.sysout("Crossfire Browser setting context for webApp", {"context":context, "webApp": webApp});
+    this.contextsForWebApps[webApp] = context;
     this.contexts.push( context );
+    webApp.context = context;
     callback.apply(webApp, [context]);
 }
 
@@ -155,6 +159,7 @@ Browser.prototype.setContextByWebApp = function(webApp, context, callback)
  */
 Browser.prototype.closeContext = function(context, userCommands, callback)
 {
+    FBTrace.sysout("closeContext doesn't know what to do! context => " + context, context);
     //TODO:
     /*
     if (context)
@@ -203,19 +208,27 @@ Browser.prototype.closeContext = function(context, userCommands, callback)
  */
 Browser.prototype.getOrCreateContextByWebApp = function(webApp, id, callback)
 {
-    var context = this.getContextByWebApp(webApp);
-    if (!context)
-    {
-        //xxxMcollins: create an empty context, maybe we should put more stuff on it?
-        //var context = TabWatcher.watchTopWindow(topWindow, browser.currentURI, true);
-        context = { "contextId": id };
-        this.setContextByWebApp(webApp, context, callback);
+    var self = this;
+     this.getContextByWebApp(webApp, function( context) {
+        if (!context)
+        {
+            if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                FBTrace.sysout("Crossfire Browser getOrCreateContextByWebApp creating context for id: "+ id, webApp);
+            //xxxMcollins: create an empty context, maybe we should put more stuff on it?
+            //var context = TabWatcher.watchTopWindow(topWindow, browser.currentURI, true);
 
-        //xxxMcollins: what do I dispatch here, then?
-        //Events.dispatch(TabWatcher.fbListeners, "watchBrowser", [browser]);  // TODO remove
-    } else {
-        callback(context);
-    }
+            context = new Context(id, webApp); // extends TabContext
+
+            self.setContextByWebApp(webApp, context, callback);
+
+            //xxxMcollins: what do I dispatch here, then?
+            //Events.dispatch(TabWatcher.fbListeners, "watchBrowser", [browser]);  // TODO remove
+        } else {
+            if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                FBTrace.sysout("Crossfire Browser getOrCreateContextByWebApp found context "+ context, context);
+            callback.apply({}, [context]);
+        }
+    });
 }
 
 /**
@@ -224,23 +237,33 @@ Browser.prototype.getOrCreateContextByWebApp = function(webApp, id, callback)
  */
 Browser.prototype.getCurrentSelectedWebApp = function( callback)
 {
-    FBTrace.sysout("Crossfire Browser getCurrentSelectedWebApp");
+    if (FBTrace.DBG_CROSSFIRE_CLIENT)
+        FBTrace.sysout("Crossfire Browser getCurrentSelectedWebApp");
     var self = this;
-    this.crossfireClient.sendRequest("listcontexts", null, function( response) {
-        var webApp, context, contexts;
+    this.crossfireClient._sendCommand("listcontexts", null, function( response) {
+        var i, webApp, context, contexts;
+        if (FBTrace.DBG_CROSSFIRE_CLIENT)
+            FBTrace.sysout("Crossfire Browser getCurrentSelectedWebApp got response: " +response, response);
         if (response.success && response.body) {
             contexts = response.body.contexts;
-            for (context in contexts) {
+            // xxxMcollins: FIXME: context.current should be set correctly in server
+            //for (i = 0; i < contexts.length; i++) {
+                //context = contexts[i];
+                context = contexts[0];
                 webApp = new WebApp();
-                self.getOrCreateContextByWebApp(webApp, context.contextId);
-                if (context.current) {
+                self.getOrCreateContextByWebApp(webApp, context.contextId, function( nContext) {
+                //if (context.current) {
+                    if (FBTrace.DBG_CROSSFIRE_CLIENT)
+                        FBTrace.sysout("Crossfire Browser getCurrentSelectedWebApp returning webApp " + webApp, webApp);
                     callback.apply({}, [webApp]);
-                    return;
-                }
-            }
+                //}
+                });
+            //}
         }
+        //if (FBTrace.DBG_CROSSFIRE_CLIENT)
+        //    FBTrace.sysout("Crossfire Browser getCurrentSelectedWebApp failed");
+        //callback.call();
     });
-    callback();
 }
 
 Browser.Tool = function(name)
