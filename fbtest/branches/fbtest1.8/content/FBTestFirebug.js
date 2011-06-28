@@ -272,6 +272,15 @@ this.mouseDown = function(node)
     return node.dispatchEvent(event);
 };
 
+this.mouseOver = function(node)
+{
+    var doc = node.ownerDocument;
+    var event = doc.createEvent("MouseEvents");
+    event.initMouseEvent("mouseover", true, true, doc.defaultView, 0, 0, 0, 0, 0,
+        false, false, false, false, 0, null);
+    this.synthesizeMouse(node, 0, 0, event);
+};
+
 this.pressKey = function(keyCode, target)
 {
     return __doEventDispatch(target, 0, keyCode, false);
