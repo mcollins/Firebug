@@ -6,6 +6,7 @@ function runTest()
     var baseUrl = baseLocalPath + "loader/paths/";
     var config = {
         context: baseUrl + Math.random(),  // to give each test its own loader,
+        xhtml: true,
     };
 
     var require = FBTest.getRequire();
