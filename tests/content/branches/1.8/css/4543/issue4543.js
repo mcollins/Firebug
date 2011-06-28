@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.selectPanel("html");
 
-        selectElementInHtmlPanel("element1", function(node)
+        FBTest.selectElementInHtmlPanel("element1", function(node)
         {
             var panel = FBTest.selectSidePanel("css");
             var value = panel.panelNode.querySelector(".cssPropValue");
@@ -39,22 +39,5 @@ function runTest()
             FBTest.compare(expectedImage, actualImage, "The screen must be in expected state");
         });
         */
-    });
-}
-
-//xxxHonza: could be shared API if proved.
-function selectElementInHtmlPanel(text, callback)
-{
-    FBTest.searchInHtmlPanel(text, function(sel)
-    {
-        FBTest.sysout("issue4543; selection:", sel);
-
-        // Click on the element to make sure it's selected.
-        var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
-        var nodeTag = nodeLabelBox.querySelector(".nodeTag");
-        FBTest.mouseDown(nodeTag);
-
-        var nodeBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeBox");
-        callback(nodeBox);
     });
 }

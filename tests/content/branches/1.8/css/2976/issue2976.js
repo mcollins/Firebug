@@ -8,21 +8,14 @@ function runTest()
         {
             FW.Firebug.chrome.selectPanel("html");
 
-            // Search for 'myElement' within the HTML panel, which
-            // automatically expands the tree.
-            FBTest.searchInHtmlPanel("myElement", function(sel)
+            FBTest.selectElementInHtmlPanel("myElement", function(node)
             {
-                // Click on the element to make sure it's selected.
-                var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
-                var nodeTag = nodeLabelBox.querySelector(".nodeTag");
-                FBTest.mouseDown(nodeTag);
-
-                // Reset clipboard content.
+                // Reset clipboard content
                 FBTest.clearClipboard();
 
                 var stylePanel = FW.Firebug.chrome.selectSidePanel("css");
-                var node = stylePanel.panelNode.querySelector(".cssSelector");
-                FBTest.executeContextMenuCommand(node, "fbCopyStyleDeclaration", function()
+                var cssSelector = stylePanel.panelNode.querySelector(".cssSelector");
+                FBTest.executeContextMenuCommand(cssSelector, "fbCopyStyleDeclaration", function()
                 {
                     setTimeout(function() {
                         var cssDecl = FBTest.getClipboardText();

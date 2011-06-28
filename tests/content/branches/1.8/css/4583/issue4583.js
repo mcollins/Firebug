@@ -7,7 +7,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.selectPanel("html");
 
-        FBTest.selectElementInHtmlPanel("elementWithOverwrittenStyles", function(sel)
+        FBTest.selectElementInHtmlPanel("elementWithOverwrittenStyles", function(node)
         {
             var sidePanel = FBTest.selectSidePanel("css");
             var selectors = sidePanel.panelNode.querySelectorAll(".cssSelector");

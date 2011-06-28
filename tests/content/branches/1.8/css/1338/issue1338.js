@@ -6,17 +6,8 @@ function runTest()
         FBTest.openFirebug();
         FBTest.selectPanel("html");
 
-        // Search for 'element1' within the HTML panel, which
-        // automatically expands the tree.
-        FBTest.searchInHtmlPanel("element1", function(sel)
+        FBTest.selectElementInHtmlPanel("element1", function(node)
         {
-            FBTest.sysout("issue1338; selection:", sel);
-
-            // Click on the element to make sure it's selected.
-            var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
-            var nodeTag = nodeLabelBox.querySelector(".nodeTag");
-            FBTest.mouseDown(nodeTag);
-
             var panel = FBTest.selectSidePanel("css");
             var values = panel.panelNode.querySelectorAll(".cssPropValue");
 

@@ -6,7 +6,7 @@ function runTest()
         FBTest.openFirebug();
         FBTest.selectPanel("html");
 
-        selectElementInHtmlPanel("Inspect This Element", function(node)
+        FBTest.selectElementInHtmlPanel("Inspect This Element", function(node)
         {
             var panel = FBTest.selectSidePanel("css");
             var names = panel.panelNode.querySelectorAll(".cssPropName");
@@ -29,20 +29,5 @@ function runTest()
 
             FBTest.testDone("issue3671.DONE");
         });
-    });
-}
-
-// xxxHonza: could be shared API if proved.
-function selectElementInHtmlPanel(text, callback)
-{
-    FBTest.searchInHtmlPanel(text, function(sel)
-    {
-        // Click on the element to make sure it's selected.
-        var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
-        var nodeTag = nodeLabelBox.querySelector(".nodeTag");
-        FBTest.mouseDown(nodeTag);
-
-        var nodeBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeBox");
-        callback(nodeBox);
     });
 }
