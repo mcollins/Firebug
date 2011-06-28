@@ -1557,7 +1557,8 @@ window.onerror = function(errType, errURL, errLineNum)
 // Panel Navigation
 
 /**
- * Select a location, eg a sourcefile in the Script panel, using the string the user sees.<br/><br/>
+ * Select a location, e. g. a source file inside the Script panel, using the string the user
+ * sees.<br/><br/>
  * Example:<br/>
  * <code>var panel = FW.Firebug.chrome.selectPanel("script");<br/>
  * FBTestFirebug.selectPanelLocationByName(panel, "foo.js");<code>
@@ -1746,7 +1747,7 @@ this.searchInScriptPanel = function(searchText, callback)
     // Set search string into the search box.
     var searchBox = FW.Firebug.chrome.$("fbSearchBox");
 
-    // FIX ME: characters should be sent into the search box individualy
+    // FIX ME: characters should be sent into the search box individually
     // (using key events) to simulate incremental search.
     searchBox.value = searchText;
 
@@ -1768,7 +1769,7 @@ this.searchInHtmlPanel = function(searchText, callback)
     // Set search string into the search box.
     var searchBox = FW.Firebug.chrome.$("fbSearchBox");
 
-    // FIX ME: characters should be sent into the search box individualy
+    // FIX ME: characters should be sent into the search box individually
     // (using key events) to simulate incremental search.
     searchBox.value = searchText;
 
@@ -1784,6 +1785,31 @@ this.searchInHtmlPanel = function(searchText, callback)
             callback(sel);
         }
     });
+
+    // Setting the 'value' property doesn't fire an 'input' event so,
+    // press enter instead (asynchronously).
+    FBTest.focus(searchBox);
+    FBTest.sendKey("RETURN", "fbSearchBox");
+}
+
+/**
+ * Executes search within the CSS panel.
+ * @param {String} searchText Keyword set into the search box.
+ * @param {Function} callback Function called as soon as the result has been found.
+ */
+this.searchInCssPanel = function(searchText, callback)
+{
+    var panel = FBTest.selectPanel("stylesheet");
+
+    var config = {tagName: "div", classes: "jumpHighlight"};
+    FBTest.waitForDisplayedElement("stylesheet", config, callback);
+
+    // Set search string into the search box
+    var searchBox = FW.Firebug.chrome.$("fbSearchBox");
+
+    // FIX ME: characters should be sent into the search box individually
+    // (using key events) to simulate incremental search.
+    searchBox.value = searchText;
 
     // Setting the 'value' property doesn't fire an 'input' event so,
     // press enter instead (asynchronously).
