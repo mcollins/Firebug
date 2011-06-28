@@ -1794,6 +1794,12 @@ this.searchInHtmlPanel = function(searchText, callback)
 // ********************************************************************************************* //
 // HTML Panel
 
+/**
+ * Waits for an HTML mutation inside the HTML panel
+ * @param {String} chrome Chrome to use.
+ * @param {String} tagName Name of the tag to observe.
+ * @param {Function} callback Function called as soon as a mutation occurred.
+ */
 this.waitForHtmlMutation = function(chrome, tagName, callback)
 {
     if (!chrome)
@@ -1831,6 +1837,25 @@ this.waitForHtmlMutation = function(chrome, tagName, callback)
     });
 }
 
+/**
+ * Selects an element within the HTML panel.
+ * @param {String} element Name or ID of the element to select.
+ * @param {Function} callback Function called as soon as the element is selected.
+ */
+this.selectElementInHtmlPanel = function(element, callback)
+{
+    FBTest.searchInHtmlPanel(element, function(sel)
+    {
+        // Click on the element to make sure it's selected
+        var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
+        var nodeTag = nodeLabelBox.querySelector(".nodeTag");
+        FBTest.mouseDown(nodeTag);
+
+        var nodeBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeBox");
+        callback(nodeBox);
+    });
+}
+
 // ************************************************************************************************
 // Context menu
 
@@ -1860,7 +1885,7 @@ this.executeContextMenuCommand = function(target, menuId, callback)
                 contextMenu.hidePopup();
                 return;
             }
-FBTest.sysout("menuItem", menuItem);
+            FBTest.sysout("menuItem", menuItem);
             // Click on specified menu item.
             self.synthesizeMouse(menuItem);
 
@@ -1894,7 +1919,7 @@ this.clearClipboard = function()
 
 /**
  * Sets provided text into the clipboard
- * @param {Object} text String to the put into the clipboard.
+ * @param {Object} text String to put into the clipboard.
  */
 this.setClipboardText = function(text)
 {
