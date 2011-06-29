@@ -72,7 +72,7 @@ FBTestApp.TestResultRep = domplate(
 
     getMessage: function(result)
     {
-        return cropString(result.msg, 100);
+        return cropString(result.msg, 200);
     },
 
     getFileName: function(result)
