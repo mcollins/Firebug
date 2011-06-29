@@ -6,14 +6,14 @@
   <RDF:Description RDF:about="rdf:#$41y0G2"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                    em:minVersion="4.0"
-                   em:maxVersion="4.0.*" />
+                   em:maxVersion="5.*" />
                    
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="dojo@silvergate.ar.ibm.com"
                    em:name="Dojo Firebug Extension"
                    em:version="@VERSION@@RELEASE@"
                    em:description="Firebug extension to help dojo developers"
-				   em:updateURL="https://getfirebug.com/releases/dojofirebugextension/@FBUG_VERSION@/update.rdf"                 
+                   em:updateURL="https://getfirebug.com/releases/dojofirebugextension/@FBUG_VERSION@/update.rdf"                
                    em:iconURL="chrome://dojofirebugextension/content/icon.png">
     	
     	<em:developer>Patricio Reyna Almandos (IBM Argentina)</em:developer>
