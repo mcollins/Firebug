@@ -4,7 +4,7 @@
 // Module
 
 
-define([], function(){
+define(["firebug/firebug"], function(Firebug){
 
 
 
@@ -19,14 +19,13 @@ define([], function(){
  * @return a new CompilationUnit
  * @version 1.0
  */
-function CompilationUnit(url, context, crossfireClient)
+function CompilationUnit(url, context)
 {
     this.url = url;
     this.context = context;
     this.breakpoints = [];
     this.numberOfLines = 0;
     this.kind = CompilationUnit.SCRIPT_TAG;
-    this.crossfireClient = crossfireClient;
 }
 
 /*
@@ -129,15 +128,16 @@ CompilationUnit.prototype.getSourceLines = function(firstLine, lastLine, listene
 {
     var self = this;
     FBTrace.sysout("crossfireClient CompilationUnit getSourcelines......");
-    this.crossfireClient._sendCommand("script", {
-        "context_id": this.context.Crossfire.crossfire_id,
+    Firebug.connection.crossfireClient._sendCommand("script", {
+        "contextId": this.context.contextId,
         "url": this.url,
         "includeSource": true
     }, function( response) {
+        FBTrace.sysout("crossfireClient CompilationUnit getSourcelines got response: " + response, response);
         var script = response.body.script;
-        self.lines = script.source;
+        self.lines = script.sourceLines;
         self.numberOfLines = script.lineCount;
-        listener(self, 1, self.numberOfLines, self.lines);
+        listener.apply({}, [self, 1, self.numberOfLines, self.lines]);
     });
 
 };

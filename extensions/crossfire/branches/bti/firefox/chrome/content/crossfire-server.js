@@ -1248,7 +1248,7 @@ var CONTEXT_ID_SEED = Math.round(Math.random() * 10000000);
                 "type": sourceFile.compilation_unit_type,
             };
             if (includeSrc) {
-                script["source"] = lines.join(' ');
+                script["sourceLines"] = lines;
             }
             return script;
         },

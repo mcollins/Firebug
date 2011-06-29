@@ -217,7 +217,7 @@ Browser.prototype.getOrCreateContextByWebApp = function(webApp, id, callback)
             //xxxMcollins: create an empty context, maybe we should put more stuff on it?
             //var context = TabWatcher.watchTopWindow(topWindow, browser.currentURI, true);
 
-            context = new Context(id, webApp); // extends TabContext
+            context = new Context(id, webApp, "FakeContext"); // extends TabContext
 
             self.setContextByWebApp(webApp, context, callback);
 
