@@ -16,7 +16,9 @@
         </header>
         <div>
             <section id="content">
-                <input type="text" id="input" onkeydown="var output = document.getElementById(output'); output.style.display = 'block'; output.innerHTML = Hey, you entered something into the input field!&quot;">
+                <button id="sayHi" onclick="var output = document.getElementById(output'); output.style.display = 'block'; output.innerHTML = Hi there, tester!&quot;">
+                    Say hi
+                </button>
                 <section id="output">
                 </section>
             </section>
@@ -25,24 +27,26 @@
                 <ol>
                     <li>Open Firebug</li>
                     <li>Switch to the HTML panel</li>
-                    <li>Inspect the input field above (<code>#input</code>)</li>
-                    <li>Click on the value of the <code>onkeydown</code> attribute to start editing</li>
+                    <li>Inspect the button above (<code>#sayHi</code>)</li>
+                    <li>Click on the value of the <code>onclick</code> attribute to start editing</li>
                     <li>Move the text cursor between the opening bracket and <code>output</code> of <code>getElementById(output')</code></li>
-                    <li>Enter a single quote (<code>'</code>)</li>
-                    <li>Move the text cursor before the <code>H</code> of <code>Hey</code></li>
-                    <li>Enter a double quote (")</li>
+                    <li>
+                        Enter a single quote (<code>'</code>)<br/>
+                        &rArr; The single quote is entered into the input field
+                    </li>
+                    <li>Move the text cursor before the <code>H</code> of <code>Hi</code></li>
+                    <li>
+                        Enter a double quote (")<br/>
+                        &rArr; The double quote is entered into the input field
+                    </li>
                     <li>Focus the input field on the page and type <code>a</code></li>
                 </ol>
                 <h3>Expected Result</h3>
                 <ul>
-                    <li>After step 6: The single quote is entered into the input field</li>
-                    <li>After step 8: The double quote is entered into the input field</li>
-                    <li>After step 9: <code>Hey, you entered something into the input field!</code> shown below the input field</li>
+                    <li><code>Hi there, tester!</code> shown below the button</li>
                 </ul>
             </section>
-            <footer>
-                Gabriel Nahmias, nahmias.gabriel at gmail.com
-            </footer>
+            <footer>Sebastian Zartner, sebastianzartner@gmx.de</footer>
         </div>
     </body>
 </html>
