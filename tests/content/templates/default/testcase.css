@@ -49,6 +49,10 @@ section#output {
     padding: 10px;
 }
 
+pre {
+    margin: 0;
+}
+
 footer {
     margin-top: 10px;
     text-align: right;
