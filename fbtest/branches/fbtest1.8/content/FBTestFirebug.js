@@ -880,23 +880,6 @@ this.enableAllPanels = function()
 }
 
 /**
- * Enables the specified panel and reloads if a callback is specified.
- * @param {String} panel Panel to enable and select.
- * @param {Function} callback A handler that is called as soon as the page is reloaded.
- */
-this.enableAndSelectPanel = function(panel, callback)
-{
-    this.selectPanel(panel);
-    switch(panel)
-    {
-        case "console": functionName = "enableConsolePanel";
-        case "script": functionName = "enableScriptPanel";
-        case "net": functionName = "enableNetPanel";
-    }
-    this[functionName](callback);
-}
-
-/**
  * Select specific panel in the UI.
  * @param {Object} panelName Name of the panel (e.g. <i>console</i>, <i>dom</i>, <i>script</i>,
  * <i>net</i>, <i>css</i>).
