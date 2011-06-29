@@ -1,60 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-      <title>Issue 4578: Proxy elements are incorrectly positioned, if page is scrolled</title>
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-      <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
-      <style type="text/css">
-          body {
-              left: 50%;
-              margin-left: -450px;
-              height: 1000px;
-              width: 900px;
-          }
-
-          #scrolled {
-              width: 100%;
-              height: 100px;
-              overflow: scroll;
-          }
-
-          #scrolled > div {
-              width: 1000px;
-              height: 1000px
-          }
-          #disabledTextField,
-          #disabledDropDownList,
-          button {
-              top: 100px;
-              left: 50px;
-              margin: 5px;
-              padding: 3px;
-          }
-      </style>
-      <script type="text/javascript">
-          function scroll()
-          {
-              var scrolledDIV = document.getElementById("scrolled");
-              scrolledDIV.scrollTop = 90;
-              scrolledDIV.scrollLeft = 30;
-
-              window.scrollTo(0, 20);
-          }
-
-          function showProxyElements(event)
-          {
-              if (event.keyCode == 83) // 's'
-              {
-                  var proxyElements = document.getElementsByClassName("fbProxyElement");
-                  for (var i=0; i<proxyElements.length; i++)
-                      proxyElements[i].style.cssText = proxyElements[i].style.cssText +
-                          "background: #8C8CFF -moz-linear-gradient(135deg, #788CFF, #B4C8FF) !important;";
-              }
-          }
-
-          window.addEventListener("load", scroll, false);
-          window.addEventListener("keydown", showProxyElements, false);
-      </script>
+        <title>Issue 4578: Proxy elements are incorrectly positioned, if page is scrolled</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="https://getfirebug.com/tests/content/templates/default/testcase.css" type="text/css" rel="stylesheet"/>
     </head>
     <body>
         <header>
@@ -62,26 +11,23 @@
         </header>
         <div>
             <section id="content">
-                <div id="scrolled">
-                    <div>
-                        <input type="text" id="disabledTextField" disabled="disabled"/>
-                        <select id="disabledDropDownList" disabled="disabled">
-                            <option value="">First option</option>
-                        </select><br/>
-                        <button disabled="disabled">Button</button>
-                    </div>
-                </div>
+                <iframe src="issue4578Content.html" style="width: 100%; height: 100px; border: none;"></iframe>
             </section>
             <section id="description">
                 <h3>Steps to reproduce</h3>
                 <ol>
                     <li>Open Firebug</li>
                     <li>Start inspecting by clicking the Inspect button</li>
-                    <li>Press <code class="key">s</code> to display the proxy elements (in blue) for the disabled form fields</li>
+                    <li>Hover the text input field (<code>#disabledTextField</code>)</li>
+                    <li>Hover the drop-down list (<code>#disabledDropDownList</code>)</li>
                 </ol>
                 <h3>Observed result</h3>
                 <ul>
-                    <li>The proxy elements are influenced by scrolling as well as modified <code>&lt;body&gt;</code> styles</li>
+                    <li class="error">The proxy elements are influenced by scrolling</li>
+                    <li class="error">
+                        The proxy elements are influenced by <code>&lt;body&gt;</code>
+                        positioning styles like <code>left</code> and <code>margin-left</code> etc.
+                    </li>
                 </ul>
                 <h3>Expected result</h3>
                 <ul>
