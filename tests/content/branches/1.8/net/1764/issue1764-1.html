@@ -6,17 +6,24 @@
 <body>
 <h1>Test for Issue #1764</h1>
 <ol>
-    <li>Click on the link below, a new tab should be opened.</li>
-    <li>Open Firebug on the new tab from step 1.</li>
-    <li>Enable all panels.</li>
-    <li>Clear browser cache and reload the page. Net panel should show one page load entry.</li>
-    <li>Close the FF tab, but not Firefox.</li>
-    <li>Return to the tab from step 1.</li>
-    <li>Clear browser cache and repeat step 1.</li>
-    <li>Firebug should open and show the page load entry - BUG.</li>
+    <li>Open Firebug UI (F12) and enable the Net panel.</li>
+    <li>The Net panel should be empty, displaying just a messsage:
+        <i>Net panel activated. Any request while the Net panel is inactive are not shown.</i>
+        (or similar)</li>
+    <li>Check <i>Disable Browser Cache</i> in Net panel's mini tab-menu.</li>
+    <li>Copy the link below to the clipboard.</li>
+    <li>Open a new empty Firefox tab.</li>
+    <li>Put the link into Firefox address bar (in the new tab) and press enter.</li>
+    <li>Firebug should be automatically opened and the Net panel should display
+        one request. Expand the request and check the Response tab, it should display
+        the response body.</li>
 </ol>
 
-<a id="openNewTab" target="_blank" href="issue1764-2.html">Click to open another tab.</a>
+<a id="openNewTab" target="_blank" href="issue1764-2.html">Copy this link to the clipboard</a>
+<br/><br/>
+<i>You can also open the new tab by clicking on the link. The Net panel should also display
+one request (and the response body).</i>
+
 </script>
 </body>
 </html>
