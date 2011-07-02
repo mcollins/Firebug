@@ -1,9 +1,10 @@
-var eventAdapterForCSS = {
+var fromOrion = {
 
-     onModelChangedCSS: function(changedLineIndex, lineText)
+     onModelChanging: function(event)
      {
-        console.log("firebugPlugin onModelChangedCSS(%s, %s) ", changedLineIndex, lineText);
-        firebugPlugin.firebugConnection.callService("IStylesheet", "onRuleLineChanged", [changedLineIndex, lineText]);
+        console.log("firebugPlugin onModelChanging ", event);
+        firebugPlugin.firebugConnection.callService("logger", "firebugPlugin onModelChanging ", [event]);
+        //firebugPlugin.firebugConnection.callService("IStylesheet", "onRuleLineChanged", [changedLineIndex, lineText]);
      },
 
 };
@@ -17,9 +18,18 @@ var firebugPlugin =
 {
     connectToOrion: function() {
         var provider = new eclipse.PluginProvider();
-        provider.registerServiceProvider("orion.edit.listener", eventAdapterForCSS, {});
+        provider.registerServiceProvider("orion.edit.listener", fromOrion, {});
+        console.log("registered at orion.edit.listener, connecting... ", fromOrion);
         provider.connect();
-        console.log("registered at orion.edit.listener ", eventAdapterForCSS);
+    },
+
+    onConnectToOrion: function()
+    {
+        console.log("Orion connect succeeded ", arguments);
+    },
+    onErrorConnectToOrion: function()
+    {
+        console.log("Orion connect failed ", arguments);
     },
 
     // -------------------------------------

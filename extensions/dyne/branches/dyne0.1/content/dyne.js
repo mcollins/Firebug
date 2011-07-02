@@ -38,7 +38,8 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.ScriptPanel.registerEditor("Orion", this);
         Firebug.NetMonitor.NetRequestTable.addListener(Firebug.Dyne.NetRequestTableListener);
         var left = globalWindowExchange.addListener(this);
-        FBTrace.sysout("dyne initialize globalWindowExchange listeners "+left);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne initialize globalWindowExchange listeners "+left);
     },
 
     destroy: function()
@@ -112,7 +113,8 @@ Firebug.Dyne = extend(Firebug.Module,
     startEditing: function()
     {
         var panel = Firebug.chrome.getSelectedPanel();
-        FBTrace.sysout("dyne.startEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.startEditing Firebug.jsDebuggerOn:"+Firebug.jsDebuggerOn)
         var url = Firebug.chrome.getSelectedPanelURL();
         var editLink = new Firebug.EditLink(panel.context, url, panel);
         // for embedded
@@ -122,7 +124,8 @@ Firebug.Dyne = extend(Firebug.Module,
         if (connectionContainer)  // we opened orion
         {
             var orionWin = connectionContainer.focusOrion();  // but it failed
-            FBTrace.sysout("dyne.startEditing focusOrion: "+(orionWin && orionWin.location) );
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.startEditing focusOrion: "+(orionWin && orionWin.location) );
             if (!orionWin || orionWin.location.toString() !== editorURL)
             {
                 delete this.orions[editorURL];
@@ -137,13 +140,15 @@ Firebug.Dyne = extend(Firebug.Module,
             connectionContainer.openOrion(editorURL);
         }
 
-        FBTrace.sysout("Edit requested "+url);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("Edit requested "+url);
         return true;
     },
 
     stopEditing: function()
     {
-        FBTrace.sysout("dyne.stopEditing");
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.stopEditing");
     },
 
     onGetTestList: function(testLists)
@@ -158,14 +163,16 @@ Firebug.Dyne = extend(Firebug.Module,
     watchWindow: function(context, win)
     {
         var loc = win.location.toString();
-        FBTrace.sysout("dyne watchWindow "+loc+" in "+window.top.location);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne watchWindow "+loc+" in "+window.top.location);
 
         if ( loc.indexOf("firebugConnection.html") !== -1) // then we are in the orion window
         {
             if (Firebug.isInBrowser()) // don't show Firebug in the Orion editor window
                 Firebug.minimizeBar();
             var left = globalWindowExchange.removeListener(this);  // don't listen to the global events in this XUL window
-            FBTrace.sysout('dyne found firebugConnection in '+win.location+" removed listener, left "+left, win);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout('dyne found firebugConnection in '+win.location+" removed listener, left "+left, win);
             globalWindowExchange.onWindowAdded(win);
         }
     },
@@ -173,7 +180,8 @@ Firebug.Dyne = extend(Firebug.Module,
     onWindowAdded: function(win)
     {
         var connectionContainer = Firebug.Dyne.orions[win.top.location.toString()];
-        FBTrace.sysout("dyne onWindowAdded "+win.location+" win.top "+win.top.location+" finds "+connectionContainer, Firebug.Dyne.orions);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne onWindowAdded "+win.location+" win.top "+win.top.location+" finds "+connectionContainer, Firebug.Dyne.orions);
         if (connectionContainer)
             connectionContainer.attachOrion(win);
     },
@@ -181,11 +189,13 @@ Firebug.Dyne = extend(Firebug.Module,
     unwatchWindow: function(context, win)
     {
         var loc = win.location.toString();
-        FBTrace.sysout("dyne unwatchWindow "+loc+" in "+window.top.location);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne unwatchWindow "+loc+" in "+window.top.location);
 
         if ( loc.indexOf("firebugConnection.html") !== -1)
         {
-            FBTrace.sysout('dyne.unwatchWindow found firebugConnection in '+win.location, win);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout('dyne.unwatchWindow found firebugConnection in '+win.location, win);
             globalWindowExchange.onWindowRemoved(win, window.top);
         }
     },
@@ -193,7 +203,8 @@ Firebug.Dyne = extend(Firebug.Module,
     onWindowRemoved: function(win, outerXULWindow)
     {
         var connection = this.orions[win.top.location];
-        FBTrace.sysout("onWindowRemoved "+win.location+" outerXULWindow "+outerXULWindow.location+ " has "+connection);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("onWindowRemoved "+win.location+" outerXULWindow "+outerXULWindow.location+ " has "+connection);
         if (connection)
         {
             connection.disconnectOnUnload(outerXULWindow);
@@ -225,7 +236,8 @@ Firebug.Dyne = extend(Firebug.Module,
     storeScreenInfo: function(outerXULWindow)
     {
         Firebug.Options.set("orion.editWindowPosition", this.getScreenDescription(outerXULWindow));
-        FBTrace.sysout("dyne set screen info from "+outerXULWindow.location+" "+this.getScreenDescription(outerXULWindow));
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne set screen info from "+outerXULWindow.location+" "+this.getScreenDescription(outerXULWindow));
     },
 
     getScreenInfo: function()
@@ -316,7 +328,8 @@ Firebug.EditLink.prototype =
             var editURL = null;
             if (uri)
                 editURL = uri.spec;
-            FBTrace.sysout("getLocalSystemURI("+url+")="+(editURL?editURL:"ERROR "), uri);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("getLocalSystemURI("+url+")="+(editURL?editURL:"ERROR "), uri);
             this.fileURL = editURL;  // better be a file url now
         }
 
@@ -393,7 +406,8 @@ Firebug.EditLink.prototype =
     requestEditBuffer: function(then, orElse)
     {
         var bufferURL = this.getBufferURL();
-        FBTrace.sysout("dyne.requestEditBuffer "+bufferURL);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne.requestEditBuffer "+bufferURL);
         xhrIO.readAsynchronously(bufferURL, then, orElse);
     },
 };
@@ -475,39 +489,52 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         try
         {
             this.orionWindow = win;
-            FBTrace.sysout("attachOrion win.document ", win.document);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("attachOrion win.document ", win.document);
             this.connectionFunction = this.connectOnLoad.bind(this, win);
             win.addEventListener('load', this.connectionFunction, false);
         }
         catch(exc)
         {
-            FBTrace.sysout("dyne.attachOrion ERROR: "+exc, exc);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("dyne.attachOrion ERROR: "+exc, exc);
         }
     },
 
     connectOnLoad: function(win, event)
     {
-        FBTrace.sysout("connectOnLoad connection to "+win.document.location);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("connectOnLoad connection to "+win.document.location);
         this.eventHandler = FBL.bind(this.orionEventHandler, this);
         this.orionConnection = jsonConnection.add(win.document.documentElement, this.eventHandler);
         this.orionConnection.postObject({connection: "dyne is ready"});
         win.removeEventListener('load', this.connectionFunction, false);
         delete this.connectionFunction;
-        FBTrace.sysout("connectOnLoad connection posted ready");
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("connectOnLoad connection posted ready");
     },
 
     disconnectOnUnload: function(win, event)
     {
-        FBTrace.sysout("disconnectOnUnload  "+win.document.location);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("disconnectOnUnload  "+win.document.location);
         Firebug.Dyne.storeScreenInfo(win);
         this.orionConnection.disconnect();
-        FBTrace.sysout("disconnectOnUnload done");
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("disconnectOnUnload done");
     },
 
     orionEventHandler: function(obj)
     {
-        FBTrace.sysout(" We be cooking with gas!", obj);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout(" We be cooking with gas!", obj);
+        this.orionConnection.registerService("logger", null, this.logIt);
         this.attachUpdater();
+    },
+
+    logIt: function()
+    {
+        FBTrace.sysout("OrionConnection: "+arguments[0], arguments);
     },
 
     orionEdit: function()
@@ -521,7 +548,8 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
 
     loadFile: function(text)
     {
-        FBTrace.sysout("loadFile "+this.location.getEditURL()+" -> "+text.length);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("loadFile "+this.location.getEditURL()+" -> "+text.length);
         var contentName = this.location.getEditURL();
         this.orionConnection.callService("IEditor", "onInputChange", [contentName, null, text]);
       //  this.orionConnection.callService("ISyntaxHighlighter", "onInputChange", [this.location.getEditURL(),null, text]);
@@ -534,7 +562,8 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
     {
         if (this.isLocalURI(this.location))
         {
-            FBTrace.sysout("attachUpdater "+this.location, this.selection);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("attachUpdater "+this.location, this.selection);
             this.editLocalFile(this.location);
         }
         var fromPanel = this.location.getOriginPanelName();
@@ -546,8 +575,8 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         }
         else if (fromPanel === "script")
         {
-            var updater = new Firebug.Dyne.CompilationUnitUpdater(model, this, this.location);
-            this.orionConnection.registerService("IEditor", null, updater);
+            var updater = new Firebug.Dyne.CompilationUnitUpdater(this.location);
+            this.orionConnection.registerService("IJavaScript", null, updater);
             return;
         }
         // TODO a different listener for each kind of file
@@ -562,10 +591,10 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
 
 };
 
-Firebug.Dyne.CompilationUnitUpdater = function(model, panel, editLink)
+Firebug.Dyne.CompilationUnitUpdater = function(editLink)
 {
-    this.model = model;
-    this.orionPanel = panel;
+    this.scriptPanel = editLink.getOriginPanel();
+    this.compilationUnit = this.scriptPanel.location;
     this.editLink = editLink;
 }
 
@@ -637,7 +666,8 @@ Firebug.Dyne.Saver = function dyneSaver(onSaveSuccess)
     var request = new XMLHttpRequest();
     request.onreadystatechange = function(event)
     {
-        FBTrace.sysout("Saver onreadystatechange "+request.readyState, event);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("Saver onreadystatechange "+request.readyState, event);
         if (request.readyState === 4)
         {
             if (request.status === 200)
@@ -651,24 +681,28 @@ Firebug.Dyne.Saver = function dyneSaver(onSaveSuccess)
         if (event.lengthComputable)
         {
             var percentComplete = event.loaded / event.total;
-            FBTrace.sysout("Save progress "+percentComplete, event);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("Save progress "+percentComplete, event);
         }
 
     }, false);
 
     request.addEventListener("load", function transferComplete(event)
     {
-        FBTrace.sysout("Save load", event);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("Save load", event);
     }, false);
 
     request.addEventListener("error", function transferFailed(event)
     {
-        FBTrace.sysout("Save error", event);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("Save error", event);
     }, false);
 
     request.addEventListener("abort", function transferCanceled(event)
     {
-        FBTrace.sysout("Save abort", event);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("Save abort", event);
     }, false);
 
     this.request = request;
@@ -699,7 +733,8 @@ Firebug.Dyne.LocalSaver.prototype =
         }
         else
         {
-            FBTrace.sysout("Dyne.LocalSaver ERROR not a local file URI "+url, localFileURI);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("Dyne.LocalSaver ERROR not a local file URI "+url, localFileURI);
             return false;
         }
     },
@@ -763,7 +798,7 @@ Firebug.Dyne.WarningRep = domplate(Firebug.Rep,
 
 });
 
-Firebug.Dyne.NetRequestTableListener = 
+Firebug.Dyne.NetRequestTableListener =
 {
     onCreateRequestEntry: function(netRequestTable, row){
         if (row.repObject.responseStatus === 404) // then the file was not found
@@ -795,7 +830,8 @@ Firebug.Dyne.reloadDyne = function(win)
 {
     var srcURL = "chrome://dyne/content/dyne.js";
     var element = Firebug.Dyne.OrionPanel.prototype.insertScriptTag(win.document, "reloadDyne", srcURL);
-    FBTrace.sysout("Firebug.Dyne.reloadDyne "+element, element);
+    if (FBTrace.DBG_DYNE)
+        FBTrace.sysout("Firebug.Dyne.reloadDyne "+element, element);
 }
 
 Components.utils.import("resource://gre/modules/Services.jsm");
@@ -867,14 +903,16 @@ Firebug.Dyne.Util =
                     features += "resizable=yes,scrollbars=yes,location=yes,toolbar=yes,menubar=yes";
             }
             var win = Services.ww.openWindow(window, url, null, (features || null), null);
-            FBTrace.sysout("openAndMarkTab "+url+" window ", win);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("openAndMarkTab "+url+" window ", win);
             var outerXULWindow = this.getWindowManager().getMostRecentWindow("navigator:browser");
 
             var tabbrowser = outerXULWindow.getBrowser();
             var tab = tabbrowser.selectedTab;
             tab.setAttribute(attrName, attrName);
 
-            FBTrace.sysout("openOrReuse("+attrName+", "+url+") outerXULWindow "+outerXULWindow.location, outerXULWindow);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("openOrReuse("+attrName+", "+url+") outerXULWindow "+outerXULWindow.location, outerXULWindow);
 
             return tab.contentWindow;
         },
@@ -883,7 +921,8 @@ Firebug.Dyne.Util =
         openOrReuseByAttribute: function(attrName, url, screen)
         {
             var browserContentWindow = this.findAndFocusByAttribute(attrName);
-            FBTrace.sysout("openOrReuse("+attrName+", "+url+") found "+browserContentWindow, browserContentWindow);
+            if (FBTrace.DBG_DYNE)
+                FBTrace.sysout("openOrReuse("+attrName+", "+url+") found "+browserContentWindow, browserContentWindow);
             if (!browserContentWindow)
                 browserContentWindow = this.openAndMarkTab(attrName, url, screen);
 
