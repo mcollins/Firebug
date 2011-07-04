@@ -77,8 +77,8 @@ function executeTest(elementID, expectedValue, callback)
                     "The infotip must contain the same color as specified in the " +
                     "rule '" + elementID + "'.");
             }
-        }, 100);
 
-        callback();
+            callback();
+        }, 300);
     });
 }
