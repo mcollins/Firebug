@@ -65,20 +65,21 @@ function executeTest(elementID, expectedValue, callback)
         var propValue = rule.querySelector(".cssPropValue");
         FBTest.mouseOver(propValue);
     
-        //xxxsz: An event listener should be used instead of this timeout
-        setTimeout(function ()
+        var config = {tagName: "div", classes: "infoTipColorBox"};
+        FBTest.waitForDisplayedElement("stylesheet", config, function (infoTip)
         {
-            var infoTip = FW.FBL.getBody(node.ownerDocument).querySelector(
-                ".infoTip[active] .infoTipColorBox > div");
-            
-            if (FBTest.ok(infoTip, "There must be a color infotip shown hovering the value of the 'color' property of '" + elementID + "'."))
+            var infoTipActive = infoTip.parentNode.getAttribute("active");
+
+            if (FBTest.ok(infoTipActive,
+                "There must be a color infotip shown hovering the value of the 'color' property " +
+                "of '" + elementID + "'."))
             {
-                FBTest.compare(expectedValue, infoTip.style.backgroundColor,
+                FBTest.compare(expectedValue, infoTip.firstChild.style.backgroundColor,
                     "The infotip must contain the same color as specified in the " +
                     "rule '" + elementID + "'.");
             }
 
             callback();
-        }, 300);
+        });
     });
 }
