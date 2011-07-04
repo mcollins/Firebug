@@ -1,0 +1,55 @@
+<?xml version="1.0"?> 
+<!-- See license.txt for terms of usage -->
+
+<?xml-stylesheet href="chrome://remotebug/skin/remoteBugMenu.css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"> 
+    <script src="chrome://remotebug/content/remoteBugModule.js" type="application/x-javascript"/> 
+    <script src="chrome://remotebug/content/remoteBugConnection.js" type="application/x-javascript"/> 
+    <script src="chrome://remotebug/content/remoteBugMenu.js" type="application/x-javascript"/> 
+    <script src="chrome://remotebug/content/remoteNetMonitor.js" type="application/x-javascript"/> 
+    <script src="chrome://remotebug/content/remoteNetPanel.js" type="application/x-javascript"/> 
+    <script src="chrome://remotebug/content/tabListRep.js" type="application/x-javascript"/> 
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_fbConnect" oncommand="Firebug.RemoteBug.Module.connect()"/>
+        <command id="cmd_fbDisconnect" oncommand="Firebug.RemoteBug.Module.disconnect()"/>
+    </commandset>
+
+    <!-- Firebug main toolbar -->
+    <hbox id="fbPanelBar1-innerToolbar">
+        <hbox id="fbPanelBar1-buttons">
+            <toolbarseparator/>
+            <toolbarbutton id="fbRemoteMenu" label="Connect" type="menu">
+                <menupopup onpopupshowing="return Firebug.RemoteBug.Menu.onMenuShowing(this);">
+                    <menuitem id="fbRemoteConnect" command="cmd_fbConnect"
+                        label="Connect" />
+                    <menuitem id="fbRemoteDisconnect" command="cmd_fbDisconnect"
+                        label="Disconnect" />
+                </menupopup>
+            </toolbarbutton>
+        </hbox>
+    </hbox>
+
+    <!-- Firebug inner toolbar -->
+    <toolbar id="fbToolbar" align="center">
+        <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
+            <hbox id="fbRemoteNetButtons" insertafter="fbNetButtons" collapsed="true">
+
+                <toolbarbutton id="fbConnect" command="cmd_fbConnect"
+                    collapsed="true" class="fbInternational" label="Connect">
+                </toolbarbutton>
+
+                <toolbarbutton id="fbDisconnect" command="cmd_fbDisconnect"
+                    collapsed="true" class="fbInternational" label="Disconnect">
+                </toolbarbutton>
+
+                <toolbarbutton id="fbGetTabList" command="cmd_fbGetTabList"
+                    collapsed="true" class="fbInternational" label="Get Tabs">
+                </toolbarbutton>
+
+            </hbox>
+        </hbox>
+    </toolbar>
+
+</overlay>

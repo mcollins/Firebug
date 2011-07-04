@@ -1,0 +1,11 @@
+/* See license.txt for terms of usage */
+
+/*************************************************************************************************/
+/* Remotebug UI */
+
+#fbRemoteMenu {
+}
+
+#fbThrobber {
+    list-style-image: url(chrome://remotebug/skin/throbber.png);
+}

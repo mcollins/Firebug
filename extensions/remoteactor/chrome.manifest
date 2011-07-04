@@ -1,0 +1,4 @@
+content remoteactor  chrome/content/remoteactor/
+resource remoteactor modules/
+
+overlay chrome://browser/content/browser.xul         chrome://remoteactor/content/netActor.xul
