@@ -1,11 +1,28 @@
-var fromOrion = {
 
-     onModelChanging: function(event)
-     {
+var fromOrion =
+{
+    buffer: "",
+
+    onModelChanging: function(event)
+    {
         console.log("firebugPlugin onModelChanging ", event);
-        firebugPlugin.firebugConnection.callService("logger", "firebugPlugin onModelChanging ", [event]);
-        //firebugPlugin.firebugConnection.callService("IStylesheet", "onRuleLineChanged", [changedLineIndex, lineText]);
-     },
+        firebugPlugin.firebugConnection.callService("IConsole", "log", ["firebugPlugin onModelChanging ", event]);
+        if (!this.buffer)
+        {
+            this.buffer = event.text;
+            this.sourceMap = new SourceMap(this.buffer);
+        }
+        else
+        {
+            this.sourceMap.editSource(event.start, event.text, event.removedCharCount);
+            var lineText = event.text;
+            var changedLineIndex = this.sourceMap.getLineByCharOffset(event.start);
+            var lineText = this.sourceMap.getLineSourceByLine(changedLineIndex);
+            firebugPlugin.firebugConnection.callService("IStylesheet", "onRuleLineChanged", [changedLineIndex, lineText]);
+        }
+    },
+
+
 
 };
 
@@ -16,11 +33,12 @@ var resourceOpener =
 
 var firebugPlugin =
 {
-    connectToOrion: function() {
+    connectToOrion: function()
+    {
         var provider = new eclipse.PluginProvider();
         provider.registerServiceProvider("orion.edit.listener", fromOrion, {});
         console.log("registered at orion.edit.listener, connecting... ", fromOrion);
-        provider.connect();
+        provider.connect(this.onConnectToOrion.bind(this), this.onErrorConnectToOrion.bind(this));
     },
 
     onConnectToOrion: function()

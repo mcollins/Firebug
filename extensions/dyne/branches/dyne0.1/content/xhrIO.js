@@ -18,11 +18,11 @@ var xhrIO =
 
     readAsynchronously: function(url, then, orElse)
     {
-        if (Components)
+        if (!window.console && Components)
             var req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
                  .createInstance(Components.interfaces.nsIXMLHttpRequest);
         else
-            var req = new XMLHTTPRequest();
+            var req = new XMLHttpRequest();
         req.overrideMimeType("application/json");
         req.onreadystatechange = function(event)
         {

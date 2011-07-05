@@ -1,0 +1,103 @@
+<html>
+<head>
+<script src="../../sourceMap.js"></script>
+<script>
+function passFail(test) {
+    return test ? "PASS" : "FAIL";
+}
+function check(actual, expected, ary, key)
+{
+    console.log(passFail(actual === expected)+' search for key = '+key+" in ",ary);
+}
+
+console.group("binaryIntervalSearch empty array, returns -1 error");
+var ary = [];
+var key = 0;
+check(binaryIntervalSearch(ary, key), -1, ary, key);
+key = 5;
+check(binaryIntervalSearch(ary, key), -1, ary, key);
+console.groupEnd();
+
+console.group("binaryIntervalSearch array [10], key <= 10 will report 0");
+ary.push(10);
+key = 0;
+check(binaryIntervalSearch(ary, key), 0, ary, key);
+key = 5;
+check(binaryIntervalSearch(ary, key), 0, ary, key);
+key = 11;
+check(binaryIntervalSearch(ary, key), -1, ary, key);
+console.groupEnd();
+
+console.group("binaryIntervalSearch array [10,20], search for 0 reports cell 0 because 0 < 10");
+ary.push(20);
+key = 0;
+check(binaryIntervalSearch(ary, key), 0, ary, key);
+key = 5;
+check(binaryIntervalSearch(ary, key), 0, ary, key);
+key = 11;
+check(binaryIntervalSearch(ary, key), 1, ary, key);
+console.groupEnd();
+
+// -------------------------------------------------------------------
+console.group("SourceMap.getLineByCharOffset, buffer empty, line zero will be  reported");
+var buffer = "";
+var smap = new SourceMap(buffer);
+check(smap.getLineByCharOffset(0), 0, smap, 0);
+check(smap.getLineByCharOffset(6), 0, smap, 6);
+console.groupEnd();
+
+console.group("SourceMap.getLineByCharOffset, buffer normal, lines reported are base 1");
+var buffer = "line1\nline2\n";
+var smap = new SourceMap(buffer);
+check(smap.getLineByCharOffset(-1), 0, smap, -1);
+check(smap.getLineByCharOffset(0), 1, smap, 0);
+check(smap.getLineByCharOffset(6), 2, smap, 6);
+check(smap.getLineByCharOffset(25), 0, smap, 25);
+console.groupEnd();
+
+console.group("SourceMap.getLineByCharOffset, buffer, no newline at end");
+var buffer = "line1\nline2";  // buffer does not end with newline
+var smap = new SourceMap(buffer);
+check(smap.getLineByCharOffset(-1), 0, smap, -1);
+check(smap.getLineByCharOffset(0), 1, smap, 0);
+check(smap.getLineByCharOffset(6), 2, smap, 6);
+check(smap.getLineByCharOffset(25), 0, smap, 25);
+console.groupEnd();
+
+console.group("SourceMap.getLineSourceByLine, buffer empty, undefined  reported");
+var buffer = "";
+var smap = new SourceMap(buffer);
+check(smap.getLineSourceByLine(0), undefined, smap, 0);
+check(smap.getLineSourceByLine(6), undefined, smap, 6);
+console.groupEnd();
+
+console.group("SourceMap.getLineSourceByLine, buffer normal, lines reported are base 1");
+var buffer = "line1\nline2\n";
+var smap = new SourceMap(buffer);
+check(smap.getLineSourceByLine(-1), undefined, smap, -1);
+check(smap.getLineSourceByLine(0), undefined, smap, 0);
+check(smap.getLineSourceByLine(2), "line2", smap, 2);
+check(smap.getLineSourceByLine(25), undefined, smap, 25);
+console.groupEnd();
+
+console.group("SourceMap.getLineSourceByLine, buffer, no newline at end");
+var buffer = "line1\nline2";  // buffer does not end with newline
+var smap = new SourceMap(buffer);
+check(smap.getLineSourceByLine(-1), undefined, smap, -1);
+check(smap.getLineSourceByLine(0), undefined, smap, 0);
+check(smap.getLineSourceByLine(1), "line1", smap, 1);
+check(smap.getLineSourceByLine(2), "line2", smap, 2);
+check(smap.getLineSourceByLine(25), undefined, smap, 25);
+console.groupEnd();
+
+console.group("SourceMap.editSource");
+var buffer = "line1\nline2\n";
+var smap = new SourceMap(buffer);
+check(smap.editSource(0, 'X', 1), buffer.length, smap, "s/l/X/");
+check(smap.getLineSourceByLine(smap.getLineByCharOffset(0)), "Xine1", smap, smap.getLineByCharOffset(0));
+console.groupEnd();
+</script>
+</head>
+<body>
+</body>
+</html>

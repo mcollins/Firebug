@@ -18,6 +18,7 @@
         <command id="cmd_toggleJSEditor" oncommand="Firebug.Dyne.toggleJSEditing()"/>
         <command id="cmd_saveDyneEditing" oncommand="Firebug.Dyne.saveEditing()"/>
         <command id="cmd_reloadDyne" oncommand="Firebug.Dyne.reloadDyne(window)"/>
+        <command id="cmd_parseJS" oncommand="Firebug.Parser.parse()"/>
     </commandset>
 
     <toolbar id="fbToolbar">
@@ -48,6 +49,11 @@
                 </toolbarbutton>
             </hbox>
             <hbox id="fbScriptButtons">
+                <toolbarbutton id="fbParseJS"
+                        label="firebug.Parse"
+                        command="cmd_parseJS"
+                        tooltiptext="Parse JavaScript"/>
+
                 <toolbarbutton id="fbToggleJSEditor"
                            label="firebug.Edit"
                            class="fbInternational"

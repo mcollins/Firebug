@@ -4,7 +4,8 @@ locale  dyne    en-US           locale/en-US/
 
 overlay chrome://firebug/content/firebugOverlay.xul       chrome://dyne/content/dyne.xul
 # Also useful in chromebug
-overlay chrome://fb4cb/content/firebugOverlay.xul         chrome://dyne/content/dyne.xul
+#overlay chrome://fb4cb/content/firebugOverlay.xul         chrome://dyne/content/dyne.xul
 
-# Maps resource://firebug/* to files in modules/*
+# Maps resource://dyne/* to files in modules/*
 resource dyne modules/
+resource dyne_rjs content/

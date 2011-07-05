@@ -23,7 +23,14 @@ Components.utils.import("resource://dyne/globalWindowExchange.jsm");
 Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 
 // ************************************************************************************************
-// Front end
+
+var config = Firebug.getModuleLoaderConfig();
+config.paths.parser = "dyne_rjs/parser";
+require(config,['parser/uglifyFirebug'], function(Parser)
+{
+    FBTrace.sysout("parser loaded");
+});
+
 
 // Deals with global UI sync
 Firebug.Dyne = extend(Firebug.Module,
@@ -528,13 +535,16 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
     {
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout(" We be cooking with gas!", obj);
-        this.orionConnection.registerService("logger", null, this.logIt);
+        this.orionConnection.registerService("IConsole", null, this.logger);
         this.attachUpdater();
     },
 
-    logIt: function()
+    logger:
     {
-        FBTrace.sysout("OrionConnection: "+arguments[0], arguments);
+        log:function()
+        {
+            FBTrace.sysout("OrionConnection: "+arguments[0], arguments);
+        }
     },
 
     orionEdit: function()
@@ -608,8 +618,8 @@ Firebug.Dyne.CompilationUnitUpdater.prototype =
 
         if (FBTrace.DBG_DYNE)
         {
-            FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged "+changedLineNumber+" "+lineText);
-            FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
+               FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged "+changedLineNumber+" "+lineText);
+               FBTrace.sysout("Firebug.Dyne.CompilationUnitUpdater onchanged removed: "+removedCharCount+" added: "+addedCharCount);
         }
 
         this.orionPanel.setSaveAvailable(true);
@@ -630,12 +640,10 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
 {
     reNameValue: /\s*([^:]*)\s*:\s*(.*?)\s*(!important)?\s*;/,
 
-    onRuleLineChanged: function(changedLineIndex, lineText)
+    onRuleLineChanged: function(changedLineNumber, lineText)
     {
          if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onRuleLineChanged "+changedLineIndex+" "+lineText);
-
-        var changedLineNumber = changedLineIndex + 1; // zero based orion to one based Firebug
+                FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater onRuleLineChanged "+changedLineNumber+" "+lineText);
 
         var rule = this.cssPanel.getRuleByLine(this.stylesheet, changedLineNumber);
 
