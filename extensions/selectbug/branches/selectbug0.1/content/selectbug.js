@@ -20,7 +20,8 @@ Firebug.registerStringBundle("chrome://selectbug/locale/selectbug.properties");
 
 
 /**
- * @panel Selector side panel displaying HTML elements for the current selector, either from the CSS main panel or user entry
+ * @panel Selector side panel displaying HTML elements for the current selector,
+ * either from the CSS main panel or user entry
  */
 function SelectorPanel() {}
 SelectorPanel.prototype = extend(Firebug.Panel,
@@ -39,8 +40,10 @@ SelectorPanel.prototype = extend(Firebug.Panel,
     initializeNode: function(oldPanelNode)
     {
         Firebug.Panel.initializeNode.apply(this, arguments);
+
         appendStylesheet(this.panelNode.ownerDocument, "chrome://selectbug/skin/selectbug.css");
         appendStylesheet(this.mainPanel.panelNode.ownerDocument, "chrome://selectbug/skin/selectbug.css");
+
         this.setSelection = bind(this.setSelection, this);
         this.clearSelection = bind(this.clearSelection, this);
         this.lockSelection = bind(this.lockSelection, this);
@@ -141,12 +144,11 @@ SelectorPanel.prototype = extend(Firebug.Panel,
         this.rebuild(true);
     },
 
-    /*
+    /**
      * returns an array of Elements matched from selector
      */
     getSelectedElements: function(selectorText)
     {
-
         var selections = Firebug.currentContext.window.document.querySelectorAll(selectorText);
         if (selections instanceof NodeList)
             return selections;
@@ -187,8 +189,10 @@ SelectorPanel.prototype = extend(Firebug.Panel,
                 return;
             }
         }
+
         var table = SelectorTemplate.tag.replace({object: []}, this.panelNode);
         var tbody = table.lastChild;
+
         if (this.trialSelector)
             WarningTemplate.noSelectionResultsTag.insertRows({object: this.selection}, tbody.lastChild)
         else
@@ -203,11 +207,13 @@ SelectorPanel.prototype = extend(Firebug.Panel,
             FBTrace.sysout("selectbug.getObjectPath NOOP", object);
     },
 
-     supportsObject: function(object)
+    supportsObject: function(object)
     {
         return 0;
     },
-    //********************************************************
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
     tryASelector:function(element)
     {
         if (!this.trialSelector)
@@ -249,10 +255,7 @@ SelectorPanel.prototype = extend(Firebug.Panel,
         trialSelectorDiv.textContent = trialSelector;
         collapse(trialSelectorDiv, !show);
     },
-
 });
-
-// ************************************************************************************************
 
 // ************************************************************************************************
 
@@ -269,17 +272,19 @@ var BaseRep = domplate(Firebug.Rep,
 
 // ************************************************************************************************
 
-
 var TrialRow =
-        TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
-            TD({"class": "watchEditCell", colspan: 3},
-                    DIV({"class": "watchEditBox a11yFocusNoTab", "id":"trialHint", role: "button", 'tabindex' : '0',
-                        'aria-label' : $STR('a11y.labels.press enter to add new selector')},
-                        $STR("selectbug.TryASelector")
-                    ),
-                    DIV({"class": "trialSelector", "id":"trialSelector"}, "")
-                )
-            );
+    TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
+        TD({"class": "watchEditCell", colspan: 3},
+            DIV({"class": "watchEditBox a11yFocusNoTab", "id":"trialHint",
+                role: "button", 'tabindex' : '0',
+                'aria-label' : $STR('a11y.labels.press enter to add new selector')},
+                $STR("selectbug.TryASelector")
+            ),
+            DIV({"class": "trialSelector", "id":"trialSelector"}, "")
+        )
+    );
+
+// ************************************************************************************************
 
 /**
  * @domplate: Template for basic layout of the {@link SelectorPanel} panel.
@@ -309,6 +314,8 @@ var SelectorTemplate = domplate(BaseRep,
     },
 
 });
+
+// ************************************************************************************************
 
 function SelectorEditor(panel)
 {
@@ -341,32 +348,36 @@ SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 
 });
 
+// ************************************************************************************************
 
 var WarningTemplate = domplate(Firebug.Rep,
 {
-    noSelectionTag: TR({"class":"selectbugWarning "},
-                        TD({"class": "selectionElement"}, $STR("selectbug.noSelection"))
-                    ),
+    noSelectionTag:
+        TR({"class":"selectbugWarning "},
+            TD({"class": "selectionElement"}, $STR("selectbug.noSelection"))
+        ),
 
-    noSelectionResultsTag: TR({"class":"selectbugWarning "},
-                            TD({"class": "selectionElement"}, $STR("selectbug.noSelectionResults"))
-                        ),
+    noSelectionResultsTag:
+        TR({"class":"selectbugWarning "},
+            TD({"class": "selectionElement"}, $STR("selectbug.noSelectionResults"))
+        ),
 
-    selectErrorTag: TR({"class":"selectbugWarning"},
-                        TD({"class": "selectionElement"}, $STR("selectbug.selectorError"))
-                    ),
+    selectErrorTag:
+        TR({"class":"selectbugWarning"},
+            TD({"class": "selectionElement"}, $STR("selectbug.selectorError"))
+        ),
+
     selectErrorTextTag:
-                    TR({"class":"selectbugWarning"},
-                        TD({"class":"selectionErrorText selectionElement"}, SPAN("$object"))
-                    ),
+        TR({"class":"selectbugWarning"},
+            TD({"class":"selectionErrorText selectionElement"}, SPAN("$object"))
+        ),
 });
 
-// ************************************************************************************************
 // ************************************************************************************************
 // Registration
 
 // xxxHonza: what if the stylesheet registration would be as follows:
-//Firebug.registerStylesheet("chrome://selectbug/skin/selectbug.css");
+// Firebug.registerStylesheet("chrome://selectbug/skin/selectbug.css");
 
 Firebug.registerPanel(SelectorPanel);
 
