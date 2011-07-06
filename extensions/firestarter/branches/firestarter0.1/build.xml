@@ -2,7 +2,7 @@
 
 <!-- In order to build FireStarter extension run: $ant build
     The final xpi file should be located in release directory -->
-<project name="netExport" basedir="." default="build">
+<project name="fireStarter" basedir="." default="build">
 
     <!-- Directories -->
     <property name="build.dir" value="release"/>
@@ -39,6 +39,7 @@
         <copy file="chrome.manifest" todir="${build.dir}"/>
         <copy file="install.rdf" todir="${build.dir}"/>
         <copy file="license.txt" todir="${build.dir}"/>
+        <copy file="update.rdf" todir="${build.dir}"/>
 
         <!-- Update release version from ant.properties file -->
         <replace file="${build.dir}/install.rdf" propertyFile="ant.properties">
@@ -46,12 +47,18 @@
             <replacefilter token="@RELEASE@" property="RELEASE"/>
         </replace>
 
-        <!-- Create final netExport.xpi file -->
+        <!-- Create final fireStarter.xpi file -->
         <zip destfile="${build.dir}/fireStarter-${VERSION}${RELEASE}.xpi"
             basedir="${build.dir}" update="true" />
 
+        <!-- Generate update.rdf file -->
+        <replace file="${build.dir}/update.rdf" propertyFile="ant.properties">
+            <replacefilter token="@VERSION@" property="VERSION"/>
+            <replacefilter token="@RELEASE@" property="RELEASE"/>
+        </replace>
+
         <!-- Final version message -->
-        <echo message="HARViewer version: ${VERSION}${RELEASE}"/>
+        <echo message="Firestarter version: ${VERSION}${RELEASE}"/>
     </target>
 
 </project>
