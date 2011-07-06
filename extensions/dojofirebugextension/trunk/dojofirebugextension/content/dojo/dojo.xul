@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE dojoDTD SYSTEM "chrome://dojofirebugextension/locale/dojo.dtd">
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    
+    <script type="application/x-javascript" src="chrome://firebug/content/moduleConfig.js"/>	
+	<script src="chrome://dojofirebugextension/content/loader.js" type="application/x-javascript"/>    
+
+<!--     
+    <script src="chrome://dojofirebugextension/content/lib/filtering.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/lib/utils.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/lib/collections.js" type="application/x-javascript"/>    
+    
+    <script src="chrome://dojofirebugextension/content/core/dojoaccess.js" type="application/x-javascript"/>
+    <script src="chrome://dojofirebugextension/content/core/dojodebugger.js" type="application/x-javascript"/>
+	<script src="chrome://dojofirebugextension/content/core/dojomodel.js" type="application/x-javascript"/>
+	<script src="chrome://dojofirebugextension/content/core/prefs.js" type="application/x-javascript"/>
+	<script src="chrome://dojofirebugextension/content/core/proxies.js" type="application/x-javascript"/>        
+    
+	<script src="chrome://dojofirebugextension/content/ui/uihelpers.js" type="application/x-javascript"/>
+	<script src="chrome://dojofirebugextension/content/ui/dojoreps.js" type="application/x-javascript"/>	
+    <script src="chrome://dojofirebugextension/content/ui/panels.js" type="application/x-javascript"/>
+    
+    <script src="chrome://dojofirebugextension/content/core/dojofirebugextension.js" type="application/x-javascript"/>    
+ -->
+
+    <stringbundleset id="stringbundleset">
+    	<stringbundle id="dojostrings" src="chrome://dojofirebugextension/locale/dojo.properties"/>
+	</stringbundleset>
+
+    <!-- Firefox page context menu -->
+    <menupopup id="contentAreaContextMenu">
+        <menuitem id="menu_dojofirebugextension_inspect" insertafter="menu_firebugInspect" label="&window.contextmenuitem.inspect;"
+                  command="cmd_dojofirebugextension_inspect" class="menuitem-iconic fbInternational" />
+    </menupopup>    
+
+    <commandset id="mainCommandSet">
+        <command id="cmd_dojofirebugextensionGetDojoWidgetButton" oncommand="DojoExtension.dojofirebugextensionModel.onShowWidgetsButton(Firebug.currentContext)"/>
+        <command id="cmd_dojofirebugextensionViewConnectionsInTable" oncommand="DojoExtension.dojofirebugextensionModel.onShowConnectionsInTableButton(Firebug.currentContext)"/>
+		<command id="cmd_dojofirebugextensionViewSubscriptions" oncommand="DojoExtension.dojofirebugextensionModel.onShowSubscriptionsButton(Firebug.currentContext)"/>
+		<command id="cmd_dojofirebugextension_inspect" oncommand="DojoExtension.dojofirebugextensionModel.inspectFromContextMenu(document.popupNode);"/>
+    </commandset>
+
+	<toolbar id="fbToolbar" align="center" role="toolbar">
+        <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
+            <hbox id="fbdojofirebugextensionButtons" insertafter="fbNetButtons">
+                <!-- <toolbarseparator/> -->
+                <toolbarbutton id="widgetsButton"
+                    label="&dojo.widgets.label;" class="toolbar-text-button"
+                    type="radio" group="dojoOptions" checked="true" 
+                    tooltiptext="&dojo.widgets.tooltip;" command="cmd_dojofirebugextensionGetDojoWidgetButton"/>
+                <toolbarbutton id="connectionsInTableButton"
+                    label="&dojo.connections.label;" class="toolbar-text-button"
+                    type="radio" group="dojoOptions" 
+                    tooltiptext="&dojo.connections.tooltip;" command="cmd_dojofirebugextensionViewConnectionsInTable"/>
+                <toolbarbutton id="subscriptionsButton"
+                    label="&dojo.subscriptions.label;" class="toolbar-text-button"
+                    type="radio" group="dojoOptions" 
+                    tooltiptext="&dojo.subscriptions.tooltip;" command="cmd_dojofirebugextensionViewSubscriptions"/>
+
+				<span id="dojoFilter-boxes">
+	                <!-- from box -->
+	                [Begin:
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnFromIndexBox" type="dojoConnFromIndexBox" value="0"/>
+	                    <spacer flex="1"/>
+	                </vbox>
+	                End:
+	                <!-- count Box -->                					
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnCountBox" type="dojoConnCountBox" value="50"/>
+	                    <spacer flex="1"/>
+	                </vbox>           	                	
+	                <!-- query Box -->
+	                Filter:
+	                <vbox flex="40">
+	                    <spacer flex="1"/>
+	                    <textbox id="dojoConnFilterBox" type="dojoConnFilterBox"/>
+	                    <spacer flex="1"/>
+	                </vbox>
+	                <button id="dojoApplyFilterButton" label="Apply"
+	                	command="cmd_dojofirebugextensionViewConnectionsInTable"/>
+					]
+
+                </span>
+                    
+           </hbox>
+       </hbox>
+    </toolbar>
+
+
+</overlay>
