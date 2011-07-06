@@ -18,7 +18,7 @@
             <menupopup id="FirebugMenu_OptionsPopup">
                 <menuitem type="checkbox" id="menu_onByDefault"
                     label="fs.firebug.menu.On By Default"
-                    oncommand="FirebugChrome.onToggleOption(this)"
+                    oncommand="Firebug.chrome.onToggleOption(this)"
                     option="onByDefault"
                     insertafter="menu_activateSameOrigin"/>
              </menupopup>
@@ -26,11 +26,11 @@
     </menupopup>
 
     <!-- Extend Firefox status bar & Firebug's context menu -->
-    <statusbar id="status-bar">
-        <menupopup id="fbStatusContextMenu" onpopupshowing="FirebugChrome.onOptionsShowing(this)">
+    <popupset id="mainPopupSet">
+        <menupopup id="fbStatusContextMenu">
             <menuitem id="menu_logAnnotations" label="fs.firebug.menu.Log Activation List"
                 command="cmd_logAnnotations"/>
         </menupopup>
-    </statusbar>
+    </popupset>
 
 </overlay>

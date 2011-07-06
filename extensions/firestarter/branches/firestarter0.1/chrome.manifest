@@ -3,5 +3,4 @@ skin    firestarter classic/1.0 chrome/skin/classic/
 
 locale  firestarter en-US chrome/locale/en-US/
 
-overlay chrome://browser/content/browser.xul    chrome://firestarter/content/fireStarter.xul
-overlay chrome://firebug/content/firebug.xul    chrome://firestarter/content/fireStarterFirebugOverlay.xul
+overlay chrome://firebug/content/firebugOverlay.xul    chrome://firestarter/content/fireStarter.xul
