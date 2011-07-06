@@ -75,7 +75,7 @@ CDB.Reps.GroupList = domplate(Reps.Rep,
         // If total tests is zero, there were no test in the test list.
         // xxxHonza: localization
         if (totalTests == 0)
-            return "no text executed";
+            return "no test executed";
 
         var count = group.value.failures;
         var testExecuted = group.value.testCount;
