@@ -37,6 +37,7 @@
             {
                 Connection.registry[interfaceId] = implementation;
             },
+
             receiveServiceCall: function(interfaceId, method, params)
             {
                 var implementation = Connection.registry[interfaceId];
@@ -119,6 +120,7 @@
             },
 
             disconnect: function() {
+                fnOfObject({disconnect:true});
                 targetElement.removeEventListener(messageType, Connection.receiveObject, false);
             }
         };

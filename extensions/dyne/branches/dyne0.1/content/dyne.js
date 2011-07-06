@@ -5,6 +5,7 @@ FBL.ns(function() { with (FBL) {
 if (Firebug.ToolsInterface) // 1.8
     var CompilationUnit = Firebug.ToolsInterface.CompilationUnit;
 
+
 // ************************************************************************************************
 // Constants
 
@@ -12,9 +13,10 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 const prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch2);
-
+//Dom should be module
+var Dom = {};
+Dom.domUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtils);
 Components.utils.import("resource://dyne/globalWindowExchange.jsm");
-
 // ************************************************************************************************
 
 // Register string bundle of this extension so, $STR method (implemented by Firebug)
@@ -23,14 +25,14 @@ Components.utils.import("resource://dyne/globalWindowExchange.jsm");
 Firebug.registerStringBundle("chrome://dyne/locale/dyne.properties");
 
 // ************************************************************************************************
-
+/*
 var config = Firebug.getModuleLoaderConfig();
 config.paths.parser = "dyne_rjs/parser";
 require(config,['parser/uglifyFirebug'], function(Parser)
 {
     FBTrace.sysout("parser loaded");
 });
-
+*/
 
 // Deals with global UI sync
 Firebug.Dyne = extend(Firebug.Module,
@@ -535,8 +537,16 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
     {
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout(" We be cooking with gas!", obj);
-        this.orionConnection.registerService("IConsole", null, this.logger);
-        this.attachUpdater();
+        if (obj.disconnect)
+        {
+            this.detachUpdater();
+            this.orionConnection.unregisterService("IConsole", null, this.logger);
+        }
+        else
+        {
+            this.orionConnection.registerService("IConsole", null, this.logger);
+            this.attachUpdater();
+        }
     },
 
     logger:
@@ -570,6 +580,9 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
      */
     attachUpdater: function()
     {
+        if (this.updater)
+            this.detachUpdater();
+
         if (this.isLocalURI(this.location))
         {
             if (FBTrace.DBG_DYNE)
@@ -579,18 +592,26 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         var fromPanel = this.location.getOriginPanelName();
         if (fromPanel === "stylesheet")
         {
-            var updater = new Firebug.Dyne.CSSStylesheetUpdater(this.location);
+            this.updater = new Firebug.Dyne.CSSStylesheetUpdater(this.location, this.orionConnection);
             this.orionConnection.registerService("IStylesheet", null, updater);
+            Firebug.CSSModule.addListener(updater);
+            FBTrace.sysout("Firebug.CSSModule.addListener ", updater);
             return;
         }
         else if (fromPanel === "script")
         {
-            var updater = new Firebug.Dyne.CompilationUnitUpdater(this.location);
+            this.updater = new Firebug.Dyne.CompilationUnitUpdater(this.location);
             this.orionConnection.registerService("IJavaScript", null, updater);
             return;
         }
         // TODO a different listener for each kind of file
         FBTrace.sysout("Dyne attachUpdater ERROR no match "+this.location.getEditURL(), this.location);
+    },
+
+    detachUpdater: function()
+    {
+        this.orionConnection.unregisterService(this.updater.API, null, this.updater);
+        Firebug.CSSModule.removeListener(this.updater);
     },
 
     reLocalURI: /^chrome:|^file:|^resource:/,
@@ -627,17 +648,20 @@ Firebug.Dyne.CompilationUnitUpdater.prototype =
 
 },
 
-
-Firebug.Dyne.CSSStylesheetUpdater = function(editLink)
+Firebug.Dyne.CSSStylesheetUpdater = function(editLink, orionConnection)
 {
     this.cssPanel = editLink.getOriginPanel();
     this.stylesheet = this.cssPanel.location;
+    this.orionConnection = orionConnection;
 }
 
 var rePriority = /(.*?)\s*(!important)?$/;
 
 Firebug.Dyne.CSSStylesheetUpdater.prototype =
 {
+    // **********************************************************
+    // For edit events starting in Orion and updating in Firebug
+
     reNameValue: /\s*([^:]*)\s*:\s*(.*?)\s*(!important)?\s*;/,
 
     onRuleLineChanged: function(changedLineNumber, lineText)
@@ -667,7 +691,67 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
 
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // For edit events starting in Firebug and updating Orion
+    // CSSModule Change Listener
+
+    onCSSInsertRule: function(styleSheet, cssText, ruleIndex)
+    {
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne onCSSInsertRule", arguments);
+        var rule = styleSheet.cssRules[ruleIndex];
+        var selectorLine = Dom.domUtils.getRuleLine(rule);
+        var event = {
+                selectorLine: selectorLine,  // insert before this current selectorLine
+                cssText: cssText,
+                };
+        this.orionConnection.postObject({onCSSDeleteRule: event});
+    },
+
+    onCSSDeleteRule: function(styleSheet, ruleIndex)
+    {
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne onCSSDeleteRule", arguments);
+        var rule = styleSheet.cssRules[ruleIndex];
+        var selectorLine = Dom.domUtils.getRuleLine(rule);
+        var event = {
+                selectorLine: selectorLine,
+                };
+        this.orionConnection.postObject({onCSSDeleteRule: event});
+    },
+
+    onCSSSetProperty: function(style, propName, propValue, propPriority, prevValue,
+        prevPriority, rule, baseText)
+    {
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne onCSSSetProperty ", {args: arguments, updater: this});
+        var selectorLine = Dom.domUtils.getRuleLine(rule);
+        var event = {
+                selectorLine: selectorLine,
+                propName: propName,
+                propValue: propValue,
+                propPriority: propPriority,
+                prevValue: prevValue,
+                prevPriority: prevPriority
+                };
+        this.orionConnection.postObject({onCSSSetProperty: event});
+    },
+
+    onCSSRemoveProperty: function(style, propName, prevValue, prevPriority, rule, baseText)
+    {
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne onCSSRemoveProperty", arguments);
+        var selectorLine = Dom.domUtils.getRuleLine(rule);
+        var event = {
+                selectorLine: selectorLine,
+                propName: propName,
+                prevValue: prevValue,
+                prevPriority: prevPriority
+                };
+        this.orionConnection.postObject({onCSSRemoveProperty: event});
+    }
 },
+
 
 Firebug.Dyne.Saver = function dyneSaver(onSaveSuccess)
 {
