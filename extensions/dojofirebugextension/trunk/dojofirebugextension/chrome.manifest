@@ -3,7 +3,7 @@ skin    	dojofirebugextension  	classic/1.0		skin/classic/
 locale  	dojofirebugextension	en-US			locale/en-US/
 locale  	dojofirebugextension	es-AR			locale/es-AR/
 
-overlay		chrome://firebug/content/firebugOverlay.xul		chrome://dojofirebugextension/content/dojofirebugextension.xul
+overlay		chrome://firebug/content/firebugOverlay.xul		chrome://dojofirebugextension/content/dojo.xul
 
 #requirejs modules
 resource    dojo    content/dojo/
