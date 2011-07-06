@@ -7,13 +7,33 @@
  */
 
 
+
 /**
  * dojo specific Reps.
  * @author preyna@ar.ibm.com
  * @author fergom@ar.ibm.com
  */
-var DojoReps = FBL.ns(function() { with (FBL) {
+define([
+        "firebug/chrome/reps",
+        "firebug/firebug",
+        "firebug/js/stackFrame",
+        "firebug/lib/css",
+        "firebug/lib/dom",
+        "firebug/lib/domplate",
+        "firebug/lib/events",
+        "firebug/lib/lib",
+        "firebug/lib/locale",
+        "firebug/lib/object",
+        "dojo/core/dojomodel",
+        "dojo/core/prefs",
+        "dojo/lib/collections",
+       ], function dojoRepsFactory(FirebugReps, Firebug, StackFrame, Css, Dom, Domplate, Events, FBL, Locale, Obj, DojoModel, DojoPrefs, Collections)
+{
+with(Domplate) {
 
+var DojoReps = {};
+
+//FIXME XXXpreyna need to use the UI.DOJO_BUNDLE constant. Cannot do it now, because of a circular dependency.
 var DOJO_BUNDLE = "dojostrings";    
     
 //****************************************************************
@@ -27,7 +47,7 @@ var getRep = function(value) {
         return tag;
     };
 
-var getMethodLabel = this.getMethodLabel = function(method) {
+var getMethodLabel = DojoReps.getMethodLabel = function(method) {
     
     // TODO: method should not be undefined, but it happens. Alert this situation.
     if(!method) {
@@ -39,9 +59,10 @@ var getMethodLabel = this.getMethodLabel = function(method) {
         label = method;
     } else {
         //xxxPERFORMANCE
-        var script = findScriptForFunctionInContext(Firebug.currentContext, method);            
+        //TODO encapsulate in our debugger file
+        var script = Firebug.SourceFile.findScriptForFunctionInContext(Firebug.currentContext, method);            
         try {
-            label = script ? getFunctionName(script, Firebug.currentContext) : method.name;
+            label = script ? StackFrame.getFunctionName(script, Firebug.currentContext) : method.name;
         } catch(exc) {
             //$$HACK
             label = method.name;
@@ -56,21 +77,22 @@ var getFunctionObject = function(conn) {
 };
 
 var onContainerClick = function(event){
-    if (!isLeftClick(event))
+    if (!Events.isLeftClick(event)) {
       return;
+    }
 
-    var container = getAncestorByClass(event.target, "collapsable-container");
+    var container = Dom.getAncestorByClass(event.target, "collapsable-container");
     this.toggleContainer(container);
 };
 
 var toggleContainer = function(container){
-    if (hasClass(container, "container-collapsed"))
+    if (Css.hasClass(container, "container-collapsed"))
     {
-        removeClass(container, "container-collapsed");
-        setClass(container, "container-opened");
+        Css.removeClass(container, "container-collapsed");
+        Css.setClass(container, "container-opened");
     } else {
-        removeClass(container, "container-opened");
-        setClass(container, "container-collapsed");
+        Css.removeClass(container, "container-opened");
+        Css.setClass(container, "container-collapsed");
     }
 };
 
@@ -80,7 +102,7 @@ var toggleContainer = function(container){
 //****************************************************************
 
 
-this.DojoMainRep = domplate(FirebugReps.Obj,
+DojoReps.DojoMainRep = domplate(FirebugReps.Obj,
 {
     tag: FirebugReps.OBJECTLINK(
             "$object|getTitle"
@@ -101,7 +123,7 @@ this.DojoMainRep = domplate(FirebugReps.Obj,
 });
 
 //************************************************************************************************
-this.DijitMainRep = domplate(FirebugReps.Obj,
+DojoReps.DijitMainRep = domplate(FirebugReps.Obj,
 {
     tag: FirebugReps.OBJECTLINK(
             "$object|getTitle"
@@ -123,7 +145,7 @@ this.DijitMainRep = domplate(FirebugReps.Obj,
 
 //************************************************************************************************
 /** Rep for dojo classes */
-this.DojoObjectRep = domplate(FirebugReps.Obj,
+DojoReps.DojoObjectRep = domplate(FirebugReps.Obj,
 {
 
     tag: FirebugReps.OBJECTLINK(
@@ -144,7 +166,7 @@ this.DojoObjectRep = domplate(FirebugReps.Obj,
 });
 
 //************************************************************************************************
-this.DijitRep = domplate(FirebugReps.Obj,
+DojoReps.DijitRep = domplate(FirebugReps.Obj,
 {
     tag: FirebugReps.OBJECTLINK(
         SPAN({"class":"dojo-widget dojo-tracked-obj $object|getDetachedClassName $object|getCustomClassName", _referencedObject: "$object"},
@@ -194,7 +216,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
     /**
      * allows widget to display specific style
      */
-    /*string*/    getCustomClassName: function(/*dijit widget*/widget) {
+    /*string*/getCustomClassName: function(/*dijit widget*/widget) {
         return widget.getCustomStyle ? widget.getCustomStyle() : "";
     },
 
@@ -214,7 +236,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
     highlightObject: function(widget, context) {
         var domElem = this._getHtmlNode(widget);
         
-        Firebug.Inspector.highlightObject(domElem, context);
+        Firebug.Inspector.highlightObject(domElem, context); //FIXME preyna using global
     },
     
     _getHtmlNode: function(widget) {
@@ -226,13 +248,14 @@ this.DijitRep = domplate(FirebugReps.Obj,
     },
 
     getContextMenuItems: function(widget, target, context, script) {
-        if (!widget)
+        if (!widget) {
             return;
+        }
     
         
         return [
             "-",
-            {label: FBL.$STRF("InspectInTab", ["HTML"]), nol10n: true, command: bindFixed(this._inspectHtml, this, widget, context) }
+            {label: Locale.$STRF("InspectInTab", ["HTML"]), nol10n: true, command: Obj.bindFixed(this._inspectHtml, this, widget, context) }
         ];
     },
     
@@ -240,7 +263,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
         var widgetLabel = '[' + this.getWidgetId(widget) + ' (' + this.getWidgetDeclaredClass(widget) + ')]';
         
         if(this.isDetached(widget)) {
-            widgetLabel = $STR('detached.tooltip', DOJO_BUNDLE) + ": " + widgetLabel;
+            widgetLabel = Locale.$STR('detached.tooltip', DOJO_BUNDLE) + ": " + widgetLabel;
         }
         
         return widgetLabel;
@@ -249,7 +272,7 @@ this.DijitRep = domplate(FirebugReps.Obj,
 });
 
 //************************************************************************************************
-this.ConnectionRep = domplate(FirebugReps.Obj,
+DojoReps.ConnectionRep = domplate(FirebugReps.Obj,
 {
     inspectable: false,
     
@@ -285,7 +308,7 @@ this.ConnectionRep = domplate(FirebugReps.Obj,
 });
 
 //************************************************************************************************
-this.SubscriptionRep = domplate(FirebugReps.Obj, {
+DojoReps.SubscriptionRep = domplate(FirebugReps.Obj, {
     inspectable: false,
     
     shortTag: DIV({},
@@ -319,10 +342,10 @@ this.SubscriptionRep = domplate(FirebugReps.Obj, {
 });        
 
 //************************************************************************************************
-this.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
+DojoReps.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
 {
     inspectable: false,
-    tag: DIV({class: "connectionsInfo"},
+    tag: DIV({"class": "connectionsInfo"},
             DIV({"class": "object"}, TAG("$object.object|getRep", {object: "$object.object", className: "object"})),
             DIV({"class": "objectSubscriptions"},
                 FOR("sub", "$object|subscriptionsIterator",
@@ -343,7 +366,7 @@ this.SubscriptionsArrayRep = domplate(FirebugReps.Obj,
 
 //************************************************************************************************
 
-this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
+DojoReps.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 {
     inspectable: false,
     
@@ -358,7 +381,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
                 DIV({"class": "collapsable-container container-opened"},
                     DIV({"class": "collapsable-label", onclick: "$onContainerClick"},
                         DIV({"class": "incomingConnections"},
-                            $STR('title.Listened by', DOJO_BUNDLE),
+                            Locale.$STR('title.Listened by', DOJO_BUNDLE),
                             " ($object|getTotalCountOfIncommingConnections)"
                         )
                     ),
@@ -371,7 +394,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
                                 DIV({"class": "collapsable-content"},
                                     FOR("con", "$incCon.connections",
                                         DIV({"class": "dojo-connection connectionOut", _referencedObject: "$con"}, 
-                                            TAG(this.ConnectionRep.tagIncomming, {object: "$con", className: "connection"})
+                                            TAG(DojoReps.ConnectionRep.tagIncomming, {object: "$con", className: "connection"})
                                         )
                                     )
                                 )
@@ -386,7 +409,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
                 DIV({"class": "collapsable-container container-opened"},
                     DIV({"class": "collapsable-label", onclick: "$onContainerClick"},
                         DIV({"class": "outgoingConnections"}, 
-                            $STR('title.Listens to', DOJO_BUNDLE),
+                            Locale.$STR('title.Listens to', DOJO_BUNDLE),
                             " ($object|getTotalCountOfOutgoingConnections)"
                         )
                     ),
@@ -402,7 +425,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
                                 DIV({"class": "collapsable-content"},    
                                     FOR("con", "$outCon.connections",
                                         DIV({"class": "dojo-connection connectionInc", _referencedObject: "$con"}, 
-                                            TAG(this.ConnectionRep.tagOutgoing, {object: "$con", className: "connection"})
+                                            TAG(DojoReps.ConnectionRep.tagOutgoing, {object: "$con", className: "connection"})
                                         )
                                     )
                                 )
@@ -419,7 +442,8 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
     /*array*/incommingConnectionsIterator: function(/*ConnectionsTracker*/conInfo) {
         var incConnect = [];
         var incommingConnectionsEvents = conInfo.getIncommingConnectionsEvents();
-        for (var i = 0; i < incommingConnectionsEvents.length; i++ ) {
+        var i;
+        for (i = 0; i < incommingConnectionsEvents.length; i++ ) {
             var obj = conInfo.object;
             var event = incommingConnectionsEvents[i];
             var connections = conInfo.getIncommingConnectionsForEvent(event); //array            
@@ -430,7 +454,8 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
       /*array*/outgoingConnectionsIterator: function(/*ConnectionsTracker*/outCons) {
         var outConnect = [];
         var outgoingConnectionsMethods = outCons.getOutgoingConnectionsMethods();
-        for (var i = 0; i < outgoingConnectionsMethods.length; i++) {
+        var i;
+        for (i = 0; i < outgoingConnectionsMethods.length; i++) {
             var m = outgoingConnectionsMethods[i];
             var connections = outCons.getOutgoingConnectionsForMethod(m);
             var context = outCons.object;
@@ -467,7 +492,7 @@ this.ConnectionsInfoRep = domplate(FirebugReps.Obj,
 /**
  * @class IncomingConnectionsDescriptor
  */
-var IncomingConnectionsDescriptor = this.IncomingConnectionsDescriptor = function(obj, /*string*/event, /*array*/connections){
+var IncomingConnectionsDescriptor = DojoReps.IncomingConnectionsDescriptor = function(obj, /*string*/event, /*array*/connections){
      this.obj = obj;
      this.event = event;
      this.connections = connections;
@@ -483,16 +508,16 @@ IncomingConnectionsDescriptor.prototype =
 /**
  * @class OutgoingConnectionsDescriptor
  */
-var OutgoingConnectionsDescriptor = this.OutgoingConnectionsDescriptor = function(context, method, /*array*/connections){
+var OutgoingConnectionsDescriptor = DojoReps.OutgoingConnectionsDescriptor = function(context, method, /*array*/connections){
      this.context = context;
      this.method = method;
      this.connections = connections; //array
 };
-OutgoingConnectionsDescriptor.prototype = extend(DojoModel.FunctionLinkResolver.prototype, {});
+OutgoingConnectionsDescriptor.prototype = Obj.extend(DojoModel.FunctionLinkResolver.prototype, {});
 
 
 //************************************************************************************************
-this.SubscriptionsRep = domplate(FirebugReps.Obj,
+DojoReps.SubscriptionsRep = domplate(FirebugReps.Obj,
 {
     inspectable: false,
     tag: DIV({"class": "subscriptions"},
@@ -504,7 +529,7 @@ this.SubscriptionsRep = domplate(FirebugReps.Obj,
                     DIV({"class": "collapsable-content"},
                         FOR("sub", "topic.subscriptions",
                             DIV({"class": "dojo-subscription subscription", _referencedObject: "$sub"}, 
-                                TAG(this.ConnectionRep.tagIncomming, {object: "$sub", className: "subscription"})
+                                TAG(DojoReps.ConnectionRep.tagIncomming, {object: "$sub", className: "subscription"})
                             )
                         ), "<br/>"
                     )
@@ -520,7 +545,8 @@ this.SubscriptionsRep = domplate(FirebugReps.Obj,
     topicsIterator: function(/*Map*/subscriptions) {
         var topics = [];
         var topicsArray = subscriptions.getKeys();
-        for (var e = 0; e < topicsArray.length; e++) { 
+        var e;
+        for (e = 0; e < topicsArray.length; e++) { 
             topics.push(
                 {topic: topicsArray[e],
                  subscriptions: subscriptions.get(topicsArray[e])}
@@ -534,21 +560,21 @@ this.SubscriptionsRep = domplate(FirebugReps.Obj,
 });
 
 //************************************************************************************************
-this.ConnectionsTableRep = domplate(
+DojoReps.ConnectionsTableRep = domplate(
         {tag:
             DIV({"id": "connections-table"},
                 TABLE({"class": "connections-table", "cellpadding": 0, "cellspacing": 0},
                         TBODY(
                             TR({"class": ""},
-                                    TD({"class": "superHeader", "colspan": "2"}, $STR('title.Source', DOJO_BUNDLE)),
-                                    TD({"class": "superHeader", "colspan": "2"}, $STR('title.Target', DOJO_BUNDLE))
+                                    TD({"class": "superHeader", "colspan": "2"}, Locale.$STR('title.Source', DOJO_BUNDLE)),
+                                    TD({"class": "superHeader", "colspan": "2"}, Locale.$STR('title.Target', DOJO_BUNDLE))
                               ),
                             TR({"class": "connectionsPropertyHeaders"},
                                     //TODO preyna sorted table: enable again!
-                                    TH({/*"class": "$priorityCriteriaArray|objectPriorityOrder", "onclick": "$sorterObject"*/}, $STR('title.Obj', DOJO_BUNDLE)),
-                                    TH({/*"class": "$priorityCriteriaArray|eventPriorityOrder", "onclick": "$sorterEvent"*/},$STR('title.Event', DOJO_BUNDLE)),
-                                    TH({/*"class": "$priorityCriteriaArray|contextPriorityOrder", "onclick": "$sorterContext"*/},$STR('title.Context', DOJO_BUNDLE)),
-                                    TH({/*"class": "$priorityCriteriaArray|methodPriorityOrder", "onclick": "$sorterMethod"*/},$STR('title.Method', DOJO_BUNDLE))
+                                    TH({/*"class": "$priorityCriteriaArray|objectPriorityOrder", "onclick": "$sorterObject"*/}, Locale.$STR('title.Obj', DOJO_BUNDLE)),
+                                    TH({/*"class": "$priorityCriteriaArray|eventPriorityOrder", "onclick": "$sorterEvent"*/},Locale.$STR('title.Event', DOJO_BUNDLE)),
+                                    TH({/*"class": "$priorityCriteriaArray|contextPriorityOrder", "onclick": "$sorterContext"*/},Locale.$STR('title.Context', DOJO_BUNDLE)),
+                                    TH({/*"class": "$priorityCriteriaArray|methodPriorityOrder", "onclick": "$sorterMethod"*/},Locale.$STR('title.Method', DOJO_BUNDLE))
                               ),
                             FOR("con", "$connections",
                                 TR({"class": "dojo-connection row-$null|changeLineType", _referencedObject: "$con"},
@@ -573,7 +599,7 @@ this.ConnectionsTableRep = domplate(
           getFunctionObject: getFunctionObject,
           getRep: getRep,
           changeLineType: function(object, type) {
-            var type = this.counter = (this.counter) ? this.counter : "even";
+            var type = this.counter = this.counter || "even";
             this.counter = (this.counter == 'even') ? "odd" : "even";
             return type;
         },
@@ -597,7 +623,7 @@ this.ConnectionsTableRep = domplate(
 );
 
 //************************************************************************************************
-this.CounterLabel = domplate(FirebugReps.Obj,
+DojoReps.CounterLabel = domplate(FirebugReps.Obj,
         {
             inspectable: false,
             tag: DIV({"class": "$counterLabelClass"}, 
@@ -607,13 +633,13 @@ this.CounterLabel = domplate(FirebugReps.Obj,
         });
 
 //************************************************************************************************
-this.Messages = domplate({
+DojoReps.Messages = domplate({
     infoTag: DIV({"class": "infoMessage"}, "$object"),
     simpleTag: DIV({"class": "simpleMessage"}, "$object")
 });
 
 //************************************************************************************************
-this.ActionMessageBox = domplate({
+DojoReps.ActionMessageBox = domplate({
     tag: 
         DIV({"class": "dojo-warning", "id": "$actionMessageBoxId", "style": "display: $visibility"},
             IMG({"src": 'chrome://dojofirebugextension/skin/info.png'}),
@@ -627,8 +653,8 @@ this.ActionMessageBox = domplate({
 });
 
 //************************************************************************************************
-
-this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
+//FIXME preyna : using globals
+DojoReps.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 {
     // object will be array of dijit widgets
     tag :DIV({"class": "widgets-container"},
@@ -636,9 +662,9 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
                 DIV({"class": "collapsable-container container-collapsed widget-info-level-specific", _repWidget:"$widget", _decFunction:"$propertiesToShow"},
                         DIV({"class": "widget-label"},
                                 SPAN({"class": "collapsable-label", onclick: "$onContainerClick"},
-                                        TAG(this.DijitRep.tag, {object: "$widget"})
+                                        TAG(DojoReps.DijitRep.tag, {object: "$widget"})
                                 ),
-                                SPAN({"class": "infoLevelToggle", onclick: "$onSwitchInfoLevelClick", title: $STR('widget.infoLevelToggle.tooltip', DOJO_BUNDLE)}, "&nbsp;")
+                                SPAN({"class": "infoLevelToggle", onclick: "$onSwitchInfoLevelClick", title: Locale.$STR('widget.infoLevelToggle.tooltip', DOJO_BUNDLE)}, "&nbsp;")
                             ),
                         DIV({"class": "collapsable-content", _referencedObject:"$widget"},
                                 DIV({"class": "widget-specific-data not-loaded"}),
@@ -649,11 +675,12 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
         ),
     
     onContainerClick: function(event) {
-        if (!isLeftClick(event))
+        if (!Events.isLeftClick(event)) {
             return;
+        }
 
-        var elem = getAncestorByClass(event.target, "collapsable-container");
-        var specificInfoLevel = hasClass(elem, "widget-info-level-specific");
+        var elem = Dom.getAncestorByClass(event.target, "collapsable-container");
+        var specificInfoLevel = Css.hasClass(elem, "widget-info-level-specific");
         this.lazyContentLoad(elem, 
                 (specificInfoLevel) ? "widget-specific-data" : "widget-full-data",
                 elem.repWidget, (specificInfoLevel) ? elem.decFunction : null);
@@ -662,24 +689,24 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
     toggleContainer: toggleContainer,
     onSwitchInfoLevelClick: function(event){
         var select = event.target;
-        var elem = getAncestorByClass(select, "collapsable-container");
+        var elem = Dom.getAncestorByClass(select, "collapsable-container");
             
-        if (hasClass(elem, "widget-info-level-specific")) {
-              removeClass(elem, "widget-info-level-specific");
-              setClass(elem, "widget-info-level-full");
+        if (Css.hasClass(elem, "widget-info-level-specific")) {
+              Css.removeClass(elem, "widget-info-level-specific");
+              Css.setClass(elem, "widget-info-level-full");
               this.lazyContentLoad(elem, "widget-full-data", elem.repWidget);
           } else {
-              removeClass(elem, "widget-info-level-full");
-              setClass(elem, "widget-info-level-specific");
+              Css.removeClass(elem, "widget-info-level-full");
+              Css.setClass(elem, "widget-info-level-specific");
               this.lazyContentLoad(elem, "widget-specific-data", elem.repWidget, elem.decFunction);
           }
     },
     lazyContentLoad: function(parentNode, nodeClass, obj, decFunction){
-        var nodes = getElementsByClass(parentNode, nodeClass);
+        var nodes = parentNode.getElementsByClassName(nodeClass);
         var node = (nodes) ? nodes[0] : null;
-        if(node && hasClass(node, "not-loaded")){
-            Firebug.DOMPanel.DirTable.tag.append({object: ((decFunction) ? decFunction(obj) : obj)}, node);
-            removeClass(node, "not-loaded");
+        if(node && Css.hasClass(node, "not-loaded")){            
+            Firebug.DOMPanel.DirTable.tag.append({object: ((decFunction) ? decFunction(obj) : obj)}, node); //FIXME preyna : using globals
+            Css.removeClass(node, "not-loaded");
         }
     }
 });
@@ -687,7 +714,7 @@ this.WidgetListRep = domplate(Firebug.DOMPanel.DirTable,
 //************************************************************************************************
 
 
-this.WidgetsTreeRep = domplate({
+DojoReps.WidgetsTreeRep = domplate({
     //"object" is an array of widgets (the roots)
     //expandPath will be an array of widgets
     tag: DIV({"class": "widgets-tree", _decFunction:"$propertiesToShow", _expandPath: "$expandPath"},
@@ -702,9 +729,9 @@ this.WidgetsTreeRep = domplate({
                             _level: "$level"},
                         DIV({"class": "widget-label"},
                                 SPAN({"class": "collapsable-children-label $wrapper|hasChildrenClass", onclick: "$onChildrenContainerClick" },
-                                        TAG(this.DijitRep.tag, {object: "$wrapper.widget"})
+                                        TAG(DojoReps.DijitRep.tag, {object: "$wrapper.widget"})
                                 )/*, //DEPRECATED
-                                SPAN({"class": "$wrapper|infoLevelToggleClass", onclick: "$onSwitchInfoLevelClick", title: $STR('widget.infoLevelToggle.tooltip', DOJO_BUNDLE)}, "&nbsp;")
+                                SPAN({"class": "$wrapper|infoLevelToggleClass", onclick: "$onSwitchInfoLevelClick", title: Locale.$STR('widget.infoLevelToggle.tooltip', DOJO_BUNDLE)}, "&nbsp;")
                                 */
                             ),
                         DIV({"class": "widget-data widget-data-collapsed collapsable-content", _referencedObject:"$wrapper.widget"},
@@ -746,9 +773,11 @@ this.WidgetsTreeRep = domplate({
         if(widget.isFakeRoot) {
             return widgetsArray[0] && widgetsArray[0].isFakeRoot;
         }
-        var usingHashcodes = DojoExtension._isHashCodeBasedDictionaryImplementationEnabled();
-        for(var i=0;i<widgetsArray.length;i++) {    
-            if(DojoModel.areEqual(widget, widgetsArray[i], usingHashcodes)) {
+
+        var usingHashcodes = DojoPrefs._isHashCodeBasedDictionaryImplementationEnabled();
+        var i;
+        for(i=0;i<widgetsArray.length;i++) {    
+            if(Collections.areEqual(widget, widgetsArray[i], usingHashcodes)) {
                 return true;
             }
         }
@@ -786,18 +815,19 @@ this.WidgetsTreeRep = domplate({
     
     //DEPRECATED
     _getDecFunction: function(node) {
-        var root = getAncestorByClass(node, "widgets-tree");
+        var root = Dom.getAncestorByClass(node, "widgets-tree");
         return root.decFunction;
     },
     _getExpandPath: function(node) {
-        var root = getAncestorByClass(node, "widgets-tree");
+        var root = Dom.getAncestorByClass(node, "widgets-tree");
         return root.expandPath;
     },    
     onChildrenContainerClick: function(event) {
-        if (!isLeftClick(event))
+        if (!Events.isLeftClick(event)) { 
             return;
+        }
 
-        var elem = getAncestorByClass(event.target, "collapsable-children-container");
+        var elem = Dom.getAncestorByClass(event.target, "collapsable-children-container");
 
         if(!this.hasChildren(elem.repWidget)) {
             return;
@@ -809,10 +839,10 @@ this.WidgetsTreeRep = domplate({
     
       //DEPRECATED
     onSwitchInfoLevelClick: function(event) {
-        if (!isLeftClick(event)) {
+        if (!Events.isLeftClick(event)) {
             return;
         }        
-        var elem = getAncestorByClass(event.target, "collapsable-container");
+        var elem = Dom.getAncestorByClass(event.target, "collapsable-container");
         
         //FIXME do not explicitely use fakeNode
         if(elem.repWidget.isFakeRoot) {
@@ -821,64 +851,65 @@ this.WidgetsTreeRep = domplate({
         }
         
         //clear displayed info
-        var nodes = getElementsByClass(elem, "widget-data");
+        var nodes = elem.getElementsByClassName("widget-data");
         var node = (nodes) ? nodes[0] : null;
         if(node){
             nodes.innerHTML = '';
         }
         
         var needsToggle = true;
-        if(hasClass(elem, "widget-info-level-none")) {
-            removeClass(elem, "widget-info-level-none");
-            setClass(elem, "widget-info-level-specific");
-        } else if (hasClass(elem, "widget-info-level-specific")) {
-            removeClass(elem, "widget-info-level-specific");
-              setClass(elem, "widget-info-level-full");
-              needsToggle = false; //node already expanded...
+        if(Css.hasClass(elem, "widget-info-level-none")) {
+            
+            Css.removeClass(elem, "widget-info-level-none");
+            Css.setClass(elem, "widget-info-level-specific");
+        } else if (Css.hasClass(elem, "widget-info-level-specific")) {
+            Css.removeClass(elem, "widget-info-level-specific");
+            Css.setClass(elem, "widget-info-level-full");
+            needsToggle = false; //node already expanded...
         } else {
-              removeClass(elem, "widget-info-level-full");
-              setClass(elem, "widget-info-level-none");
+            Css.removeClass(elem, "widget-info-level-full");
+            Css.setClass(elem, "widget-info-level-none");
         }
 
         if(needsToggle) {
             //expand/collapse widget-data node
-            if(hasClass(node, "widget-data-collapsed")) {
-                removeClass(node, "widget-data-collapsed");
-                setClass(node, "widget-data-opened");
+            if(Css.hasClass(node, "widget-data-collapsed")) {
+                Css.removeClass(node, "widget-data-collapsed");
+                Css.setClass(node, "widget-data-opened");
             } else {
-                removeClass(node, "widget-data-opened");
-                setClass(node, "widget-data-collapsed");
+                Css.removeClass(node, "widget-data-opened");
+                Css.setClass(node, "widget-data-collapsed");
             }            
         }        
 
         //needs to display info?
-        if(hasClass(node, "widget-data-opened")) {
+        if(Css.hasClass(node, "widget-data-opened")) {
             var decFunction = this._getDecFunction(elem);
-            var objectToDisplay = (hasClass(elem, "widget-info-level-specific") && decFunction) ? decFunction(elem.repWidget) : elem.repWidget;  
-            Firebug.DOMPanel.DirTable.tag.replace({object: objectToDisplay}, node);
+            var objectToDisplay = (Css.hasClass(elem, "widget-info-level-specific") && decFunction) ? decFunction(elem.repWidget) : elem.repWidget;  
+            Firebug.DOMPanel.DirTable.tag.replace({object: objectToDisplay}, node); //FIXME preyna : using globals
         }        
         
     },
     
     toggleChildren: function(container){
-        if(hasClass(container, "children-collapsed")) {
-            removeClass(container, "children-collapsed");
-            setClass(container, "children-opened");
+        if(Css.hasClass(container, "children-collapsed")) {
+            Css.removeClass(container, "children-collapsed");
+            Css.setClass(container, "children-opened");
         } else {
-            removeClass(container, "children-opened");
-            setClass(container, "children-collapsed");
+            Css.removeClass(container, "children-opened");
+            Css.setClass(container, "children-collapsed");
         }
     },
     
     //display children
     lazyChildrenLoad: function(parentNode, widget, level) {
-        var nodes = getElementsByClass(parentNode, "children");
+        var nodes = parentNode.getElementsByClassName("children");
         var node = (nodes) ? nodes[0] : null;
-        if(node && hasClass(node, "not-loaded")) {
+        if(node && Css.hasClass(node, "not-loaded")) {
             var expandPath = this._getExpandPath(node);
             var childrenWrappers = this.getChildrenWrappers(widget, level, expandPath);
             this.loopChildren.replace({'children': childrenWrappers}, node);
-            removeClass(node, "not-loaded");
+            Css.removeClass(node, "not-loaded");
         }
     },
     
@@ -895,14 +926,16 @@ this.WidgetsTreeRep = domplate({
     getChildrenWrappers: function(widget, childrenLevel, expandPath) {
         var children = this.getChildren(widget);
         var wrappers = [];
-        for (var i = 0; i < children.length; i++ ) {
+        var i;
+        for (i = 0; i < children.length; i++ ) {
             wrappers.push({'widget': children[i], 'level': childrenLevel, 'expandPath': expandPath});
         }
         return wrappers;
     },
     createWrappersForWidgets: function(widgets, expandPath) {
         var wrappers = [];
-        for(var i=0; i < widgets.length; i++) {
+        var i;
+        for(i=0; i < widgets.length; i++) {
             wrappers.push({ 'widget': widgets[i], 'level': 0, 'expandPath': expandPath });
         }        
         return wrappers;
@@ -912,7 +945,8 @@ this.WidgetsTreeRep = domplate({
 //************************************************************************************************
 
 //called by dojofirebugextension
-this.registerReps = function() {
+DojoReps.registerReps = function() {
+    //'this' is DojoReps
     Firebug.registerRep(this.DojoMainRep);
     Firebug.registerRep(this.DijitMainRep);
     Firebug.registerRep(this.DojoObjectRep);
@@ -923,7 +957,8 @@ this.registerReps = function() {
 };
 
 //called by dojofirebugextension
-this.unregisterReps = function() {
+DojoReps.unregisterReps = function() {
+    //'this' is DojoReps
     Firebug.unregisterRep(this.DojoMainRep);
     Firebug.unregisterRep(this.DijitMainRep);
     Firebug.unregisterRep(this.DojoObjectRep);    
@@ -935,4 +970,8 @@ this.unregisterReps = function() {
 
 
 //************************************************************************************************
+/*} // end with FBL */
+
+return DojoReps; 
+
 }});

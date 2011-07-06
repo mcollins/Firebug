@@ -9,11 +9,18 @@
  * Date of read 20110407
  * BSD License  
  */
-var DojoFilter = FBL.ns(function() {
 
 
+define([
+        "firebug/lib/trace"
+       ], function dojoFilterFactory(FBTrace)
+{
+
+//var DojoFilter = FBL.ns(function() {
+
+    var DojoFilter = {};
     
-    this.filter = function(requestArgs, arrayOfItems, /*Object*/formatters) {        
+    DojoFilter.filter = function(requestArgs, arrayOfItems, /*Object*/formatters) {        
         var items = [], i, key;
         
         if(requestArgs.query){
@@ -54,6 +61,7 @@ var DojoFilter = FBL.ns(function() {
                         
                         if(isPlainQuery) {
                             match = false;
+                            var j;
                             for(j = 0; j < plainQueryOverFields.length; j++){
                                 if(this._containsValue(candidateItem, plainQueryOverFields[j], query, query, formatters)){
                                     match = true;
@@ -97,7 +105,7 @@ var DojoFilter = FBL.ns(function() {
         return items;
     };
 
-    this._containsValue = function(    /* item */ item, /* attribute-name-string */ attribute,
+    DojoFilter._containsValue = function(    /* item */ item, /* attribute-name-string */ attribute,
             /* anything */ value, /* RegExp?*/ regexp, /*Object*/formatters) {
         //    summary:
         //        Internal function for looking at the values contained by the item.
@@ -130,7 +138,7 @@ var DojoFilter = FBL.ns(function() {
         });
     };
 
-    this.getValues = function(item, attribute) {
+    DojoFilter.getValues = function(item, attribute) {
         var res = item[attribute] || [];
         if(res instanceof Array || typeof res == "array") {
             return res;
@@ -139,7 +147,7 @@ var DojoFilter = FBL.ns(function() {
         }
     };
     
-    this.isObject = function(/*anything*/ it){
+    DojoFilter.isObject = function(/*anything*/ it){
         // summary:
         //        Returns true if it is a JavaScript object (or an Array, a Function
         //        or null)
@@ -148,7 +156,7 @@ var DojoFilter = FBL.ns(function() {
                 || Object.prototype.toString.call(it) === "[object Function]");
     };
 
-    this.patternToRegExp = function(/*String*/pattern, /*boolean?*/ ignoreCase){
+    DojoFilter.patternToRegExp = function(/*String*/pattern, /*boolean?*/ ignoreCase){
         //    summary:
         //        Helper function to convert a simple pattern to a regular expression for matching.
         //    description:
@@ -174,7 +182,8 @@ var DojoFilter = FBL.ns(function() {
 
         var rxp = "^";
         var c = null;
-        for(var i = 0; i < pattern.length; i++){
+        var i;
+        for(i = 0; i < pattern.length; i++){
             c = pattern.charAt(i);
             switch(c){
                 case '\\':
@@ -212,4 +221,6 @@ var DojoFilter = FBL.ns(function() {
         
     };
  
+
+    return DojoFilter;
 });    

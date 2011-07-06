@@ -12,13 +12,28 @@
  * @author preyna@ar.ibm.com
  * @author fergom@ar.ibm.com
  */
-FBL.ns(function() { with (FBL) {
 
 
+define([
+        "firebug/firebug",
+        "firebug/js/fbs",
+        "firebug/js/stackFrame",
+        "firebug/lib/object",
+        "firebug/lib/trace",
+        "dojo/lib/filtering"
+       ], function dojoDebuggerFactory(Firebug, FBS, StackFrame, Obj, FBTrace, DojoFilter)
+{
+
+const Ci = Components.interfaces;
+const PCMAP_SOURCETEXT = Ci.jsdIScript.PCMAP_SOURCETEXT;
+    
+    
+var DojoDebug = {};
+ 
 /* ****************************************************************************
  * ****************************************************************************
  * ****************************************************************************
- */    
+ */       
     
 var DebugInfo = function() {
     this.fnExists = false;
@@ -79,7 +94,7 @@ DebugInfo.prototype =
             if(!this.getSourceFile() || !this.getLineNo()) {
                 return false;
             }
-            return fbs.findBreakpoint(this.getSourceFile().href, this.getLineNo()) != null;
+            return FBS.findBreakpoint(this.getSourceFile().href, this.getLineNo()) != null;
         }
 };
 
@@ -107,10 +122,11 @@ DojoDebugger.prototype =
             }
         
             //FIXME this is the brute-force way... find a better one
-            if (fnInfo.hasBreakpoint())
+            if (fnInfo.hasBreakpoint()) {
                 Firebug.Debugger.clearBreakpoint(sourceFile, lineNo);
-            else
+            } else {
                 Firebug.Debugger.setBreakpoint(sourceFile, lineNo);
+            }
                 
         },
 
@@ -126,8 +142,9 @@ DojoDebugger.prototype =
             //FIXME I don't believe this is cross-browser valid code...we are using jsdIScript api
             
             var scriptAnalyzer = sourceFile.getScriptAnalyzer(script);
-            if(!scriptAnalyzer)
+            if(!scriptAnalyzer) {
                 return;
+            }
 
            //UI's line number (for the end user)
             var lineNo = scriptAnalyzer.getBaseLineNumberByScript(script);
@@ -173,15 +190,16 @@ DojoDebugger.prototype =
         
             var fnInfo = new DebugInfo();
             
-            if(!fn)
-                return fnInfo;            
+            if(!fn) {
+                return fnInfo;
+            }
 
-            var script = findScriptForFunctionInContext(context, fn);            
+            var script = Firebug.SourceFile.findScriptForFunctionInContext(context, fn);            
             var fnName = label;
             if (!fnName) {
                 if (script) {
                     try {
-                        fnName = getFunctionName(script, context);
+                        fnName = StackFrame.getFunctionName(script, context);
                     } catch (exc) {
                         //$$HACK
                         fnName = fn.name; 
@@ -193,14 +211,15 @@ DojoDebugger.prototype =
             
             fnInfo.setFnName(fnName);
 
-            if (!script)
+            if (!script) {
               return fnInfo;
+            }
             
             var lineNo = null;
             var sourceFile = Firebug.SourceFile.getSourceFileByScript(context, script);
-            var lineNo;
-            if (!sourceFile)
+            if (!sourceFile) {
                 return fnInfo;
+            }
             
             lineNo = this._findFirstExecutableLine(script, sourceFile);
             fnInfo.setScriptInfo(sourceFile, lineNo);
@@ -312,8 +331,9 @@ var _stringInclude = function(str, strToCheck){
 
 
 /***********************************************************************************************************************/
+    DojoDebugger.DebugInfo = DebugInfo;
+    DojoDebug.DojoDebugger = DojoDebugger;
 
-DojoModel.DojoDebugger = DojoDebugger;
-DojoModel.DojoDebugger.DebugInfo = DebugInfo;
-
-}});
+    
+    return DojoDebug;
+});

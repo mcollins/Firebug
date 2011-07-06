@@ -12,24 +12,35 @@
  * @author preyna@ar.ibm.com
  * @author fergom@ar.ibm.com
  */
-var DojoAccess = FBL.ns(function() { with (FBL) {
+
+
+define([
+        "firebug/lib/lib",
+        "firebug/lib/object",
+        "firebug/lib/wrapper"
+       ], function dojoAccessFactory(FBL, Obj, Wrapper)
+{
+
+    var DojoAccess = {};
 
     //FIXME: This way of access objects is unsecure. Decouple communication with page and implement a secure mechanism.
-    var _dojo = this._dojo = function(context) {
+    var _dojo = DojoAccess._dojo = function(context) {
         //UNSECURE
-        if(!context.window)
+        if(!context.window) {
             return null;
+        }
         
-        return unwrapObject(context.window).dojo || null;        
+        return Wrapper.unwrapObject(context.window).dojo || null;        
     };
     
     //FIXME: (idem _dojo) This way of access objects is unsecure. Decouple communication with page and implement a secure mechanism.
     var _dijit = function(context) {
         //UNSECURE
-        if(!context.window)
+        if(!context.window) {
             return null;
+        }
 
-        return unwrapObject(context.window).dijit || null;        
+        return Wrapper.unwrapObject(context.window).dijit || null;        
     };
  
 
@@ -41,9 +52,9 @@ var DojoAccess = FBL.ns(function() { with (FBL) {
 var API_DOC_URL_BASE = "http://dojotoolkit.org/api/";
 var REFERENCE_GUIDE_URL = "http://dojotoolkit.org/reference-guide/";
 
-DojoModel.DojoAccessor = function() {
+DojoAccess.DojoAccessor = function() {
 };
-DojoModel.DojoAccessor.prototype = 
+DojoAccess.DojoAccessor.prototype = 
 {
         destroy: function() {
             //nothign to do
@@ -81,16 +92,17 @@ DojoModel.DojoAccessor.prototype =
         
             var dojoInfo = { 
                     'version': dojo.version, 
-                    'djConfig': this._getConfig(dojo),
-                    'modulePrefixes': this._readModulePrefixes(dojo)
+                    'djConfig': this._getConfig(context, dojo),
+                    'modulePrefixes': this._readModulePrefixes(context, dojo)
                     };
             return dojoInfo;    
         },
         
-        /*obj*/_readModulePrefixes: function(dojo) {
+        /*obj*/_readModulePrefixes: function(context, dojo) {
             var result = {};
             var mod = dojo._modulePrefixes;
-            for (var name in mod) {
+            var name;
+            for (name in mod) {
                 if(mod.hasOwnProperty(name) && mod[name].value) {
                     result[name] = mod[name].value;
                 }
@@ -98,10 +110,10 @@ DojoModel.DojoAccessor.prototype =
             return result;
         },
     
-        _getConfig: function(/*obj*/dojo) {
+        _getConfig: function(context, /*obj*/dojo) {
             var config = dojo.config;
             if(!config) {
-                config = unwrapObject(context.window).djConfig;
+                config = Wrapper.unwrapObject(context.window).djConfig;
             }
             return config;
         },
@@ -151,7 +163,7 @@ DojoModel.DojoAccessor.prototype =
             }
             
             //diff versions of dojo..
-            return (reg.length) ? reg.length : reg._hash.length;
+            return reg.length || reg._hash.length;
         },
 
         /**
@@ -185,7 +197,7 @@ DojoModel.DojoAccessor.prototype =
                 return [];
             }
                         
-            return dijit.findWidgets(unwrapObject(context.window).document);
+            return dijit.findWidgets(Wrapper.unwrapObject(context.window).document);
         },
 
         /**
@@ -251,22 +263,12 @@ DojoModel.DojoAccessor.prototype =
         _toArray: function(/*WidgetSet*/ registry, /*function?*/filter) {
             var ar = [];
 
-            /*
-             //with this version, the widget is not highlighted when user does "inspect"
-             //but highlights are synch among All widgets, all conns, and all subs panels
-            var adder = function(elem) {
-                ar.push(elem);
-            };
-            DojoExtension._addMozillaExecutionGrants(adder);
-            registry.forEach(adder);
-            */
-
              //with this version, the widget is highlighted when user does "inspect"
              //but highlights are not synched among All widgets, and both all conns, and all subs 
             //panels
             var hash = registry._hash;
-            var ar = [];
-            for(var id in hash){
+            var id;
+            for(id in hash){
                 if(!filter || filter(hash[id])) {
                     ar.push(hash[id]);
                 }
@@ -319,7 +321,7 @@ DojoModel.DojoAccessor.prototype =
                 return null;
             }
 
-            var unwrappedNode = unwrapObject(node);
+            var unwrappedNode = Wrapper.unwrapObject(node);
             return dijit.getEnclosingWidget(unwrappedNode);                    
         },
         
@@ -387,7 +389,7 @@ DojoModel.DojoAccessor.prototype =
                         if(self.isArray(handleOrArray)) {
                             handleOrArray.forEach(function(handle) {
                                 connects.push(tracker.getConnectionByHandle(handle));
-                            })
+                            });
                         } else {
                             connects.push(tracker.getConnectionByHandle(handleOrArray));
                         }
@@ -432,7 +434,8 @@ DojoModel.DojoAccessor.prototype =
             
             /* Widget event list */
             var events = props['events'] = [];
-            for (var propName in widget) {
+            var propName;
+            for (propName in widget) {
                 //propName is string
                 if (propName.substring(0,2) == 'on') {
                     events.push(propName);
@@ -444,7 +447,8 @@ DojoModel.DojoAccessor.prototype =
             if (widget._attachPoints && widget._attachPoints.length > 0) {
                 var attachPoint = props['dojoAttachPoint'] = {};
                 var ap = null;
-                for (var i = 0; i < widget['_attachPoints'].length; i++){
+                var i;
+                for (i = 0; i < widget['_attachPoints'].length; i++){
                     ap = widget['_attachPoints'][i];
                     attachPoint[ap] = widget[ap];
                 }
@@ -483,8 +487,8 @@ DojoModel.DojoAccessor.prototype =
             var given = Version.prototype.fromDojoVersion(version);
             
             var current;
-            
-            for ( var i = 0; i < API_DOC_VERSIONS.length; i++) {                
+            var i;
+            for ( i = 0; i < API_DOC_VERSIONS.length; i++) {                
                 var current = API_DOC_VERSIONS[i];
                 if(given.compare(current) <= 0) {
                     break;
@@ -551,7 +555,6 @@ Version.prototype = {
         },
 
         /*int*/compare: function(/*Version*/ anotherVersion) {
-            //double dispatching
             return -1 * anotherVersion._compareAgainstVersion(this);
         },
         
@@ -568,12 +571,12 @@ Version.prototype = {
         
 };
 var HeadVersion = function() {
-    //call super constructor
+    //call super
     Version.apply(this);
     
     this.isHead = true;
 };
-HeadVersion.prototype = extend(Version.prototype, {
+HeadVersion.prototype = Obj.extend(Version.prototype, {
         toString: function() {
             return "HEAD";
         },
@@ -596,4 +599,6 @@ var API_DOC_VERSIONS = [ Version.prototype.fromVersionString("1.3"),
                          Version.prototype.fromVersionString("1.6"),
                          new HeadVersion() ]; 
 
-}});
+
+    return DojoAccess;
+});

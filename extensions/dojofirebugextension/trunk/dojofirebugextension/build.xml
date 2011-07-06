@@ -67,8 +67,10 @@
 		</copy>
 
 		<copy todir="${build.dir}">
-			<fileset dir="${basedir}" includes="chrome/**/*" excludes="chrome/**/Thumbs.db" />
+			<fileset dir="${basedir}" includes="content/**/*" excludes="content/**/Thumbs.db" />			
 			<fileset dir="${basedir}" includes="defaults/**/*" excludes="default/**/Thumbs.db" />
+			<fileset dir="${basedir}" includes="locale/**/*" excludes="locale/**/Thumbs.db" />
+			<fileset dir="${basedir}" includes="skin/**/*" excludes="skin/**/Thumbs.db" />
 		</copy>
 	</target>
 

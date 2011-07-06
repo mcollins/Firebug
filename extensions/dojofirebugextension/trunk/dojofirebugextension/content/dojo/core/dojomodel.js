@@ -12,520 +12,20 @@
  * @author preyna@ar.ibm.com
  * @author fergom@ar.ibm.com
  */
-var DojoModel = FBL.ns(function() { with (FBL) {
 
-     //FIXME I dont know if this method belongs here...
-     var isDojoExtProxy = this.isDojoExtProxy = function(fn) {
-         return (typeof(fn) == "function") && 
-                     ((fn.internalClass == "dojoext-added-code") ||
-                     ((fn.target) && (fn.target.internalClass == "dojoext-added-code")));
-     };
-
-     var getDojoProxiedFunctionIfNeeded = this.getDojoProxiedFunctionIfNeeded = function(fn) {
-         if(!fn || !isDojoExtProxy(fn)) {
-             return fn;
-         }
-         
-         //was proxied...get the original fn...
-         while(fn && isDojoExtProxy(fn)) {             
-             fn = fn.proxiedFunction;             
-         }         
-         return fn;        
-    };    
-
-    var _isEnumerable = function(/*Object*/obj) {
-         var t = typeof(obj);
-         if (_isNumber(obj) || t == "boolean" || (t == "string" || t instanceof String)) {                
-             return true;
-         }
-         return false;
-    };
+define([
+        "firebug/lib/object",
+        "firebug/lib/trace",
+        "dojo/lib/collections",
+        "dojo/lib/filtering",
+        "dojo/lib/utils"
+       ], function dojoModelFactory(Obj, FBTrace, Collections, DojoFilter, DojoUtils)
+{
     
-    var _isNumber = function(/*object*/obj) {     
-        return typeof(obj) == "number";                
-    };
-    
-    /*
-     * FIXME xxxpreyna HACK required due to == returning false as of FF 4
-     * (in FF 3.6 we can safely use == to compare Objects) 
-     */
-    var areEqual = this.areEqual = function(obj1, obj2, usingHashcodes) {
-        if(!usingHashcodes || (_isEnumerable(obj1) || _isEnumerable(obj2))) {
-            return obj1 === obj2;
-        } else {
-            return HashCodeBasedDictionary.prototype.areEqual(obj1, obj2);
-        }        
-    };
-    
- /* ****************************************************************************
-  * ****************************************************************************
-  * ****************************************************************************
-  */    
-
-    
-    /**
-     * @class Entry
-     */
-    var Entry = function(key, value){
-        this.key = key; 
-        this.value = value; 
-    };
-
-    /**
-     * @class Map 
-     */
-    var Map = function(){};
-    Map.prototype = {
-        entrySet: function(){
-            var entries = [];
-            for (var i=0; i<this.getKeys().length; i++){
-                var key = this.getKeys()[i];
-                entries.push(new Entry(key, this.get(key)));
-            }
-            return entries;
-        }
-    };
-
-    
-    // ***************************************************************
-    /**
-     * @class ArrayMap 
-     */
-     var ArrayMap = function() {         
-
-         this._map = new Array();
-         
-         
-     };
-     ArrayMap.prototype = extend(Map.prototype, 
-     {
-        // Associates the specified value with the specified key in this map
-        put: function (key, value){
-             if (typeof(key) != 'undefined') {
-                 this._map[key] = value;
-             }
-            return this;
-        },
-    
-        // Returns the value to which this map maps the specified key
-        get: function (key){
-            var res = null; 
-            if (typeof(key) != 'undefined') {
-                res = this._map[key]; 
-            }
-            return res; 
-        },
-    
-        // Removes the mapping for this key from this map if it is present
-        remove: function (key) {
-            if (typeof(key) != 'undefined') {
-                this._map[key] = undefined;
-            }            
-        },
+    var DojoModel = {};
         
-        // Keys getter.
-        getKeys: function(){
-            var keys = [];
-            for (var i in this._map){
-                if (this._map[i]) {
-                    keys.push(i);
-                }
-            }
-            return keys;
-        },
-        
-        // Values getter.
-        getValues: function(){
-            var values = [];
-            for (var i in this._map){
-                if (this._map[i]) {
-                    values.push(this._map[i]);
-                }
-            }
-            return values;
-        },
-        
-        // Destructor
-        destroy: function(){
-            this._map.splice(0, this._map.length);
-            this._map = null;
-            delete this._map;
-        }         
-     });
-     
-     
     // ***************************************************************
     
-    /**
-     * @class Dictionary 
-     * @deprecated
-     */
-     var Dictionary = function() {         
-        // The keys.
-        this._keys = [];
-
-        // The values
-        this._values = [];
-     };
-     Dictionary.prototype = extend(Map.prototype, 
-     {
-        // Associates the specified value with the specified key in this map
-        put: function (key, value){
-            var index = this._keys.indexOf(key);
-            if (index == -1){
-                index = (this._keys.push(key) - 1);
-            }
-            this._values[index] = value;
-            return this;
-        },
-    
-        // Returns the value to which this map maps the specified key
-        get: function (key){
-            var index = this._keys.indexOf(key);
-            return (index != -1) ? this._values[index] : null;
-        },
-    
-        // Removes the mapping for this key from this map if it is present
-        remove: function (key){
-            var index = this._keys.indexOf(key);
-            if (index != -1){
-                this._keys.splice(index, 1);
-                this._values.splice(index, 1);
-            }
-        },
-        
-        // Keys getter.
-        getKeys: function(){
-            return this._keys;
-        },
-        
-        // Values getter.
-        getValues: function(){
-            return this._values;
-        },
-        
-        // Destructor
-        destroy: function(){
-            this._keys.splice(0, this._keys.length);
-            this._keys = null;
-            this._values.splice(0, this._values.length);
-            this._values = null;
-        }         
-     });
-         
-    // ***************************************************************
-//    /**
-//     * install if needed
-//     * (class method)
-//     */
-//    this._installHashCodes = function(context) {
-//        var propName = HashCodeBasedDictionary.prototype.keyIdPropertyName;
-//        var clientFn = "var hashCodeFn = function() { console.log('entering _install'); var installed = Object.prototype." + propName + ";";
-//        clientFn += "if(!installed) { console.log('not installed. Installing'); Object.prototype." + propName + " = -1; }";
-//        clientFn += "console.dir(Object.prototype." + propName + "); }; ";
-//        clientFn += "hashCodeFn(); delete hashCodeFn";
-//        
-//        Firebug.Console.log(clientFn, context);
-//        Firebug.CommandLine.evaluate(clientFn, context);
-//        
-//            var installed = Object.prototype.sarasa;
-//            if(!installed) {
-//                Object.prototype.sarasa = -1;
-//            }
-//    };
-
-    /**
-     * @class HashCodeBasedDictionary
-     */
-     var HashCodeBasedDictionary = function() {
-         
-        //this is to avoid issues when inserting objects in more than one HashCodeBasedDictionary
-        this.keyIdPropertyName = this.keyIdPropertyNamePrefix + HashCodeBasedDictionary.prototype.instanceCount++;
-
-        // Next keys.
-        this._nextKey = 1;
-        
-        // Deprecated keys. Those keys that were released.
-        this._deprecatedKeys = [];
-
-        // The keys
-        this._keys = [];
-        
-        // The values
-        this._values = [];
-
-     };
-     HashCodeBasedDictionary.prototype = extend(Map.prototype,{
-             // classs variable
-             instanceCount: 0,         
-            // Key id property name, class variable
-            keyIdPropertyNamePrefix: 'x_dojoExtHashCode_',
-         
-            // Associates the specified value with the specified key in this map
-            put: function (key, value) {
-                if(_isEnumerable(key)) {
-                    if(FBTrace.DBG_DOJO) {
-                        FBTrace.sysout("DOJO ERROR: tried to use HashCodeDictionary with a primitive type as key");
-                    }
-                    throw new Error("DOJO InvalidType: key is invalidType for HashCodeDictionary", key);
-                }
-                 
-                var realKey = key[this.keyIdPropertyName];
-                if (!realKey || realKey == -1) {                    
-                    realKey = this._generateAndInjectKey(key);
-                }
-                this._keys[realKey] = key;
-                this._values[realKey] = value;
-                return this;
-            },
-
-            // Returns the value to which this map maps the specified key
-            get: function (key) {
-                
-                if(_isEnumerable(key)) {
-                    if(FBTrace.DBG_DOJO) {
-                        FBTrace.sysout("DOJO ERROR: tried to use HashCodeDictionary with a primitive type as key");
-                    }
-                    throw new Error("DOJO InvalidType: key is invalidType for HashCodeDictionary", key);
-                }
-                
-                var realKey = (key) ? key[this.keyIdPropertyName] : null;
-                return (realKey && realKey != -1) ? this._values[realKey] : null;
-            },
-
-            // Removes the mapping for this key from this map if it is present
-            remove: function (key) {
-                
-                if(_isEnumerable(key)) {
-                    if(FBTrace.DBG_DOJO) {
-                        FBTrace.sysout("DOJO ERROR: tried to use HashCodeDictionary with a primitive type as key");
-                    }
-                    throw new Error("DOJO InvalidType: key is invalidType for HashCodeDictionary", key);
-                }
-
-                
-                var realKey = key[this.keyIdPropertyName];
-                if (realKey && realKey != -1) {
-                    this._keys[realKey] = null;
-                    this._values[realKey] = null;
-                    this._releaseInjectedKey(key);
-                }
-            },
-            
-            // Keys getter.
-            getKeys: function(){
-                var keys = [];
-                for (var i = 0; i < this._keys.length; i++) {
-                    if (this._keys[i]) keys.push(this._keys[i]);
-                }
-                return keys;
-            },
-            
-            // Values getter.
-            getValues: function(){
-                var values = [];
-                for (var i = 0; i < this._values.length; i++) {
-                    if (this._values[i]) values.push(this._values[i]);
-                }
-                return values;
-            },
-            
-            // Destructor
-            destroy: function(){
-                this._keys.splice(0, this._keys.length);
-                this._values.splice(0, this._values.length);
-                this._values = null;
-            },
-            
-            
-            _releaseInjectedKey: function(/*object*/key) {
-                var realKey = key[this.keyIdPropertyName];
-                this._deprecatedKeys.push(realKey);
-                delete key[this.keyIdPropertyName];
-            },
-            
-            /*int*/_generateAndInjectKey: function(/*Object*/obj) {
-                /*
-                 * since Javascript 1.8.5 (FF 4) we can create propeties in objects
-                 * that are not visible in for..in loops in client web pages.
-                 * https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/defineProperty 
-                 */
-                if(_isEnumerable(obj)) {
-                    if(FBTrace.DBG_DOJO) {
-                        FBTrace.sysout("DOJO ERROR: HashCodeDictionary tried to inject key field in primitive type");
-                    }
-                    throw new Error("DOJO InvalidType: obj is invalidType for injecting keys", obj);
-                }
-
-                var hashcode = (this._deprecatedKeys.length > 0) ? this._deprecatedKeys.pop() : this._nextKey++;
-                
-                try {
-                    if(Object.defineProperty) {
-                        Object.defineProperty(obj, this.keyIdPropertyName, 
-                                {value: hashcode, writable : false, enumerable : false, configurable : true});
-    
-                    } else {
-                        //traditional way..
-                        obj[this.keyIdPropertyName] = hashcode;
-                    }
-                    
-                    return hashcode;
-                    
-                } catch (exc) {
-                    if(FBTrace.DBG_DOJO) {
-                        FBTrace.sysout("DOJO ERROR while injecting key in hashcode based item", exc);
-                    }
-                    throw exc;
-                }
-            },
-            
-            areEqual: function(obj1, obj2) {
-                /*
-                 * FIXME xxxpreyna HACK required due to == returning false as of FF 4
-                 * (in FF 3.6 we can safely use == to compare Objects) 
-                 */
-                
-                if((obj1 && !obj2) || (!obj1 && obj2)) {
-                    return false;
-                }
-
-                if((obj1 === null && obj2 === undefined) || (obj1 === undefined && obj2 === null)) {
-                    return false;
-                }
-
-                var max = HashCodeBasedDictionary.prototype.instanceCount;
-                var hashcode1, hashcode2;
-                for (var i = 0; i < max; i++) {
-                    hashcode1 = obj1[this.keyIdPropertyNamePrefix + i];
-                    hashcode2 = obj2[this.keyIdPropertyNamePrefix + i];
-                    if(hashcode1 != hashcode2) {
-                        return false;
-                    } else if (hashcode1 && hashcode2 && (hashcode1 == hashcode2)) {
-                        return true;
-                    }                    
-                }
-                //the objs don't have hashcodes, let's compare them by ===
-                return obj1 === obj2;
-            }
-            
-     });
-     
-    // ***************************************************************
-     
-     /**
-      * @class StringMap 
-      */
-     var StringMap = function() {
-        // The map.
-        this._map = {};
-     };
-     StringMap.prototype = extend(Map.prototype, 
-        {
-            // Associates the specified value with the specified key in this map
-             put: function (key, value) {
-                this._map[key] = value;
-                return this;
-            },
-
-            // Returns the value to which this map maps the specified key
-            get: function (key){
-                return this._map[key];
-            },
-
-            // Removes the mapping for this key from this map if it is present
-            remove: function (key){
-                this._map[key] = null;
-                delete this._map[key];
-            },
-            
-            // Keys getter.
-            getKeys: function(){
-                var keys = [];
-                for (var i in this._map){
-                    if (this._map[i]) {
-                        keys.push(i);
-                    }
-                }
-                return keys;
-            },
-            
-            // Values getter.
-            getValues: function(){
-                var values = [];
-                for (var i in this._map){
-                    if (this._map[i]) {
-                        values.push(this._map[i]);
-                    }
-                }
-                return values;
-            },
-            
-            // Destructor
-            destroy: function(){
-                this._map = null;
-            } 
-     });
-     
-     
-     /**
-      * @class ComposedDictionary 
-      */
-     var ComposedDictionary = function() {
-        // The map.
-        this._hashcodeKeyedValues = new HashCodeBasedDictionary();
-        this._primitiveKeyedValues = new StringMap();
-     };
-     ComposedDictionary.prototype = extend(Map.prototype, 
-     {
-         _hashcodeKeyedValues: null,
-         _primitiveKeyedValues: null,
-         
-        // Associates the specified value with the specified key in this map
-         put: function (key, value) {
-            if(_isEnumerable(key)) {
-                this._primitiveKeyedValues.put(key, value);
-            } else {
-                this._hashcodeKeyedValues.put(key, value);
-            }
-            return this;
-        },
-
-        // Returns the value to which this map maps the specified key
-        get: function (key){
-            if(_isEnumerable(key)) {
-                return this._primitiveKeyedValues.get(key);
-            } else {
-                return this._hashcodeKeyedValues.get(key);
-            }
-        },
-
-        // Removes the mapping for this key from this map if it is present
-        remove: function (key){
-            if(_isEnumerable(key)) {
-                this._primitiveKeyedValues.remove(key);
-            } else {
-                this._hashcodeKeyedValues.remove(key);
-            }
-        },
-        
-        // Keys getter.
-        /*array*/getKeys: function(){
-            return this._hashcodeKeyedValues.getKeys().concat(this._primitiveKeyedValues.getKeys());
-        },
-        
-        // Values getter.
-        /*array*/getValues: function(){
-            return this._hashcodeKeyedValues.getValues().concat(this._primitiveKeyedValues.getValues());
-        },
-        
-        // Destructor
-        destroy: function(){
-            this._hashcodeKeyedValues.destroy();
-            this._primitiveKeyedValues.destroy();
-        } 
-     });
-     
-    // ***************************************************************
      /**
      * @class EventListenerSupport
      */
@@ -561,7 +61,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
         },
         
         removeAllListeners: function(){
-            for (var i in this._getEventListeners()){
+            var i;
+            for (i in this._getEventListeners()){
                 this._getEventListeners()[i].splice(0, this._getEventListeners()[i].length);
             }
         },
@@ -569,7 +70,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
         fireEvent: function(/*String*/event, /*Arguments*/args){
             var listeners = this._getEventListeners()[event];
             if (listeners) {
-                for (var i = 0; i < listeners.length; i++) {
+                var i;
+                for (i = 0; i < listeners.length; i++) {
                     listeners[i].apply(this, args);
                 }
             }
@@ -582,7 +84,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
      * @class EventsRegistrator
      * This class provide support to add and remove a set of registered listeners.  
      */
-    var EventsRegistrator = this.EventsRegistrator = function(/*EventListenerSupport*/ object, /*object*/listenersContext){
+     //FIXME rename it
+    var EventsRegistrator = DojoModel.EventsRegistrator = function(/*EventListenerSupport*/ object, /*object*/listenersContext){
         // The object where the listeners will be register
         this.object = object;
         
@@ -590,11 +93,12 @@ var DojoModel = FBL.ns(function() { with (FBL) {
         this.listeners = [];
         
         // The execution context for the listeners
-        this.listenersContext = (listenersContext) ? listenersContext : {};
+        this.listenersContext = listenersContext || {};
         
         // Array to reference the delay handlers.
-        this.timeOutFlags = [];        
+        this.timeOutFlags = [];
     };
+    
     EventsRegistrator.prototype = {
             
         /**
@@ -616,8 +120,9 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          */
         registerListenerForEvent: function(/*String|Array<String>*/event, /*function*/listener, /*int*/timeOut){
             var events = (typeof(event) == 'string') ? [event] : event;
-            var listenerFunc = this._attachListenerContext(listener, timeOut); 
-            for (var i = 0; i < events.length; i++) {
+            var listenerFunc = this._attachListenerContext(listener, timeOut);
+            var i;
+            for (i = 0; i < events.length; i++) {
                 this.listeners.push({event: events[i], listener: listenerFunc});
             }
         },
@@ -627,7 +132,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          */
         addAllListeners: function(){
             var list = null;
-            for (var i = 0; i < this.listeners.length; i++){
+            var i;
+            for (i = 0; i < this.listeners.length; i++){
                 list = this.listeners[i];
                 this.object.addListener(list.event, list.listener);
             }
@@ -638,7 +144,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          */
         removeAllListeners: function(){
             var list = null;
-            for (var i = 0; i < this.listeners.length; i++){
+            var i;
+            for (i = 0; i < this.listeners.length; i++){
                 list = this.listeners[i];
                 this.object.removeListener(list.event, list.listener);
             }
@@ -677,24 +184,27 @@ var DojoModel = FBL.ns(function() { with (FBL) {
             };
         }
     };
-     /**
+    
+    // ***************************************************************    
+
+    /**
       * @class Connection API
       */
-     var ConnectionsAPI = this.ConnectionsAPI = function(/*boolean*/ useHashCodeBasedDictionary){
+     var ConnectionsAPI = DojoModel.ConnectionsAPI = function(/*boolean*/ useHashCodeBasedDictionary){
          // Connections dictionary (keys will be "dojo connection's source objects").
-         this._connections = (useHashCodeBasedDictionary) ? new ComposedDictionary() /*new HashCodeBasedDictionary()*/ : /*new ArrayMap();*/ new Dictionary();
+         this._connections = (useHashCodeBasedDictionary) ? new Collections.ComposedDictionary() : new Collections.Dictionary();
          
          // Array of connections.
          this._connectionsArray = [];
          
          // Disconnections dictionary. (keys will be "dojo handles")
-         this._disconnections = (useHashCodeBasedDictionary) ? new ComposedDictionary() /*new HashCodeBasedDictionary()*/ : /*new ArrayMap();*/ new Dictionary();
+         this._disconnections = (useHashCodeBasedDictionary) ? new Collections.ComposedDictionary() : new Collections.Dictionary();
          
          // Subscriptions
-         this._subscriptions = new StringMap();         
+         this._subscriptions = new Collections.StringMap();         
      };
      
-     ConnectionsAPI.prototype = extend(EventListenerSupport.prototype, {
+     ConnectionsAPI.prototype = Obj.extend(EventListenerSupport.prototype, {
 
          /** Add a connection */
          addConnection: function(
@@ -716,8 +226,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
                  
                  var originalFunction = null;
                  try {
-                    //var originalFunction = ((obj[event]) ? obj[event].target : null);
-                     var originalFunction = ((obj[event]) ? obj[event]['target'] : null);
+                    //originalFunction = ((obj[event]) ? obj[event].target : null);
+                     originalFunction = ((obj[event]) ? obj[event]['target'] : null);
                  } catch (exc) {
                      //should not be here...
                      if(FBTrace.DBG_DOJO_DBG) {
@@ -906,7 +416,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
                  }
                  
                  //slice the resulting array if needed
-                 var from = f.from ? f.from : 0;
+                 var from = f.from || 0;
                  var count = (f.count && f.count <= theArray.length) ? f.count : theArray.length;  
                  if(from != 0 || count != theArray.length) {
                      var end = count;
@@ -944,7 +454,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
              
              var subs = [];
              var subKeys = this.getSubscriptions().getKeys();
-             for (var i = 0; i < subKeys.length; i++) {
+             var i;
+             for (i = 0; i < subKeys.length; i++) {
                  subs = subs.concat(this.getSubscriptions().get(subKeys[i]));
              }
              return subs;
@@ -1004,8 +515,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          destroy: function() {
              this._connections.destroy();
              delete this._connections;
-             
-             for(var i=0; i<this._connectionsArray.length ;i++){
+             var i;
+             for(i=0; i<this._connectionsArray.length ;i++){
                  this._connectionsArray[i].destroy();
              }
              this._connectionsArray.splice(0, this._connectionsArray.length);
@@ -1018,7 +529,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
              
              delete this._subscriptions;
          }         
-     });
+     }); //end of ConnectionsAPI
      
      
      // Public Events supported by ConnectionsAPI.
@@ -1026,6 +537,9 @@ var DojoModel = FBL.ns(function() { with (FBL) {
      ConnectionsAPI.ON_CONNECTION_REMOVED = 'connection_removed';
      ConnectionsAPI.ON_SUBSCRIPTION_ADDED = 'subscription_added';
      ConnectionsAPI.ON_SUBSCRIPTION_REMOVED = 'subscription_removed';
+     
+     
+     // ***************************************************************     
      
      /**
       * @class Object Info
@@ -1121,20 +635,21 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          }
      };
      
+     // ***************************************************************
      
      /**
       * @class Connections Tracker
       */
-     var ConnectionsTracker = this.ConnectionsTracker = function(object){
+     var ConnectionsTracker = DojoModel.ConnectionsTracker = function(object){
         // Object
         this.object = object;
          
         // Incoming connections (map<String, IncomingConnectionsForEvent>).
-        this._incomingConnections = new StringMap();
+        this._incomingConnections = new Collections.StringMap();
         this._incomingConnectionsCount = 0;
         
         // Outgoing connections (Dictionary<(String|Function),Connection>).
-        this._outgoingConnections = new ComposedDictionary(); //new Dictionary(); //must be Dictionary
+        this._outgoingConnections = new Collections.ComposedDictionary(); //must be Dictionary
         this._outgoingConnectionsCount = 0;
      };
      ConnectionsTracker.prototype = 
@@ -1199,7 +714,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
              */
             /*array*/getIncommingConnectionsForEvent: function(event){
                 var cons = this._incomingConnections.get(event);
-                return (cons) ? cons : [];
+                return cons || [];
             },
             
             /**
@@ -1217,7 +732,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
              */
             /*array*/getOutgoingConnectionsForMethod: function(method){
                 var cons = this._outgoingConnections.get(method);
-                return (cons) ? cons : [];
+                return cons || [];
             },
             
             /**
@@ -1239,10 +754,12 @@ var DojoModel = FBL.ns(function() { with (FBL) {
      };
      
      
+     // ***************************************************************
+     
      /**
       * @class Subscriptions Tracker
       */
-     var SubscriptionsTracker = this.SubscriptionsTracker = function(object){
+     var SubscriptionsTracker = DojoModel.SubscriptionsTracker = function(object){
          // Object
         this.object = object;
          
@@ -1283,10 +800,14 @@ var DojoModel = FBL.ns(function() { with (FBL) {
         }
      };
      
+     
+     // ***************************************************************
+     
+     
      /**
       * @class FunctionLinkResolver
       */
-     var FunctionLinkResolver = this.FunctionLinkResolver = function(){};
+     var FunctionLinkResolver = DojoModel.FunctionLinkResolver = function(){};
      FunctionLinkResolver.prototype = 
      {
              /**
@@ -1304,14 +825,16 @@ var DojoModel = FBL.ns(function() { with (FBL) {
              },
 
              _getOriginalFunctionIfNeeded : function(fn) {
-                 return getDojoProxiedFunctionIfNeeded(fn); 
+                 return DojoUtils.getDojoProxiedFunctionIfNeeded(fn); 
              }    
      };
+     
+     // ***************************************************************
      
      /**
       * @class Connection
       */
-     var Connection = this.Connection = function(obj, /*string*/event, context, method, originalFunction, dontFix, listenerMechanism, callerInfo){
+     var Connection = DojoModel.Connection = function(obj, /*string*/event, context, method, originalFunction, dontFix, listenerMechanism, callerInfo){
          this.clazz = "Connection";  
          this.obj = obj;
          this.event = event;
@@ -1322,7 +845,7 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          this.listenerMechanism = listenerMechanism;
          this.callerInfo = callerInfo;                
      };
-     Connection.prototype = extend(FunctionLinkResolver.prototype, {
+     Connection.prototype = Obj.extend(FunctionLinkResolver.prototype, {
 
          /**
           * Destructor
@@ -1340,28 +863,32 @@ var DojoModel = FBL.ns(function() { with (FBL) {
          },
          
          getEventFunction: function() {
-            return getDojoProxiedFunctionIfNeeded(this.originalFunction);
+            return DojoUtils.getDojoProxiedFunctionIfNeeded(this.originalFunction);
          }         
      });
      
+     // ***************************************************************
      
      /**
       * @class Subscription
       */
-     var Subscription = function(topic, context, method, callerInfo){
+     var Subscription = DojoModel.Subscription = function(topic, context, method, callerInfo){
         this.clazz = "Subscription";
         this.topic = topic;
         this.context = context;
         this.method = method;
         this.callerInfo = callerInfo;
      };
-     Subscription.prototype = extend(FunctionLinkResolver.prototype, {});
-         
+     Subscription.prototype = Obj.extend(FunctionLinkResolver.prototype, {});
+        
+     
+     // ***************************************************************
+     
      /**
       * @class ConnectionArraySorter
       */
     //TODO: Add comment!
-    var ConnectionArraySorter = this.ConnectionArraySorter = function (objectOrderArray, priorityCriteriaArray) {
+    var ConnectionArraySorter = DojoModel.ConnectionArraySorter = function (objectOrderArray, priorityCriteriaArray) {
 
         this.priorityCriteriaArray = priorityCriteriaArray;
         
@@ -1413,7 +940,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
         
         this.getPriorityCriteriaOrder = function(){
             var criteriaOrder = [];
-            for (var i=0; i<this.priorityCriteriaArray.length; i++) {
+            var i;
+            for (i=0; i<this.priorityCriteriaArray.length; i++) {
                 criteriaOrder[i] = this.criterias[this.priorityCriteriaArray[i]];
             }
             return criteriaOrder;
@@ -1422,7 +950,8 @@ var DojoModel = FBL.ns(function() { with (FBL) {
         this.getSortFunctionForCriteriaArray = function(criterias){
             return function(a,b){
                 var ret = 0;
-                for(var i=0; i<criterias.length && ret==0; i++){
+                var i;
+                for(i=0; i<criterias.length && ret==0; i++){
                     ret = criterias[i].call(null,a,b);
                 }
                 return ret;
@@ -1436,12 +965,27 @@ var DojoModel = FBL.ns(function() { with (FBL) {
     };
     
     
-    this.ConnectionArraySorter.OBJ = 0;
-    this.ConnectionArraySorter.EVENT = 1;
-    this.ConnectionArraySorter.CONTEXT = 2;
-    this.ConnectionArraySorter.METHOD = 3;
+    DojoModel.ConnectionArraySorter.OBJ = 0;
+    DojoModel.ConnectionArraySorter.EVENT = 1;
+    DojoModel.ConnectionArraySorter.CONTEXT = 2;
+    DojoModel.ConnectionArraySorter.METHOD = 3;
 
-/***********************************************************************************************************************/
+    // ***************************************************************
 
-DojoExtension.DojoModel = DojoModel; 
-}});
+    // ***************************************************************
+    // exported classes
+    // ***************************************************************    
+
+    DojoModel.EventsRegistrator = EventsRegistrator;
+    
+    DojoModel.ConnectionsAPI = ConnectionsAPI; 
+    DojoModel.ConnectionsTracker = ConnectionsTracker;
+    DojoModel.SubscriptionsTracker = SubscriptionsTracker;
+    
+    DojoModel.FunctionLinkResolver = FunctionLinkResolver;
+    DojoModel.Connection = Connection;
+    DojoModel.Subscription = Subscription;
+    DojoModel.ConnectionArraySorter = ConnectionArraySorter;
+
+    return DojoModel;
+});
