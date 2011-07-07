@@ -5,25 +5,17 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>firefocus@incaseofstairs.com</em:id>
-    <em:version>1.2</em:version>
+    <em:version>1.2.1</em:version>
     <em:type>2</em:type>
     <em:optionsURL>chrome://firefocus/content/options.xul</em:optionsURL>
 
-    <!-- Any suitably modern toolkit application -->
     <em:targetApplication>
       <Description>
-        <em:id>toolkit@mozilla.org</em:id>
-        <em:minVersion>1.9.0.11</em:minVersion>
-        <em:maxVersion>2.0.0.*</em:maxVersion>
+          <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+          <em:minVersion>3.6</em:minVersion>
+          <em:maxVersion>5.*</em:maxVersion>
       </Description>
     </em:targetApplication>
-
-    <em:updateURL>http://www.incaseofstairs.com/download/firefocus/update.rdf</em:updateURL>
-    <em:updateKey>
-      MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQGclmSw7tlxGd5JLN5Y8ovW8AWWrkg6CsN8
-      CD/l80odWifwnxG+Jaw2Eo1kVVB5e4i9kEvh9BorPvLmee9zbOw9dOS2uyFfwttkw1td9mU0v/
-      PZh2fv24cuL37QIHOHsZ5TPl2e+cNBUiov9rKKi2r+TzUBpcmxcLqSBKAo4oWQIDAQAB
-    </em:updateKey>
 
     <em:name>Firefocus</em:name>
     <em:description>Track Page Focus in Firebug</em:description>

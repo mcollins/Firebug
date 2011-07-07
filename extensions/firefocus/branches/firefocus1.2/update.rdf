@@ -40,13 +40,47 @@
             </em:targetApplication>
           </RDF:Description>
         </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.2</em:version>
+
+            <!-- Any suitably modern toolkit application -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>toolkit@mozilla.org</em:id>
+                <em:minVersion>1.9.0.11</em:minVersion>
+                <em:maxVersion>2.0.0.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.2.xpi</em:updateLink>
+                <em:updateHash>sha1:0c06418e7b9003f266ef49292e96ef7b038732eb</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>1.2.1</em:version>
+
+            <!-- Any suitably modern toolkit application -->
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>3.6</em:minVersion>
+                <em:maxVersion>5.*</em:maxVersion>
+
+                <em:updateLink>http://www.incaseofstairs.com/download/firefocus/firefocus1.2.1.xpi</em:updateLink>
+                <em:updateHash>sha1:fd13e22464f2800e422d3973b7669cf94aa33640</em:updateHash>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
       </RDF:Seq>
     </em:updates>
 
     <em:signature>
-      MIGTMA0GCSqGSIb3DQEBDQUAA4GBAKaLP8iLDAcWn92ejszzzSfNZ8vGVfknVRiFvemCLPefyl
-      fk3x+KRAFpoSmm30Lktw+kVvyoMRxCTH61X9/oYRrK8hd8FcuKc3kqYHU/FWwlBWQddizoxk8w
-      sp+9TLVs3Jps55zEa+avlnRCM8qgX7FKNpYqD+ZrHFG/MlimHMCD
+      MIGTMA0GCSqGSIb3DQEBDQUAA4GBABVim0cW9Is+gcT0jTAY+/I8bkKbNsAuLP+zUhjud5O1m+
+      lE2rkytx2W3zgUV38A5mW734jJrq2ahK61PRXqzG4K9/k9FAGUvpfCib9VbHBnn4zbgh+9k6qM
+      pigM7rGCvcmZouCDtjR3ehp0bzikV8U+r8CUXkGfF0F3xV+SkiSS
     </em:signature>
   </RDF:Description>
 </RDF:RDF>

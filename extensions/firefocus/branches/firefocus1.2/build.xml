@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <project name="firefocus" default="dist">
-  <property name="version" value="1.2" />
+  <property name="version" value="1.2.1" />
 
   <property name="src_dir" location="${basedir}" />
   <property name="dist_dir" location="${basedir}/dist" />
