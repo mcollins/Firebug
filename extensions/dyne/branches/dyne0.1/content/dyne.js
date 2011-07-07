@@ -46,9 +46,6 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.ScriptPanel.registerEditor("Source", Firebug.Dyne.JSTextAreaEditor);
         Firebug.ScriptPanel.registerEditor("Orion", this);
         Firebug.NetMonitor.NetRequestTable.addListener(Firebug.Dyne.NetRequestTableListener);
-        var left = globalWindowExchange.addListener(this);
-        if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne initialize globalWindowExchange listeners "+left);
     },
 
     destroy: function()
@@ -57,7 +54,9 @@ Firebug.Dyne = extend(Firebug.Module,
         Firebug.ScriptPanel.unregisterEditor("Source", Firebug.Dyne.JSTextAreaEditor);
         Firebug.ScriptPanel.unregisterEditor("Orion", this);
         Firebug.NetMonitor.NetRequestTable.removeListener(Firebug.Dyne.NetRequestTableListener);
-        globalWindowExchange.removeListener(this);
+        var left = globalWindowExchange.removeListener(this);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne destroy globalWindowExchange listeners "+left);
     },
 
     showPanel: function(browser, panel)
@@ -146,7 +145,8 @@ Firebug.Dyne = extend(Firebug.Module,
         {
             connectionContainer = new Firebug.Dyne.OrionConnectionContainer(editLink);
             this.orions[editorURL] = connectionContainer;
-            connectionContainer.openOrion(editorURL);
+            var win = connectionContainer.openOrion(editorURL);
+            FBTrace.sysout("dyne startEditing connectionContainer win: "+win, win);
         }
 
         if (FBTrace.DBG_DYNE)
@@ -175,13 +175,13 @@ Firebug.Dyne = extend(Firebug.Module,
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout("dyne watchWindow "+loc+" in "+window.top.location);
 
-        if ( loc.indexOf("firebugConnection.html") !== -1) // then we are in the orion window
+        if ( loc.indexOf("firebugConnection.html") !== -1) // then we are in an orion window
         {
             if (Firebug.isInBrowser()) // don't show Firebug in the Orion editor window
                 Firebug.minimizeBar();
             var left = globalWindowExchange.removeListener(this);  // don't listen to the global events in this XUL window
             if (FBTrace.DBG_DYNE)
-                FBTrace.sysout('dyne found firebugConnection in '+win.location+" removed listener, left "+left, win);
+                FBTrace.sysout('dyne found firebugConnection in '+win.location+" removed self, left "+left, win);
             globalWindowExchange.onWindowAdded(win);
         }
     },
@@ -481,6 +481,11 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         var attr = Firebug.Dyne.getTabAttribute(editorURL);
         var screen = Firebug.Dyne.getScreenInfo();
         var win = Firebug.Dyne.Util.openOrReuseByAttribute(attr, editorURL, screen);
+
+        // The globalWindowExchange will call attachOrion when the window opens
+        var left = globalWindowExchange.addListener(Firebug.Dyne);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne openOrion globalWindowExchange.addListener, now "+left);
         return win;
     },
 
@@ -518,6 +523,11 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         this.orionConnection = jsonConnection.add(win.document.documentElement, this.eventHandler);
         this.orionConnection.postObject({connection: "dyne is ready"});
         win.removeEventListener('load', this.connectionFunction, false);
+
+        var left = globalWindowExchange.removeListener(Firebug.Dyne);
+        if (FBTrace.DBG_DYNE)
+            FBTrace.sysout("dyne connectOnLoad globalWindowExchange.removeListener, left "+left);
+
         delete this.connectionFunction;
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout("connectOnLoad connection posted ready");
@@ -542,10 +552,14 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
             this.detachUpdater();
             this.orionConnection.unregisterService("IConsole", null, this.logger);
         }
-        else
+        else if (obj.connection)
         {
             this.orionConnection.registerService("IConsole", null, this.logger);
             this.attachUpdater();
+        }
+        else
+        {
+            FBTrace.sysout("Unexpected message from Orion ", obj);
         }
     },
 
@@ -593,15 +607,15 @@ Firebug.Dyne.OrionConnectionContainer.prototype =
         if (fromPanel === "stylesheet")
         {
             this.updater = new Firebug.Dyne.CSSStylesheetUpdater(this.location, this.orionConnection);
-            this.orionConnection.registerService("IStylesheet", null, updater);
-            Firebug.CSSModule.addListener(updater);
-            FBTrace.sysout("Firebug.CSSModule.addListener ", updater);
+            this.orionConnection.registerService(this.updater.API, null, this.updater);
+            Firebug.CSSModule.addListener(this.updater);
+            FBTrace.sysout("Firebug.CSSModule.addListener ", this.updater);
             return;
         }
         else if (fromPanel === "script")
         {
             this.updater = new Firebug.Dyne.CompilationUnitUpdater(this.location);
-            this.orionConnection.registerService("IJavaScript", null, updater);
+            this.orionConnection.registerService("IJavaScript", null, this.updater);
             return;
         }
         // TODO a different listener for each kind of file
@@ -661,9 +675,9 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
 {
     // **********************************************************
     // For edit events starting in Orion and updating in Firebug
+    API: "IStylesheet",
 
     reNameValue: /\s*([^:]*)\s*:\s*(.*?)\s*(!important)?\s*;/,
-
     onRuleLineChanged: function(changedLineNumber, lineText)
     {
          if (FBTrace.DBG_DYNE)
@@ -681,8 +695,17 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
             var propValue = m[2];
             var priority = m[3] ? "important" : "";
             if (FBTrace.DBG_DYNE)
-                FBTrace.sysout("Firebug.Dyne.CSSStylesheetUpdater parsed: "+propName+" :"+propValue+(priority? " !"+priority : "") );
-            Firebug.CSSModule.setProperty(rule, propName, propValue, priority);
+                FBTrace.sysout(FBL.getWindowId(window)+" Firebug.Dyne.CSSStylesheetUpdater parsed: "+propName+" :"+propValue+(priority? " !"+priority : "") );
+            try
+            {
+                this.suppressSelf = true;
+                Firebug.CSSModule.setProperty(rule, propName, propValue, priority);
+            }
+            finally
+            {
+                this.suppressSelf = false;
+            }
+
         }
         else
         {
@@ -697,6 +720,9 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
 
     onCSSInsertRule: function(styleSheet, cssText, ruleIndex)
     {
+        if (this.suppressSelf)
+            return;
+
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout("dyne onCSSInsertRule", arguments);
         var rule = styleSheet.cssRules[ruleIndex];
@@ -710,6 +736,9 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
 
     onCSSDeleteRule: function(styleSheet, ruleIndex)
     {
+        if (this.suppressSelf)
+            return;
+
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout("dyne onCSSDeleteRule", arguments);
         var rule = styleSheet.cssRules[ruleIndex];
@@ -723,8 +752,11 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
     onCSSSetProperty: function(style, propName, propValue, propPriority, prevValue,
         prevPriority, rule, baseText)
     {
+        if (this.suppressSelf)
+            return;
+
         if (FBTrace.DBG_DYNE)
-            FBTrace.sysout("dyne onCSSSetProperty ", {args: arguments, updater: this});
+            FBTrace.sysout(FBL.getWindowId(window)+" dyne onCSSSetProperty ", {args: arguments, updater: this});
         var selectorLine = Dom.domUtils.getRuleLine(rule);
         var event = {
                 selectorLine: selectorLine,
@@ -739,6 +771,9 @@ Firebug.Dyne.CSSStylesheetUpdater.prototype =
 
     onCSSRemoveProperty: function(style, propName, prevValue, prevPriority, rule, baseText)
     {
+        if (this.suppressSelf)
+            return;
+
         if (FBTrace.DBG_DYNE)
             FBTrace.sysout("dyne onCSSRemoveProperty", arguments);
         var selectorLine = Dom.domUtils.getRuleLine(rule);

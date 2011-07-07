@@ -1,6 +1,8 @@
 
-var fromOrion =
+var propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! important)?;/;
+var CSSStylesheetUpdater =
 {
+    // From Orion to Firebug
     buffer: "",
 
     onModelChanging: function(event)
@@ -22,6 +24,45 @@ var fromOrion =
         }
     },
 
+    // To Orion from Firebug
+    onCSSSetProperty: function(event) {
+        var selectorOffset = this.sourceMap.getCharOffsetByLine(event.selectorLine);
+        if (!selectorOffset)
+        {
+            console.error("FirebugPlugin ERROR selector line "+event.selectorLine+" not found during onCSSSetProperty ", event);
+            return;
+        }
+        var ruleOffset = this.sourceMap.indexOf(event.propName, selectorOffset);
+        if (ruleOffset === -1)
+        {
+            console.error("FirebugPlugin ERROR property name "+event.propName+" not found during onCSSSetProperty ", event);
+            return;
+        }
+        else
+        {
+            // we want to come up with replacementText, startOffset, endOffset
+            // startOffset will point to the first char of the old propertyValue
+            // endOffset will point to the last char.
+
+            var ruleTextMatch = this.sourceMap.getMatchByRegExp(propRE, ruleOffset);
+            if (!ruleTextMatch || ruleTextMatch.length < 3)
+            {
+                console.error("FirebugPlugin ERROR ruleText not found after "+ruleOffset+" during onCSSSetProperty ", event);
+                return;
+            }
+            var prevPropValue = ruleTextMatch[2];
+            var start = this.sourceMap.indexOf(prevPropValue, ruleOffset);
+            var end = start + prevPropValue.length;
+            var event = {
+                method: "setText",
+                arguments: [event.propValue,
+                            start,
+                            end]
+            };
+
+            firebugPlugin.commander.command(event)
+        }
+    }
 
 
 };
@@ -31,13 +72,28 @@ var resourceOpener =
 
 };
 
+function EditCommander(serviceProvider)
+{
+    this.serviceProvider = serviceProvider;
+}
+EditCommander.prototype =
+{
+    command: function(event)
+    {
+        this.serviceProvider.dispatchEvent('content.update',event);
+    }
+}
+
 var firebugPlugin =
 {
     connectToOrion: function()
     {
         var provider = new eclipse.PluginProvider();
-        provider.registerServiceProvider("orion.edit.listener", fromOrion, {});
-        console.log("registered at orion.edit.listener, connecting... ", fromOrion);
+        var backchannel = provider.registerServiceProvider("orion.edit.listener", CSSStylesheetUpdater, {});
+
+        this.commander = new EditCommander(backchannel);
+
+        console.log("registered at orion.edit.listener, connecting... ", {cssUpdater: CSSStylesheetUpdater, commander: this.commander});
         provider.connect(this.onConnectToOrion.bind(this), this.onErrorConnectToOrion.bind(this));
     },
 
@@ -68,11 +124,20 @@ var firebugPlugin =
     firebugObjectReceiver: function(props) {
 
         console.log("firebugPlugin received object ", props);
-        // diagnostic to report we are ready for events
-        console.log('firebugPlugin before orion ready message')
-        this.firebugConnection.postObject({connection: "orion is ready"});
-        console.log("orion posted ready");
+        if (!firebugPlugin.connected && props.connection) {
+            firebugPlugin.connected = true;
+            // diagnostic to report we are ready for events
+            console.log('firebugPlugin before orion ready message');
+            this.firebugConnection.postObject({connection: "orion is ready"});
+            console.log("orion posted ready");
+        }
+        var command = Object.keys(props);
+        command.forEach(function actOn(command){
+            CSSStylesheetUpdater[command](props[command]);
+        });
     },
+
+
 };
 
 window.onload = function() {
