@@ -38,6 +38,11 @@
                 Connection.registry[interfaceId] = implementation;
             },
 
+            unregisterService: function(interfaceId, ignored, implementation)
+            {
+                delete Connection.registry[interfaceId];
+            },
+
             receiveServiceCall: function(interfaceId, method, params)
             {
                 var implementation = Connection.registry[interfaceId];
@@ -101,8 +106,15 @@
                 event.initEvent(messageType, false, true);
                 Connection.currentEvent = event.timeStamp;  // to ignore self messages
                 var body = targetElement.ownerDocument.getElementsByTagName('body')[0];
-                log("postMessage "+event.timeStamp+" from "+window.location+" "+data+" to "+body.innerHTML, targetElement);
-                log("postMessage "+targetElement.ownerDocument.location+" "+targetElement.ownerDocument.defaultView.parent.location);
+                try {
+                    log("postMessage "+event.timeStamp+" from "+window.location+" "+data+" to "+body.innerHTML, targetElement);
+                    log("postMessage "+targetElement.ownerDocument.location+" "+targetElement.ownerDocument.defaultView.parent.location);
+                }
+                catch(exc)
+                {
+                    // probably location.toString()
+                    log("postMessage log fails "+exc, exc);
+                }
                 targetElement.dispatchEvent(event);
                 delete Connection.currentEvent;
             },
