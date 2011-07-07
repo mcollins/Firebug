@@ -3,6 +3,7 @@
 <?xml-stylesheet href="chrome://global/skin/global.css"?>
 <?xml-stylesheet href="chrome://global/skin/findBar.css" type="text/css"?>
 <?xml-stylesheet href="chrome://fbtrace/content/traceConsole.css"?>
+<?xml-stylesheet href="chrome://fbtrace/skin/commandLine.css"?>
 
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
@@ -25,6 +26,7 @@
 
   <!-- Trace Console Application -->
   <script type="application/x-javascript" src="traceConsole.js"/>
+  <script type="application/x-javascript" src="traceCommandLine.js"/>
   <script type="application/x-javascript" src="main.js"/>
   <script type="application/x-javascript" src="unblocker.js"/>
 
@@ -46,6 +48,8 @@
     <command id="cmd_clearCache" oncommand="TraceConsole.onClearCache()"/>
     <command id="cmd_forceGC" oncommand="TraceConsole.onForceGC()"/>
     <command id="cmd_openProfileDir" oncommand="TraceConsole.openProfileDir()"/>
+    <command id="cmd_showCommandLine" oncommand="TraceCommandLine.toggleCommandLine()"/>
+    <command id="cmd_lineEvaluate" oncommand="TraceCommandLine.evaluate()"/>
   </commandset>
 
   <keyset id="mainKeyset">
@@ -54,6 +58,7 @@
     <key id="key_saveToFile" key="s" command="cmd_saveToFile" modifiers="accel"/>
     <key id="key_loadFromFile" key="o" command="cmd_loadFromFile" modifiers="accel"/>
     <key id="key_clearConsole" key="l" command="cmd_clearConsole" modifiers="accel"/>
+    <key id="key_lineEvaluate" keycode="VK_F5" command="cmd_lineEvaluate" modifiers="accel"/>
   </keyset>
 
   <!-- Trace Console Toolbar -->
@@ -85,6 +90,11 @@
                     label="tracing.cmd.Load" class="toolbar-image-button fbInternational"
                     tooltiptext="tracing.cmd.tip.Load"
                     command="cmd_loadFromFile"/>
+                <menuseparator />
+                <menuitem id="showCommandLine" type="checkbox"
+                    label="tracing.cmd.Show Command Line" class="toolbar-image-button fbInternational"
+                    tooltiptext="tracing.cmd.tip.Show Command Line"
+                    command="cmd_showCommandLine"/>
                 <menuseparator />
                 <menuitem id="clearCache"
                     label="tracing.cmd.Clear Browser Cache" class="toolbar-image-button fbInternational"
@@ -123,10 +133,32 @@
   </popupset>
 
   <vbox flex="1">
+
+    <!-- Content -->
     <browser id="consoleFrame" type="content-primary"
              src="traceConsole.html" flex="1"
              disablehistory="true" contextmenu="fbContextMenu"
              tooltip="fbTooltip"/>
+
+    <splitter id="fbTraceSplitter" collapsed="true"/>
+
+    <!-- Command line -->
+    <vbox id="fbTraceCommandLine" collapsed="true" persist="height">
+        <toolbar id="commandLineToolbar" align="center">
+            <toolbarbutton id="cmdLineEvaluate" label="tracing.cmd.Evaluate"
+                tooltiptext="tracing.cmd.tip.Evaluate"
+                command="cmd_lineEvaluate" class="fbInternational">
+            </toolbarbutton>
+            <toolbarbutton id="cmdLineContext" label="Context" type="menu">
+                <menupopup onpopupshowing="return TraceCommandLine.onContextMenuShowing(this);"
+                    onpopuphidden="TraceCommandLine.onContextMenuHidden(this)"/>
+            </toolbarbutton>
+        </toolbar>
+
+        <textbox id="fbTraceScriptBox" multiline="true" flex="1"/>
+    </vbox>
+
+    <!-- Search bar -->
     <findbar id="FindToolbar" browserid="consoleFrame"/>
   </vbox>
 </window>
