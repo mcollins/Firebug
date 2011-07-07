@@ -27,8 +27,7 @@ var TraceCommandLine =
             var self = this;
             FBL.iterateBrowserWindows("navigator:browser", function(win)
             {
-                if (win.Firebug)
-                    return self.currentWindow = win;
+                return self.currentWindow = win;
             });
         }
 
@@ -41,8 +40,7 @@ var TraceCommandLine =
         var windows = [];
         FBL.iterateBrowserWindows("navigator:browser", function(win)
         {
-            if (win.Firebug)
-                windows.push(win);
+            windows.push(win);
         });
 
         // Populate the menu with entries.

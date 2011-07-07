@@ -59,6 +59,7 @@
     <key id="key_loadFromFile" key="o" command="cmd_loadFromFile" modifiers="accel"/>
     <key id="key_clearConsole" key="l" command="cmd_clearConsole" modifiers="accel"/>
     <key id="key_lineEvaluate" keycode="VK_F5" command="cmd_lineEvaluate" modifiers="accel"/>
+    <key id="key_lineEvaluate" keycode="VK_RETURN" command="cmd_lineEvaluate" modifiers="accel"/>
   </keyset>
 
   <!-- Trace Console Toolbar -->
