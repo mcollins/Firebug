@@ -26,10 +26,11 @@ function binaryIntervalSearch(ary, key, lowIndex, hiIndex)
 }
 
 //line 1 goes from char 0 to char newLineOffsets[0]
+// If we have /r junk then we need to fill the array with index the last of such junk
 function getNewLineOffsets(buffer)
 {
     var newLineOffsets = [];
-    var mark = -1
+    var mark = -1;
     while( (mark = buffer.indexOf('\n', mark+1)) !== -1 )
     {
         newLineOffsets.push(mark);
@@ -54,6 +55,20 @@ SourceMap.prototype.getLineByCharOffset = function(offset)
     if (offset > this.newLineOffsets[this.newLineOffsets.length - 1])
         return 0;
     return binaryIntervalSearch(this.newLineOffsets, offset) + 1;
+}
+
+SourceMap.prototype.getCharOffsetByLine = function(line)
+{
+    if(!this.synced)
+        this.resync();
+
+    if (line > 0 && line < this.newLineOffsets.length)
+    {
+        if (line === 1)
+            return 0;
+        else
+            return this.newLineOffsets[line - 1] + 1;
+    }
 }
 
 SourceMap.prototype.getLineSourceByLine = function(lineNumber)
@@ -82,4 +97,19 @@ SourceMap.prototype.editSource = function(start, addedSource, removeCount)
     this.buffer = beforeChange + addedSource + afterChange;
     this.synced = false;
     return this.buffer.length;
+}
+
+SourceMap.prototype.indexOf = function(searchForString, startingAtIndex)
+{
+    return this.buffer.indexOf(searchForString, startingAtIndex);
+}
+
+SourceMap.prototype.getMatchByRegExp = function(propRe, offset)
+{
+    var bufEnd = this.buffer.substr(offset);
+    var m = propRe.exec(bufEnd);
+    m.index += offset;
+    if (m.lastIndex !== undefined)
+        m.lastIndex += offset;
+    return m;
 }
