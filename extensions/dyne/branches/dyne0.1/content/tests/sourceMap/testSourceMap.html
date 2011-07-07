@@ -96,6 +96,15 @@ var smap = new SourceMap(buffer);
 check(smap.editSource(0, 'X', 1), buffer.length, smap, "s/l/X/");
 check(smap.getLineSourceByLine(smap.getLineByCharOffset(0)), "Xine1", smap, smap.getLineByCharOffset(0));
 console.groupEnd();
+
+console.group("SourceMap.getMatchByRegExp(regexp, offset)");
+var buffer = "line1\nline2\n";
+var smap = new SourceMap(buffer);
+var match = smap.getMatchByRegExp(/line/, 4);
+check(match[0], 'line', smap, "/line/,4");
+check(match.index, 6, smap, "/line/,4");
+console.groupEnd();
+
 </script>
 </head>
 <body>
