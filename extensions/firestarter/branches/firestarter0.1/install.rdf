@@ -21,5 +21,6 @@
     <em:description>Firebug extension providing advanced features for Firebug activation model.</em:description>
     <em:creator>Jan Odvarko</em:creator>
 
+    <em:updateURL>https://getfirebug.com/releases/firestarter/1.5/update.rdf</em:updateURL>
   </Description>
 </RDF>
